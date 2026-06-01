@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCreateBiometrics } from "@/lib/hooks";
+import { useCreateBiometrics, useProfile, useUpdateProfile } from "@/lib/hooks";
 import { InfoIcon, ChevronDown } from "@/components/icons";
 
 const advanced = [
@@ -34,30 +34,55 @@ const advanced = [
 
 export default function NewBiometricsPage() {
   const router = useRouter();
+  const { data: profile } = useProfile();
   const create = useCreateBiometrics();
+  const updateProfile = useUpdateProfile();
   const [vals, setVals] = useState<Record<string, string>>({});
   const [showAdv, setShowAdv] = useState(false);
   const [openInfo, setOpenInfo] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  // Precarga la altura actual del perfil (si no la has tocado).
+  useEffect(() => {
+    if (profile?.height_cm != null) {
+      setVals((s) => ("height" in s ? s : { ...s, height: String(profile.height_cm) }));
+    }
+  }, [profile]);
 
   const set = (k: string, v: string) => setVals((s) => ({ ...s, [k]: v }));
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const payload: Record<string, unknown> = {};
-    if (vals.weight_kg) payload.weight_kg = vals.weight_kg; // decimal -> string
+    setFormError(null);
+
+    const bio: Record<string, unknown> = {};
+    if (vals.weight_kg) bio.weight_kg = vals.weight_kg; // decimal -> string
     for (const f of advanced) {
       const v = vals[f.key];
-      if (v !== undefined && v !== "") {
-        payload[f.key] = f.decimal ? v : Number(v);
-      }
+      if (v !== undefined && v !== "") bio[f.key] = f.decimal ? v : Number(v);
+    }
+
+    const tasks: Promise<unknown>[] = [];
+    const h = vals.height ? Number(vals.height) : null;
+    if (h && h > 0 && h !== profile?.height_cm) {
+      tasks.push(updateProfile.mutateAsync({ height_cm: h }));
+    }
+    if (Object.keys(bio).length > 0) tasks.push(create.mutateAsync(bio));
+
+    if (tasks.length === 0) {
+      setFormError("Introduce al menos el peso o la altura.");
+      return;
     }
     try {
-      await create.mutateAsync(payload);
+      await Promise.all(tasks);
       router.push("/dashboard");
     } catch {
-      /* el error se muestra abajo vía create.isError */
+      /* el error se muestra abajo */
     }
   }
+
+  const pending = create.isPending || updateProfile.isPending;
+  const err = formError || (create.error as Error)?.message || (updateProfile.error as Error)?.message;
 
   return (
     <div className="pt-4">
@@ -69,7 +94,7 @@ export default function NewBiometricsPage() {
       <form className="mt-5 flex flex-col gap-4" onSubmit={onSubmit}>
         {/* Típicas */}
         <div className="flex flex-col gap-2">
-          <span className="t-eyebrow text-muted">Medida típica</span>
+          <span className="t-eyebrow text-muted">Medidas típicas</span>
           <label className="glass neon-edge flex items-center justify-between gap-3 p-4">
             <span className="t-label text-ink">Peso</span>
             <span className="flex items-center gap-2">
@@ -84,6 +109,21 @@ export default function NewBiometricsPage() {
                 className="field w-28 px-3 py-2.5 text-right text-lg"
               />
               <span className="t-label w-8 text-muted">kg</span>
+            </span>
+          </label>
+          <label className="glass flex items-center justify-between gap-3 p-4">
+            <span className="t-label text-ink">Altura</span>
+            <span className="flex items-center gap-2">
+              <input
+                type="number"
+                step="1"
+                inputMode="numeric"
+                value={vals.height ?? ""}
+                onChange={(e) => set("height", e.target.value)}
+                placeholder="0"
+                className="field w-28 px-3 py-2.5 text-right text-lg"
+              />
+              <span className="t-label w-8 text-muted">cm</span>
             </span>
           </label>
         </div>
@@ -130,7 +170,7 @@ export default function NewBiometricsPage() {
                   </span>
                 </div>
                 {openInfo === f.key && (
-                  <p className="t-body mt-2.5 border-t border-[rgba(150,190,255,0.1)] pt-2.5 text-xs text-muted">
+                  <p className="t-body mt-2.5 border-t border-[rgba(150,190,255,0.12)] pt-2.5 text-xs text-[#cdd9ef]">
                     {f.info}
                   </p>
                 )}
@@ -138,9 +178,9 @@ export default function NewBiometricsPage() {
             ))}
         </div>
 
-        {create.isError && <p className="text-xs text-bad">{(create.error as Error).message}</p>}
-        <button type="submit" disabled={create.isPending} className="btn btn-primary mt-1 disabled:opacity-60">
-          {create.isPending ? "Guardando…" : "Guardar medición"}
+        {err && <p className="text-xs text-bad">{err}</p>}
+        <button type="submit" disabled={pending} className="btn btn-primary mt-1 disabled:opacity-60">
+          {pending ? "Guardando…" : "Guardar"}
         </button>
       </form>
     </div>

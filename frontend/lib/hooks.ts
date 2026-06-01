@@ -54,6 +54,15 @@ export function useCreateBiometrics() {
   });
 }
 
+export function useUpdateProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: Record<string, unknown>) =>
+      sendJson("/api/proxy/me/profile", "PATCH", payload),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["profile"] }),
+  });
+}
+
 export function useLogout() {
   const qc = useQueryClient();
   return useMutation({
