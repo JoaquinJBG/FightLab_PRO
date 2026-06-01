@@ -6,7 +6,6 @@ import { useBiometrics, useMe, useLogout } from "@/lib/hooks";
 import type { Biometrics } from "@/lib/schemas";
 import {
   ScaleIcon,
-  MoonIcon,
   HeartIcon,
   PulseIcon,
   BoltIcon,
@@ -156,12 +155,22 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Métricas del último registro */}
-      <section className="mt-4 grid grid-cols-3 gap-3">
-        <MetricCard delay={120} icon={<MoonIcon className="h-[18px] w-[18px]" />} label="Sueño" value={latest.sleep_quality_score !== null ? `${latest.sleep_quality_score}` : "—"} unit="/10" />
-        <MetricCard delay={160} icon={<HeartIcon className="h-[18px] w-[18px]" />} label="FC reposo" value={latest.resting_heart_rate !== null ? `${latest.resting_heart_rate}` : "—"} unit="bpm" />
-        <MetricCard delay={200} icon={<PulseIcon className="h-[18px] w-[18px]" />} label="HRV" value={latest.hrv_ms !== null ? `${latest.hrv_ms}` : "—"} unit="ms" />
-      </section>
+      {/* Métricas avanzadas: solo las que se hayan registrado */}
+      {(() => {
+        const cards: { icon: React.ReactNode; label: string; value: string; unit: string }[] = [];
+        const bf = num(latest.body_fat_pct);
+        if (bf !== null) cards.push({ icon: <ScaleIcon className="h-[18px] w-[18px]" />, label: "% Grasa", value: bf.toFixed(1), unit: "%" });
+        if (latest.resting_heart_rate !== null) cards.push({ icon: <HeartIcon className="h-[18px] w-[18px]" />, label: "FC reposo", value: `${latest.resting_heart_rate}`, unit: "bpm" });
+        if (latest.hrv_ms !== null) cards.push({ icon: <PulseIcon className="h-[18px] w-[18px]" />, label: "HRV", value: `${latest.hrv_ms}`, unit: "ms" });
+        if (cards.length === 0) return null;
+        return (
+          <section className="mt-4 grid grid-cols-3 gap-3">
+            {cards.map((c, i) => (
+              <MetricCard key={c.label} delay={120 + i * 40} icon={c.icon} label={c.label} value={c.value} unit={c.unit} />
+            ))}
+          </section>
+        );
+      })()}
 
       {/* ACWR / readiness — llega con M2 */}
       <section className="glass rise mt-4 flex items-center gap-3 p-4 opacity-80" style={{ animationDelay: "240ms" }}>
