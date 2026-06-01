@@ -8,6 +8,7 @@ const PROTECTED = [
   "/coach",
   "/profile",
   "/biometrics",
+  "/onboarding",
 ];
 
 export function middleware(req: NextRequest) {
@@ -31,5 +32,6 @@ export const config = {
     "/coach/:path*",
     "/profile/:path*",
     "/biometrics/:path*",
+    "/onboarding",
   ],
 };
