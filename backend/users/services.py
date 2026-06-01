@@ -17,6 +17,9 @@ def _send_verification_email(user) -> None:
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],
     )
+    if settings.DEBUG:
+        # Enlace limpio y copiable en consola (el email de dev va en quoted-printable).
+        print(f"\n[DEV] Verificación para {user.email}:\n{link}\n", flush=True)
 
 
 @transaction.atomic
