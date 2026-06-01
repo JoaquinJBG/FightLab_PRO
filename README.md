@@ -1,6 +1,126 @@
-📄 DOCUMENTO DE ESPECIFICACIONES TÉCNICAS Y DE PRODUCTO (PRD)1. 🎯 VISIÓN GENERAL DEL SISTEMAEl proyecto es una plataforma SaaS de alto rendimiento diseñada específicamente para atletas de combate (MMA) y deportistas multidisciplinares. El sistema integra ciencia del deporte avanzada, gestión de fatiga sistémica, periodización nutricional dinámica y un núcleo de IA preparado para interacción por voz.2. 🛠️ STACK TECNOLÓGICO OBLIGATORIOBackend: Django 5.x + Django REST Framework (DRF)Custom User Model: Extensión de la clase AbstractUser de Django para gestionar la autenticación y roles globales desde el núcleo.Autenticación: Implementación de JSON Web Tokens (JWT) mediante djangorestframework-simplejwt.Arquitectura: Separación estricta de responsabilidades mediante el patrón de Servicios y Selectores (desacoplando la lógica de negocio de las vistas de DRF).Frontend: SvelteKitArquitectura: Estructura modular basada en rutas y componentes altamente reutilizables con TypeScript.Comunicación: Consumo de API 100% RESTful mediante intercambio de JSON.Estado: Gestión del estado global de la aplicación utilizando tiendas reactivas (stores) o runes nativos de Svelte.Infraestructura y PersistenciaContenedores: Entorno completamente aislado mediante Docker y Docker Compose, con configuraciones separadas para desarrollo (development) y producción (production).Base de Datos: PostgreSQL como motor relacional principal.Seguridad: Gestión estricta de credenciales mediante variables de entorno (.env).3. 🧠 REGLAS DE NEGOCIO Y DOMINIO DE ÉLITE🏋️ Entrenamientos y Carga FisiológicaPeriodización por Bloques: Programación estructurada del entrenamiento (Acumulación, Transición, Realización) adaptada a campamentos de pelea.Carga de Entrenamiento (sRPE): Cálculo automatizado del volumen e intensidad basado en la sesión.$$\text{Carga (AU)} = \text{Duración (minutos)} \times \text{RPE (1-10)}$$Métricas de Fatiga Semanal: Cálculo de la Monotonía (variabilidad de la carga) y la Tensión (carga semanal multiplicada por la monotonía).Ratio de Carga Crónica-Aguda (ACWR): Comparativa del volumen de los últimos 7 días (carga aguda) contra los últimos 28 días (carga crónica) para la prevención predictiva de lesiones. El rango óptimo se sitúa entre $0.8$ y $1.3$.Multideporte: Soporte polimórfico para registrar sesiones de MMA (Sparring, Grappling), Fuerza/Gym (RPE por serie, cargas masivas), y Cardio (Ciclismo, Carrera, Fútbol).🍏 Nutrición y Sincronización DeportivaPeriodización de Carbohidratos: Ajuste dinámico de macronutrientes basado en la demanda energética del bloque de entrenamiento diario (Días de carga alta vs. Días de recuperación).Timing de Nutrientes: Planificación estratégica de ingestas pre, durante y post-combate/entrenamiento.Suplementación Científica: Dosificación basada en evidencia de compuestos clave (Creatina, Beta-Alanina, Cafeína, Electrólitos).🎙️ Interfaces de Voz e Inteligencia ArtificialProcesamiento de Lenguaje Natural (NLP): Arquitectura diseñada para consumir texto transcribido por modelos de voz (como OpenAI Whisper), permitiendo al atleta registrar datos de manera manos libres.Lógica de Entrenamiento Inteligente: Motor de toma de decisiones capaz de analizar el contexto del usuario (fatiga acumulada, historial de lesiones) y reajustar los planes de entrenamiento y nutrición en tiempo real.4. 📊 ARQUITECTURA DE DATOS (MODELADO DE TABLAS)Modulo 1: CORE (Usuarios y Biometría)CustomUser: Tabla base de autenticación extendida de AbstractUser. Campos críticos: email (único, reemplaza al username), role (Atleta, Coach, Administrador), is_active, y marcas de tiempo.UserProfile: Relación de 1 a 1 con CustomUser. Contiene datos antropométricos estáticos y de configuración: date_of_birth, gender, height_cm, dominant_stance (Orthodox, Southpaw, Switch), y configuraciones de cuenta.BiometricsLog: Relación de 1 a muchos con UserProfile. Registro histórico diario/semanal para el seguimiento de la evolución: weight_kg, body_fat_percentage, resting_heart_rate, sleep_quality_score (1-10) y timestamp.Modulo 2: ENTRENAMIENTO (Planificación y Ejecución)TrainingPlan: Contenedor macro de la programación. Campos: user, title, description, start_date, end_date, y block_type (Accumulation, Transmutation, Realization).WorkoutSession: Sesión individual programada dentro de un plan. Campos: training_plan, name, scheduled_date, status (Pending, Completed, Skipped) y target_rpe.ExerciseLibrary: Diccionario global de movimientos. Campos: name, category (Striking, Grappling, Strength, Endurance), description y video_url.ActivityLog (Polimórfico): Registro real de lo ejecutado. Relacionado con WorkoutSession. Atributos comunes: duration_minutes, perceived_rpe (1-10), calculated_load_au, y notes. Estructuras extendidas:Gym/Fuerza: Almacena sub-tablas de SetLog (exercise, reps, weight_kg, rpe_per_set).MMA/Cardio: Almacena sub-tablas de RoundLog (round_number, round_duration, intensity_type).Modulo 3: NUTRICIÓN (Planes e Ingestas)NutritionPlan: Estructura de metas macro nutricionales vinculada al TrainingPlan. Campos: user, start_date, end_date, y metas base diarias (target_calories, target_protein_g, target_carbs_g, target_fats_g).FoodLibrary: Base de datos de alimentos e ingredientes de referencia. Campos: name, calories_per_100g, protein_per_100g, carbs_per_100g, fats_per_100g, e is_supplement (booleano).MealLog: Registro diario de comidas consumidas. Campos: user, timestamp, meal_type (Pre-Workout, Post-Workout, Breakfast, Lunch, Dinner, Snack) y relaciones de muchos a muchos con FoodLibrary mediante una tabla intermedia MealItem (quantity_grams).Modulo 4: CEREBRO IA (Contexto y Recomendaciones)AIContext: Estado vivo del atleta analizado por el backend. Relación 1 a 1 con UserProfile. Campos: current_fatigue_index, injury_notes (JSON), chronic_load_score, acute_load_score y acwr_ratio.AIRecommendation: Historial de ajustes sugeridos por el motor de IA. Campos: user, trigger_event (ej. "ACWR Alto > 1.5"), recommendation_text, action_taken (JSON con los cambios aplicados en los planes), is_applied y timestamp.5. 🗺️ HOJA DE RUTA Y PLAN DE SPRINTSSprint 1: 🧱 Infraestructura y Autenticación JWT (Core)
-  └── Docker Compose + PostgreSQL + Custom User + SimpleJWT
-Sprint 2: 📊 Motor Fisiológico y Modelado de Carga (Entrenamiento)
-  └── Tablas de Entrenamientos + Algoritmos sRPE & ACWR
-Sprint 3: 🎙️ Capa de IA, Validación Zod e Interacción de Voz
-  └── API SvelteKit + Zod Schemas + Procesamiento NLP Endpoints
+# 🥊 FightLab Pro
+
+Plataforma para **atletas de combate (MMA)** y deportistas multidisciplinares que
+unifica la ciencia del entrenamiento, la nutrición periodizada y un **coach con IA**
+en una sola app instalable en el móvil.
+
+> Proyecto personal de aprendizaje con estándares de producción.
+
+---
+
+## ✨ Qué hace
+
+- **Motor fisiológico de carga.** Registras tus sesiones (sparring, grappling,
+  fuerza, cardio) y el sistema calcula la carga de entrenamiento (sRPE), la
+  monotonía, la tensión y el **ACWR** (ratio carga aguda/crónica) para prevenir
+  lesiones.
+- **Nutrición periodizada.** Macros que se ajustan según el bloque de
+  entrenamiento, timing de nutrientes y seguimiento de peso de cara al pesaje.
+- **Coach IA (Anthropic Claude).** Genera rutinas y dietas, **cuenta kcal a partir
+  de una foto del plato** y propone ajustes proactivos según tu fatiga y tu ACWR.
+
+## 📱 Producto
+
+Es una **PWA instalable, mobile-first**: se añade a la pantalla de inicio y se abre
+a pantalla completa como una app nativa, **sin pasar por App Store / Play Store**
+(modelo tipo Pokémon Showdown). Pensada para el móvil, en el gym, sobre la marcha.
+
+## 🛠️ Stack
+
+| Capa | Tecnología |
+|------|------------|
+| Backend | Django 5 + Django REST Framework, patrón Services/Selectors |
+| Auth | JWT (`djangorestframework-simplejwt`) sobre un `CustomUser` por email |
+| Frontend | Next.js (App Router) + TypeScript, TanStack Query, Zod, Tailwind |
+| Patrón web | BFF: Next.js proxya a la API y guarda los tokens en cookies `httpOnly` |
+| IA | Anthropic Claude (texto + visión) |
+| Datos | PostgreSQL |
+| Infra | Docker + Docker Compose (perfiles dev/prod) |
+
+## 🗺️ Hoja de ruta por módulos
+
+| # | Módulo | Contenido | Estado |
+|---|--------|-----------|--------|
+| **M1** | Core / Auth | CustomUser, JWT + verificación email, perfil y biometría | ✅ Backend implementado |
+| **M2** | Entrenamiento | Planes, sesiones, librería de ejercicios, motor de carga (sRPE/ACWR), readiness | ⏳ Planificado |
+| **M3** | Nutrición | Planes, librería de alimentos, registro de comidas, corte de peso básico | ⏳ Planificado |
+| **M4** | Coach IA | Generación de rutinas/dietas, foto→kcal, recomendaciones proactivas, chat | ⏳ Planificado |
+
+> Cada módulo recorre su propio ciclo **spec → plan → implementación**. La IA es una
+> capa transversal que se monta al final.
+
+## 📂 Estructura del repositorio
+
+```
+fightlab-pro/
+├── backend/                # API Django/DRF
+│   ├── core/               # proyecto (settings, urls)
+│   ├── users/              # CustomUser + auth (M1)
+│   ├── profiles/           # UserProfile + BiometricsLog (M1)
+│   ├── requirements.txt
+│   └── Dockerfile
+├── frontend/               # PWA Next.js (próximamente)
+├── docker-compose.yml      # db (PostgreSQL) + backend
+└── docs/superpowers/
+    ├── specs/              # especificaciones de diseño
+    └── plans/              # planes de implementación
+```
+
+## 🚀 Puesta en marcha (desarrollo)
+
+**Requisitos:** Docker, Python 3.12.
+
+1. **Variables de entorno.** Copia el ejemplo y ajústalo:
+   ```bash
+   cp backend/.env.example .env
+   # Para desarrollo con venv local, en el .env usa: POSTGRES_HOST=localhost
+   ```
+
+2. **Base de datos (Docker):**
+   ```bash
+   docker compose up -d db
+   ```
+
+3. **Backend (venv local):**
+   ```bash
+   python -m venv .venv && source .venv/bin/activate
+   pip install -r backend/requirements.txt
+   cd backend
+   python manage.py migrate
+   python manage.py runserver
+   ```
+   La API queda en `http://localhost:8000/api/v1/`. En desarrollo, los emails de
+   verificación se imprimen en la consola del servidor.
+
+> Alternativa todo-en-Docker: `docker compose up --build` (requiere el puerto 8000
+> libre). El contenedor backend usa `POSTGRES_HOST=db` automáticamente.
+
+### Tests
+
+```bash
+cd backend
+pytest          # requiere el contenedor `db` levantado
+```
+
+## 🔌 API del M1 (Core / Auth)
+
+Base: `/api/v1`
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| POST | `/auth/register` | Alta (email + contraseña) → email de verificación |
+| POST | `/auth/verify-email` | Verifica el email y activa la cuenta |
+| POST | `/auth/verify-email/resend` | Reenvía la verificación |
+| POST | `/auth/login` | Devuelve access + refresh (JWT) |
+| POST | `/auth/refresh` | Renueva el access token |
+| POST | `/auth/logout` | Invalida el refresh (blacklist) |
+| GET | `/me` | Datos del usuario autenticado |
+| GET/PATCH | `/me/profile` | Lee/actualiza el perfil |
+| GET/POST | `/me/biometrics` | Lista/registra biometría |
+| DELETE | `/me/biometrics/{id}` | Elimina una entrada |
+
+## 📖 Documentación
+
+- **Visión y arquitectura:** [`docs/superpowers/specs/2026-06-01-fightlab-pro-vision-design.md`](docs/superpowers/specs/2026-06-01-fightlab-pro-vision-design.md)
+- **Spec M1 (Core/Auth):** [`docs/superpowers/specs/2026-06-01-m1-core-auth-design.md`](docs/superpowers/specs/2026-06-01-m1-core-auth-design.md)
+- **Plan backend M1:** [`docs/superpowers/plans/2026-06-01-m1-backend-core-auth.md`](docs/superpowers/plans/2026-06-01-m1-backend-core-auth.md)
