@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Roboto_Flex } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegister } from "./sw-register";
 import { BackgroundFx } from "@/components/background-fx";
+import { QueryProvider } from "@/lib/query-provider";
 
 // Títulos / banners / números — clon libre de Google Sans
 const display = Plus_Jakarta_Sans({
@@ -45,7 +46,7 @@ export default function RootLayout({
     <html lang="es" className={`${display.variable} ${body.variable} h-full antialiased`}>
       <body className="min-h-full">
         <BackgroundFx />
-        {children}
+        <QueryProvider>{children}</QueryProvider>
         <ServiceWorkerRegister />
       </body>
     </html>
