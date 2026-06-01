@@ -73,6 +73,15 @@ body {
 @keyframes nebR2 { from { transform: translate3d(0,0,0) rotate(12deg) scale(1); }      to { transform: translate3d(-8vw,-3vh,0) rotate(22deg) scale(1.1); } }
 @keyframes nebR3 { from { transform: translate3d(0,0,0) scale(1); opacity: 0.28; }     to { transform: translate3d(-5vw,4vh,0) scale(1.22); opacity: 0.46; } }
 
+/* Nebulosa fluida WebGL (encima del fallback CSS) */
+.bg-fx .neb-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 /* Rejilla de puntos (la "ola de partículas") */
 .bg-fx .dots {
   position: absolute;
