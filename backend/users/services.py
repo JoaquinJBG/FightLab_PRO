@@ -44,6 +44,8 @@ def email_verify(*, token: str):
         user.is_active = True
         user.is_email_verified = True
         user.save(update_fields=["is_active", "is_email_verified", "updated_at"])
+    from profiles.models import UserProfile
+    UserProfile.objects.get_or_create(user=user)
     return user
 
 
