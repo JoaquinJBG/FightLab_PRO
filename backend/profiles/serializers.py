@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 
 from .models import BiometricsLog, UserProfile
@@ -13,6 +14,12 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class BiometricsSerializer(serializers.ModelSerializer):
+    sleep_quality_score = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+    )
+
     class Meta:
         model = BiometricsLog
         fields = (

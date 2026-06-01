@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -35,8 +36,11 @@ class BiometricsListCreateView(APIView):
         serializer.is_valid(raise_exception=True)
         try:
             log = services.biometrics_create(user=request.user, **serializer.validated_data)
-        except Exception as exc:  # full_clean ValidationError
-            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except DjangoValidationError as exc:
+            return Response(
+                {"detail": exc.message_dict if hasattr(exc, "message_dict") else exc.messages},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return Response(BiometricsSerializer(log).data, status=status.HTTP_201_CREATED)
 
 
