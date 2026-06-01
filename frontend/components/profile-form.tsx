@@ -13,13 +13,23 @@ const stances: [string, string][] = [
   ["SOUTHPAW", "Zurdo"],
   ["SWITCH", "Switch"],
 ];
-const units: [string, string][] = [
+const unitOpts: [string, string][] = [
   ["METRIC", "Métrico (kg · cm)"],
   ["IMPERIAL", "Imperial (lb · in)"],
 ];
 
+const MONTHS = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+];
+const DAYS = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, "0"));
+const THIS_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: THIS_YEAR - 1940 + 1 }, (_, i) => String(THIS_YEAR - i));
+
 type Fields = {
-  date_of_birth: string;
+  dob_y: string;
+  dob_m: string;
+  dob_d: string;
   gender: string;
   height_cm: string;
   dominant_stance: string;
@@ -37,7 +47,9 @@ export function ProfileForm({
   const update = useUpdateProfile();
   const [loaded, setLoaded] = useState(false);
   const [f, setF] = useState<Fields>({
-    date_of_birth: "",
+    dob_y: "",
+    dob_m: "",
+    dob_d: "",
     gender: "",
     height_cm: "",
     dominant_stance: "",
@@ -46,8 +58,11 @@ export function ProfileForm({
 
   useEffect(() => {
     if (profile && !loaded) {
+      const [y = "", m = "", d = ""] = (profile.date_of_birth ?? "").split("-");
       setF({
-        date_of_birth: profile.date_of_birth ?? "",
+        dob_y: y,
+        dob_m: m,
+        dob_d: d,
         gender: profile.gender ?? "",
         height_cm: profile.height_cm != null ? String(profile.height_cm) : "",
         dominant_stance: profile.dominant_stance ?? "",
@@ -61,8 +76,10 @@ export function ProfileForm({
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const dob =
+      f.dob_y && f.dob_m && f.dob_d ? `${f.dob_y}-${f.dob_m}-${f.dob_d}` : null;
     const payload: Record<string, unknown> = {
-      date_of_birth: f.date_of_birth || null,
+      date_of_birth: dob,
       gender: f.gender || null,
       height_cm: f.height_cm ? Number(f.height_cm) : null,
       dominant_stance: f.dominant_stance || null,
@@ -76,21 +93,34 @@ export function ProfileForm({
     }
   }
 
+  const selectCls = "field appearance-none px-3 py-3 text-sm";
+
   return (
     <form className="flex flex-col gap-3" onSubmit={onSubmit}>
-      <label className="flex flex-col gap-1.5">
+      {/* Fecha de nacimiento: día / mes / año */}
+      <div className="flex flex-col gap-1.5">
         <span className="t-label text-muted">Fecha de nacimiento</span>
-        <input
-          type="date"
-          value={f.date_of_birth}
-          onChange={(e) => set("date_of_birth", e.target.value)}
-          className="field px-4 py-3 text-sm"
-        />
-      </label>
+        <div className="grid grid-cols-3 gap-2">
+          <select value={f.dob_d} onChange={(e) => set("dob_d", e.target.value)} className={selectCls} aria-label="Día">
+            <option value="">Día</option>
+            {DAYS.map((d) => <option key={d} value={d}>{Number(d)}</option>)}
+          </select>
+          <select value={f.dob_m} onChange={(e) => set("dob_m", e.target.value)} className={selectCls} aria-label="Mes">
+            <option value="">Mes</option>
+            {MONTHS.map((label, i) => (
+              <option key={label} value={String(i + 1).padStart(2, "0")}>{label}</option>
+            ))}
+          </select>
+          <select value={f.dob_y} onChange={(e) => set("dob_y", e.target.value)} className={selectCls} aria-label="Año">
+            <option value="">Año</option>
+            {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+          </select>
+        </div>
+      </div>
 
       <label className="flex flex-col gap-1.5">
         <span className="t-label text-muted">Sexo</span>
-        <select value={f.gender} onChange={(e) => set("gender", e.target.value)} className="field px-4 py-3 text-sm">
+        <select value={f.gender} onChange={(e) => set("gender", e.target.value)} className={selectCls}>
           <option value="">Selecciona…</option>
           {genders.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
@@ -111,7 +141,7 @@ export function ProfileForm({
 
       <label className="flex flex-col gap-1.5">
         <span className="t-label text-muted">Guardia (stance)</span>
-        <select value={f.dominant_stance} onChange={(e) => set("dominant_stance", e.target.value)} className="field px-4 py-3 text-sm">
+        <select value={f.dominant_stance} onChange={(e) => set("dominant_stance", e.target.value)} className={selectCls}>
           <option value="">Selecciona…</option>
           {stances.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
@@ -119,8 +149,8 @@ export function ProfileForm({
 
       <label className="flex flex-col gap-1.5">
         <span className="t-label text-muted">Unidades</span>
-        <select value={f.preferred_units} onChange={(e) => set("preferred_units", e.target.value)} className="field px-4 py-3 text-sm">
-          {units.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+        <select value={f.preferred_units} onChange={(e) => set("preferred_units", e.target.value)} className={selectCls}>
+          {unitOpts.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
       </label>
 
