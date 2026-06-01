@@ -1,0 +1,169 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   FightLab Pro — tema oscuro neón azul
+--------------------------------------------------------------------------- */
+@theme {
+  --color-bg: #05070e;
+  --color-bg-soft: #0a0f1d;
+  --color-surface: #0c1426;
+  --color-ink: #e9f1fb;
+  --color-muted: #7c8bab;
+  --color-neon: #35e6ff;        /* azul neón claro */
+  --color-neon-deep: #2b6bff;   /* azul neón oscuro */
+  --color-good: #3ee68f;
+  --color-warn: #ffcf4a;
+  --color-bad: #ff5a7a;
+
+  --font-display: var(--ff-display), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--ff-body), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-xl: 1.25rem;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(120% 70% at 50% -10%, rgba(43, 107, 255, 0.22), transparent 60%),
+    radial-gradient(90% 60% at 100% 0%, rgba(53, 230, 255, 0.12), transparent 55%),
+    linear-gradient(rgba(80, 140, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(80, 140, 255, 0.045) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 38px 38px, 38px 38px;
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Tipografía */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+.stat {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* Vidrio + borde neón */
+.glass {
+  background:
+    linear-gradient(180deg, rgba(20, 32, 58, 0.66), rgba(10, 16, 30, 0.55));
+  border: 1px solid rgba(96, 165, 255, 0.14);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.04) inset,
+    0 18px 40px -24px rgba(0, 0, 0, 0.9);
+}
+
+.neon-edge {
+  position: relative;
+  overflow: hidden;
+}
+.neon-edge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(140deg, var(--color-neon), transparent 40%, var(--color-neon-deep));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.glow {
+  box-shadow: 0 0 0 1px rgba(53, 230, 255, 0.35), 0 0 26px -4px rgba(53, 230, 255, 0.55);
+}
+.neon-text {
+  color: var(--color-neon);
+  text-shadow: 0 0 14px rgba(53, 230, 255, 0.55);
+}
+
+/* Botón principal */
+.btn-neon {
+  background: linear-gradient(180deg, var(--color-neon), var(--color-neon-deep));
+  color: #04121e;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 0.9rem;
+  box-shadow: 0 0 24px -4px rgba(53, 230, 255, 0.6);
+  transition: transform 0.12s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.btn-neon:active {
+  transform: translateY(1px) scale(0.99);
+}
+.btn-neon:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 0 34px -2px rgba(53, 230, 255, 0.85);
+}
+
+/* Input */
+.field {
+  background: rgba(8, 14, 28, 0.7);
+  border: 1px solid rgba(96, 165, 255, 0.16);
+  border-radius: 0.85rem;
+  color: var(--color-ink);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.field::placeholder {
+  color: rgba(124, 139, 171, 0.7);
+}
+.field:focus {
+  outline: none;
+  border-color: rgba(53, 230, 255, 0.6);
+  box-shadow: 0 0 0 3px rgba(53, 230, 255, 0.14);
+}
+
+/* Entrada escalonada al cargar */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.rise {
+  opacity: 0;
+  animation: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.pulse {
+  animation: pulse-soft 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise { animation: none; opacity: 1; }
+  .pulse { animation: none; }
+}
+
+/* Safe areas (PWA standalone) */
+.safe-top { padding-top: max(1rem, env(safe-area-inset-top)); }
+.safe-bottom { padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
