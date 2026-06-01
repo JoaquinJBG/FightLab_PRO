@@ -1,24 +1,23 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
-   FightLab Pro — tema oscuro neón azul
+   FightLab Pro — tema oscuro con aurora neón azul
 --------------------------------------------------------------------------- */
 @theme {
-  --color-bg: #05070e;
-  --color-bg-soft: #0a0f1d;
-  --color-surface: #0c1426;
-  --color-ink: #e9f1fb;
-  --color-muted: #7c8bab;
-  --color-neon: #35e6ff;        /* azul neón claro */
-  --color-neon-deep: #2b6bff;   /* azul neón oscuro */
-  --color-good: #3ee68f;
-  --color-warn: #ffcf4a;
-  --color-bad: #ff5a7a;
+  --color-bg: #04060c;
+  --color-surface: #0b1322;
+  --color-ink: #eaf2fd;
+  --color-muted: #8493b3;
+  --color-neon: #45e9ff;        /* azul neón claro */
+  --color-neon-deep: #3b74ff;   /* azul neón profundo */
+  --color-good: #43e8a0;
+  --color-warn: #ffd25a;
+  --color-bad: #ff5d80;
 
-  --font-display: var(--ff-display), ui-sans-serif, system-ui, sans-serif;
-  --font-body: var(--ff-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--ff-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--ff-sans), ui-sans-serif, system-ui, sans-serif;
 
-  --radius-xl: 1.25rem;
+  --radius-xl: 1.5rem;
 }
 
 :root {
@@ -29,139 +28,138 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-html,
-body {
+html {
   height: 100%;
+  background-color: #04060c;
 }
 
 body {
+  min-height: 100%;
   font-family: var(--font-body);
   color: var(--color-ink);
-  background-color: var(--color-bg);
-  background-image:
-    radial-gradient(120% 70% at 50% -10%, rgba(43, 107, 255, 0.22), transparent 60%),
-    radial-gradient(90% 60% at 100% 0%, rgba(53, 230, 255, 0.12), transparent 55%),
-    linear-gradient(rgba(80, 140, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(80, 140, 255, 0.045) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 38px 38px, 38px 38px;
-  background-attachment: fixed;
+  background: transparent;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-/* Tipografía */
-.font-display {
-  font-family: var(--font-display);
-  letter-spacing: -0.01em;
+/* --------------------------- Fondo aurora --------------------------------- */
+.bg-fx {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  overflow: hidden;
+  background: radial-gradient(130% 100% at 50% -10%, #0c1530 0%, #060a16 45%, #04060c 100%);
 }
+.bg-fx .blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.5;
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+.blob-1 { width: 70vmin; height: 70vmin; background: #2b6bff; top: -18%; left: -12%; animation: drift1 28s ease-in-out infinite; }
+.blob-2 { width: 62vmin; height: 62vmin; background: #45e9ff; top: 6%; right: -16%; animation: drift2 32s ease-in-out infinite; }
+.blob-3 { width: 58vmin; height: 58vmin; background: #6a46ff; bottom: -20%; left: 18%; animation: drift3 36s ease-in-out infinite; }
+
+@keyframes drift1 { 0%, 100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(18vw,10vh,0) scale(1.18); } }
+@keyframes drift2 { 0%, 100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(-15vw,15vh,0) scale(1.12); } }
+@keyframes drift3 { 0%, 100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(12vw,-12vh,0) scale(1.2); } }
+
+.bg-fx .waves {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.6;
+}
+.wave-g { will-change: transform; transform-box: fill-box; }
+.wave-a { animation: waveShift 17s ease-in-out infinite alternate; }
+.wave-b { animation: waveShift 21s ease-in-out infinite alternate-reverse; }
+.wave-c { animation: waveShift 25s ease-in-out infinite alternate; }
+@keyframes waveShift { from { transform: translateX(0); } to { transform: translateX(-140px); } }
+
+.bg-fx .grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* --------------------------- Tipografía ---------------------------------- */
+.font-display { font-family: var(--font-display); letter-spacing: -0.02em; }
 .stat {
   font-family: var(--font-display);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  letter-spacing: -0.03em;
   line-height: 1;
 }
 
-/* Vidrio + borde neón */
+/* --------------------------- Superficies --------------------------------- */
 .glass {
-  background:
-    linear-gradient(180deg, rgba(20, 32, 58, 0.66), rgba(10, 16, 30, 0.55));
-  border: 1px solid rgba(96, 165, 255, 0.14);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(150, 190, 255, 0.12);
   border-radius: var(--radius-xl);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(18px) saturate(140%);
   box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 0.04) inset,
-    0 18px 40px -24px rgba(0, 0, 0, 0.9);
+    0 1px 0 0 rgba(255, 255, 255, 0.06) inset,
+    0 24px 50px -28px rgba(0, 0, 0, 0.95);
 }
 
-.neon-edge {
-  position: relative;
-  overflow: hidden;
-}
+.neon-edge { position: relative; overflow: hidden; }
 .neon-edge::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(140deg, var(--color-neon), transparent 40%, var(--color-neon-deep));
+  background: linear-gradient(140deg, var(--color-neon), transparent 45%, var(--color-neon-deep));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  opacity: 0.6;
+  opacity: 0.7;
   pointer-events: none;
 }
 
-.glow {
-  box-shadow: 0 0 0 1px rgba(53, 230, 255, 0.35), 0 0 26px -4px rgba(53, 230, 255, 0.55);
-}
-.neon-text {
-  color: var(--color-neon);
-  text-shadow: 0 0 14px rgba(53, 230, 255, 0.55);
-}
+.glow { box-shadow: 0 0 0 1px rgba(69, 233, 255, 0.4), 0 0 28px -4px rgba(69, 233, 255, 0.6); }
+.neon-text { color: var(--color-neon); text-shadow: 0 0 16px rgba(69, 233, 255, 0.6); }
 
-/* Botón principal */
+/* --------------------------- Controles ----------------------------------- */
 .btn-neon {
   background: linear-gradient(180deg, var(--color-neon), var(--color-neon-deep));
-  color: #04121e;
-  font-family: var(--font-display);
+  color: #03101c;
   font-weight: 600;
-  letter-spacing: 0.02em;
-  border-radius: 0.9rem;
-  box-shadow: 0 0 24px -4px rgba(53, 230, 255, 0.6);
+  letter-spacing: 0.01em;
+  border-radius: 1rem;
+  box-shadow: 0 0 28px -6px rgba(69, 233, 255, 0.7);
   transition: transform 0.12s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
-.btn-neon:active {
-  transform: translateY(1px) scale(0.99);
-}
-.btn-neon:hover {
-  filter: brightness(1.06);
-  box-shadow: 0 0 34px -2px rgba(53, 230, 255, 0.85);
-}
+.btn-neon:active { transform: translateY(1px) scale(0.99); }
+.btn-neon:hover { filter: brightness(1.07); box-shadow: 0 0 38px -2px rgba(69, 233, 255, 0.9); }
 
-/* Input */
 .field {
-  background: rgba(8, 14, 28, 0.7);
-  border: 1px solid rgba(96, 165, 255, 0.16);
-  border-radius: 0.85rem;
+  background: rgba(8, 14, 28, 0.55);
+  border: 1px solid rgba(150, 190, 255, 0.16);
+  border-radius: 1rem;
   color: var(--color-ink);
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
-.field::placeholder {
-  color: rgba(124, 139, 171, 0.7);
-}
+.field::placeholder { color: rgba(132, 147, 179, 0.7); }
 .field:focus {
   outline: none;
-  border-color: rgba(53, 230, 255, 0.6);
-  box-shadow: 0 0 0 3px rgba(53, 230, 255, 0.14);
+  border-color: rgba(69, 233, 255, 0.6);
+  box-shadow: 0 0 0 3px rgba(69, 233, 255, 0.14);
 }
 
-/* Entrada escalonada al cargar */
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.rise {
-  opacity: 0;
-  animation: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes pulse-soft {
-  0%, 100% { opacity: 0.55; }
-  50% { opacity: 1; }
-}
-.pulse {
-  animation: pulse-soft 2.4s ease-in-out infinite;
-}
+/* --------------------------- Animaciones --------------------------------- */
+@keyframes fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.rise { opacity: 0; animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 
 @media (prefers-reduced-motion: reduce) {
   .rise { animation: none; opacity: 1; }
-  .pulse { animation: none; }
+  .blob, .wave-g { animation: none !important; }
 }
 
 /* Safe areas (PWA standalone) */
