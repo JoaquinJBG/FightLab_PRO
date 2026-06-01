@@ -69,6 +69,20 @@ buenas prácticas básicas porque se manejan datos de salud y recomendaciones de
   Django. Next.js expone *route handlers* que proxean a la API DRF y custodian
   los tokens en cookies `httpOnly`.
 
+### Plataforma y UX: PWA mobile-first
+- **Mobile-first.** El uso principal es el **móvil** (en el gym, sobre la marcha).
+  Se diseña primero para móvil; en escritorio debe verse correcto (columna
+  centrada estilo app), sin optimización exhaustiva de layouts de escritorio.
+- **PWA instalable.** La app es una **Progressive Web App**: instalable desde el
+  navegador ("Añadir a pantalla de inicio"), con icono propio, modo *standalone*
+  a pantalla completa, **sin pasar por App Store / Play Store** (modelo tipo
+  Pokémon Showdown). Requiere `manifest` + service worker mínimo.
+- **Online, sin offline real (por ahora).** La PWA requiere conexión y consume la
+  API DRF en vivo; no se implementa caché de datos offline ni cola de
+  sincronización. (Se puede añadir más adelante si hace falta.)
+- **Patrón de navegación móvil:** barra inferior de pestañas (bottom tab bar),
+  interacciones pensadas para el pulgar.
+
 ### IA (capa transversal, módulo M4)
 - **Anthropic Claude** (texto + visión). Se integra al final como capa que
   consume los datos de M1–M3.

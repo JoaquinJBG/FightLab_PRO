@@ -12,6 +12,8 @@ Todos los demás módulos cuelgan de la identidad y el perfil definidos aquí.
 ## Decisiones tomadas (resumen)
 
 - **Frontend:** Next.js App Router como **BFF**; tokens en cookies `httpOnly`.
+- **Plataforma:** **PWA instalable, mobile-first** (online, sin offline). Bottom
+  tab bar, Tailwind CSS.
 - **Registro:** abierto (email + contraseña) **con verificación por email**.
 - **Biometría:** entrada **manual**, con el modelo **preparado para wearables**.
 - **Roles:** se modelan (Atleta/Coach/Admin) pero la UX es mono-usuario por ahora.
@@ -108,6 +110,19 @@ blacklist activada.
 
 ## 3. Frontend (Next.js App Router)
 
+### PWA y layout móvil (se establece en M1)
+M1 sienta las bases de plataforma que heredan todos los módulos:
+
+- **PWA instalable:** `manifest` (nombre, iconos, `display: standalone`,
+  `theme_color`) + service worker mínimo (p. ej. con `@serwist/next`) para que sea
+  instalable ("Añadir a pantalla de inicio") y abra a pantalla completa. **Sin**
+  estrategia de caché offline por ahora.
+- **Mobile-first:** layout base con **bottom tab bar** (Dashboard, Biometría,
+  Perfil — se ampliará con Entreno/Nutrición/Coach en M2-M4), contenedor centrado
+  tipo app, viewport y *safe areas* móviles. En escritorio se ve como columna
+  centrada, correcto pero sin layout dedicado.
+- **Tailwind CSS** para el estilado responsive mobile-first.
+
 ### Capa BFF (route handlers)
 El navegador habla con Next, no con Django.
 
@@ -196,6 +211,8 @@ Registro ─▶ user inactivo + email con token firmado (SMTP; consola en dev)
 - [ ] El refresh transparente mantiene la sesión; su fallo redirige a login.
 - [ ] El usuario completa su `UserProfile` en onboarding y lo edita después.
 - [ ] El usuario registra biometría manual y ve gráficas de evolución.
+- [ ] La app es **instalable como PWA** en móvil (icono, modo standalone) y la
+      navegación principal es una bottom tab bar mobile-first.
 - [ ] `BiometricsLog` admite `source`/`external_id`/`raw_payload` sin romper la
       entrada manual (preparado para wearables).
 - [ ] Cobertura de tests en services, selectors y el flujo de auth E2E.
