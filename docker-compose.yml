@@ -7,18 +7,30 @@ services:
       - .env
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   backend:
     build: ./backend
-    command: tail -f /dev/null
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./backend:/app
     ports:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      # Dentro de la red de compose el host de la BD es el servicio `db`,
+      # no `localhost` (que en el .env apunta al venv local).
+      POSTGRES_HOST: db
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
 volumes:
   postgres_data:
