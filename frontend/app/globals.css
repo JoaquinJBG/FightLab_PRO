@@ -42,49 +42,54 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* --------------------------- Fondo aurora --------------------------------- */
+/* ------------------- Fondo: nebulosa "Neural" (estilo Stitch) ------------- */
 .bg-fx {
   position: fixed;
   inset: 0;
   z-index: -10;
   overflow: hidden;
-  background: radial-gradient(130% 100% at 50% -10%, #0c1530 0%, #060a16 45%, #04060c 100%);
+  background: #05060b;
 }
-.bg-fx .blob {
+
+/* Cortinas de nebulosa azul → violeta → magenta que entran por los lados */
+.bg-fx .neb {
   position: absolute;
-  border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.5;
+  filter: blur(72px);
   mix-blend-mode: screen;
-  will-change: transform;
+  border-radius: 50%;
+  will-change: transform, opacity;
 }
-.blob-1 { width: 70vmin; height: 70vmin; background: #2b6bff; top: -18%; left: -12%; animation: drift1 28s ease-in-out infinite; }
-.blob-2 { width: 62vmin; height: 62vmin; background: #45e9ff; top: 6%; right: -16%; animation: drift2 32s ease-in-out infinite; }
-.blob-3 { width: 58vmin; height: 58vmin; background: #6a46ff; bottom: -20%; left: 18%; animation: drift3 36s ease-in-out infinite; }
+.neb-l1 { left: -24%; top: 16%; width: 72vw; height: 44vh; background: radial-gradient(closest-side, #3f72ff, transparent 72%); opacity: 0.6; animation: nebL1 24s ease-in-out infinite alternate; }
+.neb-l2 { left: -16%; top: 34%; width: 52vw; height: 34vh; background: radial-gradient(closest-side, #8b46ff, transparent 72%); opacity: 0.5; animation: nebL2 30s ease-in-out infinite alternate; }
+.neb-l3 { left: -8%;  top: 26%; width: 34vw; height: 24vh; background: radial-gradient(closest-side, #c24bff, transparent 70%); opacity: 0.36; animation: nebL3 26s ease-in-out infinite alternate-reverse; }
+.neb-r1 { right: -24%; top: 10%; width: 72vw; height: 44vh; background: radial-gradient(closest-side, #3f72ff, transparent 72%); opacity: 0.6; animation: nebR1 27s ease-in-out infinite alternate; }
+.neb-r2 { right: -16%; top: 36%; width: 52vw; height: 34vh; background: radial-gradient(closest-side, #7b5cff, transparent 72%); opacity: 0.5; animation: nebR2 33s ease-in-out infinite alternate; }
+.neb-r3 { right: -8%;  top: 30%; width: 34vw; height: 24vh; background: radial-gradient(closest-side, #b24dff, transparent 70%); opacity: 0.36; animation: nebR3 29s ease-in-out infinite alternate-reverse; }
 
-@keyframes drift1 { 0%, 100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(18vw,10vh,0) scale(1.18); } }
-@keyframes drift2 { 0%, 100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(-15vw,15vh,0) scale(1.12); } }
-@keyframes drift3 { 0%, 100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(12vw,-12vh,0) scale(1.2); } }
+@keyframes nebL1 { from { transform: translate3d(0,0,0) rotate(-16deg) scale(1); }     to { transform: translate3d(6vw,4vh,0) rotate(-8deg) scale(1.16); } }
+@keyframes nebL2 { from { transform: translate3d(0,0,0) rotate(-12deg) scale(1); }     to { transform: translate3d(8vw,-3vh,0) rotate(-22deg) scale(1.1); } }
+@keyframes nebL3 { from { transform: translate3d(0,0,0) scale(1); opacity: 0.28; }     to { transform: translate3d(5vw,5vh,0) scale(1.22); opacity: 0.46; } }
+@keyframes nebR1 { from { transform: translate3d(0,0,0) rotate(16deg) scale(1); }      to { transform: translate3d(-6vw,5vh,0) rotate(8deg) scale(1.16); } }
+@keyframes nebR2 { from { transform: translate3d(0,0,0) rotate(12deg) scale(1); }      to { transform: translate3d(-8vw,-3vh,0) rotate(22deg) scale(1.1); } }
+@keyframes nebR3 { from { transform: translate3d(0,0,0) scale(1); opacity: 0.28; }     to { transform: translate3d(-5vw,4vh,0) scale(1.22); opacity: 0.46; } }
 
-.bg-fx .waves {
+/* Rejilla de puntos (la "ola de partículas") */
+.bg-fx .dots {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.6;
+  background-image: radial-gradient(rgba(140, 170, 255, 0.16) 1px, transparent 1.5px);
+  background-size: 24px 24px;
+  -webkit-mask-image: radial-gradient(125% 90% at 50% 35%, #000 38%, transparent 78%);
+  mask-image: radial-gradient(125% 90% at 50% 35%, #000 38%, transparent 78%);
+  animation: dotsFloat 26s ease-in-out infinite alternate;
 }
-.wave-g { will-change: transform; transform-box: fill-box; }
-.wave-a { animation: waveShift 17s ease-in-out infinite alternate; }
-.wave-b { animation: waveShift 21s ease-in-out infinite alternate-reverse; }
-.wave-c { animation: waveShift 25s ease-in-out infinite alternate; }
-@keyframes waveShift { from { transform: translateX(0); } to { transform: translateX(-140px); } }
+@keyframes dotsFloat { from { background-position: 0 0; } to { background-position: 24px 16px; } }
 
-.bg-fx .grain {
+/* Oscurece el centro para que el contenido respire */
+.bg-fx .vignette {
   position: absolute;
   inset: 0;
-  opacity: 0.045;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background: radial-gradient(100% 72% at 50% 42%, rgba(5, 6, 11, 0.5), transparent 60%);
 }
 
 /* --------------------------- Tipografía ---------------------------------- */
@@ -159,7 +164,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .rise { animation: none; opacity: 1; }
-  .blob, .wave-g { animation: none !important; }
+  .neb, .dots { animation: none !important; }
 }
 
 /* Safe areas (PWA standalone) */
