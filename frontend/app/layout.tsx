@@ -1,13 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Roboto_Flex } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegister } from "./sw-register";
 import { BackgroundFx } from "@/components/background-fx";
 
-const sans = Plus_Jakarta_Sans({
-  variable: "--ff-sans",
+// Títulos / banners / números — clon libre de Google Sans
+const display = Plus_Jakarta_Sans({
+  variable: "--ff-display",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: ["500", "700"],
+});
+
+// Cuerpo / UI pequeña — clon libre de Roboto
+const body = Roboto_Flex({
+  variable: "--ff-body",
+  subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
@@ -34,7 +42,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${sans.variable} h-full antialiased`}>
+    <html lang="es" className={`${display.variable} ${body.variable} h-full antialiased`}>
       <body className="min-h-full">
         <BackgroundFx />
         {children}
