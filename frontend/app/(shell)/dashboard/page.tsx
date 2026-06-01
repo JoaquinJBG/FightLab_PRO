@@ -128,10 +128,30 @@ export default function DashboardPage() {
     .filter((n): n is number => n !== null);
   const weight = num(latest.weight_kg);
   const delta = spark.length >= 2 ? spark[spark.length - 1] - spark[0] : null;
+  const daysSince = Math.floor((Date.now() - new Date(latest.timestamp).getTime()) / 86_400_000);
+  const stale = daysSince >= 14;
 
   return (
     <div className="pt-3">
       {Header}
+
+      {/* Recordatorio quincenal */}
+      {stale && (
+        <Link
+          href="/biometrics/new"
+          className="glass neon-edge rise mt-4 flex items-center gap-3 p-4"
+          style={{ animationDelay: "30ms" }}
+        >
+          <span className="text-neon"><ScaleIcon className="h-5 w-5" /></span>
+          <div className="flex-1">
+            <p className="t-label text-ink">¿Apuntamos tu peso?</p>
+            <p className="t-body text-xs text-muted">
+              Hace {daysSince} días de tu última medición · recordatorio cada 2 semanas.
+            </p>
+          </div>
+          <ArrowUpRight className="h-4 w-4 text-neon" />
+        </Link>
+      )}
 
       {/* Peso (hero) */}
       <section className="glass neon-edge rise mt-5 p-5" style={{ animationDelay: "60ms" }}>
@@ -182,7 +202,7 @@ export default function DashboardPage() {
       </section>
 
       <Link href="/biometrics/new" className="btn btn-primary rise mt-5 w-full" style={{ animationDelay: "300ms" }}>
-        Registrar biometría <ArrowUpRight className="h-4 w-4" />
+        Actualizar biometría <ArrowUpRight className="h-4 w-4" />
       </Link>
     </div>
   );
