@@ -1,0 +1,52 @@
+# ---- Python / Django ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+db.sqlite3
+db.sqlite3-journal
+*.log
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+ENV/
+
+# ---- Variables de entorno / secretos ----
+.env
+.env.*
+!.env.example
+
+# ---- Node / Next.js (frontend) ----
+node_modules/
+.next/
+out/
+.turbo/
+dist/
+build/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ---- Editores / SO ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# ---- WSL / Windows Zone.Identifier ----
+*:Zone.Identifier
+
+# ---- Documentos de referencia pesados (no versionar) ----
+estrategia1.docx
+
+# ---- Cobertura / tests ----
+.coverage
+htmlcov/
+.pytest_cache/
+playwright-report/
+test-results/
