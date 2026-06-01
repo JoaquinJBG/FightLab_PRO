@@ -18,8 +18,19 @@ def test_user_create_makes_inactive_user_and_sends_email():
 
 
 @pytest.mark.django_db
-def test_user_create_rejects_duplicate_email():
-    user_create(email="a@b.com", password="pw-strong-123")
+def test_user_create_resends_for_unverified_duplicate():
+    user_create(email="a@b.com", password="pw-strong-123")  # sin verificar
+    mail.outbox.clear()
+    again = user_create(email="a@b.com", password="pw-strong-456")
+    assert again.email == "a@b.com"
+    assert again.check_password("pw-strong-456")  # actualiza la contraseña
+    assert len(mail.outbox) == 1  # reenvía el enlace
+
+
+@pytest.mark.django_db
+def test_user_create_rejects_verified_duplicate():
+    user = user_create(email="a@b.com", password="pw-strong-123")
+    email_verify(token=generate_email_verification_token(user))
     with pytest.raises(ValueError):
         user_create(email="a@b.com", password="pw-strong-456")
 

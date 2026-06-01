@@ -102,6 +102,24 @@ export function BoltIcon(p: IconProps) {
   );
 }
 
+export function InfoIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5" />
+      <path d="M12 7.6v.4" />
+    </svg>
+  );
+}
+
+export function ChevronDown(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  );
+}
+
 export function ArrowUpRight(p: IconProps) {
   return (
     <svg {...base} {...p}>
