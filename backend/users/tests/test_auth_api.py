@@ -25,8 +25,18 @@ def test_register_creates_inactive_user(client):
 
 
 @pytest.mark.django_db
-def test_register_rejects_duplicate(client):
+def test_register_resends_for_unverified_duplicate(client):
     client.post("/api/v1/auth/register", {"email": "a@b.com", "password": "pw-strong-123"}, format="json")
+    resp = client.post("/api/v1/auth/register", {"email": "a@b.com", "password": "pw-strong-456"}, format="json")
+    assert resp.status_code == 201  # reenvía el enlace, no bloquea
+
+
+@pytest.mark.django_db
+def test_register_rejects_verified_duplicate(client):
+    client.post("/api/v1/auth/register", {"email": "a@b.com", "password": "pw-strong-123"}, format="json")
+    user = User.objects.get(email="a@b.com")
+    token = generate_email_verification_token(user)
+    client.post("/api/v1/auth/verify-email", {"token": token}, format="json")
     resp = client.post("/api/v1/auth/register", {"email": "a@b.com", "password": "pw-strong-456"}, format="json")
     assert resp.status_code == 400
 

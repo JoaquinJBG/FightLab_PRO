@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
-from django.db import IntegrityError, transaction
+from django.db import transaction
 
 from .tokens import generate_email_verification_token, verify_email_verification_token
 
@@ -24,13 +24,23 @@ def _send_verification_email(user) -> None:
 
 @transaction.atomic
 def user_create(*, email: str, password: str):
-    """Create an inactive user and send the verification email."""
-    try:
-        user = User.objects.create_user(
-            email=email, password=password, is_active=False
-        )
-    except IntegrityError as exc:
-        raise ValueError("A user with this email already exists") from exc
+    """Create an inactive user and send the verification email.
+
+    Si ya existe una cuenta con ese email pero SIN verificar, no es un error:
+    se actualiza la contraseña y se reenvía el enlace de verificación (así el
+    usuario que se quedó a medias puede recuperar el acceso simplemente
+    volviendo a registrarse). Si la cuenta ya está verificada, sí es un error.
+    """
+    existing = User.objects.filter(email=email).first()
+    if existing is not None:
+        if existing.is_email_verified:
+            raise ValueError("A user with this email already exists")
+        existing.set_password(password)
+        existing.save(update_fields=["password", "updated_at"])
+        _send_verification_email(existing)
+        return existing
+
+    user = User.objects.create_user(email=email, password=password, is_active=False)
     _send_verification_email(user)
     return user
 
