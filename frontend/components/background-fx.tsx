@@ -22,6 +22,8 @@ export function BackgroundFx() {
       {/* Partículas + viñeta por encima */}
       <div className="dots" />
       <div className="vignette" />
+      {/* Capa oscura para bajar la intensidad del fondo */}
+      <div className="bg-overlay" />
     </div>
   );
 }

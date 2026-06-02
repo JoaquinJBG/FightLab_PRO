@@ -100,6 +100,11 @@ body {
   inset: 0;
   background: radial-gradient(100% 72% at 50% 42%, rgba(5, 6, 11, 0.5), transparent 60%);
 }
+.bg-fx .bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.1);
+}
 
 /* --------------------------- Tipografía ---------------------------------- */
 .font-display { font-family: var(--font-display); letter-spacing: -0.02em; }
