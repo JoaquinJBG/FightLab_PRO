@@ -120,6 +120,57 @@ export function ChevronDown(p: IconProps) {
   );
 }
 
+export function ChevronRight(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M9 6l6 6-6 6" />
+    </svg>
+  );
+}
+
+export function RunIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <circle cx="15" cy="4.5" r="1.6" />
+      <path d="M8 21l2.5-5 3-2-1-5" />
+      <path d="M6.5 10.5 11 8l3 2.5 3 1" />
+      <path d="M13.5 13.5 16 21" />
+    </svg>
+  );
+}
+
+export function GloveIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M7 11V7.5a2 2 0 0 1 4 0V11" />
+      <path d="M11 9.5a2 2 0 0 1 4 0V11" />
+      <path d="M6 11h10v3a4 4 0 0 1-4 4H9a3 3 0 0 1-3-3v-4Z" />
+      <path d="M6 13.5H4.5a1.5 1.5 0 0 1 0-3H6" />
+    </svg>
+  );
+}
+
+export function ClipboardIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <rect x="5" y="4.5" width="14" height="16" rx="2.5" />
+      <path d="M9 4.5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 4.5V6H9V4.5Z" />
+      <path d="M8.5 11h7M8.5 15h5" />
+    </svg>
+  );
+}
+
+export function TimerIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <circle cx="12" cy="13.5" r="6.5" />
+      <path d="M12 13.5V10" />
+      <path d="M9.5 3h5" />
+      <path d="M12 3v2.5" />
+    </svg>
+  );
+}
+
 export function ArrowUpRight(p: IconProps) {
   return (
     <svg {...base} {...p}>
