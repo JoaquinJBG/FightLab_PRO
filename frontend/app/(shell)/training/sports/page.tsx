@@ -8,16 +8,16 @@ import {
 } from "@/components/icons";
 
 type Icon = ComponentType<SVGProps<SVGSVGElement>>;
-type Sport = { key: string; name: string; met: number; Icon: Icon };
+type Sport = { key: string; name: string; met: number; Icon: Icon; speeds?: [string, string, string] };
 
 const SPORTS: Sport[] = [
-  { key: "run", name: "Correr", met: 9.8, Icon: RunIcon },
-  { key: "walk", name: "Caminar", met: 3.5, Icon: WalkIcon },
-  { key: "bike", name: "Ciclismo", met: 7.5, Icon: BikeIcon },
+  { key: "run", name: "Correr", met: 9.8, Icon: RunIcon, speeds: ["7–9 km/h", "9–12 km/h", "12–16 km/h"] },
+  { key: "walk", name: "Caminar", met: 3.5, Icon: WalkIcon, speeds: ["3–4.5 km/h", "4.5–6 km/h", "6–7.5 km/h"] },
+  { key: "bike", name: "Ciclismo", met: 7.5, Icon: BikeIcon, speeds: ["15–20 km/h", "20–28 km/h", "28–35 km/h"] },
   { key: "swim", name: "Natación", met: 8.0, Icon: SwimIcon },
   { key: "football", name: "Fútbol", met: 7.0, Icon: BallIcon },
   { key: "rope", name: "Saltar cuerda", met: 11.5, Icon: RopeIcon },
-  { key: "hike", name: "Senderismo", met: 6.0, Icon: WalkIcon },
+  { key: "hike", name: "Senderismo", met: 6.0, Icon: WalkIcon, speeds: ["3–4 km/h", "4–5.5 km/h", "5.5–7 km/h"] },
   { key: "elliptical", name: "Elíptica", met: 5.0, Icon: PulseIcon },
 ];
 
@@ -26,6 +26,8 @@ const INTENSITIES: [string, number][] = [
   ["Moderado", 1],
   ["Intenso", 1.2],
 ];
+// Esfuerzo percibido para deportes sin velocidad clara
+const EFFORT = ["RPE 3-4 · puedes hablar", "RPE 5-7 · respiración agitada", "RPE 8-10 · casi al límite"];
 
 const kcalOf = (met: number, factor: number, weight: number, minutes: number) =>
   Math.round((met * factor * 3.5 * weight) / 200 * minutes);
@@ -40,6 +42,9 @@ export default function SportsPage() {
     return null;
   })();
   const weight = latestWeight ?? 70;
+  const weightNote = latestWeight
+    ? `kcal estimadas según tu peso: ${weight} kg (último registro).`
+    : "kcal estimadas con 70 kg por defecto — registra tu peso en Biometría.";
 
   const [sel, setSel] = useState<Sport | null>(null);
   const [minutes, setMinutes] = useState(30);
@@ -67,6 +72,7 @@ export default function SportsPage() {
         </div>
       );
     }
+    const detail = sel.speeds ? sel.speeds[intIdx] : EFFORT[intIdx];
     return (
       <div className="pt-4">
         <button onClick={() => setSel(null)} className="t-label text-muted">← Deportes</button>
@@ -76,15 +82,14 @@ export default function SportsPage() {
           </span>
           <h1 className="t-display text-2xl text-ink">{sel.name}</h1>
         </div>
+        <p className="t-body mt-2 text-xs text-muted">{weightNote}</p>
 
-        {/* kcal estimadas */}
-        <div className="glass neon-edge mt-5 flex flex-col items-center gap-1 p-6">
+        <div className="glass neon-edge mt-4 flex flex-col items-center gap-1 p-6">
           <span className="t-eyebrow text-muted">Estimación</span>
           <p className="stat text-5xl neon-text">{kcal}</p>
           <span className="t-label text-muted">kcal · {minutes} min · {INTENSITIES[intIdx][0].toLowerCase()}</span>
         </div>
 
-        {/* duración */}
         <div className="glass mt-4 flex items-center justify-between p-4">
           <span className="t-label text-ink">Duración</span>
           <div className="flex items-center gap-3">
@@ -96,23 +101,22 @@ export default function SportsPage() {
           </div>
         </div>
 
-        {/* intensidad */}
-        <div className="glass mt-3 grid grid-cols-3 gap-1 rounded-2xl p-1">
-          {INTENSITIES.map(([label], i) => (
-            <button key={label} onClick={() => setIntIdx(i)}
-              className="rounded-xl py-2.5 text-sm font-medium transition-colors"
-              style={intIdx === i
-                ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)", color: "#03101c" }
-                : { background: "transparent", color: "var(--color-muted)" }}>
-              {label}
-            </button>
-          ))}
+        <div className="mt-3">
+          <div className="glass grid grid-cols-3 gap-1 rounded-2xl p-1">
+            {INTENSITIES.map(([label], i) => (
+              <button key={label} onClick={() => setIntIdx(i)}
+                className="rounded-xl py-2.5 text-sm font-medium transition-colors"
+                style={intIdx === i
+                  ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)", color: "#03101c" }
+                  : { background: "transparent", color: "var(--color-muted)" }}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <p className="t-body mt-2 text-center text-xs text-muted">
+            {INTENSITIES[intIdx][0]} · <span className="text-ink">{detail}</span>
+          </p>
         </div>
-
-        <p className="t-body mt-3 text-xs text-muted">
-          Sobre tu peso {latestWeight ? `(${weight} kg, último registro)` : "(70 kg por defecto — registra tu peso en Biometría)"}.
-          Con reloj conectado se usarán tus datos reales. <span className="text-muted/70">(próximamente)</span>
-        </p>
 
         <button className="btn btn-primary mt-4 w-full" onClick={() => setSaved(true)}>
           Guardar sesión
@@ -121,35 +125,37 @@ export default function SportsPage() {
     );
   }
 
-  // ---- Rejilla de deportes ----
+  // ---- Lista de deportes (una columna) ----
   return (
     <div className="pt-4">
       <Link href="/training" className="t-label text-muted">← Entreno</Link>
       <h1 className="t-display mt-2 text-2xl text-ink">Deportes</h1>
       <p className="t-body mt-1 text-muted">Elige tu actividad y calcula las kcal.</p>
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
+      <div className="glass mt-3 flex items-center gap-2 p-3">
+        <PulseIcon className="h-4 w-4 shrink-0 text-neon" />
+        <p className="t-body text-xs text-muted">{weightNote}</p>
+      </div>
+
+      <div className="mt-4 flex flex-col gap-3">
         {SPORTS.map((s, i) => (
           <button
             key={s.key}
             onClick={() => { setSel(s); setSaved(false); }}
-            className="glass rise flex items-center gap-3 p-4 text-left"
+            className="glass rise flex items-center gap-4 p-4 text-left"
             style={{ animationDelay: `${i * 40}ms` }}
           >
-            <span className="text-neon flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[rgba(69,233,255,0.07)]">
+            <span className="text-neon flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[rgba(69,233,255,0.07)]">
               <s.Icon className="h-6 w-6" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="t-label block text-ink">{s.name}</span>
-              <span className="t-body text-[11px] text-muted">~{kcalOf(s.met, 1, weight, 30)} kcal/30min</span>
+              <span className="t-title block text-lg text-ink">{s.name}</span>
+              <span className="t-body text-xs text-muted">~{kcalOf(s.met, 1, weight, 30)} kcal / 30 min</span>
             </span>
+            <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
           </button>
         ))}
       </div>
-
-      <p className="mt-4 flex items-center gap-1 text-xs text-muted">
-        <ChevronRight className="h-3 w-3" /> kcal estimadas sobre {latestWeight ? `${weight} kg` : "70 kg (por defecto)"}.
-      </p>
     </div>
   );
 }
