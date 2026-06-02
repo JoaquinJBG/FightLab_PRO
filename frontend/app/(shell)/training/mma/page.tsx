@@ -152,6 +152,9 @@ export default function MmaPage() {
         <p className="t-eyebrow text-neon">Plan sugerido</p>
         <p className="t-body mt-1.5 text-ink">{planFor(art, mode, minutes)}</p>
         <p className="t-body mt-2 text-xs text-muted">⚠️ {reminderFor(art)}</p>
+        <p className="t-body mt-3 border-t border-[rgba(150,190,255,0.1)] pt-2.5 text-[11px] text-muted">
+          Ahora se basa solo en el arte y el modo. Pronto: <span className="text-neon">personalizada por IA</span> según tu historial y tu carga.
+        </p>
       </div>
 
       {/* Registrar sesión */}
