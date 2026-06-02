@@ -7,7 +7,7 @@
   --color-bg: #04060c;
   --color-surface: #0b1322;
   --color-ink: #eaf2fd;
-  --color-muted: #8493b3;
+  --color-muted: #9fadca;
   --color-neon: #45e9ff;        /* azul neón claro */
   --color-neon-deep: #3b74ff;   /* azul neón profundo */
   --color-good: #43e8a0;
@@ -113,8 +113,8 @@ body {
 
 /* --------------------------- Superficies --------------------------------- */
 .glass {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
-  border: 1px solid rgba(150, 190, 255, 0.12);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.045));
+  border: 1px solid rgba(150, 190, 255, 0.18);
   border-radius: var(--radius-xl);
   backdrop-filter: blur(18px) saturate(140%);
   box-shadow:
