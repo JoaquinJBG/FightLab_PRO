@@ -4,8 +4,10 @@ import { useEffect, useRef, useState, type ComponentType, type SVGProps } from "
 import Link from "next/link";
 import { useBiometrics } from "@/lib/hooks";
 import {
-  RunIcon, WalkIcon, BikeIcon, SwimIcon, BallIcon, RopeIcon, PulseIcon, ChevronRight,
+  RunIcon, WalkIcon, BikeIcon, SwimIcon, BallIcon, RopeIcon, PulseIcon, ChevronRight, InfoIcon,
 } from "@/components/icons";
+
+const RPE_INFO = "RPE = Esfuerzo Percibido (escala 1-10): cómo de duro sientes el ejercicio. 1 = muy suave, 10 = máximo esfuerzo (no puedes más).";
 
 type Icon = ComponentType<SVGProps<SVGSVGElement>>;
 type Sport = { key: string; name: string; met: number; Icon: Icon; speeds?: [string, string, string] };
@@ -75,6 +77,7 @@ export default function SportsPage() {
   const [started, setStarted] = useState(false);
   const [finished, setFinished] = useState(false);
   const [intIdx, setIntIdx] = useState(1);
+  const [rpeInfo, setRpeInfo] = useState(false);
   const startRef = useRef(0);
 
   useEffect(() => {
@@ -155,7 +158,20 @@ export default function SportsPage() {
               </button>
             ))}
           </div>
-          <p className="t-body mt-2 text-center text-xs text-muted">{INTENSITIES[intIdx][0]} · <span className="text-ink">{detail}</span></p>
+          <div className="mt-2 flex items-center justify-center gap-1.5">
+            <p className="t-body text-xs text-muted">{INTENSITIES[intIdx][0]} · <span className="text-ink">{detail}</span></p>
+            {!sel.speeds && (
+              <button type="button" onClick={() => setRpeInfo((v) => !v)} aria-label="Qué es RPE"
+                className={rpeInfo ? "text-neon" : "text-muted hover:text-neon"}>
+                <InfoIcon className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          {!sel.speeds && rpeInfo && (
+            <p className="t-body mt-2 rounded-xl border border-[rgba(150,190,255,0.12)] bg-[rgba(255,255,255,0.04)] p-2.5 text-center text-xs text-[#cdd9ef]">
+              {RPE_INFO}
+            </p>
+          )}
         </div>
 
         {/* controles */}

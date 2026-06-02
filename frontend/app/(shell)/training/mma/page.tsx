@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { GloveIcon } from "@/components/icons";
+import { GloveIcon, InfoIcon } from "@/components/icons";
+
+const RPE_INFO = "RPE = Esfuerzo Percibido (escala 1-10): cómo de duro sientes el entreno. 1 = muy suave, 10 = máximo esfuerzo (no puedes más).";
 
 const ARTS = ["Boxeo", "Kickboxing", "Muay Thai", "BJJ", "Lucha", "Taekwondo"] as const;
 type Art = (typeof ARTS)[number];
@@ -53,6 +55,7 @@ export default function MmaPage() {
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
   const [listening, setListening] = useState(false);
+  const [rpeInfo, setRpeInfo] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, typing]);
@@ -82,7 +85,8 @@ export default function MmaPage() {
     <div className="flex min-h-[calc(100dvh-7rem)] flex-col pt-4">
       <Link href="/training" className="t-label text-muted">← Entreno</Link>
       <div className="mt-2 flex items-center gap-2">
-        <h1 className="t-display text-2xl text-ink">Entrenamiento MMA</h1>
+        <span className="text-neon"><GloveIcon className="h-6 w-6" /></span>
+        <h1 className="t-display text-2xl text-ink">MMA</h1>
         <span className="badge badge-neon">IA simulada</span>
       </div>
 
@@ -107,11 +111,22 @@ export default function MmaPage() {
             </button>
           ))}
         </div>
-        <p className="t-body mt-2 text-xs text-muted">
-          {mode === "Técnica"
-            ? "Trabajo técnico a baja intensidad: precisión, repetición, forma."
-            : "Acondicionamiento/sparring a alta intensidad: rounds exigentes."}
-        </p>
+        <div className="mt-2 flex items-start gap-1.5">
+          <p className="t-body text-xs text-muted">
+            {mode === "Técnica"
+              ? "Trabajo técnico a baja intensidad: precisión, repetición, forma (RPE bajo-medio)."
+              : "Acondicionamiento/sparring a alta intensidad: rounds exigentes (RPE alto)."}
+          </p>
+          <button type="button" onClick={() => setRpeInfo((v) => !v)} aria-label="Qué es RPE"
+            className={`shrink-0 ${rpeInfo ? "text-neon" : "text-muted hover:text-neon"}`}>
+            <InfoIcon className="h-3.5 w-3.5" />
+          </button>
+        </div>
+        {rpeInfo && (
+          <p className="t-body mt-2 rounded-xl border border-[rgba(150,190,255,0.12)] bg-[rgba(255,255,255,0.04)] p-2.5 text-xs text-[#cdd9ef]">
+            {RPE_INFO}
+          </p>
+        )}
       </div>
 
       {/* Chat coach IA */}
