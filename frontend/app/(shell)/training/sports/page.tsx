@@ -62,10 +62,9 @@ export default function SportsPage() {
     return null;
   })();
   const weight = latestWeight ?? 70;
-  const weightNote = latestWeight
-    ? `kcal estimadas según tu peso: ${weight} kg (último registro).`
-    : "kcal estimadas con 70 kg por defecto — registra tu peso en Biometría.";
+  const weightNote = "Kcal estimadas según tu peso.";
 
+  const [view, setView] = useState<"deporte" | "actividad">("deporte");
   const [sel, setSel] = useState<Sport | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   useEffect(() => setActivities(loadActivities()), []);
@@ -186,57 +185,69 @@ export default function SportsPage() {
       <h1 className="t-display mt-2 text-2xl text-ink">Deportes</h1>
       <p className="t-body mt-1 text-muted">Elige tu actividad, cronométrala y cuenta kcal.</p>
 
-      <div className="glass mt-3 flex items-center gap-2 p-3">
-        <PulseIcon className="h-4 w-4 shrink-0 text-neon" />
-        <p className="t-body text-xs text-muted">{weightNote}</p>
-      </div>
-
-      <div className="mt-4 flex flex-col gap-3">
-        {SPORTS.map((s, i) => (
-          <button key={s.key} onClick={() => openSport(s)} className="glass rise flex items-center gap-4 p-4 text-left" style={{ animationDelay: `${i * 35}ms` }}>
-            <span className="text-neon flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[rgba(69,233,255,0.07)]"><s.Icon className="h-6 w-6" /></span>
-            <span className="min-w-0 flex-1">
-              <span className="t-title block text-lg text-ink">{s.name}</span>
-              <span className="t-body text-xs text-muted">~{kcalOf(s.met, 1, weight, 30)} kcal / 30 min</span>
-            </span>
-            <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
+      {/* toggle Deporte | Actividad */}
+      <div className="glass mt-3 grid grid-cols-2 gap-1 rounded-2xl p-1">
+        {([["deporte", "Deporte"], ["actividad", "Actividad"]] as const).map(([k, label]) => (
+          <button key={k} onClick={() => setView(k)} className="rounded-xl py-2.5 text-sm font-medium transition-colors"
+            style={view === k ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)", color: "#03101c" } : { background: "transparent", color: "var(--color-muted)" }}>
+            {label}
           </button>
         ))}
       </div>
 
-      {/* Registro de actividad */}
-      <div className="mt-7">
-        <div className="flex items-center justify-between">
-          <p className="t-eyebrow text-muted">Tu actividad</p>
-          {activities.length > 0 && (
-            <button onClick={() => { localStorage.removeItem(KEY); setActivities([]); }} className="t-label text-muted">Borrar</button>
+      {view === "deporte" ? (
+        <>
+          <div className="glass mt-3 flex items-center gap-2 p-3">
+            <PulseIcon className="h-4 w-4 shrink-0 text-neon" />
+            <p className="t-body text-xs text-muted">{weightNote}</p>
+          </div>
+          <div className="mt-4 flex flex-col gap-3">
+            {SPORTS.map((s, i) => (
+              <button key={s.key} onClick={() => openSport(s)} className="glass rise flex items-center gap-4 p-4 text-left" style={{ animationDelay: `${i * 35}ms` }}>
+                <span className="text-neon flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[rgba(69,233,255,0.07)]"><s.Icon className="h-6 w-6" /></span>
+                <span className="min-w-0 flex-1">
+                  <span className="t-title block text-lg text-ink">{s.name}</span>
+                  <span className="t-body text-xs text-muted">~{kcalOf(s.met, 1, weight, 30)} kcal / 30 min</span>
+                </span>
+                <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
+              </button>
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="mt-4">
+          <div className="flex items-center justify-between">
+            <p className="t-eyebrow text-muted">Tu actividad</p>
+            {activities.length > 0 && (
+              <button onClick={() => { localStorage.removeItem(KEY); setActivities([]); }} className="t-label text-muted">Borrar</button>
+            )}
+          </div>
+          {activities.length === 0 ? (
+            <div className="glass mt-2 p-4">
+              <p className="t-body text-xs text-muted">Aún no has registrado ninguna actividad. Cronometra un deporte y aparecerá aquí.</p>
+            </div>
+          ) : (
+            <div className="mt-2 flex flex-col gap-2">
+              {activities.map((a) => {
+                const Icon = SPORT_BY_KEY[a.sportKey]?.Icon ?? PulseIcon;
+                return (
+                  <div key={a.id} className="glass flex items-center gap-3 p-3.5">
+                    <span className="text-neon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(69,233,255,0.07)]"><Icon className="h-5 w-5" /></span>
+                    <div className="min-w-0 flex-1">
+                      <p className="t-label text-ink">{a.sportName} <span className="text-muted">· {a.intensity}</span></p>
+                      <p className="t-body text-[11px] text-muted">{fmtDate(a.ts)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="stat text-ink">{fmtClock(a.durationSec)}</p>
+                      <p className="t-body text-[11px] text-neon">{a.kcal} kcal</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
-        {activities.length === 0 ? (
-          <div className="glass mt-2 p-4">
-            <p className="t-body text-xs text-muted">Aún no has registrado ninguna actividad. Cronometra un deporte y aparecerá aquí.</p>
-          </div>
-        ) : (
-          <div className="mt-2 flex flex-col gap-2">
-            {activities.map((a) => {
-              const Icon = SPORT_BY_KEY[a.sportKey]?.Icon ?? PulseIcon;
-              return (
-                <div key={a.id} className="glass flex items-center gap-3 p-3.5">
-                  <span className="text-neon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(69,233,255,0.07)]"><Icon className="h-5 w-5" /></span>
-                  <div className="min-w-0 flex-1">
-                    <p className="t-label text-ink">{a.sportName} <span className="text-muted">· {a.intensity}</span></p>
-                    <p className="t-body text-[11px] text-muted">{fmtDate(a.ts)}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="stat text-ink">{fmtClock(a.durationSec)}</p>
-                    <p className="t-body text-[11px] text-neon">{a.kcal} kcal</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }
