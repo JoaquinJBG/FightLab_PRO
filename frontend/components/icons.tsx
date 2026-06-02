@@ -171,6 +171,59 @@ export function TimerIcon(p: IconProps) {
   );
 }
 
+export function WalkIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <circle cx="13" cy="4.5" r="1.6" />
+      <path d="M10.5 9.5 14 8l2.5 3" />
+      <path d="M8 21l3.5-6-1.5-5" />
+      <path d="M11.5 14.5 14.5 21" />
+    </svg>
+  );
+}
+
+export function BikeIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <circle cx="6" cy="16.5" r="3.3" />
+      <circle cx="18" cy="16.5" r="3.3" />
+      <path d="M6 16.5 10 9.5h5l3 7" />
+      <path d="M9.5 9.5 8.5 6.5H11" />
+    </svg>
+  );
+}
+
+export function SwimIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <circle cx="8" cy="8" r="1.6" />
+      <path d="M10 10.5 14 8.5l3 2.5" />
+      <path d="M4 14c2-1.6 3.5 1 6 0s3.5-1.6 6 0 3.5 1 4 .5" />
+      <path d="M4 18c2-1.6 3.5 1 6 0s3.5-1.6 6 0 3.5 1 4 .5" />
+    </svg>
+  );
+}
+
+export function BallIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.6 15 9.8l-1.1 3.6h-3.8L9 9.8z" />
+      <path d="M12 3.5v4.1M4.4 9.6l3.4 2.4M19.6 9.6l-3.4 2.4M7 20l1.1-3.4M17 20l-1.1-3.4" />
+    </svg>
+  );
+}
+
+export function RopeIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <circle cx="12" cy="5.5" r="1.6" />
+      <path d="M12 7.1v5.4M9.5 12.5h5" />
+      <path d="M4 9c-1 4.5 2.5 9.5 8 9.5s9-5 8-9.5" />
+    </svg>
+  );
+}
+
 export function ArrowUpRight(p: IconProps) {
   return (
     <svg {...base} {...p}>
