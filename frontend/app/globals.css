@@ -118,8 +118,7 @@ body {
 
 /* --------------------------- Superficies --------------------------------- */
 .glass {
-  /* Panel semi-opaco propio: no depende del fondo (el overlay no lo oscurece) */
-  background: linear-gradient(180deg, rgba(32, 44, 74, 0.72), rgba(18, 27, 48, 0.66));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.045));
   border: 1px solid rgba(150, 190, 255, 0.18);
   border-radius: var(--radius-xl);
   backdrop-filter: blur(18px) saturate(140%);
