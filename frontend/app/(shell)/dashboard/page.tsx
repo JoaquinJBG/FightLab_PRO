@@ -10,6 +10,7 @@ import {
   PulseIcon,
   BoltIcon,
   ArrowUpRight,
+  ChevronRight,
 } from "@/components/icons";
 
 function Sparkline({ points }: { points: number[] }) {
@@ -192,14 +193,16 @@ export default function DashboardPage() {
         );
       })()}
 
-      {/* ACWR / readiness — llega con M2 */}
-      <section className="glass rise mt-4 flex items-center gap-3 p-4 opacity-80" style={{ animationDelay: "240ms" }}>
-        <span className="text-muted"><BoltIcon className="h-[18px] w-[18px]" /></span>
-        <div>
-          <p className="t-label text-ink">Carga &amp; readiness (ACWR)</p>
-          <p className="t-body text-xs text-muted">Disponible al activar Entrenamiento (M2).</p>
+      {/* Carga & estado (resumen → detalle en Entreno) */}
+      <Link href="/training/load" className="glass neon-edge rise mt-4 flex items-center gap-4 p-4" style={{ animationDelay: "240ms" }}>
+        <span className="text-neon"><BoltIcon className="h-5 w-5" /></span>
+        <div className="flex flex-1 items-center gap-5">
+          <div><p className="t-label text-muted">ACWR</p><p className="stat text-xl text-good">1.18</p></div>
+          <div><p className="t-label text-muted">Readiness</p><p className="stat text-xl neon-text">78</p></div>
+          <div><p className="t-label text-muted">Semana</p><p className="stat text-xl text-ink">2650<span className="text-xs text-muted"> AU</span></p></div>
         </div>
-      </section>
+        <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
+      </Link>
 
       <Link href="/biometrics/new" className="btn btn-primary rise mt-5 w-full" style={{ animationDelay: "300ms" }}>
         Actualizar biometría <ArrowUpRight className="h-4 w-4" />
