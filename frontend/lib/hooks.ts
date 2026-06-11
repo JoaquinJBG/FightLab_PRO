@@ -54,6 +54,20 @@ export function useCreateBiometrics() {
   });
 }
 
+export function useDeleteBiometrics() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/proxy/me/biometrics/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok && res.status !== 204) throw new Error(String(res.status));
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["biometrics"] }),
+  });
+}
+
 export function useUpdateProfile() {
   const qc = useQueryClient();
   return useMutation({

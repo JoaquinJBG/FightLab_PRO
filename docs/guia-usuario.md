@@ -1,6 +1,6 @@
 # FightLab Pro — Guía de usuario
 
-> Documento **vivo**: se actualiza con cada vista que se mejora. Última actualización: 2026-06-11 (tras Deportes v1).
+> Documento **vivo**: se actualiza con cada vista que se mejora. Última actualización: 2026-06-11 (tras Biometría v1).
 > Al final hay una tabla de **estado de funcionalidades** (real / simulado / pendiente) que sirve de checklist para no dejar nada a medias.
 
 FightLab Pro es una **PWA** (app web instalable) para atletas de combate y multideporte: entrena, mide tu recuperación, controla tu peso y nutrición, y (próximamente) deja que el coach IA ajuste tus planes.
@@ -54,11 +54,20 @@ Tu mañana en una pantalla, de arriba abajo:
 
 ## 3. Biometría
 
+### Registrar una medición
 **Home → Actualizar biometría** (o desde los avisos).
 
 - **Medida típica:** peso (con eso basta).
 - **Medidas avanzadas (opcional, plegable):** % grasa, FC en reposo, HRV — cada una con un **ⓘ** que explica qué es y cómo se mide.
 - La **altura no va aquí**: es un dato de perfil (se pone una vez en onboarding/perfil).
+
+### Historial y tendencia
+**Home → tarjeta de Peso** (o `/biometrics`):
+
+- **Peso de tendencia**: media suavizada de tus pesajes (estilo Happy Scale) — ignora las fluctuaciones diarias de agua/glucógeno. *Fíate de la línea, no del punto de hoy* (el ⓘ lo explica).
+- **Ritmo semanal**: cuánto sube/baja tu tendencia por semana (kg/semana).
+- **Gráfica** con rangos **1M / 3M / 6M / Todo**: puntos = pesajes, línea neón = tendencia. Muestra también la distancia de la tendencia a tu objetivo de pesaje.
+- **Historial completo** de mediciones (peso y/o recuperación) con **borrado** en dos toques (✕ → ¿Borrar?).
 
 > Consejo: registra FC en reposo y HRV unos días seguidos para activar el "Estado de hoy" del Home.
 
@@ -146,7 +155,8 @@ Readiness, ACWR (semáforo con zona óptima 0.8–1.3), carga semanal, monotoní
 | Onboarding (físico → perfil) | ✅ | — |
 | Onboarding (disciplinas/experiencia/objetivo/frecuencia) | 🟡 | Columnas de perfil en fase 2 |
 | Perfil ver/editar | ✅ | Campos nuevos de fase 2 |
-| Biometría (peso, % grasa, FC, HRV) | ✅ | Vista de tendencias (media móvil), editar/borrar entradas |
+| Biometría (peso, % grasa, FC, HRV) | ✅ | — |
+| Biometría: tendencia (media móvil) + historial + borrar | ✅ | Editar entradas y fecha retroactiva (fase 2) |
 | Home: estado de hoy (readiness por recuperación) | ✅ | Versión completa con carga de entreno (fase 3) |
 | Home: próxima acción / semana / objetivo de peso | 🟡 | Leen datos locales (calendario gym, actividades, pesaje) |
 | Deportes: tracker en vivo + RPE + AU | 🟡 | Registro al backend (ActivityLog, fase 3) |
