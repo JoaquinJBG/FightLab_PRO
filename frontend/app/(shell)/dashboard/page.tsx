@@ -192,12 +192,14 @@ export default function DashboardPage() {
       const week = JSON.parse(localStorage.getItem("flp_gym_week") ?? "null");
       const acts = JSON.parse(localStorage.getItem("flp_activities") ?? "[]");
       const mma = JSON.parse(localStorage.getItem("flp_mma") ?? "[]");
+      const gym = JSON.parse(localStorage.getItem("flp_gym_sessions") ?? "[]");
       setLocal({
         weighTarget: weigh && typeof weigh.target === "number" ? weigh.target : null,
         gymWeek: Array.isArray(week) && week.length === 7 ? week : null,
         trainedTs: [
           ...(Array.isArray(acts) ? acts.map((a: { ts: number }) => a.ts) : []),
           ...(Array.isArray(mma) ? mma.map((s: { ts: number }) => s.ts) : []),
+          ...(Array.isArray(gym) ? gym.map((s: { ts: number }) => s.ts) : []),
         ].filter((t) => typeof t === "number"),
       });
     } catch {
