@@ -1,6 +1,6 @@
 # FightLab Pro — Guía de usuario
 
-> Documento **vivo**: se actualiza con cada vista que se mejora. Última actualización: 2026-06-11 (tras Nutrición v1).
+> Documento **vivo**: se actualiza con cada vista que se mejora. Última actualización: 2026-06-11 (tras Coach + Carga v1 — **pasada v1 completa**).
 > Al final hay una tabla de **estado de funcionalidades** (real / simulado / pendiente) que sirve de checklist para no dejar nada a medias.
 
 FightLab Pro es una **PWA** (app web instalable) para atletas de combate y multideporte: entrena, mide tu recuperación, controla tu peso y nutrición, y (próximamente) deja que el coach IA ajuste tus planes.
@@ -48,7 +48,7 @@ Tu mañana en una pantalla, de arriba abajo:
 | **Peso** | Último peso con frescura ("hoy / hace X días"), gráfica de tendencia y **distancia a tu objetivo de pesaje** si lo configuraste en Nutrición. |
 | **Métricas de recuperación** | FC reposo, HRV y % grasa con **delta vs tu media** (flecha verde/ámbar). |
 | **Tu semana** | 7 puntos L–D: días con medición o entreno registrado. |
-| **Carga de entreno (ACWR)** | Se activará cuando haya sesiones reales (sin datos inventados). |
+| **Carga de entreno (ACWR)** | Tu carga semanal (AU) y tu ACWR **reales**, calculados de tus sesiones con RPE; si aún no hay sesiones, lo dice honestamente. |
 
 ---
 
@@ -79,7 +79,7 @@ Tu mañana en una pantalla, de arriba abajo:
 
 ## 4. Entreno
 
-Hub con resumen de carga arriba *(de ejemplo por ahora)* y 5 secciones:
+Hub con resumen **real** de carga arriba (semana en AU + ACWR de tus sesiones) y 5 secciones:
 
 ### 4.1 Deportes — tracker en vivo
 1. Elige actividad (correr, caminar, ciclismo, natación, fútbol, cuerda, senderismo, elíptica).
@@ -119,7 +119,12 @@ Plan semanal asignado por tu **entrenador** (gym + MMA) con ejercicios por día 
 - **Cronómetro** con vueltas.
 
 ### 4.6 Carga y estado
-Readiness, ACWR (semáforo con zona óptima 0.8–1.3), carga semanal, monotonía y tensión — cada métrica con su **ⓘ** explicativo. *(Datos de ejemplo hasta que el motor de carga real se alimente de tus sesiones.)*
+**Calculado con tus datos reales** (sesiones con RPE de Deportes, MMA y Gimnasio + tu biometría):
+- **Estado de hoy**: tu recuperación (FC reposo/HRV vs tu media), igual que en el Home.
+- **ACWR** con semáforo (zona óptima 0.8–1.3). Necesita ~1 semana de sesiones para activarse y se marca **provisional*** hasta acumular 4 semanas de historial.
+- **Carga semanal**: barras de AU por día (tus sesiones reales).
+- **Monotonía y tensión** (fórmulas de Foster) cuando hay datos suficientes.
+- Cada métrica con su **ⓘ** explicativo y estados vacíos honestos (nunca números inventados).
 
 ---
 
@@ -149,10 +154,10 @@ Además:
 
 ## 6. Coach
 
-- **Chips de contexto**: lo que el coach "ve" (ACWR, readiness, peso, días al pesaje) *(de ejemplo por ahora)*.
-- **Briefing de hoy**: el plan del día en una frase, con accesos a entrenar/nutrición.
-- **Recomendaciones**: tarjetas proactivas (carga, pesaje, recuperación) con *Aplicar* o *Descartar*.
-- **Chat**: pregúntale por el entreno, la dieta, el pesaje o la fatiga *(simulado; la IA real usará tus datos)*.
+- **Chips de contexto reales**: lo que el coach "ve" de verdad — tu ACWR, tu carga semanal (AU), tu peso, los días al pesaje y tu estado de recuperación.
+- **Briefing de hoy**: generado **por reglas con tus datos** (recuperación baja → suave; ACWR alto → frena; pesaje cerca → ojo al déficit…).
+- **Recomendaciones por reglas**: carga alta/margen, recuperación baja, pesaje, peso sin apuntar… con **Descartar** (vuelven al día siguiente) y **feedback 👍/👎** que se guarda para entrenar a la IA futura.
+- **Chat**: pregúntale "¿cómo voy?", por el entreno, tu carga o tu peso — responde **con tus números reales** *(las respuestas siguen siendo por reglas; la IA generativa llega en la fase 5)*.
 - ⚠️ El coach es orientativo, **no es consejo médico**.
 
 ---
@@ -190,13 +195,14 @@ Además:
 | Gimnasio: crear rutina con IA | 🎭 | IA real con biblioteca de ejercicios (fase 5) |
 | Mi rutina (asignada por coach) | 🎭 | Rol entrenador + backend (post-v1) |
 | Herramientas: timer de rounds (campana real, aviso configurable, config recordada) + cronómetro | ✅ | — |
-| Carga y estado (ACWR, monotonía…) | 🎭 | Motor de carga real sobre sesiones (fase 3) |
+| Carga y estado (ACWR, monotonía, tensión) con tus sesiones | 🟡 | Mismo motor en backend (fase 3) · gráfica PMC histórica |
 | Nutrición: diario + objetivos calculados + agua + borrar items | 🟡 | Persistencia en cuenta + objetivo adaptativo (fase 4) |
 | Nutrición: recientes, copiar de ayer y entrada rápida | 🟡 | Backend (fase 4) |
 | Nutrición: foto → lista editable de alimentos | 🎭 | Visión real con Claude (fase 5) · escáner de código de barras (fase 4) |
 | Nutrición: buscador de alimentos | 🟡 | Base real (Open Food Facts, fase 4) |
 | Pesaje (objetivo + countdown) | 🟡 | Aviso push del pesaje (fase 4) |
-| Coach: briefing/recomendaciones/chat | 🎭 | Motor de reglas (fase 4) + IA real (fase 5) |
+| Coach: briefing y recomendaciones **por reglas con datos reales** + feedback 👍👎 | 🟡 | Reglas en backend (fase 4) + redacción por IA (fase 5) |
+| Coach: chat | 🎭 | IA real con RAG sobre tus métricas (fase 5) |
 | Notificaciones push (recordatorios con la app cerrada) | ⏳ | Fase 4 |
 | Integración con relojes (Xiaomi Watch 2 del usuario, Garmin/Apple/Whoop) | ⏳ | Post-v1 (el modelo ya acepta fuente XIAOMI, id externo y payload crudo) |
 
