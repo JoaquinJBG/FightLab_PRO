@@ -4,46 +4,73 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { GloveIcon, InfoIcon, CoachIcon } from "@/components/icons";
 
-const RPE_INFO = "RPE = Esfuerzo Percibido (escala 1-10): cómo de duro sientes el entreno. 1 = muy suave, 10 = máximo esfuerzo (no puedes más).";
+const RPE_INFO =
+  "RPE = Esfuerzo Percibido (escala 1-10): cómo de duro sientes el entreno. 1 = muy suave, 10 = máximo esfuerzo (no puedes más).";
 
 const ARTS = ["Boxeo", "Kickboxing", "Muay Thai", "BJJ", "Lucha", "Taekwondo", "Karate", "MMA"] as const;
 type Art = (typeof ARTS)[number];
-type Mode = "Técnica" | "Intensidad";
 const GRAPPLING: Art[] = ["BJJ", "Lucha"];
 
-function planFor(art: Art, mode: Mode, minutes?: number): string {
+// Tipo de trabajo: lo que registran los cuadernos de entrenamiento de combate
+const WORK_TYPES = ["Sparring", "Drilling", "Pads", "Saco", "Técnica", "Acondicionamiento"] as const;
+type WorkType = (typeof WORK_TYPES)[number];
+
+const TYPE_HINT: Record<WorkType, string> = {
+  Sparring: "Rounds en vivo. RPE alto — controla la intensidad con tu compañero.",
+  Drilling: "Repetición de técnica con compañero, a baja intensidad. Calidad sobre cansancio.",
+  Pads: "Manoplas/paos: combinaciones a ritmo medio-alto con feedback del entrenador.",
+  Saco: "Trabajo al saco: potencia, volumen o cardio según el día.",
+  Técnica: "Sombra y forma sin oposición. RPE bajo — precisión.",
+  Acondicionamiento: "HIIT/fuerza específica de combate. RPE alto.",
+};
+
+function planFor(art: Art, type: WorkType, minutes: number): string {
   const grap = GRAPPLING.includes(art);
-  const time = minutes ? `${minutes} min` : "tu sesión";
-  if (mode === "Técnica") {
-    const body = grap
-      ? `drilling lento de una posición concreta (ej. ${art === "BJJ" ? "guardia cerrada o paso de guardia" : "entrada a derribo"}), repeticiones limpias`
-      : "sombra centrada en guardia y footwork + saco ligero buscando precisión (no potencia)";
-    return `${art} técnica en ${time}: ${body}. RPE bajo-medio; forma sobre cansancio.`;
+  switch (type) {
+    case "Sparring":
+      return `${art} · sparring ${minutes}': divide en rounds (p. ej. ${Math.max(3, Math.round(minutes / 6))}×3' con 1' de descanso), empieza al 60% y sube. Cierra con 5' suaves.`;
+    case "Drilling":
+      return `${art} · drilling ${minutes}': elige 1-2 ${grap ? "posiciones o transiciones" : "combinaciones"} y repítelas limpias por rondas, cambiando con tu compañero.`;
+    case "Pads":
+      return `${art} · pads ${minutes}': rounds de manoplas con combinaciones marcadas; busca técnica primero y ritmo después.`;
+    case "Saco":
+      return `${art} · saco ${minutes}': alterna rounds de técnica (precisión) con rounds de potencia o ritmo. Usa el timer de rounds de Herramientas.`;
+    case "Técnica":
+      return `${art} · técnica ${minutes}': sombra frente a espejo trabajando guardia, footwork y 2-3 movimientos concretos. Sin prisa.`;
+    case "Acondicionamiento":
+      return `${art} · acondicionamiento ${minutes}': intervalos específicos (cuerda, burpees, clinch, sprawls). Mantén la forma aunque llegue la fatiga.`;
   }
-  const body = grap
-    ? `rounds de ${art === "BJJ" ? "rolling" : "lucha en vivo"} a ritmo alto con descansos cortos`
-    : "rounds duros de saco/manoplas y sparring controlado a buen ritmo";
-  return `${art} intensidad en ${time}: ${body}. RPE alto; calienta bien y baja pulsaciones al final.`;
 }
 function reminderFor(art: Art): string {
   if (GRAPPLING.includes(art)) return "Uñas cortas, higiene del kimono/rashguard y cuida codos y rodillas.";
   return `Lleva ${art === "Muay Thai" || art === "Kickboxing" ? "vendas, espinilleras y bucal" : "vendas y bucal"}; protege las muñecas.`;
 }
-function coachReply(text: string, art: Art, mode: Mode): string {
+function coachReply(text: string, art: Art, type: WorkType, minutes: number): string {
   const low = text.toLowerCase();
   const mins = low.match(/(\d{1,3})\s*min/);
   if (/estir|stretch/.test(low)) return "Cierra con 5-8 min de estiramientos suaves (cadera, isquios, hombros, cuello), 20-30 s cada uno, sin rebotes.";
   if (/calent|warm|caliento/.test(low)) return "Calienta 8-10 min: movilidad, cuerda o trote suave y series progresivas de la técnica del día. No entres en frío al sparring.";
   if (/hidrat|agua|beb/.test(low)) return "Bebe a sorbos toda la sesión; en intensidad alta añade electrolitos. Llega ya hidratado.";
-  if (mins) return `${planFor(art, mode, Number(mins[1]))} ${reminderFor(art)}`;
-  if (/qué|que|plan|rutina|hoy|empez|hago/.test(low)) return `${planFor(art, mode)} ${reminderFor(art)}`;
-  return `Entendido. ${planFor(art, mode)} ${reminderFor(art)}`;
+  if (mins) return `${planFor(art, type, Number(mins[1]))} ${reminderFor(art)}`;
+  if (/qué|que|plan|rutina|hoy|empez|hago/.test(low)) return `${planFor(art, type, minutes)} ${reminderFor(art)}`;
+  return `Entendido. ${planFor(art, type, minutes)} ${reminderFor(art)}`;
 }
 
 type Msg = { role: "coach" | "user"; text: string };
 const QUICK = ["¿Qué hago hoy?", "Tengo 30 min", "Recuérdame estirar"];
 
-type Sess = { id: string; art: string; mode: string; minutes: number; rpe: number; load: number; ts: number };
+type Sess = {
+  id: string;
+  art: string;
+  type?: string;
+  mode?: string; // sesiones antiguas
+  minutes: number;
+  rpe: number;
+  load: number;
+  partner?: string | null;
+  notes?: string | null;
+  ts: number;
+};
 const KEY = "flp_mma";
 const loadSess = (): Sess[] => { try { return JSON.parse(localStorage.getItem(KEY) ?? "[]"); } catch { return []; } };
 const fmtDate = (ts: number) => {
@@ -69,25 +96,55 @@ function Stepper({ label, value, set, min, max, step = 1, suffix = "" }: {
 
 export default function MmaPage() {
   const [art, setArt] = useState<Art>("Boxeo");
-  const [mode, setMode] = useState<Mode>("Técnica");
+  const [workType, setWorkType] = useState<WorkType>("Técnica");
   const [rpeInfo, setRpeInfo] = useState(false);
 
   // sesión
   const [minutes, setMinutes] = useState(30);
   const [rpe, setRpe] = useState(6);
+  const [partner, setPartner] = useState("");
+  const [notes, setNotes] = useState("");
   const [sessions, setSessions] = useState<Sess[]>([]);
   const [savedFlash, setSavedFlash] = useState(false);
   useEffect(() => setSessions(loadSess()), []);
   const load = minutes * rpe;
 
   function saveSession() {
-    const s: Sess = { id: `${Date.now()}`, art, mode, minutes, rpe, load, ts: Date.now() };
-    const all = [s, ...loadSess()].slice(0, 100);
+    const ts = Date.now();
+    const s: Sess = {
+      id: `${ts}`,
+      art,
+      type: workType,
+      minutes,
+      rpe,
+      load,
+      partner: partner.trim() || null,
+      notes: notes.trim() || null,
+      ts,
+    };
+    const all = [s, ...loadSess()].slice(0, 200);
     localStorage.setItem(KEY, JSON.stringify(all));
     setSessions(all);
+    setPartner("");
+    setNotes("");
     setSavedFlash(true);
     setTimeout(() => setSavedFlash(false), 1800);
   }
+
+  // stats del mes (sobre el historial local)
+  const now = new Date();
+  const monthSessions = sessions.filter((s) => {
+    const d = new Date(s.ts);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+  const monthMin = monthSessions.reduce((a, s) => a + (s.minutes || 0), 0);
+  const monthAU = monthSessions.reduce((a, s) => a + (s.load || 0), 0);
+  const byArt = monthSessions.reduce<Record<string, number>>((acc, s) => {
+    acc[s.art] = (acc[s.art] ?? 0) + (s.minutes || 0);
+    return acc;
+  }, {});
+  const topArts = Object.entries(byArt).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const maxArtMin = topArts[0]?.[1] ?? 0;
 
   // chat
   const [chatOpen, setChatOpen] = useState(false);
@@ -104,12 +161,12 @@ export default function MmaPage() {
     setInput("");
     setMsgs((m) => [...m, { role: "user", text: t }]);
     setTyping(true);
-    const reply = coachReply(t, art, mode);
+    const reply = coachReply(t, art, workType, minutes);
     setTimeout(() => { setMsgs((m) => [...m, { role: "coach", text: reply }]); setTyping(false); }, 650);
   }
   function mockVoice() {
     setListening(true);
-    setTimeout(() => { setListening(false); send(`Hoy quiero hacer ${art.toLowerCase()} de ${mode.toLowerCase()}, unos ${minutes} min`); }, 1300);
+    setTimeout(() => { setListening(false); send(`Hoy quiero hacer ${workType.toLowerCase()} de ${art.toLowerCase()}, unos ${minutes} min`); }, 1300);
   }
 
   return (
@@ -120,7 +177,7 @@ export default function MmaPage() {
         <h1 className="t-display text-2xl text-ink">MMA</h1>
       </div>
 
-      {/* Arte marcial (select) */}
+      {/* Arte marcial */}
       <label className="mt-4 flex flex-col gap-1.5">
         <span className="t-label text-muted">Arte marcial</span>
         <select value={art} onChange={(e) => setArt(e.target.value as Art)} className="field px-4 py-3 text-sm">
@@ -128,20 +185,19 @@ export default function MmaPage() {
         </select>
       </label>
 
-      {/* Modo */}
+      {/* Tipo de trabajo */}
       <div className="mt-3">
-        <div className="glass grid grid-cols-2 gap-1 rounded-2xl p-1">
-          {(["Técnica", "Intensidad"] as Mode[]).map((m) => (
-            <button key={m} onClick={() => setMode(m)} className="rounded-xl py-2.5 text-sm font-medium transition-colors"
-              style={mode === m ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)", color: "#03101c" } : { background: "transparent", color: "var(--color-muted)" }}>
-              {m}
+        <span className="t-label text-muted">Tipo de trabajo</span>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {WORK_TYPES.map((t) => (
+            <button key={t} type="button" onClick={() => setWorkType(t)}
+              className={`badge ${workType === t ? "badge-neon" : ""}`}>
+              {t}
             </button>
           ))}
         </div>
         <div className="mt-2 flex items-start gap-1.5">
-          <p className="t-body text-xs text-muted">
-            {mode === "Técnica" ? "Trabajo técnico a baja intensidad (RPE bajo-medio)." : "Sparring/acondicionamiento a alta intensidad (RPE alto)."}
-          </p>
+          <p className="t-body text-xs text-muted">{TYPE_HINT[workType]}</p>
           <button type="button" onClick={() => setRpeInfo((v) => !v)} aria-label="Qué es RPE" className={`shrink-0 ${rpeInfo ? "text-neon" : "text-muted hover:text-neon"}`}><InfoIcon className="h-3.5 w-3.5" /></button>
         </div>
         {rpeInfo && <p className="t-body mt-2 rounded-xl border border-[rgba(150,190,255,0.12)] bg-[rgba(255,255,255,0.04)] p-2.5 text-xs text-[#cdd9ef]">{RPE_INFO}</p>}
@@ -150,10 +206,10 @@ export default function MmaPage() {
       {/* Plan sugerido */}
       <div className="glass neon-edge mt-4 p-4">
         <p className="t-eyebrow text-neon">Plan sugerido</p>
-        <p className="t-body mt-1.5 text-ink">{planFor(art, mode, minutes)}</p>
+        <p className="t-body mt-1.5 text-ink">{planFor(art, workType, minutes)}</p>
         <p className="t-body mt-2 text-xs text-muted">⚠️ {reminderFor(art)}</p>
         <p className="t-body mt-3 border-t border-[rgba(150,190,255,0.1)] pt-2.5 text-[11px] text-muted">
-          Ahora se basa solo en el arte y el modo. Pronto: <span className="text-neon">personalizada por IA</span> según tu historial y tu carga.
+          Ahora se basa solo en el arte y el tipo. Pronto: <span className="text-neon">personalizada por IA</span> según tu historial y tu carga.
         </p>
       </div>
 
@@ -164,6 +220,19 @@ export default function MmaPage() {
           <Stepper label="Duración" value={minutes} set={setMinutes} min={5} max={240} step={5} suffix=" min" />
           <Stepper label="RPE" value={rpe} set={setRpe} min={1} max={10} />
         </div>
+        <input
+          value={partner}
+          onChange={(e) => setPartner(e.target.value)}
+          placeholder="Compañero (opcional)"
+          className="field mt-3 w-full px-4 py-3 text-sm"
+        />
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Notas: técnicas trabajadas, sensaciones, golpes recibidos… (opcional)"
+          rows={2}
+          className="field mt-2 w-full resize-none px-4 py-3 text-sm"
+        />
         <div className="glass mt-3 flex items-center justify-between p-4">
           <span className="t-label text-muted">Carga estimada <span className="text-[10px]">(min × RPE)</span></span>
           <span className="stat text-2xl neon-text">{load} <span className="text-xs text-muted">AU</span></span>
@@ -171,22 +240,54 @@ export default function MmaPage() {
         <button className="btn btn-primary mt-3 w-full" onClick={saveSession}>{savedFlash ? "Guardado ✓" : "Guardar sesión"}</button>
       </div>
 
-      {/* Historial MMA */}
+      {/* Stats del mes */}
+      {monthSessions.length > 0 && (
+        <div className="glass mt-5 p-4">
+          <p className="t-eyebrow text-muted">Este mes</p>
+          <div className="mt-2 flex justify-between text-center">
+            <div><p className="stat text-xl text-ink">{monthSessions.length}</p><p className="t-label text-muted">sesiones</p></div>
+            <div><p className="stat text-xl text-ink">{(monthMin / 60).toFixed(1)} h</p><p className="t-label text-muted">tiempo</p></div>
+            <div><p className="stat text-xl neon-text">{monthAU}</p><p className="t-label text-muted">AU</p></div>
+          </div>
+          {topArts.length > 0 && (
+            <div className="mt-3 flex flex-col gap-1.5 border-t border-[rgba(150,190,255,0.1)] pt-3">
+              {topArts.map(([a, min]) => (
+                <div key={a} className="flex items-center gap-2">
+                  <span className="t-label w-20 shrink-0 text-muted">{a}</span>
+                  <div className="h-1.5 flex-1 rounded-full bg-[rgba(150,190,255,0.12)]">
+                    <div className="h-1.5 rounded-full" style={{ width: `${maxArtMin > 0 ? (min / maxArtMin) * 100 : 0}%`, background: "linear-gradient(90deg,#45e9ff,#3b74ff)" }} />
+                  </div>
+                  <span className="t-body w-12 shrink-0 text-right text-[11px] text-muted">{min}'</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Historial */}
       {sessions.length > 0 && (
-        <div className="mt-6">
+        <div className="mt-5">
           <div className="flex items-center justify-between">
             <p className="t-eyebrow text-muted">Tus sesiones MMA</p>
             <button onClick={() => { localStorage.removeItem(KEY); setSessions([]); }} className="t-label text-muted">Borrar</button>
           </div>
           <div className="mt-2 flex flex-col gap-2">
             {sessions.map((s) => (
-              <div key={s.id} className="glass flex items-center gap-3 p-3.5">
-                <span className="text-neon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(69,233,255,0.07)]"><GloveIcon className="h-5 w-5" /></span>
-                <div className="min-w-0 flex-1">
-                  <p className="t-label text-ink">{s.art} <span className="text-muted">· {s.mode}</span></p>
-                  <p className="t-body text-[11px] text-muted">{fmtDate(s.ts)} · {s.minutes} min · RPE {s.rpe}</p>
+              <div key={s.id} className="glass p-3.5">
+                <div className="flex items-center gap-3">
+                  <span className="text-neon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(69,233,255,0.07)]"><GloveIcon className="h-5 w-5" /></span>
+                  <div className="min-w-0 flex-1">
+                    <p className="t-label text-ink">{s.art} <span className="text-muted">· {s.type ?? s.mode ?? "Sesión"}</span></p>
+                    <p className="t-body text-[11px] text-muted">
+                      {fmtDate(s.ts)} · {s.minutes} min · RPE {s.rpe}{s.partner ? ` · con ${s.partner}` : ""}
+                    </p>
+                  </div>
+                  <span className="stat shrink-0 text-neon">{s.load ?? "—"} <span className="text-[10px] text-muted">AU</span></span>
                 </div>
-                <span className="stat text-neon">{s.load} <span className="text-[10px] text-muted">AU</span></span>
+                {s.notes && (
+                  <p className="t-body mt-2 border-t border-[rgba(150,190,255,0.08)] pt-2 text-xs text-muted">{s.notes}</p>
+                )}
               </div>
             ))}
           </div>
