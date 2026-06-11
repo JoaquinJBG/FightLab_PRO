@@ -1,6 +1,6 @@
 # FightLab Pro — Guía de usuario
 
-> Documento **vivo**: se actualiza con cada vista que se mejora. Última actualización: 2026-06-11 (tras MMA + Herramientas v1).
+> Documento **vivo**: se actualiza con cada vista que se mejora. Última actualización: 2026-06-11 (tras Gimnasio v1).
 > Al final hay una tabla de **estado de funcionalidades** (real / simulado / pendiente) que sirve de checklist para no dejar nada a medias.
 
 FightLab Pro es una **PWA** (app web instalable) para atletas de combate y multideporte: entrena, mide tu recuperación, controla tu peso y nutrición, y (próximamente) deja que el coach IA ajuste tus planes.
@@ -100,6 +100,14 @@ La **intensidad** tiene rangos orientativos: km/h en deportes de ritmo (correr 9
 - **Burbuja del coach** (abajo a la derecha): chat que te prepara la sesión, recuerda calentar/estirar/hidratarte *(simulado por ahora)*.
 
 ### 4.3 Gimnasio
+- **▶ Empezar entreno** (con el foco de hoy precargado del calendario) → **registro en sesión** estilo Hevy:
+  - Ejercicios con series **kg × reps** y check de serie hecha; "+ Serie" copia la anterior.
+  - Al completar una serie arranca el **descanso automático** (60/90/120 s, se recuerda) con chip flotante **+30s / Saltar** y aviso sonoro+vibración al acabar.
+  - Cada ejercicio muestra **"Última vez"** y tu **PR** (kg máximo histórico).
+  - **+ Añadir ejercicio** con buscador (biblioteca por grupos: pecho, espalda, pierna, hombro, brazo, core).
+  - Reloj de sesión, pantalla siempre encendida y **recuperación** si cierras la app (banner "Entreno sin terminar").
+  - Al terminar: resumen (duración, series, **kg totales levantados**) + **RPE** → carga en AU → guardar.
+- **Últimos entrenos** en la pestaña calendario. Los entrenos cuentan como "entreno hecho" en el Home.
 - **Calendario**: asigna un foco a cada día de la semana (empuje, tirón, pierna, descanso…). El Home lo lee para tu "próxima acción".
 - **Crear rutina**: wizard (nivel, días/semana, tipo de split, objetivo) → rutina propuesta → **Aplicar al calendario**. *(Generación simulada; la IA real llegará con tu historial.)*
 
@@ -170,7 +178,8 @@ Readiness, ACWR (semáforo con zona óptima 0.8–1.3), carga semanal, monotoní
 | Deportes: tracker en vivo + RPE + AU | 🟡 | Registro al backend (ActivityLog, fase 3) |
 | MMA: sesiones pro (tipo, compañero, notas) + stats del mes | 🟡 | ActivityLog en backend (fase 3) |
 | MMA: plan sugerido + chat coach | 🎭 | IA real (fase 5) |
-| Gimnasio: calendario semanal | 🟡 | Backend + registro en sesión estilo Hevy (fase 3) |
+| Gimnasio: calendario semanal | 🟡 | Backend (fase 3) |
+| Gimnasio: registro en sesión (series×reps×kg, rest timer, PRs, volumen) | 🟡 | Backend Exercise/WorkoutSession/SetLog (fase 3) · gráfica de progresión por ejercicio |
 | Gimnasio: crear rutina con IA | 🎭 | IA real con biblioteca de ejercicios (fase 5) |
 | Mi rutina (asignada por coach) | 🎭 | Rol entrenador + backend (post-v1) |
 | Herramientas: timer de rounds (campana real, aviso configurable, config recordada) + cronómetro | ✅ | — |
