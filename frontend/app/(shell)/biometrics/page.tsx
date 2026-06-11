@@ -1,9 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useBiometrics, useDeleteBiometrics } from "@/lib/hooks";
+import {
+  useBiometrics,
+  useDeleteBiometrics,
+  useProfile,
+  usePhotos,
+  useUploadPhoto,
+  useDeletePhoto,
+} from "@/lib/hooks";
 import { ScaleIcon, ArrowUpRight, InfoIcon, HeartIcon, PulseIcon } from "@/components/icons";
+
+const mediaUrl = (path: string) => `/api/media${path.replace(/^\/media/, "")}`;
 
 /* ----------------------------- helpers ----------------------------------- */
 
@@ -115,10 +124,17 @@ function TrendChart({ pts, trend }: { pts: Pt[]; trend: number[] }) {
 
 export default function BiometricsPage() {
   const { data: logs = [], isLoading } = useBiometrics();
+  const { data: profileData } = useProfile();
   const del = useDeleteBiometrics();
+  const { data: photos = [] } = usePhotos();
+  const upload = useUploadPhoto();
+  const delPhoto = useDeletePhoto();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [confirmPhotoId, setConfirmPhotoId] = useState<number | null>(null);
   const [range, setRange] = useState<number | null>(90);
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const [showInfo, setShowInfo] = useState(false);
+  const [showImcInfo, setShowImcInfo] = useState(false);
   const [weighTarget, setWeighTarget] = useState<number | null>(null);
 
   useEffect(() => {
@@ -141,6 +157,28 @@ export default function BiometricsPage() {
 
   const trendNow = trend.length > 0 ? trend[trend.length - 1] : null;
   const rate = weeklyRate(pts, trend);
+
+  // IMC calculado (peso de tendencia + altura del perfil)
+  const heightCm = profileData?.height_cm ?? null;
+  const imc =
+    trendNow !== null && heightCm && heightCm > 0
+      ? trendNow / Math.pow(heightCm / 100, 2)
+      : null;
+
+  function onPhotoSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // permite volver a elegir el mismo archivo
+    if (file) upload.mutate(file);
+  }
+
+  function onDeletePhoto(id: number) {
+    if (confirmPhotoId !== id) {
+      setConfirmPhotoId(id);
+      return;
+    }
+    setConfirmPhotoId(null);
+    delPhoto.mutate(id, { onError: () => setConfirmPhotoId(id) });
+  }
 
   function onDelete(id: number) {
     if (confirmId !== id) {
@@ -216,6 +254,23 @@ export default function BiometricsPage() {
                 )}
               </p>
             )}
+            {imc !== null && (
+              <div className="mt-2 flex items-center gap-1.5 border-t border-[rgba(150,190,255,0.1)] pt-2">
+                <p className="t-body text-xs text-muted">
+                  IMC <span className="text-ink">{imc.toFixed(1)}</span>
+                </p>
+                <button type="button" onClick={() => setShowImcInfo((v) => !v)} aria-label="Qué es el IMC"
+                  className={showImcInfo ? "text-neon" : "text-muted hover:text-neon"}>
+                  <InfoIcon className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+            {showImcInfo && (
+              <p className="t-body mt-2 rounded-xl border border-[rgba(150,190,255,0.12)] bg-[rgba(255,255,255,0.04)] p-2.5 text-xs text-[#cdd9ef]">
+                IMC = peso / altura². Referencia general: 18.5–24.9 se considera "normal". Ojo: en
+                atletas con masa muscular sobreestima la grasa — úsalo solo como orientación.
+              </p>
+            )}
           </section>
 
           {/* rango + gráfica */}
@@ -261,6 +316,8 @@ export default function BiometricsPage() {
               if (l.hrv_ms != null) extras.push(`HRV ${l.hrv_ms}`);
               const fat = num(l.body_fat_pct ?? null);
               if (fat !== null) extras.push(`${fat.toFixed(1)}% grasa`);
+              const waist = num(l.waist_cm ?? null);
+              if (waist !== null) extras.push(`cintura ${waist} cm`);
               return (
                 <div key={l.id} className="glass flex items-center gap-3 p-3.5">
                   <span className="text-neon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(69,233,255,0.07)]">
@@ -292,6 +349,52 @@ export default function BiometricsPage() {
           </div>
         </div>
       )}
+
+      {/* fotos de progreso */}
+      <div className="mt-6">
+        <div className="flex items-center justify-between">
+          <p className="t-eyebrow text-muted">Fotos de progreso</p>
+          <button onClick={() => fileRef.current?.click()} disabled={upload.isPending} className="btn btn-tonal btn-sm disabled:opacity-60">
+            {upload.isPending ? "Subiendo…" : "+ Foto"}
+          </button>
+          <input ref={fileRef} type="file" accept="image/*" onChange={onPhotoSelected} className="hidden" />
+        </div>
+        {upload.isError && (
+          <p className="mt-2 text-xs text-bad">{(upload.error as Error).message}</p>
+        )}
+        {photos.length === 0 ? (
+          <div className="glass mt-2 p-4">
+            <p className="t-body text-xs text-muted">
+              Hazte una foto de vez en cuando (misma luz, misma pose) y verás el progreso que la
+              báscula no enseña. Más adelante la IA también podrá analizarlas.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            {photos.map((p) => (
+              <div key={p.id} className="relative overflow-hidden rounded-2xl border border-[rgba(150,190,255,0.14)]">
+                <a href={mediaUrl(p.image)} target="_blank" rel="noreferrer">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={mediaUrl(p.image)} alt={`Foto de progreso ${p.taken_at}`} className="aspect-[3/4] w-full object-cover" />
+                </a>
+                <span className="absolute bottom-1 left-1 rounded-md bg-[rgba(2,4,10,0.7)] px-1.5 py-0.5 text-[9px] text-muted">
+                  {fmtDay(new Date(p.taken_at + "T12:00:00").getTime())}
+                </span>
+                <button
+                  onClick={() => onDeletePhoto(p.id)}
+                  aria-label="Borrar foto"
+                  className="absolute right-1 top-1 rounded-full px-1.5 py-0.5 text-[10px]"
+                  style={confirmPhotoId === p.id
+                    ? { background: "#ff5d80", color: "#03101c" }
+                    : { background: "rgba(2,4,10,0.7)", color: "var(--color-muted)" }}
+                >
+                  {confirmPhotoId === p.id ? "¿Borrar?" : "✕"}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

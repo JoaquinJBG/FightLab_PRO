@@ -59,7 +59,9 @@ Tu mañana en una pantalla, de arriba abajo:
 
 - **Medida típica:** peso (con eso basta).
 - **Medidas avanzadas (opcional, plegable):** % grasa, FC en reposo, HRV — cada una con un **ⓘ** que explica qué es y cómo se mide.
+- **Perímetros (opcional, plegable):** cintura, cadera, pecho, brazo, muslo y cuello con cinta métrica — progreso que la báscula no enseña.
 - La **altura no va aquí**: es un dato de perfil (se pone una vez en onboarding/perfil).
+- Al guardar te lleva a la **gráfica de tendencia** para ver tu punto nuevo.
 
 ### Historial y tendencia
 **Home → tarjeta de Peso** (o `/biometrics`):
@@ -67,7 +69,9 @@ Tu mañana en una pantalla, de arriba abajo:
 - **Peso de tendencia**: media suavizada de tus pesajes (estilo Happy Scale) — ignora las fluctuaciones diarias de agua/glucógeno. *Fíate de la línea, no del punto de hoy* (el ⓘ lo explica).
 - **Ritmo semanal**: cuánto sube/baja tu tendencia por semana (kg/semana).
 - **Gráfica** con rangos **1M / 3M / 6M / Todo**: puntos = pesajes, línea neón = tendencia. Muestra también la distancia de la tendencia a tu objetivo de pesaje.
-- **Historial completo** de mediciones (peso y/o recuperación) con **borrado** en dos toques (✕ → ¿Borrar?).
+- **IMC calculado** (peso de tendencia + altura del perfil) con su ⓘ — ojo: en atletas musculados sobreestima la grasa; es solo orientativo.
+- **Historial completo** de mediciones (peso, recuperación, cintura…) con **borrado** en dos toques (✕ → ¿Borrar?).
+- **Fotos de progreso**: sube fotos (misma luz, misma pose) y compáralas en el tiempo. Privadas (solo con tu sesión) y validadas como imagen real. Más adelante la **IA podrá analizarlas** para evaluar tu progreso.
 
 > Consejo: registra FC en reposo y HRV unos días seguidos para activar el "Estado de hoy" del Home.
 
@@ -157,6 +161,8 @@ Readiness, ACWR (semáforo con zona óptima 0.8–1.3), carga semanal, monotoní
 | Perfil ver/editar | ✅ | Campos nuevos de fase 2 |
 | Biometría (peso, % grasa, FC, HRV) | ✅ | — |
 | Biometría: tendencia (media móvil) + historial + borrar | ✅ | Editar entradas y fecha retroactiva (fase 2) |
+| Biometría: perímetros (cintura…) + IMC calculado | ✅ | Tendencia de cintura en gráfica (futuro) |
+| Fotos de progreso (privadas, con borrado) | ✅ | Análisis por IA (fase 5) · comparador lado a lado |
 | Home: estado de hoy (readiness por recuperación) | ✅ | Versión completa con carga de entreno (fase 3) |
 | Home: próxima acción / semana / objetivo de peso | 🟡 | Leen datos locales (calendario gym, actividades, pesaje) |
 | Deportes: tracker en vivo + RPE + AU | 🟡 | Registro al backend (ActivityLog, fase 3) |
@@ -173,6 +179,6 @@ Readiness, ACWR (semáforo con zona óptima 0.8–1.3), carga semanal, monotoní
 | Pesaje (objetivo + countdown) | 🟡 | Aviso push del pesaje (fase 4) |
 | Coach: briefing/recomendaciones/chat | 🎭 | Motor de reglas (fase 4) + IA real (fase 5) |
 | Notificaciones push (recordatorios con la app cerrada) | ⏳ | Fase 4 |
-| Integración con relojes (Garmin/Apple/Whoop) | ⏳ | Post-v1 (el modelo de datos ya está preparado) |
+| Integración con relojes (Xiaomi Watch 2 del usuario, Garmin/Apple/Whoop) | ⏳ | Post-v1 (el modelo ya acepta fuente XIAOMI, id externo y payload crudo) |
 
 > Hoja de ruta completa: `docs/superpowers/specs/2026-06-11-v1-plan-mejora-por-vista.md`.
