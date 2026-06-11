@@ -1,6 +1,6 @@
 # FightLab Pro — Guía de usuario
 
-> Documento **vivo**: se actualiza con cada vista que se mejora. Última actualización: 2026-06-11 (tras Gimnasio v1).
+> Documento **vivo**: se actualiza con cada vista que se mejora. Última actualización: 2026-06-11 (tras Nutrición v1).
 > Al final hay una tabla de **estado de funcionalidades** (real / simulado / pendiente) que sirve de checklist para no dejar nada a medias.
 
 FightLab Pro es una **PWA** (app web instalable) para atletas de combate y multideporte: entrena, mide tu recuperación, controla tu peso y nutrición, y (próximamente) deja que el coach IA ajuste tus planes.
@@ -128,11 +128,18 @@ Readiness, ACWR (semáforo con zona óptima 0.8–1.3), carga semanal, monotoní
 ### Diario del día
 - **Kcal de hoy vs objetivo** + barras de **proteína / carbohidratos / grasa**.
 - Los objetivos se **calculan de tu perfil** (peso, altura, edad, sexo — fórmula Mifflin-St Jeor) y del selector **Perder / Mantener / Ganar**.
-- 4 comidas (desayuno, comida, cena, snack) con su subtotal y botón **+**.
+- **Agua 💧**: cuenta tus vasos del día (~250 ml) hacia el objetivo de ~2 L.
+- 4 comidas (desayuno, comida, cena, snack) con su subtotal, botón **+** y **borrado** de cualquier alimento en dos toques (✕ → ¿Borrar?).
 
 ### Añadir comida
-- **Buscador de alimentos** → elige → gramos → kcal y macros escalados → añadir a la comida.
-- **📷 Hacer foto**: la IA estima el plato y sus kcal/macros *(simulado por ahora; será visión real con Claude)*.
+Tres formas, según la prisa:
+- **Recientes**: tus alimentos de los últimos 14 días, repetir en **un toque** (✓ al añadir).
+- **Buscar**: buscador → gramos → kcal y macros escalados → añadir.
+- **Rápido**: ¿sabes las kcal? Apúntalas directas (nombre y macros opcionales).
+
+Además:
+- **📷 Hacer foto**: la IA detecta los **alimentos del plato como lista editable** — ajusta los gramos de cada uno (recalcula kcal), quita lo que no sea, y "Añadir todo" *(IA simulada; será visión real con Claude)*.
+- **Copiar de ayer**: si ayer registraste esa comida, un toque la copia entera.
 
 ### Pesaje (corte de peso básico)
 - Configura **peso objetivo** y **días hasta el pesaje** → countdown grande + comparación objetivo / actual / por bajar (lee tu peso real de Biometría).
@@ -184,9 +191,10 @@ Readiness, ACWR (semáforo con zona óptima 0.8–1.3), carga semanal, monotoní
 | Mi rutina (asignada por coach) | 🎭 | Rol entrenador + backend (post-v1) |
 | Herramientas: timer de rounds (campana real, aviso configurable, config recordada) + cronómetro | ✅ | — |
 | Carga y estado (ACWR, monotonía…) | 🎭 | Motor de carga real sobre sesiones (fase 3) |
-| Nutrición: diario + objetivos calculados | 🟡 | Persistencia en cuenta + recientes/copiar día (fase 4) |
-| Nutrición: buscador de alimentos | 🟡 | Base real (Open Food Facts + barcode, fase 4) |
-| Nutrición: foto → kcal | 🎭 | Visión con Claude (fase 5) |
+| Nutrición: diario + objetivos calculados + agua + borrar items | 🟡 | Persistencia en cuenta + objetivo adaptativo (fase 4) |
+| Nutrición: recientes, copiar de ayer y entrada rápida | 🟡 | Backend (fase 4) |
+| Nutrición: foto → lista editable de alimentos | 🎭 | Visión real con Claude (fase 5) · escáner de código de barras (fase 4) |
+| Nutrición: buscador de alimentos | 🟡 | Base real (Open Food Facts, fase 4) |
 | Pesaje (objetivo + countdown) | 🟡 | Aviso push del pesaje (fase 4) |
 | Coach: briefing/recomendaciones/chat | 🎭 | Motor de reglas (fase 4) + IA real (fase 5) |
 | Notificaciones push (recordatorios con la app cerrada) | ⏳ | Fase 4 |

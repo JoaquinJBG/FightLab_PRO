@@ -57,21 +57,93 @@ export function targets(weightKg: number, heightCm: number, age: number, gender:
   return { kcal, p, c, f };
 }
 
-function dayKey() {
-  const d = new Date();
+function dayKeyFor(d: Date) {
   return `flp_nutri_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function dayKey() {
+  return dayKeyFor(new Date());
 }
 
 export function loadToday(): Item[] {
   if (typeof window === "undefined") return [];
-  try { return JSON.parse(localStorage.getItem(dayKey()) ?? "[]"); } catch { return []; }
+  try {
+    const v = JSON.parse(localStorage.getItem(dayKey()) ?? "[]");
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+}
+function newId(): string {
+  // ids únicos aunque se añadan varios items en el mismo milisegundo
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 export function addItem(it: Omit<Item, "id">) {
-  const all = [...loadToday(), { ...it, id: `${Date.now()}-${Math.round(performance.now())}` }];
-  localStorage.setItem(dayKey(), JSON.stringify(all));
+  try {
+    const all = [...loadToday(), { ...it, id: newId() }];
+    localStorage.setItem(dayKey(), JSON.stringify(all));
+  } catch { /* almacenamiento lleno: no es crítico */ }
 }
 export function removeItem(id: string) {
-  localStorage.setItem(dayKey(), JSON.stringify(loadToday().filter((i) => i.id !== id)));
+  try {
+    localStorage.setItem(dayKey(), JSON.stringify(loadToday().filter((i) => i.id !== id)));
+  } catch { /* noop */ }
+}
+
+/** Alimentos usados recientemente (últimos 14 días), sin repetidos. */
+export function recentFoods(limit = 12): Omit<Item, "id" | "meal">[] {
+  if (typeof window === "undefined") return [];
+  const out: Omit<Item, "id" | "meal">[] = [];
+  const seen = new Set<string>();
+  for (let i = 0; i < 14; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    let items: Item[] = [];
+    try {
+      const v = JSON.parse(localStorage.getItem(dayKeyFor(d)) ?? "[]");
+      if (Array.isArray(v)) items = v;
+    } catch {
+      continue;
+    }
+    for (const it of [...items].reverse()) {
+      if (!it || typeof it.name !== "string") continue; // entrada corrupta
+      const k = it.name.toLowerCase();
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push({ name: it.name, grams: it.grams, kcal: it.kcal, p: it.p, c: it.c, f: it.f });
+      if (out.length >= limit) return out;
+    }
+  }
+  return out;
+}
+
+/** Items que ayer fueron de esta comida (para "copiar de ayer"). */
+export function yesterdayMealItems(meal: string): Item[] {
+  if (typeof window === "undefined") return [];
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  try {
+    const v = JSON.parse(localStorage.getItem(dayKeyFor(d)) ?? "[]");
+    return Array.isArray(v) ? (v as Item[]).filter((i) => i.meal === meal) : [];
+  } catch {
+    return [];
+  }
+}
+
+/* ---- agua (vasos de ~250 ml, por día) ---- */
+function waterKey() {
+  const d = new Date();
+  return `flp_water_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+export function loadWater(): number {
+  if (typeof window === "undefined") return 0;
+  const n = Number(localStorage.getItem(waterKey()));
+  return Number.isFinite(n) && n >= 0 ? Math.min(n, 30) : 0;
+}
+export function saveWater(n: number) {
+  try {
+    localStorage.setItem(waterKey(), String(Math.max(0, Math.min(30, n))));
+  } catch { /* noop */ }
 }
 
 export function loadGoal(): Goal {
