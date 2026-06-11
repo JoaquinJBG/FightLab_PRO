@@ -143,7 +143,7 @@ Tres formas, según la prisa:
 - **Rápido**: ¿sabes las kcal? Apúntalas directas (nombre y macros opcionales).
 
 Además:
-- **📷 Hacer foto**: la IA detecta los **alimentos del plato como lista editable** — ajusta los gramos de cada uno (recalcula kcal), quita lo que no sea, y "Añadir todo" *(IA simulada; será visión real con Claude)*.
+- **📷 Hacer foto**: abre la cámara, la foto se analiza con **Claude (visión real)** y devuelve los **alimentos del plato como lista editable** — ajusta los gramos de cada uno (recalcula kcal), quita lo que no sea, y "Añadir todo". La etiqueta dice **"IA real"** o, si la clave de Anthropic no está configurada, **"IA simulada"** con un plato de ejemplo. Si la IA no reconoce comida, te lo dice (sin inventar).
 - **Copiar de ayer**: si ayer registraste esa comida, un toque la copia entera.
 
 ### Pesaje (corte de peso básico)
@@ -157,7 +157,7 @@ Además:
 - **Chips de contexto reales**: lo que el coach "ve" de verdad — tu ACWR, tu carga semanal (AU), tu peso, los días al pesaje y tu estado de recuperación.
 - **Briefing de hoy**: generado **por reglas con tus datos** (recuperación baja → suave; ACWR alto → frena; pesaje cerca → ojo al déficit…).
 - **Recomendaciones por reglas**: carga alta/margen, recuperación baja, pesaje, peso sin apuntar… con **Descartar** (vuelven al día siguiente) y **feedback 👍/👎** que se guarda para entrenar a la IA futura.
-- **Chat**: pregúntale "¿cómo voy?", por el entreno, tu carga o tu peso — responde **con tus números reales** *(las respuestas siguen siendo por reglas; la IA generativa llega en la fase 5)*.
+- **Chat**: pregúntale "¿cómo voy?", por el entreno, tu carga o tu peso. Con la clave de Anthropic configurada responde **Claude de verdad** usando tu contexto real (carga, ACWR, recuperación, peso, pesaje) — etiqueta **"IA real"**. Si la IA no está disponible, cae a respuestas **por reglas con tus números** y lo indica.
 - ⚠️ El coach es orientativo, **no es consejo médico**.
 
 ---
@@ -198,11 +198,11 @@ Además:
 | Carga y estado (ACWR, monotonía, tensión) con tus sesiones | 🟡 | Mismo motor en backend (fase 3) · gráfica PMC histórica |
 | Nutrición: diario + objetivos calculados + agua + borrar items | 🟡 | Persistencia en cuenta + objetivo adaptativo (fase 4) |
 | Nutrición: recientes, copiar de ayer y entrada rápida | 🟡 | Backend (fase 4) |
-| Nutrición: foto → lista editable de alimentos | 🎭 | Visión real con Claude (fase 5) · escáner de código de barras (fase 4) |
+| Nutrición: foto → lista editable de alimentos | ✅* | *Visión real con Claude si hay ANTHROPIC_API_KEY (si no, ejemplo simulado marcado) · escáner de código de barras (fase 4) |
 | Nutrición: buscador de alimentos | 🟡 | Base real (Open Food Facts, fase 4) |
 | Pesaje (objetivo + countdown) | 🟡 | Aviso push del pesaje (fase 4) |
 | Coach: briefing y recomendaciones **por reglas con datos reales** + feedback 👍👎 | 🟡 | Reglas en backend (fase 4) + redacción por IA (fase 5) |
-| Coach: chat | 🎭 | IA real con RAG sobre tus métricas (fase 5) |
+| Coach: chat | ✅* | *Claude real con tu contexto si hay ANTHROPIC_API_KEY (si no, por reglas y lo indica) |
 | Notificaciones push (recordatorios con la app cerrada) | ⏳ | Fase 4 |
 | Integración con relojes (Xiaomi Watch 2 del usuario, Garmin/Apple/Whoop) | ⏳ | Post-v1 (el modelo ya acepta fuente XIAOMI, id externo y payload crudo) |
 

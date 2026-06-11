@@ -272,17 +272,54 @@ export default function CoachPage() {
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
   const [listening, setListening] = useState(false);
+  const [aiMode, setAiMode] = useState<"ia" | "reglas" | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chatMsgs, typing]);
+  useEffect(() => () => abortRef.current?.abort(), []); // corta la petición al salir de la vista
 
-  function send(text: string) {
+  async function send(text: string) {
     const t = text.trim();
-    if (!t) return;
+    if (!t || typing) return;
     setInput("");
-    setChatMsgs((m) => [...m, { role: "user", text: t }]);
+    const history: Msg[] = [...chatMsgs, { role: "user", text: t }];
+    setChatMsgs(history);
     setTyping(true);
-    const reply = coachReply(t, ctx);
-    setTimeout(() => { setChatMsgs((m) => [...m, { role: "coach", text: reply }]); setTyping(false); }, 700);
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+    try {
+      const res = await fetch("/api/proxy/ai/coach/chat", {
+        method: "POST",
+        signal: ctrl.signal,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: history.slice(-10).map((m) => ({ role: m.role === "coach" ? "assistant" : "user", content: m.text })),
+          context: {
+            semana_au: ctx.metrics?.weekAU ?? 0,
+            acwr: ctx.metrics?.acwr ?? null,
+            acwr_provisional: ctx.metrics?.provisional ?? null,
+            dias_historial_carga: ctx.metrics?.historyDays ?? 0,
+            monotonia: ctx.metrics?.monotonia ?? null,
+            recuperacion: ctx.recovery ? { estado: ctx.recovery.state, seniales: ctx.recovery.chips } : null,
+            peso_kg: ctx.weight,
+            dias_desde_ultimo_peso: ctx.lastWeightDays,
+            pesaje: ctx.weighTarget != null ? { objetivo_kg: ctx.weighTarget, en_dias: ctx.weighDays } : null,
+          },
+        }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      const data = (await res.json()) as { reply?: unknown };
+      if (typeof data.reply !== "string" || !data.reply) throw new Error("sin respuesta");
+      setChatMsgs((m) => [...m, { role: "coach", text: data.reply as string }]);
+      setAiMode("ia");
+    } catch {
+      if (ctrl.signal.aborted) return; // se salió de la vista: no tocar el estado
+      // IA no configurada o caída: respuesta por reglas con los datos locales
+      setChatMsgs((m) => [...m, { role: "coach", text: coachReply(t, ctx) }]);
+      setAiMode("reglas");
+    } finally {
+      if (!ctrl.signal.aborted) setTyping(false);
+    }
   }
   function mockVoice() {
     setListening(true);
@@ -370,7 +407,7 @@ export default function CoachPage() {
       <div className="mt-5">
         <div className="flex items-center gap-2">
           <p className="t-eyebrow text-muted">Habla con tu coach</p>
-          <span className="badge badge-neon">simulado</span>
+          <span className="badge badge-neon">{aiMode === "ia" ? "IA real" : aiMode === "reglas" ? "por reglas" : "IA"}</span>
         </div>
         <div className="glass mt-2 flex h-[42dvh] flex-col overflow-hidden p-3">
           <div className="flex-1 space-y-3 overflow-y-auto pr-1">
@@ -393,7 +430,7 @@ export default function CoachPage() {
           </div>
 
           <div className="mt-2 flex flex-wrap gap-2">
-            {QUICK.map((qq) => <button key={qq} onClick={() => send(qq)} className="badge">{qq}</button>)}
+            {QUICK.map((qq) => <button key={qq} onClick={() => send(qq)} disabled={typing} className="badge disabled:opacity-50">{qq}</button>)}
           </div>
           <form className="mt-2 flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); send(input); }}>
             <button type="button" onClick={mockVoice} aria-label="Hablar"
@@ -403,6 +440,7 @@ export default function CoachPage() {
           </form>
         </div>
         <p className="t-body mt-2 text-center text-[11px] text-muted">
+          {aiMode === "reglas" ? "IA no disponible ahora: te respondo por reglas con tus datos. " : ""}
           {recovery == null && metrics?.weekAU === 0 ? "Cuantos más datos registres, mejor te aconsejo. " : ""}
           El coach es orientativo, no es consejo médico. {metrics?.acwr != null && metrics.provisional ? "*ACWR provisional hasta 4 semanas de historial." : ""}
         </p>
