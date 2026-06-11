@@ -53,8 +53,8 @@ void main(){
   float vert  = smoothstep(0.05, 0.5, uv.y) * (1.0 - smoothstep(0.6, 1.05, uv.y));
   float intensity = pow(f, 1.6) * (0.35 + 0.95 * sides) * (0.55 + 0.55 * vert);
 
-  vec3 base = vec3(0.020, 0.024, 0.043);  // negro azulado
-  vec3 outc = base + col * intensity * 1.45;
+  vec3 base = vec3(0.010, 0.013, 0.026);  // negro azulado más profundo
+  vec3 outc = base + col * intensity * 0.95;
 
   gl_FragColor = vec4(outc, 1.0);
 }

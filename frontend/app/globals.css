@@ -48,7 +48,7 @@ body {
   inset: 0;
   z-index: -10;
   overflow: hidden;
-  background: #05060b;
+  background: #02040a;
 }
 
 /* Cortinas de nebulosa azul → violeta → magenta que entran por los lados */
@@ -59,19 +59,19 @@ body {
   border-radius: 50%;
   will-change: transform, opacity;
 }
-.neb-l1 { left: -24%; top: 16%; width: 72vw; height: 44vh; background: radial-gradient(closest-side, #3f72ff, transparent 72%); opacity: 0.6; animation: nebL1 24s ease-in-out infinite alternate; }
-.neb-l2 { left: -16%; top: 34%; width: 52vw; height: 34vh; background: radial-gradient(closest-side, #8b46ff, transparent 72%); opacity: 0.5; animation: nebL2 30s ease-in-out infinite alternate; }
-.neb-l3 { left: -8%;  top: 26%; width: 34vw; height: 24vh; background: radial-gradient(closest-side, #c24bff, transparent 70%); opacity: 0.36; animation: nebL3 26s ease-in-out infinite alternate-reverse; }
-.neb-r1 { right: -24%; top: 10%; width: 72vw; height: 44vh; background: radial-gradient(closest-side, #3f72ff, transparent 72%); opacity: 0.6; animation: nebR1 27s ease-in-out infinite alternate; }
-.neb-r2 { right: -16%; top: 36%; width: 52vw; height: 34vh; background: radial-gradient(closest-side, #7b5cff, transparent 72%); opacity: 0.5; animation: nebR2 33s ease-in-out infinite alternate; }
-.neb-r3 { right: -8%;  top: 30%; width: 34vw; height: 24vh; background: radial-gradient(closest-side, #b24dff, transparent 70%); opacity: 0.36; animation: nebR3 29s ease-in-out infinite alternate-reverse; }
+.neb-l1 { left: -24%; top: 16%; width: 72vw; height: 44vh; background: radial-gradient(closest-side, #3f72ff, transparent 72%); opacity: 0.4; animation: nebL1 24s ease-in-out infinite alternate; }
+.neb-l2 { left: -16%; top: 34%; width: 52vw; height: 34vh; background: radial-gradient(closest-side, #8b46ff, transparent 72%); opacity: 0.34; animation: nebL2 30s ease-in-out infinite alternate; }
+.neb-l3 { left: -8%;  top: 26%; width: 34vw; height: 24vh; background: radial-gradient(closest-side, #c24bff, transparent 70%); opacity: 0.24; animation: nebL3 26s ease-in-out infinite alternate-reverse; }
+.neb-r1 { right: -24%; top: 10%; width: 72vw; height: 44vh; background: radial-gradient(closest-side, #3f72ff, transparent 72%); opacity: 0.4; animation: nebR1 27s ease-in-out infinite alternate; }
+.neb-r2 { right: -16%; top: 36%; width: 52vw; height: 34vh; background: radial-gradient(closest-side, #7b5cff, transparent 72%); opacity: 0.34; animation: nebR2 33s ease-in-out infinite alternate; }
+.neb-r3 { right: -8%;  top: 30%; width: 34vw; height: 24vh; background: radial-gradient(closest-side, #b24dff, transparent 70%); opacity: 0.24; animation: nebR3 29s ease-in-out infinite alternate-reverse; }
 
 @keyframes nebL1 { from { transform: translate3d(0,0,0) rotate(-16deg) scale(1); }     to { transform: translate3d(6vw,4vh,0) rotate(-8deg) scale(1.16); } }
 @keyframes nebL2 { from { transform: translate3d(0,0,0) rotate(-12deg) scale(1); }     to { transform: translate3d(8vw,-3vh,0) rotate(-22deg) scale(1.1); } }
-@keyframes nebL3 { from { transform: translate3d(0,0,0) scale(1); opacity: 0.28; }     to { transform: translate3d(5vw,5vh,0) scale(1.22); opacity: 0.46; } }
+@keyframes nebL3 { from { transform: translate3d(0,0,0) scale(1); opacity: 0.18; }     to { transform: translate3d(5vw,5vh,0) scale(1.22); opacity: 0.32; } }
 @keyframes nebR1 { from { transform: translate3d(0,0,0) rotate(16deg) scale(1); }      to { transform: translate3d(-6vw,5vh,0) rotate(8deg) scale(1.16); } }
 @keyframes nebR2 { from { transform: translate3d(0,0,0) rotate(12deg) scale(1); }      to { transform: translate3d(-8vw,-3vh,0) rotate(22deg) scale(1.1); } }
-@keyframes nebR3 { from { transform: translate3d(0,0,0) scale(1); opacity: 0.28; }     to { transform: translate3d(-5vw,4vh,0) scale(1.22); opacity: 0.46; } }
+@keyframes nebR3 { from { transform: translate3d(0,0,0) scale(1); opacity: 0.18; }     to { transform: translate3d(-5vw,4vh,0) scale(1.22); opacity: 0.32; } }
 
 /* Nebulosa fluida WebGL (encima del fallback CSS) */
 .bg-fx .neb-canvas {
@@ -86,7 +86,7 @@ body {
 .bg-fx .dots {
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(rgba(140, 170, 255, 0.16) 1px, transparent 1.5px);
+  background-image: radial-gradient(rgba(140, 170, 255, 0.11) 1px, transparent 1.5px);
   background-size: 24px 24px;
   -webkit-mask-image: radial-gradient(125% 90% at 50% 35%, #000 38%, transparent 78%);
   mask-image: radial-gradient(125% 90% at 50% 35%, #000 38%, transparent 78%);
