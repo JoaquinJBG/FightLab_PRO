@@ -5,4 +5,4 @@ django-environ
 psycopg2-binary
 djangorestframework-simplejwt
 pytest
-pytest-django
+pytest-djangoPillow

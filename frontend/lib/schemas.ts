@@ -13,10 +13,23 @@ export const biometrics = z.object({
   resting_heart_rate: z.number().nullable(),
   sleep_quality_score: z.number().nullable(),
   hrv_ms: z.number().nullable(),
+  waist_cm: z.string().nullable(),
+  hip_cm: z.string().nullable(),
+  chest_cm: z.string().nullable(),
+  arm_cm: z.string().nullable(),
+  thigh_cm: z.string().nullable(),
+  neck_cm: z.string().nullable(),
   timestamp: z.string(),
   source: z.string(),
 });
 export type Biometrics = z.infer<typeof biometrics>;
+
+export const progressPhoto = z.object({
+  id: z.number(),
+  image: z.string(), // ruta /media/... (se sirve vía /api/media)
+  taken_at: z.string(),
+});
+export type ProgressPhoto = z.infer<typeof progressPhoto>;
 
 export const profile = z.object({
   date_of_birth: z.string().nullable(),

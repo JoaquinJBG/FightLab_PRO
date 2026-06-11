@@ -42,6 +42,7 @@ class BiometricsLog(models.Model):
         GARMIN = "GARMIN", "Garmin"
         APPLE_HEALTH = "APPLE_HEALTH", "Apple Health"
         WHOOP = "WHOOP", "Whoop"
+        XIAOMI = "XIAOMI", "Xiaomi"
         OTHER = "OTHER", "Other"
 
     profile = models.ForeignKey(
@@ -55,6 +56,13 @@ class BiometricsLog(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(10)],
     )
     hrv_ms = models.PositiveSmallIntegerField(null=True, blank=True)
+    # Perímetros con cinta métrica (cm) — opcionales
+    waist_cm = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    hip_cm = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    chest_cm = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    arm_cm = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    thigh_cm = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    neck_cm = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
     timestamp = models.DateTimeField(db_index=True, default=None)
     source = models.CharField(max_length=12, choices=Source.choices, default=Source.MANUAL)
     external_id = models.CharField(max_length=128, null=True, blank=True)
@@ -78,3 +86,26 @@ class BiometricsLog(models.Model):
 
     def __str__(self):
         return f"Biometrics<{self.profile.user.email} @ {self.timestamp:%Y-%m-%d}>"
+
+
+class ProgressPhoto(models.Model):
+    """Foto de progreso corporal. Más adelante la IA (visión) podrá analizarlas."""
+
+    profile = models.ForeignKey(
+        UserProfile, on_delete=models.CASCADE, related_name="photos"
+    )
+    image = models.ImageField(upload_to="progress/%Y/%m/")
+    taken_at = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-taken_at", "-id")
+
+    def save(self, *args, **kwargs):
+        if self.taken_at is None:
+            from django.utils import timezone
+            self.taken_at = timezone.localdate()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Photo<{self.profile.user.email} @ {self.taken_at}>"
