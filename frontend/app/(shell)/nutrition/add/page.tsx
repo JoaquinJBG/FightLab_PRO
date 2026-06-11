@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -13,9 +13,30 @@ import {
   type Item,
 } from "@/lib/nutrition";
 
-/* Foto → lista de alimentos detectados (IA simulada).
+/* Foto → lista de alimentos detectados. Con la IA configurada analiza la foto real
+   (Claude visión); si no, cae a un ejemplo simulado claramente marcado.
    Cada componente lleva su base para reescalar al editar los gramos. */
 type Detected = { name: string; grams: number | null; kcal: number; p: number; c: number; f: number };
+
+/* Reescala la foto en el dispositivo (≤1280 px, JPEG) antes de subirla:
+   menos datos, más rápido y dentro de los límites de la API de visión. */
+async function toJpeg(file: File): Promise<Blob> {
+  try {
+    const bmp = await createImageBitmap(file);
+    const MAX = 1280;
+    const k = Math.min(1, MAX / Math.max(bmp.width, bmp.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bmp.width * k));
+    canvas.height = Math.max(1, Math.round(bmp.height * k));
+    canvas.getContext("2d")!.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+    bmp.close();
+    return await new Promise((res, rej) =>
+      canvas.toBlob((b) => (b ? res(b) : rej(new Error("blob"))), "image/jpeg", 0.85),
+    );
+  } catch {
+    return file; // formato que el navegador no decodifica: que lo valide el backend
+  }
+}
 
 function fromFood(name: string, grams: number): Detected {
   const food = FOODS.find((f) => f.name === name);
@@ -99,18 +120,63 @@ function AddInner() {
     router.push("/nutrition");
   }
 
-  /* ---- foto (IA simulada) ---- */
+  /* ---- foto (IA real con fallback simulado) ---- */
+  const fileRef = useRef<HTMLInputElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  useEffect(() => () => abortRef.current?.abort(), []); // corta el análisis al salir
   const [analyzing, setAnalyzing] = useState(false);
-  const [detected, setDetected] = useState<{ name: string; items: (Detected & { base: Detected })[] } | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [detected, setDetected] = useState<{
+    name: string;
+    real: boolean;
+    nota: string | null;
+    items: (Detected & { base: Detected })[];
+  } | null>(null);
 
   function takePhoto() {
+    fileRef.current?.click();
+  }
+
+  async function onPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // permite repetir la misma foto
+    if (!file) return;
     setDetected(null);
+    setPhotoError(null);
     setAnalyzing(true);
-    setTimeout(() => {
-      setAnalyzing(false);
-      const plate = PHOTO_PLATES[Math.floor(Math.random() * PHOTO_PLATES.length)];
-      setDetected({ name: plate.name, items: plate.items.map((i) => ({ ...i, base: i })) });
-    }, 1500);
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+    try {
+      const fd = new FormData();
+      fd.append("image", await toJpeg(file), "comida.jpg");
+      const res = await fetch("/api/proxy/ai/food/analyze", { method: "POST", body: fd, signal: ctrl.signal });
+      if (res.status === 503) {
+        // IA aún sin configurar: ejemplo simulado, marcado como tal
+        const plate = PHOTO_PLATES[Math.floor(Math.random() * PHOTO_PLATES.length)];
+        setDetected({ name: plate.name, real: false, nota: null, items: plate.items.map((i) => ({ ...i, base: i })) });
+        return;
+      }
+      if (!res.ok) throw new Error(String(res.status));
+      const data = (await res.json()) as {
+        plato?: string | null;
+        nota?: string | null;
+        items?: { nombre: string; gramos: number | null; kcal: number; p: number; c: number; f: number }[];
+      };
+      const items = (data.items ?? []).map((it) => {
+        const d: Detected = { name: it.nombre, grams: it.gramos, kcal: it.kcal, p: it.p, c: it.c, f: it.f };
+        return { ...d, base: d };
+      });
+      if (items.length === 0) {
+        setPhotoError(data.nota || "No he reconocido comida en la foto. Prueba con otra toma.");
+        return;
+      }
+      setDetected({ name: data.plato || "Plato detectado", real: true, nota: data.nota ?? null, items });
+    } catch {
+      if (ctrl.signal.aborted) return; // se salió de la vista: no tocar el estado
+      setPhotoError("No se pudo analizar la foto. Revisa la conexión e inténtalo de nuevo.");
+    } finally {
+      if (!ctrl.signal.aborted) setAnalyzing(false);
+    }
   }
   function setDetGrams(idx: number, g: number) {
     setDetected((d) => {
@@ -175,14 +241,17 @@ function AddInner() {
             <p className="t-body text-xs text-muted">La IA detecta los alimentos del plato. Revisa y ajusta antes de añadir.</p>
           </div>
           <button onClick={takePhoto} disabled={analyzing} className="btn btn-tonal btn-sm shrink-0">📷 Hacer foto</button>
+          <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onPhoto} />
         </div>
         {analyzing && <p className="pulse t-body mt-3 text-sm text-muted">Analizando la foto…</p>}
+        {photoError && !analyzing && <p className="t-body mt-3 text-sm text-warn">{photoError}</p>}
         {detected && !analyzing && (
           <div className="mt-3 border-t border-[rgba(150,190,255,0.1)] pt-3">
             <div className="flex items-center justify-between">
               <p className="t-title text-ink">{detected.name}</p>
-              <span className="badge badge-neon">IA simulada</span>
+              <span className="badge badge-neon">{detected.real ? "IA real" : "IA simulada"}</span>
             </div>
+            {detected.nota && <p className="t-body mt-1 text-[11px] text-muted">{detected.nota}</p>}
             <div className="mt-2 flex flex-col gap-2">
               {detected.items.map((it, i) => (
                 <div key={`${it.name}-${i}`} className="flex items-center gap-2">

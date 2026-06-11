@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     # Local
     "users",
     "profiles",
+    "ai",
 ]
 
 MIDDLEWARE = [
@@ -123,3 +124,9 @@ DEFAULT_FROM_EMAIL = "FightLab Pro <no-reply@fightlab.local>"
 # --- App config ---
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 EMAIL_VERIFICATION_TIMEOUT = env("EMAIL_VERIFICATION_TIMEOUT")
+
+# --- IA (Anthropic) ---
+# Sin clave, los endpoints de IA responden 503 y el frontend degrada a reglas/simulado
+ANTHROPIC_API_KEY = env("ANTHROPIC_API_KEY", default="")
+AI_MODEL_CHAT = env("AI_MODEL_CHAT", default="claude-sonnet-4-6")
+AI_MODEL_VISION = env("AI_MODEL_VISION", default="claude-sonnet-4-6")
