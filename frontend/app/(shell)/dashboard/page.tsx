@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useBiometrics, useMe } from "@/lib/hooks";
 import type { Biometrics } from "@/lib/schemas";
+import { computeRecovery } from "@/lib/recovery";
+import { loadMetrics, type LoadMetrics } from "@/lib/load";
 import {
   ScaleIcon,
   HeartIcon,
@@ -34,75 +36,9 @@ function daysSince(iso: string): number {
   return Math.round((now.getTime() - d.getTime()) / 86_400_000);
 }
 
-/* --------- estado de hoy: estimación con señales de recuperación ----------
-   Honesto: solo con datos reales del usuario (FC reposo / HRV vs su media).
-   Sin sesiones de entreno aún no hay ACWR: eso llega con el ActivityLog.
-   Nada de números inventados.                                               */
-
-type Recovery = {
-  state: "listo" | "normal" | "cuidado";
-  label: string;
-  phrase: string;
-  color: string;
-  chips: string[];
-};
-
-function computeRecovery(logs: Biometrics[]): Recovery | null {
-  // logs llegan ordenados del más reciente al más antiguo
-  const rhrs = logs.map((l) => l.resting_heart_rate).filter((v): v is number => v != null);
-  const hrvs = logs.map((l) => l.hrv_ms).filter((v): v is number => v != null);
-
-  const chips: string[] = [];
-  let good = 0;
-  let bad = 0;
-  let signals = 0;
-
-  if (rhrs.length >= 4) {
-    const base = mean(rhrs.slice(1, 31));
-    const delta = Math.round((rhrs[0] - base) * 10) / 10;
-    signals++;
-    chips.push(`FC reposo ${delta > 0 ? "+" : ""}${delta} vs tu media`);
-    if (delta >= 5) bad++;
-    else if (delta <= 0) good++;
-  }
-  if (hrvs.length >= 4) {
-    const base = mean(hrvs.slice(1, 31));
-    if (base > 0) {
-      const pct = Math.round(((hrvs[0] - base) / base) * 100);
-      signals++;
-      chips.push(`HRV ${pct > 0 ? "+" : ""}${pct}% vs tu media`);
-      if (pct <= -10) bad++;
-      else if (pct >= 0) good++;
-    }
-  }
-  if (signals === 0) return null;
-
-  if (bad > 0) {
-    return {
-      state: "cuidado",
-      label: "Tómatelo suave",
-      phrase: "Tus señales de recuperación están por debajo de tu media. Hoy: técnica ligera o descanso activo.",
-      color: "#ffd25a",
-      chips,
-    };
-  }
-  if (good === signals) {
-    return {
-      state: "listo",
-      label: "Listo para entrenar",
-      phrase: "Recuperación por encima de tu media. Buen día para trabajo exigente.",
-      color: "#43e8a0",
-      chips,
-    };
-  }
-  return {
-    state: "normal",
-    label: "Día normal",
-    phrase: "Señales en torno a tu media. Entrena según tu plan.",
-    color: "#45e9ff",
-    chips,
-  };
-}
+/* Estado de hoy: estimación con señales reales de recuperación (lib/recovery).
+   La carga (ACWR/AU) sale de las sesiones registradas (lib/load). Nada de
+   números inventados. */
 
 /* ----------------------------- subcomponentes ----------------------------- */
 
@@ -175,6 +111,7 @@ type LocalData = {
   weighTarget: number | null;
   gymWeek: string[] | null;
   trainedTs: number[];
+  metrics: LoadMetrics | null;
 };
 
 export default function DashboardPage() {
@@ -182,29 +119,25 @@ export default function DashboardPage() {
   const { data: logs = [], isLoading } = useBiometrics();
 
   const [greeting, setGreeting] = useState("Hola");
-  const [local, setLocal] = useState<LocalData>({ weighTarget: null, gymWeek: null, trainedTs: [] });
+  const [local, setLocal] = useState<LocalData>({ weighTarget: null, gymWeek: null, trainedTs: [], metrics: null });
 
   useEffect(() => {
     const h = new Date().getHours();
     setGreeting(h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches");
-    try {
-      const weigh = JSON.parse(localStorage.getItem("flp_weigh") ?? "null");
-      const week = JSON.parse(localStorage.getItem("flp_gym_week") ?? "null");
-      const acts = JSON.parse(localStorage.getItem("flp_activities") ?? "[]");
-      const mma = JSON.parse(localStorage.getItem("flp_mma") ?? "[]");
-      const gym = JSON.parse(localStorage.getItem("flp_gym_sessions") ?? "[]");
-      setLocal({
-        weighTarget: weigh && typeof weigh.target === "number" ? weigh.target : null,
-        gymWeek: Array.isArray(week) && week.length === 7 ? week : null,
-        trainedTs: [
-          ...(Array.isArray(acts) ? acts.map((a: { ts: number }) => a.ts) : []),
-          ...(Array.isArray(mma) ? mma.map((s: { ts: number }) => s.ts) : []),
-          ...(Array.isArray(gym) ? gym.map((s: { ts: number }) => s.ts) : []),
-        ].filter((t) => typeof t === "number"),
-      });
-    } catch {
-      /* datos locales corruptos: se ignoran */
-    }
+    // Parseo por clave: una clave corrupta no debe tumbar al resto
+    const parse = (key: string): unknown => {
+      try { return JSON.parse(localStorage.getItem(key) ?? "null"); } catch { return null; }
+    };
+    const weigh = parse("flp_weigh") as { target?: unknown } | null;
+    const week = parse("flp_gym_week");
+    const ts = (v: unknown): number[] =>
+      Array.isArray(v) ? v.map((s: { ts?: unknown }) => s?.ts).filter((t): t is number => typeof t === "number") : [];
+    setLocal({
+      weighTarget: weigh && typeof weigh.target === "number" ? weigh.target : null,
+      gymWeek: Array.isArray(week) && week.length === 7 ? (week as string[]) : null,
+      trainedTs: [...ts(parse("flp_activities")), ...ts(parse("flp_mma")), ...ts(parse("flp_gym_sessions"))],
+      metrics: loadMetrics(),
+    });
   }, []);
 
   const name = me?.email ? me.email.split("@")[0] : "atleta";
@@ -511,19 +444,39 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* ---------- Carga (honesto: se activa con sesiones) ---------- */}
+      {/* ---------- Carga real (de tus sesiones registradas) ---------- */}
       <Link
         href="/training/load"
-        className="glass rise mt-4 flex items-center gap-3 p-4 opacity-90"
+        className="glass rise mt-4 flex items-center gap-3 p-4"
         style={{ animationDelay: "350ms" }}
       >
-        <span className="text-muted"><BoltIcon className="h-5 w-5" /></span>
-        <div className="flex-1">
-          <p className="t-label text-ink">Carga de entreno (ACWR)</p>
-          <p className="t-body text-xs text-muted">Se activará cuando registres sesiones · vista previa disponible</p>
-        </div>
-        <ChevronRight className="h-5 w-5 text-muted" />
+        <span className={local.metrics && local.metrics.weekAU > 0 ? "text-neon" : "text-muted"}>
+          <BoltIcon className="h-5 w-5" />
+        </span>
+        {local.metrics && local.metrics.weekAU > 0 ? (
+          <div className="flex flex-1 items-center gap-5">
+            <div>
+              <p className="t-label text-muted">Semana</p>
+              <p className="stat text-xl text-ink">{local.metrics.weekAU}<span className="text-xs text-muted"> AU</span></p>
+            </div>
+            <div>
+              <p className="t-label text-muted">ACWR</p>
+              <p className={`stat text-xl ${local.metrics.acwr != null ? (local.metrics.acwr >= 0.8 && local.metrics.acwr <= 1.3 ? "text-good" : "text-warn") : "text-muted"}`}>
+                {local.metrics.acwr != null ? `${local.metrics.acwr.toFixed(2)}${local.metrics.provisional ? "*" : ""}` : "—"}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1">
+            <p className="t-label text-ink">Carga de entreno (ACWR)</p>
+            <p className="t-body text-xs text-muted">Se activará cuando registres sesiones con RPE</p>
+          </div>
+        )}
+        <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
       </Link>
+      {local.metrics?.acwr != null && local.metrics.provisional && (
+        <p className="t-body mt-1.5 text-[10px] text-muted">*ACWR provisional hasta acumular 4 semanas de historial</p>
+      )}
 
       {/* ---------- CTA ---------- */}
       <Link href="/biometrics/new" className="btn btn-primary rise mt-5 w-full" style={{ animationDelay: "390ms" }}>
