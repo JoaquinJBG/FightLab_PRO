@@ -373,7 +373,7 @@ export default function DashboardPage() {
 
       {/* ---------- Peso ---------- */}
       {weight !== null ? (
-        <section className="glass rise mt-4 p-5" style={{ animationDelay: "150ms" }}>
+        <Link href="/biometrics" className="glass rise mt-4 block p-5" style={{ animationDelay: "150ms" }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-muted">
               <span className="text-neon"><ScaleIcon className="h-[18px] w-[18px]" /></span>
@@ -405,7 +405,8 @@ export default function DashboardPage() {
               )}
             </p>
           )}
-        </section>
+          <p className="t-body mt-2 text-[11px] text-neon">Ver historial y tendencia →</p>
+        </Link>
       ) : (
         <section
           className="glass neon-edge rise mt-4 flex flex-col items-center gap-3 p-6 text-center"
