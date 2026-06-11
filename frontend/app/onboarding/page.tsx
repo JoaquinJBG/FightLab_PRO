@@ -4,16 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUpdateProfile } from "@/lib/hooks";
 import { GloveIcon, PulseIcon, NutritionIcon, ChevronRight } from "@/components/icons";
+import { DobInput, validateDob, dobToIso, type Dob } from "@/components/dob-input";
 
 /* ----------------------------- opciones ---------------------------------- */
-
-const MONTHS = [
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
-];
-const DAYS = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, "0"));
-const THIS_YEAR = new Date().getFullYear();
-const YEARS = Array.from({ length: THIS_YEAR - 1940 + 1 }, (_, i) => String(THIS_YEAR - i));
 
 const GENDERS: [string, string][] = [
   ["MALE", "Hombre"],
@@ -60,9 +53,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0);
 
   // Paso 1 · físico (obligatorio: la base de tus métricas)
-  const [dobD, setDobD] = useState("");
-  const [dobM, setDobM] = useState("");
-  const [dobY, setDobY] = useState("");
+  const [dob, setDob] = useState<Dob>({ day: "", month: "", year: "" });
   const [gender, setGender] = useState("");
   const [height, setHeight] = useState("");
   const [stepError, setStepError] = useState<string | null>(null);
@@ -86,22 +77,9 @@ export default function OnboardingPage() {
   function next() {
     setStepError(null);
     if (step === 1) {
-      if (!dobD || !dobM || !dobY) {
-        setStepError("Necesitamos tu fecha de nacimiento (ajusta tus zonas y objetivos).");
-        return;
-      }
-      // Valida que la combinación exista (JS convierte 31-feb en 3-mar en silencio)
-      const d = new Date(Number(dobY), Number(dobM) - 1, Number(dobD));
-      const valid =
-        d.getFullYear() === Number(dobY) &&
-        d.getMonth() + 1 === Number(dobM) &&
-        d.getDate() === Number(dobD);
-      if (!valid) {
-        setStepError("Esa fecha no existe. Comprueba el día y el mes.");
-        return;
-      }
-      if (d >= new Date()) {
-        setStepError("La fecha de nacimiento no puede ser futura.");
+      const dobErr = validateDob(dob);
+      if (dobErr) {
+        setStepError(dobErr);
         return;
       }
       const h = Number(height);
@@ -118,7 +96,7 @@ export default function OnboardingPage() {
     setStepError(null);
     try {
       await update.mutateAsync({
-        date_of_birth: `${dobY}-${dobM}-${dobD}`,
+        date_of_birth: dobToIso(dob),
         gender: gender || null,
         height_cm: Number(height),
         dominant_stance: stance || null,
@@ -213,20 +191,7 @@ export default function OnboardingPage() {
             <div className="mt-5 flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
                 <span className="t-label text-muted">Fecha de nacimiento</span>
-                <div className="grid grid-cols-3 gap-2">
-                  <select value={dobD} onChange={(e) => setDobD(e.target.value)} className={selectCls} aria-label="Día">
-                    <option value="">Día</option>
-                    {DAYS.map((d) => <option key={d} value={d}>{Number(d)}</option>)}
-                  </select>
-                  <select value={dobM} onChange={(e) => setDobM(e.target.value)} className={selectCls} aria-label="Mes">
-                    <option value="">Mes</option>
-                    {MONTHS.map((m, i) => <option key={m} value={String(i + 1).padStart(2, "0")}>{m}</option>)}
-                  </select>
-                  <select value={dobY} onChange={(e) => setDobY(e.target.value)} className={selectCls} aria-label="Año">
-                    <option value="">Año</option>
-                    {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-                  </select>
-                </div>
+                <DobInput value={dob} onChange={setDob} />
                 <p className="t-body text-[11px] text-muted">Tu edad ajusta las zonas de frecuencia cardíaca.</p>
               </div>
 
