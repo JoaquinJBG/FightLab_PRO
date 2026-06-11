@@ -1,0 +1,293 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   FightLab Pro — tema oscuro con aurora neón azul
+--------------------------------------------------------------------------- */
+@theme {
+  --color-bg: #04060c;
+  --color-surface: #0b1322;
+  --color-ink: #eaf2fd;
+  --color-muted: #9fadca;
+  --color-neon: #45e9ff;        /* azul neón claro */
+  --color-neon-deep: #3b74ff;   /* azul neón profundo */
+  --color-good: #43e8a0;
+  --color-warn: #ffd25a;
+  --color-bad: #ff5d80;
+
+  --font-display: var(--ff-display), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--ff-body), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-xl: 1.5rem;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  height: 100%;
+  background-color: #04060c;
+}
+
+body {
+  min-height: 100%;
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  background: transparent;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ------------------- Fondo: nebulosa "Neural" (estilo Stitch) ------------- */
+.bg-fx {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  overflow: hidden;
+  background: #02040a;
+}
+
+/* Cortinas de nebulosa azul → violeta → magenta que entran por los lados */
+.bg-fx .neb {
+  position: absolute;
+  filter: blur(72px);
+  mix-blend-mode: screen;
+  border-radius: 50%;
+  will-change: transform, opacity;
+}
+.neb-l1 { left: -24%; top: 16%; width: 72vw; height: 44vh; background: radial-gradient(closest-side, #3f72ff, transparent 72%); opacity: 0.4; animation: nebL1 24s ease-in-out infinite alternate; }
+.neb-l2 { left: -16%; top: 34%; width: 52vw; height: 34vh; background: radial-gradient(closest-side, #8b46ff, transparent 72%); opacity: 0.34; animation: nebL2 30s ease-in-out infinite alternate; }
+.neb-l3 { left: -8%;  top: 26%; width: 34vw; height: 24vh; background: radial-gradient(closest-side, #c24bff, transparent 70%); opacity: 0.24; animation: nebL3 26s ease-in-out infinite alternate-reverse; }
+.neb-r1 { right: -24%; top: 10%; width: 72vw; height: 44vh; background: radial-gradient(closest-side, #3f72ff, transparent 72%); opacity: 0.4; animation: nebR1 27s ease-in-out infinite alternate; }
+.neb-r2 { right: -16%; top: 36%; width: 52vw; height: 34vh; background: radial-gradient(closest-side, #7b5cff, transparent 72%); opacity: 0.34; animation: nebR2 33s ease-in-out infinite alternate; }
+.neb-r3 { right: -8%;  top: 30%; width: 34vw; height: 24vh; background: radial-gradient(closest-side, #b24dff, transparent 70%); opacity: 0.24; animation: nebR3 29s ease-in-out infinite alternate-reverse; }
+
+@keyframes nebL1 { from { transform: translate3d(0,0,0) rotate(-16deg) scale(1); }     to { transform: translate3d(6vw,4vh,0) rotate(-8deg) scale(1.16); } }
+@keyframes nebL2 { from { transform: translate3d(0,0,0) rotate(-12deg) scale(1); }     to { transform: translate3d(8vw,-3vh,0) rotate(-22deg) scale(1.1); } }
+@keyframes nebL3 { from { transform: translate3d(0,0,0) scale(1); opacity: 0.18; }     to { transform: translate3d(5vw,5vh,0) scale(1.22); opacity: 0.32; } }
+@keyframes nebR1 { from { transform: translate3d(0,0,0) rotate(16deg) scale(1); }      to { transform: translate3d(-6vw,5vh,0) rotate(8deg) scale(1.16); } }
+@keyframes nebR2 { from { transform: translate3d(0,0,0) rotate(12deg) scale(1); }      to { transform: translate3d(-8vw,-3vh,0) rotate(22deg) scale(1.1); } }
+@keyframes nebR3 { from { transform: translate3d(0,0,0) scale(1); opacity: 0.18; }     to { transform: translate3d(-5vw,4vh,0) scale(1.22); opacity: 0.32; } }
+
+/* Nebulosa fluida WebGL (encima del fallback CSS) */
+.bg-fx .neb-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Rejilla de puntos (la "ola de partículas") */
+.bg-fx .dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(140, 170, 255, 0.11) 1px, transparent 1.5px);
+  background-size: 24px 24px;
+  -webkit-mask-image: radial-gradient(125% 90% at 50% 35%, #000 38%, transparent 78%);
+  mask-image: radial-gradient(125% 90% at 50% 35%, #000 38%, transparent 78%);
+  animation: dotsFloat 26s ease-in-out infinite alternate;
+}
+@keyframes dotsFloat { from { background-position: 0 0; } to { background-position: 24px 16px; } }
+
+/* Oscurece el centro para que el contenido respire */
+.bg-fx .vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(100% 72% at 50% 42%, rgba(5, 6, 11, 0.5), transparent 60%);
+}
+
+/* --------------------------- Tipografía ---------------------------------- */
+.font-display { font-family: var(--font-display); letter-spacing: -0.02em; }
+.stat {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+/* --------------------------- Superficies --------------------------------- */
+.glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.045));
+  border: 1px solid rgba(150, 190, 255, 0.18);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.06) inset,
+    0 24px 50px -28px rgba(0, 0, 0, 0.95);
+}
+
+.neon-edge { position: relative; overflow: hidden; }
+.neon-edge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(140deg, var(--color-neon), transparent 45%, var(--color-neon-deep));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.glow { box-shadow: 0 0 0 1px rgba(69, 233, 255, 0.4), 0 0 28px -4px rgba(69, 233, 255, 0.6); }
+.neon-text { color: var(--color-neon); text-shadow: 0 0 16px rgba(69, 233, 255, 0.6); }
+
+/* --------------------------- Controles ----------------------------------- */
+.btn-neon {
+  background: linear-gradient(180deg, var(--color-neon), var(--color-neon-deep));
+  color: #03101c;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-radius: 1rem;
+  box-shadow: 0 0 28px -6px rgba(69, 233, 255, 0.7);
+  transition: transform 0.12s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.btn-neon:active { transform: translateY(1px) scale(0.99); }
+.btn-neon:hover { filter: brightness(1.07); box-shadow: 0 0 38px -2px rgba(69, 233, 255, 0.9); }
+
+.field {
+  background: rgba(8, 14, 28, 0.55);
+  border: 1px solid rgba(150, 190, 255, 0.16);
+  border-radius: 1rem;
+  color: var(--color-ink);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.field::placeholder { color: rgba(132, 147, 179, 0.7); }
+.field:focus {
+  outline: none;
+  border-color: rgba(69, 233, 255, 0.6);
+  box-shadow: 0 0 0 3px rgba(69, 233, 255, 0.14);
+}
+
+/* Selects: flecha propia + lista oscura */
+select.field {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238493b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  background-size: 1rem;
+  padding-right: 2.3rem;
+}
+select.field option {
+  background-color: #0b1322;
+  color: #eaf2fd;
+}
+
+/* --------------------------- Escala tipográfica -------------------------- */
+.t-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  font-size: clamp(2.1rem, 8vw, 3rem);
+}
+.t-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  font-size: 1.25rem;
+}
+.t-label {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
+}
+.t-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+.t-eyebrow {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* --------------------------- Botones (Material 3) ------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;          /* pill / cápsula */
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 0.9rem 1.6rem;          /* padding amplio */
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease,
+    border-color 0.2s ease, filter 0.2s ease, color 0.2s ease;
+}
+.btn:active { transform: translateY(1px) scale(0.99); }
+.btn-sm { padding: 0.55rem 1.1rem; font-size: 0.85rem; }
+.btn-block { width: 100%; }
+
+.btn-primary {
+  background: linear-gradient(180deg, var(--color-neon), var(--color-neon-deep));
+  color: #03101c;
+  box-shadow: 0 0 28px -6px rgba(69, 233, 255, 0.6);
+}
+.btn-primary:hover { filter: brightness(1.07); box-shadow: 0 0 38px -2px rgba(69, 233, 255, 0.9); }
+
+.btn-tonal {
+  background: rgba(69, 233, 255, 0.12);
+  color: var(--color-neon);
+  border-color: rgba(69, 233, 255, 0.18);
+}
+.btn-tonal:hover { background: rgba(69, 233, 255, 0.2); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-ink);
+  border-color: rgba(150, 190, 255, 0.28);
+}
+.btn-outline:hover { border-color: rgba(69, 233, 255, 0.6); color: var(--color-neon); }
+
+/* --------------------------- Badges -------------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.7rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(150, 190, 255, 0.18);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-muted);
+}
+.badge-neon { color: var(--color-neon); border-color: rgba(69, 233, 255, 0.3); background: rgba(69, 233, 255, 0.08); }
+.badge-good { color: var(--color-good); border-color: rgba(67, 232, 160, 0.3); background: rgba(67, 232, 160, 0.08); }
+
+/* --------------------------- Animaciones --------------------------------- */
+@keyframes fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.rise { opacity: 0; animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rise { animation: none; opacity: 1; }
+  .neb, .dots { animation: none !important; }
+}
+
+/* Safe areas (PWA standalone) */
+.safe-top { padding-top: max(1rem, env(safe-area-inset-top)); }
+.safe-bottom { padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
