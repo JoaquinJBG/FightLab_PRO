@@ -1,6 +1,6 @@
 # FightLab Pro — Guía de usuario
 
-> Documento **vivo**: se actualiza con cada vista que se mejora. Última actualización: 2026-06-11 (tras Biometría v1).
+> Documento **vivo**: se actualiza con cada vista que se mejora. Última actualización: 2026-06-11 (tras MMA + Herramientas v1).
 > Al final hay una tabla de **estado de funcionalidades** (real / simulado / pendiente) que sirve de checklist para no dejar nada a medias.
 
 FightLab Pro es una **PWA** (app web instalable) para atletas de combate y multideporte: entrena, mide tu recuperación, controla tu peso y nutrición, y (próximamente) deja que el coach IA ajuste tus planes.
@@ -92,9 +92,11 @@ Hub con resumen de carga arriba *(de ejemplo por ahora)* y 5 secciones:
 La **intensidad** tiene rangos orientativos: km/h en deportes de ritmo (correr 9–12 km/h = moderado…) o RPE en el resto.
 
 ### 4.2 MMA
-- Elige **arte marcial** (desplegable) y **modo**: *Técnica* (precisión, RPE bajo-medio) o *Intensidad* (sparring/acondicionamiento, RPE alto).
-- **Plan sugerido** según arte+modo *(por reglas; pronto lo personalizará la IA con tu historial)* + aviso de protecciones.
-- **Registrar sesión**: duración + RPE → **carga en AU** + historial de sesiones MMA.
+- Elige **arte marcial** (desplegable) y **tipo de trabajo**: Sparring, Drilling, Pads, Saco, Técnica o Acondicionamiento — cada uno con su descripción.
+- **Plan sugerido** según arte+tipo+duración *(por reglas; pronto lo personalizará la IA con tu historial)* + aviso de protecciones.
+- **Registrar sesión**: duración + RPE + **compañero** y **notas** opcionales (técnicas trabajadas, sensaciones…) → **carga en AU**.
+- **Stats del mes**: sesiones, horas, AU totales y reparto de minutos por arte.
+- **Historial** con tipo, compañero y notas de cada sesión.
 - **Burbuja del coach** (abajo a la derecha): chat que te prepara la sesión, recuerda calentar/estirar/hidratarte *(simulado por ahora)*.
 
 ### 4.3 Gimnasio
@@ -105,7 +107,7 @@ La **intensidad** tiene rangos orientativos: km/h en deportes de ritmo (correr 9
 Plan semanal asignado por tu **entrenador** (gym + MMA) con ejercicios por día y marcar como hecho. *(Datos de ejemplo; el panel del coach llegará más adelante.)*
 
 ### 4.5 Herramientas
-- **Timer de rounds**: presets (Boxeo 3×3, MMA 5×5, Tabata, HIIT) o configura rounds/trabajo/descanso/preparación. Anillo de cuenta atrás con color por fase, campanas, aviso a 10 s, cuenta 3-2-1, **vibración**, pantalla siempre encendida y saltar round.
+- **Timer de rounds**: presets (Boxeo 3×3, MMA 5×5, Tabata, HIIT) o configura rounds/trabajo/descanso/preparación — tu configuración **se recuerda**. **Campana de boxeo real** (doble al empezar, triple al acabar), **aviso de fin de round configurable** (Off / 10 s / 30 s con "clack" de tablas), cuenta 3-2-1, anillo con color por fase, **vibración**, pantalla siempre encendida y saltar round.
 - **Cronómetro** con vueltas.
 
 ### 4.6 Carga y estado
@@ -166,12 +168,12 @@ Readiness, ACWR (semáforo con zona óptima 0.8–1.3), carga semanal, monotoní
 | Home: estado de hoy (readiness por recuperación) | ✅ | Versión completa con carga de entreno (fase 3) |
 | Home: próxima acción / semana / objetivo de peso | 🟡 | Leen datos locales (calendario gym, actividades, pesaje) |
 | Deportes: tracker en vivo + RPE + AU | 🟡 | Registro al backend (ActivityLog, fase 3) |
-| MMA: sesiones con carga AU | 🟡 | ActivityLog + estadísticas por arte (fase 3) |
+| MMA: sesiones pro (tipo, compañero, notas) + stats del mes | 🟡 | ActivityLog en backend (fase 3) |
 | MMA: plan sugerido + chat coach | 🎭 | IA real (fase 5) |
 | Gimnasio: calendario semanal | 🟡 | Backend + registro en sesión estilo Hevy (fase 3) |
 | Gimnasio: crear rutina con IA | 🎭 | IA real con biblioteca de ejercicios (fase 5) |
 | Mi rutina (asignada por coach) | 🎭 | Rol entrenador + backend (post-v1) |
-| Herramientas: timer de rounds + cronómetro | ✅ | Sonidos de campana reales, aviso configurable |
+| Herramientas: timer de rounds (campana real, aviso configurable, config recordada) + cronómetro | ✅ | — |
 | Carga y estado (ACWR, monotonía…) | 🎭 | Motor de carga real sobre sesiones (fase 3) |
 | Nutrición: diario + objetivos calculados | 🟡 | Persistencia en cuenta + recientes/copiar día (fase 4) |
 | Nutrición: buscador de alimentos | 🟡 | Base real (Open Food Facts + barcode, fase 4) |
