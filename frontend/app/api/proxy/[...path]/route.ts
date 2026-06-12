@@ -9,7 +9,8 @@ import {
 } from "@/lib/cookies";
 
 async function handle(req: Request, path: string[]) {
-  const target = "/" + path.join("/");
+  // Conserva los query params (?tz=, ?kind=, ?limit=…) al reenviar a Django
+  const target = "/" + path.join("/") + new URL(req.url).search;
   const method = req.method;
   const contentType = req.headers.get("content-type") ?? "";
   const isMultipart = contentType.startsWith("multipart/form-data");
@@ -20,7 +21,11 @@ async function handle(req: Request, path: string[]) {
     form = await req.formData();
   } else if (method !== "GET" && method !== "DELETE") {
     const text = await req.text();
-    if (text) body = JSON.parse(text);
+    try {
+      if (text) body = JSON.parse(text);
+    } catch {
+      return NextResponse.json({ detail: "Body JSON inválido" }, { status: 400 });
+    }
   }
 
   const doReq = (acc: string | null) =>

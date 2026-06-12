@@ -12,6 +12,7 @@ import {
   type Profile,
   type ProgressPhoto,
 } from "./schemas";
+import { resetActivityUid } from "./activities";
 
 async function getJson(path: string) {
   const res = await fetch(path, { credentials: "include" });
@@ -132,6 +133,9 @@ export function useLogout() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: () => sendJson("/api/auth/logout", "POST"),
-    onSuccess: () => qc.clear(),
+    onSuccess: () => {
+      qc.clear();
+      resetActivityUid(); // que nada se encole a nombre del usuario saliente
+    },
   });
 }

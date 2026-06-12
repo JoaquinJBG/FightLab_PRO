@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { GloveIcon, InfoIcon, CoachIcon } from "@/components/icons";
+import { deleteServerActivities, enqueueActivity } from "@/lib/activities";
 
 const RPE_INFO =
   "RPE = Esfuerzo Percibido (escala 1-10): cómo de duro sientes el entreno. 1 = muy suave, 10 = máximo esfuerzo (no puedes más).";
@@ -61,6 +62,7 @@ const QUICK = ["¿Qué hago hoy?", "Tengo 30 min", "Recuérdame estirar"];
 
 type Sess = {
   id: string;
+  client_id?: string; // misma identidad en el dispositivo y en el servidor
   art: string;
   type?: string;
   mode?: string; // sesiones antiguas
@@ -111,8 +113,10 @@ export default function MmaPage() {
 
   function saveSession() {
     const ts = Date.now();
+    const clientId = crypto.randomUUID();
     const s: Sess = {
       id: `${ts}`,
+      client_id: clientId,
       art,
       type: workType,
       minutes,
@@ -124,6 +128,16 @@ export default function MmaPage() {
     };
     const all = [s, ...loadSess()].slice(0, 200);
     localStorage.setItem(KEY, JSON.stringify(all));
+    enqueueActivity({
+      client_id: clientId,
+      kind: "MMA",
+      title: art,
+      started_at: new Date(ts - minutes * 60_000).toISOString(),
+      duration_sec: minutes * 60,
+      rpe,
+      note: notes.trim().slice(0, 2000),
+      detail: { art, work_type: workType, partner: partner.trim() || null },
+    });
     setSessions(all);
     setPartner("");
     setNotes("");
@@ -270,7 +284,7 @@ export default function MmaPage() {
         <div className="mt-5">
           <div className="flex items-center justify-between">
             <p className="t-eyebrow text-muted">Tus sesiones MMA</p>
-            <button onClick={() => { localStorage.removeItem(KEY); setSessions([]); }} className="t-label text-muted">Borrar</button>
+            <button onClick={() => { localStorage.removeItem(KEY); setSessions([]); void deleteServerActivities("MMA"); }} className="t-label text-muted">Borrar</button>
           </div>
           <div className="mt-2 flex flex-col gap-2">
             {sessions.map((s) => (

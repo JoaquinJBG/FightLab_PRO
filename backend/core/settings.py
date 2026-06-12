@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "users",
     "profiles",
     "ai",
+    "activities",
 ]
 
 MIDDLEWARE = [
@@ -102,6 +103,9 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
+    "DEFAULT_THROTTLE_RATES": {
+        "activities-sync": "30/min",
+    },
 }
 
 from datetime import timedelta  # noqa: E402

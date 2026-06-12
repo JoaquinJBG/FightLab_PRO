@@ -121,10 +121,15 @@ Plan semanal asignado por tu **entrenador** (gym + MMA) con ejercicios por día 
 ### 4.6 Carga y estado
 **Calculado con tus datos reales** (sesiones con RPE de Deportes, MMA y Gimnasio + tu biometría):
 - **Estado de hoy**: tu recuperación (FC reposo/HRV vs tu media), igual que en el Home.
-- **ACWR** con semáforo (zona óptima 0.8–1.3). Necesita ~1 semana de sesiones para activarse y se marca **provisional*** hasta acumular 4 semanas de historial.
+- **ACWR** con semáforo (zona óptima 0.8–1.3). Necesita ~10 días de sesiones para activarse y se marca **provisional*** hasta acumular 4 semanas de historial.
 - **Carga semanal**: barras de AU por día (tus sesiones reales).
 - **Monotonía y tensión** (fórmulas de Foster) cuando hay datos suficientes.
 - Cada métrica con su **ⓘ** explicativo y estados vacíos honestos (nunca números inventados).
+
+**Tus sesiones ya viven en tu cuenta**: al guardar un entreno (Deportes, MMA o Gimnasio) se
+sincroniza con el servidor — el historial antiguo del dispositivo se migra solo la primera vez.
+Si no hay conexión, queda en cola y se sube al volver. Las métricas las calcula el servidor
+(misma fórmula) y, sin conexión, se calculan en el dispositivo como hasta ahora.
 
 ---
 
@@ -187,15 +192,15 @@ Además:
 | Fotos de progreso (privadas, con borrado) | ✅ | Análisis por IA (fase 5) · comparador lado a lado |
 | Home: estado de hoy (readiness por recuperación) | ✅ | Versión completa con carga de entreno (fase 3) |
 | Home: próxima acción / semana / objetivo de peso | 🟡 | Leen datos locales (calendario gym, actividades, pesaje) |
-| Deportes: tracker en vivo + RPE + AU | 🟡 | Registro al backend (ActivityLog, fase 3) |
-| MMA: sesiones pro (tipo, compañero, notas) + stats del mes | 🟡 | ActivityLog en backend (fase 3) |
+| Deportes: tracker en vivo + RPE + AU | ✅ | Sesiones en tu cuenta (ActivityLog) con cola offline; el historial visible aún lee el dispositivo |
+| MMA: sesiones pro (tipo, compañero, notas) + stats del mes | ✅ | Sesiones en tu cuenta (ActivityLog); stats del mes aún sobre datos locales |
 | MMA: plan sugerido + chat coach | 🎭 | IA real (fase 5) |
 | Gimnasio: calendario semanal | 🟡 | Backend (fase 3) |
-| Gimnasio: registro en sesión (series×reps×kg, rest timer, PRs, volumen) | 🟡 | Backend Exercise/WorkoutSession/SetLog (fase 3) · gráfica de progresión por ejercicio |
+| Gimnasio: registro en sesión (series×reps×kg, rest timer, PRs, volumen) | ✅ | Resumen de sesión en tu cuenta (ActivityLog); modelos detallados Exercise/SetLog + gráfica de progresión pendientes |
 | Gimnasio: crear rutina con IA | 🎭 | IA real con biblioteca de ejercicios (fase 5) |
 | Mi rutina (asignada por coach) | 🎭 | Rol entrenador + backend (post-v1) |
 | Herramientas: timer de rounds (campana real, aviso configurable, config recordada) + cronómetro | ✅ | — |
-| Carga y estado (ACWR, monotonía, tensión) con tus sesiones | 🟡 | Mismo motor en backend (fase 3) · gráfica PMC histórica |
+| Carga y estado (ACWR, monotonía, tensión) con tus sesiones | ✅ | Motor de carga en el servidor (misma fórmula; fallback local sin conexión) · gráfica PMC histórica pendiente |
 | Nutrición: diario + objetivos calculados + agua + borrar items | 🟡 | Persistencia en cuenta + objetivo adaptativo (fase 4) |
 | Nutrición: recientes, copiar de ayer y entrada rápida | 🟡 | Backend (fase 4) |
 | Nutrición: foto → lista editable de alimentos | ✅* | *Visión real con Claude si hay ANTHROPIC_API_KEY (si no, ejemplo simulado marcado) · escáner de código de barras (fase 4) |

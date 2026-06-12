@@ -6,6 +6,7 @@ export type ExerciseEntry = { name: string; sets: SetEntry[] };
 
 export type GymSession = {
   id: string;
+  client_id?: string; // misma identidad en el dispositivo y en el servidor
   ts: number;
   focus: string | null;
   durationSec: number;

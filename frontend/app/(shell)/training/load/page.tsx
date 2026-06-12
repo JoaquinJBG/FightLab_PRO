@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useBiometrics } from "@/lib/hooks";
 import { computeRecovery, type Recovery } from "@/lib/recovery";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
+import { fetchServerMetrics } from "@/lib/activities";
 import { BoltIcon, InfoIcon, ArrowUpRight } from "@/components/icons";
 
 const INFO: Record<string, string> = {
@@ -47,7 +48,10 @@ export default function LoadPage() {
   const [open, setOpen] = useState<string | null>(null);
 
   useEffect(() => {
-    setMetrics(loadMetrics());
+    let alive = true;
+    setMetrics(loadMetrics()); // pintura inmediata con lo local
+    fetchServerMetrics().then((m) => { if (alive && m) setMetrics(m); }); // el servidor manda
+    return () => { alive = false; };
   }, []);
 
   const recovery: Recovery | null = computeRecovery(logs);
