@@ -14,6 +14,7 @@ import {
   type ExerciseEntry,
   type LiveGym,
 } from "@/lib/gym";
+import { enqueueActivity } from "@/lib/activities";
 
 const RPE_INFO =
   "RPE = Esfuerzo Percibido de TODA la sesión (1-10). Con él calculamos tu carga (min × RPE).";
@@ -207,15 +208,32 @@ function SessionInner() {
     // tope de 4 h: una sesión restaurada horas después no debe inflar la carga
     const capped = Math.min(elapsed, 4 * 3600);
     const minutes = capped / 60;
+    const ts = Date.now();
+    const clientId = crypto.randomUUID();
     pushGymSession({
-      id: `${Date.now()}`,
-      ts: Date.now(),
+      id: `${ts}`,
+      client_id: clientId,
+      ts,
       focus,
       durationSec: capped,
       rpe,
       load: rpe ? Math.round(minutes * rpe) : null,
       volume,
       exercises: parsedExercises,
+    });
+    let detail: Record<string, unknown> = { focus, volume_kg: volume, exercises: parsedExercises };
+    try {
+      // tope del backend: si el desglose no cabe, se queda el resumen
+      if (JSON.stringify(detail).length > 8000) detail = { focus, volume_kg: volume };
+    } catch { detail = { focus }; }
+    enqueueActivity({
+      client_id: clientId,
+      kind: "GYM",
+      title: focus ?? "Gimnasio",
+      started_at: new Date(ts - capped * 1000).toISOString(),
+      duration_sec: Math.max(1, Math.round(capped)),
+      rpe,
+      detail,
     });
     localStorage.removeItem(GYM_LIVE_KEY);
     router.push("/training/gym");

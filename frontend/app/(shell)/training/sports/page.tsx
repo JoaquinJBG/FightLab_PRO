@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
 import Link from "next/link";
 import { useBiometrics } from "@/lib/hooks";
+import { deleteServerActivities, enqueueActivity } from "@/lib/activities";
 import {
   RunIcon, WalkIcon, BikeIcon, SwimIcon, BallIcon, RopeIcon, PulseIcon, ChevronRight, InfoIcon,
 } from "@/components/icons";
@@ -42,9 +43,10 @@ function fmtClock(sec: number) {
   return h > 0 ? `${h}:${p(m)}:${p(s)}` : `${p(m)}:${p(s)}`;
 }
 
-/* ---- registro de actividad (localStorage; pasa a backend en fase 3) ---- */
+/* ---- registro de actividad (localStorage + sync al backend) ---- */
 type Activity = {
   id: string;
+  client_id?: string; // misma identidad en el dispositivo y en el servidor
   sportKey: string;
   sportName: string;
   durationSec: number;
@@ -204,8 +206,11 @@ export default function SportsPage() {
   function save() {
     if (!sel || elapsed === 0) return; // nada de sesiones vacías
     const minutes = elapsed / 60;
+    const ts = Date.now();
+    const clientId = crypto.randomUUID();
     const a: Activity = {
-      id: `${Date.now()}`,
+      id: `${ts}`,
+      client_id: clientId,
       sportKey: sel.key,
       sportName: sel.name,
       durationSec: elapsed,
@@ -213,9 +218,19 @@ export default function SportsPage() {
       intensity: INTENSITIES[intIdx][0],
       rpe,
       load: rpe ? Math.round(minutes * rpe) : null,
-      ts: Date.now(),
+      ts,
     };
     pushActivity(a);
+    enqueueActivity({
+      client_id: clientId,
+      kind: "SPORT",
+      title: sel.name,
+      started_at: new Date(ts - elapsed * 1000).toISOString(),
+      duration_sec: Math.min(86_400, Math.max(1, Math.round(elapsed))),
+      rpe,
+      kcal: Math.min(20_000, Math.max(0, Math.round(kcalAcc))),
+      detail: { sport_key: sel.key, intensity: INTENSITIES[intIdx][0] },
+    });
     localStorage.removeItem(LIVE_KEY);
     setActivities(loadActivities());
     setSel(null);
@@ -457,7 +472,7 @@ export default function SportsPage() {
           <div className="flex items-center justify-between">
             <p className="t-eyebrow text-muted">Tu actividad</p>
             {activities.length > 0 && (
-              <button onClick={() => { localStorage.removeItem(KEY); setActivities([]); }} className="t-label text-muted">Borrar</button>
+              <button onClick={() => { localStorage.removeItem(KEY); setActivities([]); void deleteServerActivities("SPORT"); }} className="t-label text-muted">Borrar</button>
             )}
           </div>
           {activities.length === 0 ? (

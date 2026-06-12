@@ -12,6 +12,7 @@ import {
   BoltIcon,
 } from "@/components/icons";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
+import { fetchServerMetrics } from "@/lib/activities";
 
 const cards = [
   { href: "/training/sports", Icon: RunIcon, title: "Deportes", sub: "Corre, nada, pedalea… y cuenta kcal" },
@@ -23,7 +24,12 @@ const cards = [
 
 export default function TrainingHubPage() {
   const [metrics, setMetrics] = useState<LoadMetrics | null>(null);
-  useEffect(() => setMetrics(loadMetrics()), []);
+  useEffect(() => {
+    let alive = true;
+    setMetrics(loadMetrics());
+    fetchServerMetrics().then((m) => { if (alive && m) setMetrics(m); });
+    return () => { alive = false; };
+  }, []);
 
   return (
     <div className="pt-4">

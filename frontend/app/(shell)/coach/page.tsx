@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useBiometrics } from "@/lib/hooks";
 import { computeRecovery, type Recovery } from "@/lib/recovery";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
+import { fetchServerMetrics } from "@/lib/activities";
 import {
   CoachIcon, BoltIcon, ScaleIcon, MoonIcon, ChevronRight, GloveIcon,
 } from "@/components/icons";
@@ -211,7 +212,9 @@ export default function CoachPage() {
   const [feedback, setFeedback] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    setMetrics(loadMetrics());
+    let alive = true;
+    setMetrics(loadMetrics()); // pintura inmediata; el servidor sobreescribe al llegar
+    fetchServerMetrics().then((m) => { if (alive && m) setMetrics(m); });
     try {
       const w = JSON.parse(localStorage.getItem("flp_weigh") ?? "null");
       if (w && typeof w.target === "number" && typeof w.date === "string" && !Number.isNaN(new Date(w.date).getTime())) {
@@ -226,6 +229,7 @@ export default function CoachPage() {
         if (k && k.startsWith("flp_coach_dismissed_") && k !== today) localStorage.removeItem(k);
       }
     } catch { /* noop */ }
+    return () => { alive = false; };
   }, []);
 
   const recovery = computeRecovery(logs);

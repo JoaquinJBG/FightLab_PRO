@@ -15,20 +15,22 @@ const startOfDay = (ts: number) => {
 export function collectTrainingLoads(): LoadPoint[] {
   if (typeof window === "undefined") return [];
   const out: LoadPoint[] = [];
-  const pull = (key: string) => {
+  // Bucket por INICIO de sesión (ts de guardado − duración): misma semántica
+  // que el backend (started_at), para que ambos motores den el mismo día
+  const pull = (key: string, durSec: (s: Record<string, unknown>) => number) => {
     try {
       const v = JSON.parse(localStorage.getItem(key) ?? "[]");
       if (!Array.isArray(v)) return;
       for (const s of v) {
         if (s && typeof s.ts === "number" && typeof s.load === "number" && s.load > 0) {
-          out.push({ ts: s.ts, load: s.load });
+          out.push({ ts: s.ts - Math.max(0, durSec(s)) * 1000, load: s.load });
         }
       }
     } catch { /* clave corrupta: se ignora */ }
   };
-  pull("flp_activities");
-  pull("flp_mma");
-  pull("flp_gym_sessions");
+  pull("flp_activities", (s) => (typeof s.durationSec === "number" ? s.durationSec : 0));
+  pull("flp_mma", (s) => (typeof s.minutes === "number" ? s.minutes * 60 : 0));
+  pull("flp_gym_sessions", (s) => (typeof s.durationSec === "number" ? s.durationSec : 0));
   return out;
 }
 

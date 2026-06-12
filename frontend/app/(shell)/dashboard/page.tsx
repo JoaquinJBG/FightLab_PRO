@@ -6,6 +6,7 @@ import { useBiometrics, useMe } from "@/lib/hooks";
 import type { Biometrics } from "@/lib/schemas";
 import { computeRecovery } from "@/lib/recovery";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
+import { fetchServerMetrics } from "@/lib/activities";
 import {
   ScaleIcon,
   HeartIcon,
@@ -138,6 +139,11 @@ export default function DashboardPage() {
       trainedTs: [...ts(parse("flp_activities")), ...ts(parse("flp_mma")), ...ts(parse("flp_gym_sessions"))],
       metrics: loadMetrics(),
     });
+    let alive = true;
+    fetchServerMetrics().then((m) => {
+      if (alive && m) setLocal((cur) => ({ ...cur, metrics: m })); // el servidor manda
+    });
+    return () => { alive = false; };
   }, []);
 
   const name = me?.email ? me.email.split("@")[0] : "atleta";
