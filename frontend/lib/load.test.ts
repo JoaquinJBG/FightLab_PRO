@@ -121,6 +121,14 @@ describe("loadMetrics().band", () => {
     expect(loadMetrics().band!.status).toBe("descarga");
   });
 
+  test("semana por encima del rango pero sin llegar a pico => elevada", () => {
+    const now = Date.now();
+    // baseline 100/día => mu=700, high=770, overreach=840; semana a 115/día => 805 AU, en (770, 840]
+    const sessions = Array.from({ length: 28 }, (_, i) => ({ ts: now - i * DAY, load: i <= 6 ? 115 : 100 }));
+    seedActivities(sessions);
+    expect(loadMetrics().band!.status).toBe("elevada");
+  });
+
   test("20 días de historial => banda provisional", () => {
     const now = Date.now();
     const sessions = Array.from({ length: 20 }, (_, i) => ({ ts: now - i * DAY, load: 100 }));
