@@ -32,11 +32,22 @@ const advanced = [
   },
 ] as const;
 
+// Perímetros con cinta métrica (decimales en cm)
+const girths = [
+  { key: "waist_cm", label: "Cintura" },
+  { key: "hip_cm", label: "Cadera" },
+  { key: "chest_cm", label: "Pecho" },
+  { key: "arm_cm", label: "Brazo" },
+  { key: "thigh_cm", label: "Muslo" },
+  { key: "neck_cm", label: "Cuello" },
+] as const;
+
 export default function NewBiometricsPage() {
   const router = useRouter();
   const create = useCreateBiometrics();
   const [vals, setVals] = useState<Record<string, string>>({});
   const [showAdv, setShowAdv] = useState(false);
+  const [showGirths, setShowGirths] = useState(false);
   const [openInfo, setOpenInfo] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -51,13 +62,17 @@ export default function NewBiometricsPage() {
       const v = vals[f.key];
       if (v !== undefined && v !== "") payload[f.key] = f.decimal ? v : Number(v);
     }
+    for (const g of girths) {
+      const v = vals[g.key];
+      if (v !== undefined && v !== "") payload[g.key] = v; // decimal -> string
+    }
     if (Object.keys(payload).length === 0) {
-      setFormError("Introduce al menos el peso.");
+      setFormError("Introduce al menos una medida.");
       return;
     }
     try {
       await create.mutateAsync(payload);
-      router.push("/dashboard");
+      router.push("/biometrics"); // a ver el punto nuevo en tu tendencia
     } catch {
       /* error abajo */
     }
@@ -142,6 +157,47 @@ export default function NewBiometricsPage() {
                 )}
               </div>
             ))}
+        </div>
+
+        {/* Perímetros (plegable) */}
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={() => setShowGirths((v) => !v)}
+            className="flex items-center justify-between rounded-xl px-1 py-1 text-left"
+          >
+            <span className="t-eyebrow text-muted">Perímetros (cinta métrica) · opcional</span>
+            <ChevronDown
+              className={`h-4 w-4 text-muted transition-transform ${showGirths ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {showGirths && (
+            <div className="grid grid-cols-2 gap-2">
+              {girths.map((g) => (
+                <label key={g.key} className="glass flex items-center justify-between gap-2 p-3">
+                  <span className="t-label text-ink">{g.label}</span>
+                  <span className="flex items-center gap-1.5">
+                    <input
+                      type="number"
+                      step="0.5"
+                      inputMode="decimal"
+                      value={vals[g.key] ?? ""}
+                      onChange={(e) => set(g.key, e.target.value)}
+                      placeholder="—"
+                      className="field w-16 px-2 py-1.5 text-right text-sm"
+                    />
+                    <span className="t-label text-muted">cm</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+          {showGirths && (
+            <p className="t-body text-[11px] text-muted">
+              La cintura es el más útil para ver progreso que la báscula no enseña.
+            </p>
+          )}
         </div>
 
         {err && <p className="text-xs text-bad">{err}</p>}

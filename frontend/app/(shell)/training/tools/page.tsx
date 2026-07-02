@@ -38,13 +38,48 @@ function beep(freq: number, dur: number, gain = 0.3) {
     /* sin audio */
   }
 }
-const bellStart = () => { beep(1046, 0.18); setTimeout(() => beep(1046, 0.2), 190); };
-const bellRest = () => beep(560, 0.35);
+/** Campana de boxeo sintetizada: parciales inarmónicos para timbre metálico. */
+function bell(strikes = 1, base = 520) {
+  try {
+    const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const ctx = new Ctx();
+    const ratios = [1, 2.01, 2.92, 4.16, 5.43];
+    const dur = 1.1;
+    for (let k = 0; k < strikes; k++) {
+      const t = ctx.currentTime + k * 0.32;
+      ratios.forEach((r, i) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = "sine";
+        o.frequency.value = base * r;
+        o.connect(g);
+        g.connect(ctx.destination);
+        const peak = 0.32 / (i + 1.2);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(peak, t + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.start(t);
+        o.stop(t + dur);
+      });
+    }
+    setTimeout(() => ctx.close(), (strikes * 0.32 + dur + 0.3) * 1000);
+  } catch { /* sin audio */ }
+}
+/** "Clack" de aviso (tablas de madera, como en boxeo). */
+function clack() {
+  beep(1700, 0.05, 0.25);
+  setTimeout(() => beep(1700, 0.05, 0.25), 110);
+  setTimeout(() => beep(1700, 0.05, 0.25), 220);
+}
+const bellStart = () => bell(2);
+const bellRest = () => bell(1, 392);
 const prepDing = () => beep(720, 0.12);
-const warn = () => beep(840, 0.12);
 const tick = () => beep(680, 0.07);
-const finalBell = () => { beep(900, 0.25); setTimeout(() => beep(700, 0.25), 250); setTimeout(() => beep(520, 0.5), 500); };
+const finalBell = () => bell(3);
 const vibe = (p: number | number[]) => { try { navigator.vibrate?.(p); } catch { /* noop */ } };
+
+const CFG_KEY = "flp_round_cfg";
+const WARN_OPTS: [number, string][] = [[0, "Off"], [10, "10 s"], [30, "30 s"]];
 
 type Phase = "prep" | "work" | "rest";
 function buildSegments(rounds: number, workSec: number, restSec: number, prepSec: number) {
@@ -115,11 +150,26 @@ function RoundTimer() {
   const [workSec, setWorkSec] = useState(180);
   const [restSec, setRestSec] = useState(60);
   const [prepSec, setPrepSec] = useState(10);
+  const [warnSec, setWarnSec] = useState(10);
   const [running, setRunning] = useState(false);
   const [started, setStarted] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const prevSeg = useRef(-1);
   const doneRef = useRef(false);
+
+  // recuerda tu última configuración
+  useEffect(() => {
+    try {
+      const cfg = JSON.parse(localStorage.getItem(CFG_KEY) ?? "null");
+      if (cfg && typeof cfg === "object") {
+        if (typeof cfg.rounds === "number") setRounds(Math.min(20, Math.max(1, cfg.rounds)));
+        if (typeof cfg.work === "number") setWorkSec(Math.min(600, Math.max(10, cfg.work)));
+        if (typeof cfg.rest === "number") setRestSec(Math.min(300, Math.max(0, cfg.rest)));
+        if (typeof cfg.prep === "number") setPrepSec(Math.min(30, Math.max(0, cfg.prep)));
+        if ([0, 10, 30].includes(cfg.warn)) setWarnSec(cfg.warn);
+      }
+    } catch { /* config corrupta: defaults */ }
+  }, []);
 
   const { segs, total } = buildSegments(rounds, workSec, restSec, prepSec);
   const done = elapsed >= total;
@@ -161,12 +211,15 @@ function RoundTimer() {
       else { prepDing(); }
       prevSeg.current = segIdx;
     }
-    if (seg.phase === "work" && remaining === 10) { warn(); vibe(80); }
+    if (seg.phase === "work" && warnSec > 0 && remaining === warnSec && segDur > warnSec) { clack(); vibe(80); }
     if (remaining <= 3 && remaining >= 1) tick();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [elapsed, started, done]);
 
   function start() {
+    try {
+      localStorage.setItem(CFG_KEY, JSON.stringify({ rounds, work: workSec, rest: restSec, prep: prepSec, warn: warnSec }));
+    } catch { /* sin espacio: no es crítico */ }
     doneRef.current = false;
     prevSeg.current = -1;
     setElapsed(0);
@@ -207,6 +260,17 @@ function RoundTimer() {
           <Stepper label="Preparación" value={prepSec} set={setPrepSec} min={0} max={30} step={5} fmt={fmtClock} />
           <Stepper label="Trabajo" value={workSec} set={setWorkSec} min={10} max={600} step={10} fmt={fmtClock} />
           <Stepper label="Descanso" value={restSec} set={setRestSec} min={0} max={300} step={5} fmt={fmtClock} />
+        </div>
+        <div className="glass flex items-center justify-between p-3">
+          <span className="t-label text-muted">Aviso de fin de round</span>
+          <div className="flex gap-1.5">
+            {WARN_OPTS.map(([v, label]) => (
+              <button key={v} type="button" onClick={() => setWarnSec(v)}
+                className={`badge ${warnSec === v ? "badge-neon" : ""}`}>
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
         <button className="btn btn-primary" onClick={start}>Empezar · {rounds} rounds</button>
       </div>

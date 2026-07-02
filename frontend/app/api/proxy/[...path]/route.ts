@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { djangoFetch } from "@/lib/api";
+import { djangoFetch, djangoUpload } from "@/lib/api";
 import {
   getAccess,
   getRefresh,
@@ -9,16 +9,32 @@ import {
 } from "@/lib/cookies";
 
 async function handle(req: Request, path: string[]) {
-  const target = "/" + path.join("/");
+  // Conserva los query params (?tz=, ?kind=, ?limit=…) al reenviar a Django
+  const target = "/" + path.join("/") + new URL(req.url).search;
   const method = req.method;
+  const contentType = req.headers.get("content-type") ?? "";
+  const isMultipart = contentType.startsWith("multipart/form-data");
+
   let body: unknown = undefined;
-  if (method !== "GET" && method !== "DELETE") {
+  let form: FormData | null = null;
+  if (isMultipart) {
+    form = await req.formData();
+  } else if (method !== "GET" && method !== "DELETE") {
     const text = await req.text();
-    if (text) body = JSON.parse(text);
+    try {
+      if (text) body = JSON.parse(text);
+    } catch {
+      return NextResponse.json({ detail: "Body JSON inválido" }, { status: 400 });
+    }
   }
 
+  const doReq = (acc: string | null) =>
+    isMultipart && form
+      ? djangoUpload(target, form, acc, method)
+      : djangoFetch(target, { method, body, access: acc });
+
   let access = await getAccess();
-  let r = await djangoFetch(target, { method, body, access });
+  let r = await doReq(access);
 
   if (r.status === 401) {
     const refresh = await getRefresh();
@@ -32,7 +48,7 @@ async function handle(req: Request, path: string[]) {
       if (d.refresh) await setAuthCookies(d.access, d.refresh);
       else await setAccessCookie(d.access);
       access = d.access;
-      r = await djangoFetch(target, { method, body, access });
+      r = await doReq(access);
     } else {
       await clearAuthCookies();
       return NextResponse.json({ detail: "Sesión expirada" }, { status: 401 });

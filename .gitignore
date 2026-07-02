@@ -50,3 +50,6 @@ htmlcov/
 .pytest_cache/
 playwright-report/
 test-results/
+
+# Fotos subidas en dev
+backend/media/

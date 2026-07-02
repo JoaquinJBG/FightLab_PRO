@@ -6,3 +6,5 @@ psycopg2-binary
 djangorestframework-simplejwt
 pytest
 pytest-django
+Pillow
+anthropic
