@@ -121,9 +121,20 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS")
 CORS_ALLOW_CREDENTIALS = True
 
-# --- Email (dev: console) ---
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "FightLab Pro <no-reply@fightlab.local>"
+# --- Email ---
+# Sin EMAIL_BACKEND en el .env -> consola (el enlace se imprime en el backend).
+# Con el backend SMTP -> envío real; los valores de Gmail se toman del .env.
+EMAIL_BACKEND = env(
+    "EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend",
+)
+if "smtp" in EMAIL_BACKEND.lower():
+    EMAIL_HOST = env("EMAIL_HOST", default="smtp.gmail.com")
+    EMAIL_PORT = env.int("EMAIL_PORT", default=587)
+    EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+    EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+    EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="FightLab Pro <no-reply@fightlab.local>")
 
 # --- App config ---
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")

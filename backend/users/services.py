@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.db import transaction
+from django.template.loader import render_to_string
 
 from .tokens import generate_email_verification_token, verify_email_verification_token
 
@@ -11,11 +12,16 @@ User = get_user_model()
 def _send_verification_email(user) -> None:
     token = generate_email_verification_token(user)
     link = f"{settings.FRONTEND_URL}/verify-email?token={token}"
+    html = render_to_string("users/verify_email.html", {"verification_link": link})
     send_mail(
-        subject="Verify your FightLab Pro account",
-        message=f"Welcome to FightLab Pro. Verify your email:\n\n{link}\n",
+        subject="Verifica tu cuenta de FightLab Pro",
+        message=(
+            f"Bienvenido a FightLab Pro. Verifica tu correo:\n\n{link}\n\n"
+            "Este enlace vence en 24 horas."
+        ),
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],
+        html_message=html,
     )
     if settings.DEBUG:
         # Enlace limpio y copiable en consola (el email de dev va en quoted-printable).

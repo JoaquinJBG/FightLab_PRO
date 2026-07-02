@@ -62,7 +62,8 @@ export default function RegisterPage() {
         <div className="glass neon-edge mt-6 p-6">
           <p className="t-title text-ink">Revisa tu email</p>
           <p className="t-body mt-2 text-muted">
-            Te enviamos un enlace de verificación. En desarrollo aparece en la consola del backend.
+            Te enviamos un enlace de verificación a <span className="text-ink">{email}</span>.
+            Revisa tu bandeja de entrada (y la carpeta de spam). El enlace vence en 24 horas.
           </p>
           <Link href="/login" className="btn btn-tonal mt-5">
             Ir a iniciar sesión

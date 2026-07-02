@@ -17,7 +17,7 @@ FightLab Pro es una **PWA** (app web instalable) para atletas de combate y multi
 
 ### Crear cuenta
 1. **Crear cuenta** → email + contraseña. La contraseña tiene una **checklist en vivo** (8+ caracteres, no solo números, distinta de tu email) y botón *Mostrar/Ocultar*.
-2. Te llega un **email de verificación** → abre el enlace. *(En desarrollo el enlace se imprime en la consola del backend.)*
+2. Te llega un **email de verificación** real a tu bandeja (revisa también spam) → abre el enlace. El enlace **vence en 24 horas**; si caduca, vuelve a registrarte y se reenvía. *(Si el backend no tiene credenciales de email configuradas, el enlace se imprime en su consola en lugar de enviarse.)*
 3. **Inicia sesión** → arranca el **onboarding**.
 
 ### Onboarding (primera vez)
