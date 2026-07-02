@@ -4,17 +4,32 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useBiometrics } from "@/lib/hooks";
 import { computeRecovery, type Recovery } from "@/lib/recovery";
-import { loadMetrics, type LoadMetrics } from "@/lib/load";
+import { loadMetrics, type LoadMetrics, type LoadBand, type LoadBandStatus } from "@/lib/load";
 import { fetchServerMetrics } from "@/lib/activities";
 import { BoltIcon, InfoIcon, ArrowUpRight } from "@/components/icons";
 
 const INFO: Record<string, string> = {
   estado: "Tu preparación para entrenar hoy, según tus señales de recuperación (FC en reposo y HRV) comparadas con tu propia media.",
-  acwr: "Ratio carga aguda (7 días) / crónica (hasta 28 días). Entre 0.8 y 1.3 = zona segura; por encima sube el riesgo de lesión. Necesita historial: hasta cumplir 4 semanas se marca como provisional.",
+  banda: "Tu carga de esta semana comparada con tu propio rango de las últimas 3 semanas: verde = dentro de tu rango habitual; ámbar/rojo = por encima (vigila la recuperación); azul = por debajo (semana de descarga). Se calibra hasta acumular 4 semanas de historial.",
   carga: "Carga de cada sesión = duración × RPE (unidades arbitrarias, AU). Aquí se suman tus sesiones de Deportes, MMA y Gimnasio registradas con RPE.",
   monotonia: "Cómo de iguales son tus cargas diarias (media/desviación de los últimos 7 días). Muy alta = poca variación, más riesgo; alterna días duros y suaves.",
   tension: "Tensión = carga semanal × monotonía. Mide el estrés acumulado total de la semana.",
 };
+
+const BAND_META: Record<LoadBandStatus, { label: string; color: string; hint: string }> = {
+  descarga: { label: "Descarga", color: "var(--color-neon)", hint: "Por debajo de tu rango: semana de recuperación." },
+  sostenible: { label: "Sostenible", color: "var(--color-good)", hint: "Dentro de tu rango habitual: carga sostenible." },
+  elevada: { label: "Elevada", color: "var(--color-warn)", hint: "Por encima de tu rango: vigila la recuperación." },
+  alta: { label: "Alta", color: "var(--color-bad)", hint: "Muy por encima de tu rango: prioriza recuperar." },
+};
+
+// Geometría de la banda: escala 0..(overreach + σ_eff) para que el marcador no se salga.
+function bandGeometry(b: LoadBand) {
+  const sigmaEff = (b.high - b.low) / 2;
+  const axisMax = b.overreach + sigmaEff || 1;
+  const pct = (v: number) => Math.max(0, Math.min(100, (v / axisMax) * 100));
+  return { pct };
+}
 
 function dayLabels(): string[] {
   const L = ["D", "L", "M", "X", "J", "V", "S"];
@@ -49,8 +64,13 @@ export default function LoadPage() {
 
   useEffect(() => {
     let alive = true;
-    setMetrics(loadMetrics()); // pintura inmediata con lo local
-    fetchServerMetrics().then((m) => { if (alive && m) setMetrics(m); }); // el servidor manda
+    const local = loadMetrics();
+    setMetrics(local); // pintura inmediata con lo local
+    // El servidor manda en las métricas agregadas, pero aún no calcula la banda:
+    // conservamos la banda local hasta que el backend la provea (parity: follow-up).
+    fetchServerMetrics().then((s) => {
+      if (alive && s) setMetrics({ ...s, band: s.band ?? local.band });
+    });
     return () => { alive = false; };
   }, []);
 
@@ -58,7 +78,6 @@ export default function LoadPage() {
   const m = metrics;
   const max = m ? Math.max(...m.daily7, 1) : 1;
   const labels = dayLabels();
-  const acwrPct = (v: number) => Math.max(0, Math.min(100, ((v - 0.5) / (1.8 - 0.5)) * 100));
 
   return (
     <div className="pt-4">
@@ -95,44 +114,52 @@ export default function LoadPage() {
         </section>
       )}
 
-      {/* ACWR */}
+      {/* Carga vs tu rango */}
       <section className="glass mt-4 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <span className="t-label text-ink">ACWR · riesgo de lesión</span>
-            <Info k="acwr" open={open} setOpen={setOpen} />
+            <span className="t-label text-ink">Carga vs tu rango</span>
+            <Info k="banda" open={open} setOpen={setOpen} />
           </div>
-          {m?.acwr != null ? (
-            <span className={`stat text-xl ${m.acwr >= 0.8 && m.acwr <= 1.3 ? "text-good" : "text-warn"}`}>
-              {m.acwr.toFixed(2)}
-            </span>
-          ) : (
-            <span className="t-label text-muted">—</span>
-          )}
+          <span className="t-label text-muted">{m?.weekAU ?? 0} AU</span>
         </div>
-        {m?.acwr != null ? (
+        {m?.band && m.weekAU > 0 ? (
           <>
-            {m.provisional && (
-              <p className="t-body mt-1 text-[11px] text-muted">
-                Provisional: se calibra hasta acumular 4 semanas de historial ({m.historyDays}/28 días).
-              </p>
-            )}
-            <div className="relative mt-3 h-2.5 w-full rounded-full bg-[rgba(150,190,255,0.12)]">
-              <div className="absolute inset-y-0 rounded-full bg-[rgba(67,232,160,0.35)]" style={{ left: `${acwrPct(0.8)}%`, width: `${acwrPct(1.3) - acwrPct(0.8)}%` }} />
-              <div className="glow absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-neon" style={{ left: `${acwrPct(m.acwr)}%` }} />
+            <div className="mt-2 flex items-center gap-3">
+              <span className="h-3.5 w-3.5 shrink-0 rounded-full" style={{ background: BAND_META[m.band.status].color, boxShadow: `0 0 12px ${BAND_META[m.band.status].color}` }} />
+              <p className="t-display text-2xl" style={{ color: BAND_META[m.band.status].color }}>{BAND_META[m.band.status].label}</p>
             </div>
-            <div className="mt-1.5 flex justify-between text-[10px] text-muted"><span>0.5</span><span className="text-good">zona óptima</span><span>1.8</span></div>
+            {m.band.provisional && (
+              <p className="t-body mt-1 text-[11px] text-muted">Rango calibrándose: {m.historyDays}/28 días de historial.</p>
+            )}
+            {(() => {
+              const b = m.band;
+              const { pct } = bandGeometry(b);
+              return (
+                <>
+                  <div className="relative mt-3 h-2.5 w-full overflow-hidden rounded-full bg-[rgba(150,190,255,0.12)]">
+                    <div className="absolute inset-y-0" style={{ left: 0, width: `${pct(b.low)}%`, background: "rgba(69,233,255,0.30)" }} />
+                    <div className="absolute inset-y-0" style={{ left: `${pct(b.low)}%`, width: `${pct(b.high) - pct(b.low)}%`, background: "rgba(67,232,160,0.35)" }} />
+                    <div className="absolute inset-y-0" style={{ left: `${pct(b.high)}%`, width: `${pct(b.overreach) - pct(b.high)}%`, background: "rgba(255,210,90,0.32)" }} />
+                    <div className="absolute inset-y-0" style={{ left: `${pct(b.overreach)}%`, right: 0, background: "rgba(255,93,128,0.32)" }} />
+                    <div className="glow absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-neon" style={{ left: `${pct(b.weekAU)}%` }} />
+                  </div>
+                  <div className="mt-1.5 flex justify-between text-[10px] text-muted"><span>descarga</span><span className="text-good">tu rango</span><span>alta</span></div>
+                </>
+              );
+            })()}
+            <p className="t-body mt-2 text-xs text-muted">{BAND_META[m.band.status].hint}</p>
           </>
+        ) : m && m.weekAU === 0 && m.band ? (
+          <p className="t-body mt-2 text-xs text-muted">Sin sesiones esta semana: registra un entreno y verás dónde cae respecto a tu rango.</p>
         ) : (
           <p className="t-body mt-2 text-xs text-muted">
-            {m && m.historyDays >= 10 && m.weekAU === 0
-              ? "Sin sesiones en los últimos 7 días: tu ACWR vuelve en cuanto registres un entreno."
-              : m && m.historyDays > 0
-                ? `Se activa con ~10 días de sesiones con RPE (llevas ${m.historyDays} ${m.historyDays === 1 ? "día" : "días"}).`
-                : "Registra tus entrenos con RPE (Deportes, MMA o Gimnasio) y el ACWR se calculará solo."}
+            {m && m.historyDays > 0
+              ? `Se activa con ~2 semanas de sesiones con RPE (llevas ${m.historyDays} ${m.historyDays === 1 ? "día" : "días"}).`
+              : "Registra tus entrenos con RPE (Deportes, MMA o Gimnasio) y tu banda de carga se calculará sola."}
           </p>
         )}
-        <Tip k="acwr" open={open} />
+        <Tip k="banda" open={open} />
       </section>
 
       {/* Carga semanal */}
