@@ -75,3 +75,56 @@ describe("loadMetrics", () => {
     expect(m.provisional).toBe(true);
   });
 });
+
+describe("loadMetrics().band", () => {
+  beforeEach(() => localStorage.clear());
+
+  test("historial < 14 días => band null", () => {
+    const now = Date.now();
+    const sessions = Array.from({ length: 12 }, (_, i) => ({ ts: now - i * DAY, load: 100 }));
+    seedActivities(sessions);
+    expect(loadMetrics().band).toBeNull();
+  });
+
+  test("28 días de carga estable, semana en rango => sostenible y no provisional", () => {
+    const now = Date.now();
+    const sessions = Array.from({ length: 28 }, (_, i) => ({ ts: now - i * DAY, load: 100 }));
+    seedActivities(sessions);
+    const b = loadMetrics().band!;
+    expect(b.status).toBe("sostenible");
+    expect(b.provisional).toBe(false);
+  });
+
+  test("baseline estable con suelo de anchura: sigma=0 => banda ±10% de mu (630..770)", () => {
+    const now = Date.now();
+    const sessions = Array.from({ length: 28 }, (_, i) => ({ ts: now - i * DAY, load: 100 }));
+    seedActivities(sessions);
+    const b = loadMetrics().band!;
+    // mu=700 (7×100), sigma=0 => sigmaEff=70 => low=630, high=770
+    expect(b.low).toBe(630);
+    expect(b.high).toBe(770);
+    expect(b.overreach).toBe(840);
+  });
+
+  test("pico fuerte esta semana sobre baseline estable => alta", () => {
+    const now = Date.now();
+    // días 7..27 atrás a 100 (baseline); últimos 7 días (0..6) a 300 (pico)
+    const sessions = Array.from({ length: 28 }, (_, i) => ({ ts: now - i * DAY, load: i <= 6 ? 300 : 100 }));
+    seedActivities(sessions);
+    expect(loadMetrics().band!.status).toBe("alta");
+  });
+
+  test("semana muy suave sobre baseline estable => descarga", () => {
+    const now = Date.now();
+    const sessions = Array.from({ length: 28 }, (_, i) => ({ ts: now - i * DAY, load: i <= 6 ? 20 : 100 }));
+    seedActivities(sessions);
+    expect(loadMetrics().band!.status).toBe("descarga");
+  });
+
+  test("20 días de historial => banda provisional", () => {
+    const now = Date.now();
+    const sessions = Array.from({ length: 20 }, (_, i) => ({ ts: now - i * DAY, load: 100 }));
+    seedActivities(sessions);
+    expect(loadMetrics().band!.provisional).toBe(true);
+  });
+});

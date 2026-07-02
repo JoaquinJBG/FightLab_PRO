@@ -5,6 +5,17 @@
 
 export type LoadPoint = { ts: number; load: number };
 
+export type LoadBandStatus = "descarga" | "sostenible" | "elevada" | "alta";
+
+export type LoadBand = {
+  weekAU: number;    // carga de la semana en curso (marcador)
+  low: number;       // límite inferior del rango habitual (μ − σ_eff)
+  high: number;      // límite superior del rango habitual (μ + σ_eff)
+  overreach: number; // umbral de carga alta (μ + 2σ_eff)
+  status: LoadBandStatus;
+  provisional: boolean; // 14..27 días de historial: el rango aún se calibra
+};
+
 const DAY = 86_400_000;
 const startOfDay = (ts: number) => {
   const d = new Date(ts);
@@ -53,8 +64,60 @@ export type LoadMetrics = {
   monotonia: number | null;
   tension: number | null;
   sinVariacion: boolean; // 7 días con carga idéntica (SD=0): monotonía máxima
+  band: LoadBand | null; // carga semanal vs rango propio (P0.1); null si historial < 14 días
   historyDays: number;
 };
+
+/**
+ * Banda de carga tipo Strava: sitúa la carga de la semana en curso dentro del
+ * rango de las semanas previas del propio atleta (no umbrales fijos). Devuelve
+ * null si no hay al menos una semana de baseline antes de la semana actual.
+ */
+export function computeLoadBand(
+  daily28: number[],
+  weekAU: number,
+  historyDays: number,
+): LoadBand | null {
+  if (historyDays < 14) return null;
+
+  // Ventanas móviles de 7 días que terminan ANTES de la semana en curso (índices
+  // 21..27), acotadas al historial real para no incluir días sin datos.
+  const d0 = 28 - historyDays;          // primer índice con datos reales
+  const firstEnd = Math.max(6, d0 + 6); // primer día-fin con ventana completa dentro del historial
+  const samples: number[] = [];
+  for (let e = firstEnd; e <= 20; e++) {
+    let s = 0;
+    for (let i = e - 6; i <= e; i++) s += daily28[i];
+    samples.push(s);
+  }
+  if (samples.length === 0) return null;
+
+  const mu = samples.reduce((a, b) => a + b, 0) / samples.length;
+  if (mu <= 0) return null; // baseline sin carga: nada que comparar
+
+  const variance = samples.reduce((a, v) => a + (v - mu) ** 2, 0) / samples.length;
+  const sigma = Math.sqrt(variance);
+  const sigmaEff = Math.max(sigma, 0.1 * mu); // suelo de anchura (estabilidad visual, no umbral de seguridad)
+
+  const low = mu - sigmaEff;
+  const high = mu + sigmaEff;
+  const overreach = mu + 2 * sigmaEff;
+
+  let status: LoadBandStatus;
+  if (weekAU < low) status = "descarga";
+  else if (weekAU <= high) status = "sostenible";
+  else if (weekAU <= overreach) status = "elevada";
+  else status = "alta";
+
+  return {
+    weekAU: Math.round(weekAU),
+    low: Math.max(0, Math.round(low)),
+    high: Math.round(high),
+    overreach: Math.round(overreach),
+    status,
+    provisional: historyDays < 28,
+  };
+}
 
 export function loadMetrics(): LoadMetrics {
   const loads = collectTrainingLoads();
@@ -99,5 +162,7 @@ export function loadMetrics(): LoadMetrics {
     }
   }
 
-  return { weekAU: Math.round(weekAU), daily7, acwr, provisional, monotonia, tension, sinVariacion, historyDays };
+  const band = computeLoadBand(daily28, weekAU, historyDays);
+
+  return { weekAU: Math.round(weekAU), daily7, acwr, provisional, monotonia, tension, sinVariacion, band, historyDays };
 }
