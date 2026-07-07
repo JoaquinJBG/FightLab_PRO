@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCreateBiometrics } from "@/lib/hooks";
 import { InfoIcon, ChevronDown } from "@/components/icons";
@@ -82,7 +83,8 @@ export default function NewBiometricsPage() {
 
   return (
     <div className="pt-4">
-      <h1 className="t-display text-2xl text-ink">
+      <Link href="/biometrics" className="t-label text-muted">← Biometría</Link>
+      <h1 className="t-display mt-2 text-2xl text-ink">
         Nueva <span className="neon-text">medición</span>
       </h1>
       <p className="t-body mt-1 text-muted">Con el peso basta. El resto es opcional.</p>
