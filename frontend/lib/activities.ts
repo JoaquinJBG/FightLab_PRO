@@ -335,6 +335,7 @@ export async function fetchServerMetrics(): Promise<LoadMetrics | null> {
       monotonia: d.monotonia,
       tension: d.tension,
       sinVariacion: d.sin_variacion,
+      band: null, // el motor de servidor aún no expone la banda (parity: follow-up); la UI usa la local
       historyDays: d.history_days,
     };
   } catch {
