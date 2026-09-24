@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import {
   biometrics,
@@ -163,12 +163,22 @@ export function useDeletePhoto() {
   });
 }
 
+/** Deja en caché el perfil que devuelve el PATCH. No basta con invalidar: en
+ *  /onboarding nadie observa ["profile"], así que invalidar solo lo marca como
+ *  viejo y el OnboardingGate del shell leería al instante el perfil incompleto
+ *  cacheado y devolvería al usuario a /onboarding en bucle. */
+export function applyProfileUpdate(qc: QueryClient, data: unknown) {
+  const parsed = profile.safeParse(data);
+  if (parsed.success) qc.setQueryData(["profile"], parsed.data);
+  else qc.removeQueries({ queryKey: ["profile"] });
+}
+
 export function useUpdateProfile() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (payload: Record<string, unknown>) =>
       sendJson("/api/proxy/me/profile", "PATCH", payload),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["profile"] }),
+    onSuccess: (data) => applyProfileUpdate(qc, data),
   });
 }
 

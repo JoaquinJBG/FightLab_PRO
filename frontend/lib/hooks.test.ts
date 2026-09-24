@@ -153,3 +153,34 @@ describe("performLogout / finishLogout (useLogout)", () => {
     expect(localStorage.getItem("flp_pending_state_42")).toBeNull();
   });
 });
+
+describe("applyProfileUpdate", () => {
+  test("deja en caché el perfil guardado para que el guard de onboarding no lea el viejo", async () => {
+    const { QueryClient } = await import("@tanstack/react-query");
+    const { applyProfileUpdate } = await import("./hooks");
+    const qc = new QueryClient();
+    // Perfil incompleto cacheado cuando el guard mandó al usuario a /onboarding.
+    qc.setQueryData(["profile"], { date_of_birth: null, height_cm: null });
+    const saved = {
+      date_of_birth: "1995-04-02",
+      gender: "M",
+      height_cm: 178,
+      dominant_stance: null,
+      preferred_units: "metric",
+      timezone: "Europe/Madrid",
+    };
+    applyProfileUpdate(qc, saved);
+    const cached = qc.getQueryData<{ date_of_birth: string | null; height_cm: number | null }>(["profile"]);
+    expect(cached?.date_of_birth).toBe("1995-04-02");
+    expect(cached?.height_cm).toBe(178);
+  });
+
+  test("si la respuesta no encaja con el schema, borra la caché para forzar una lectura nueva", async () => {
+    const { QueryClient } = await import("@tanstack/react-query");
+    const { applyProfileUpdate } = await import("./hooks");
+    const qc = new QueryClient();
+    qc.setQueryData(["profile"], { date_of_birth: null, height_cm: null });
+    applyProfileUpdate(qc, { raro: true });
+    expect(qc.getQueryData(["profile"])).toBeUndefined();
+  });
+});
