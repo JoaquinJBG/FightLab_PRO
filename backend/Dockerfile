@@ -19,6 +19,17 @@ COPY . .
 RUN DEBUG=False SECRET_KEY=build-time-only-not-used-at-runtime \
     python manage.py collectstatic --noinput
 
+# Usuario sin privilegios: con una sola instancia (plan free de Render) no
+# hay ganancia de aislar procesos, pero tampoco cuesta nada y evita correr
+# gunicorn como root. Con --home real (no /nonexistent, el defecto de
+# --system): gunicorn 26 escribe ahí el socket de su control server y sin
+# un HOME escribible falla con "Permission denied: '/nonexistent'".
+RUN addgroup --system app \
+    && adduser --system --ingroup app --home /home/app app \
+    && mkdir -p /home/app && chown -R app:app /home/app /app
+ENV HOME=/home/app
+USER app
+
 EXPOSE 8000
 
 CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py createcachetable && gunicorn core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 90"]
