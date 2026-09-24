@@ -65,7 +65,12 @@ class PhotoListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        photos = request.user.profile.photos.all()
+        # `.defer("data")`: el listado solo usa id/file_url/taken_at, así que
+        # no hace falta traer de Postgres el binario (~500 KB) de cada foto.
+        # `.exclude(data=b"")` descarta las fotos "vacías" que puede haber
+        # dejado el backfill de 0004 (sin archivo recuperable): mostrarlas
+        # daría una miniatura rota, porque su /file da 404.
+        photos = request.user.profile.photos.exclude(data=b"").defer("data")
         return Response(ProgressPhotoSerializer(photos, many=True).data)
 
     def post(self, request):
@@ -106,7 +111,10 @@ class PhotoDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, pk):
-        photo = get_object_or_404(ProgressPhoto, pk=pk, profile=request.user.profile)
+        # `.defer("data")`: borrar no necesita traer el binario a memoria.
+        photo = get_object_or_404(
+            ProgressPhoto.objects.defer("data"), pk=pk, profile=request.user.profile
+        )
         photo.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
