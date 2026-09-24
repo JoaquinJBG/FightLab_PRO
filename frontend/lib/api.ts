@@ -41,6 +41,11 @@ export type RequestOpts = {
   /** IP real del cliente (X-Forwarded-For), para que el throttling de Django no
    * agrupe a todos los usuarios bajo la IP del BFF. */
   forwardedFor?: string | null;
+  /** Sobrescribe REQUEST_TIMEOUT_MS. Se usa para acortar el timeout de los
+   * reintentos (refresh + reintento) del proxy: solo la primera petición
+   * necesita margen para un cold start de Render; si Django ya respondió una
+   * vez, ya está despierto y no hace falta esperar otros 55 s por reintento. */
+  timeoutMs?: number;
 };
 
 /**
@@ -58,7 +63,7 @@ export async function djangoRequest(path: string, opts: RequestOpts = {}): Promi
     headers,
     body: opts.body,
     cache: "no-store",
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    signal: AbortSignal.timeout(opts.timeoutMs ?? REQUEST_TIMEOUT_MS),
   });
 }
 
@@ -82,6 +87,7 @@ export async function djangoFetch(
     body?: unknown;
     access?: string | null;
     forwardedFor?: string | null;
+    timeoutMs?: number;
   } = {},
 ): Promise<ApiResult> {
   const res = await djangoRequest(path, {
@@ -90,6 +96,7 @@ export async function djangoFetch(
     body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
     access: opts.access,
     forwardedFor: opts.forwardedFor,
+    timeoutMs: opts.timeoutMs,
   });
   return toApiResult(res);
 }

@@ -99,8 +99,14 @@ export async function buildProxyResponse(upstream: Response): Promise<Response> 
   headers.set("content-type", contentType);
   const cacheControl = upstream.headers.get("cache-control");
   if (cacheControl) headers.set("cache-control", cacheControl);
+  // Si Render comprime la respuesta (content-encoding: gzip/br), undici ya la
+  // descomprime antes de que lleguemos aquí, pero content-length sigue siendo
+  // el tamaño comprimido original: reenviarlo tal cual puede truncar el cuerpo
+  // o provocar un desajuste de longitud en el navegador. Sin content-encoding
+  // (el caso normal de las fotos) sí se reenvía, porque coincide con el body.
   const contentLength = upstream.headers.get("content-length");
-  if (contentLength) headers.set("content-length", contentLength);
+  const contentEncoding = upstream.headers.get("content-encoding");
+  if (contentLength && !contentEncoding) headers.set("content-length", contentLength);
   return new Response(upstream.body, { status: upstream.status, headers });
 }
 
@@ -131,4 +137,17 @@ export function isRefreshTokenExpiredOrMalformed(token: string): boolean {
   } catch {
     return true;
   }
+}
+
+/** Cómo traducir un error de red/timeout al reenviar la petición a Django. */
+export function classifyGatewayError(err: unknown): { status: number; detail: string } {
+  // DOMException (lo que lanza AbortSignal.timeout) no siempre pasa
+  // `instanceof Error` según el entorno, así que se comprueba `.name` por
+  // duck typing en vez de exigir una clase concreta.
+  const name =
+    err && typeof err === "object" && "name" in err ? String((err as { name: unknown }).name) : "";
+  if (name === "TimeoutError" || name === "AbortError") {
+    return { status: 504, detail: "El backend ha tardado demasiado en responder" };
+  }
+  return { status: 502, detail: "No se pudo contactar con el backend" };
 }

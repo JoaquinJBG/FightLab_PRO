@@ -65,6 +65,24 @@ describe("POST /api/proxy/[...path] — validación de ruta", () => {
     expect(res.status).toBe(404);
     expect(djangoRequest).not.toHaveBeenCalled();
   });
+
+  test("un fallo de red al hablar con Django se traduce a 502, no a un 500 sin manejar", async () => {
+    cookieStore.set("fl_access", "access");
+    djangoRequest.mockRejectedValueOnce(new TypeError("fetch failed"));
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(502);
+  });
+
+  test("un timeout (AbortSignal.timeout) al hablar con Django se traduce a 504", async () => {
+    cookieStore.set("fl_access", "access");
+    djangoRequest.mockRejectedValueOnce(new DOMException("timeout", "TimeoutError"));
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(504);
+  });
 });
 
 describe("POST /api/proxy/[...path] — refresh de sesión", () => {

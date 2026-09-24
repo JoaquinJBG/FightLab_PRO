@@ -7,6 +7,7 @@ import {
   isOriginAllowed,
   buildProxyResponse,
   isRefreshTokenExpiredOrMalformed,
+  classifyGatewayError,
   MAX_PROXY_BODY_BYTES,
 } from "./proxy-guard";
 
@@ -170,6 +171,20 @@ describe("buildProxyResponse", () => {
     expect(res.status).toBe(502);
     expect(await res.text()).toBe("Bad Gateway");
   });
+
+  test("con content-encoding no se reenvía content-length (undici ya descomprimió el body)", async () => {
+    const bytes = new Uint8Array([1, 2, 3, 4]);
+    const upstream = new Response(bytes, {
+      status: 200,
+      headers: {
+        "content-type": "image/jpeg",
+        "content-encoding": "gzip",
+        "content-length": "999", // tamaño comprimido original, ya no coincide con el body
+      },
+    });
+    const res = await buildProxyResponse(upstream);
+    expect(res.headers.get("content-length")).toBeNull();
+  });
 });
 
 describe("isRefreshTokenExpiredOrMalformed", () => {
@@ -193,5 +208,25 @@ describe("isRefreshTokenExpiredOrMalformed", () => {
   test("un token con 'exp' en el futuro NO está expirado (no hay que borrar sus cookies)", () => {
     const exp = Math.floor(Date.now() / 1000) + 3600;
     expect(isRefreshTokenExpiredOrMalformed(fakeJwt({ exp }))).toBe(false);
+  });
+});
+
+describe("classifyGatewayError", () => {
+  test("un TimeoutError (AbortSignal.timeout) se traduce a 504", () => {
+    const err = new DOMException("The operation timed out.", "TimeoutError");
+    expect(classifyGatewayError(err)).toEqual({
+      status: 504,
+      detail: "El backend ha tardado demasiado en responder",
+    });
+  });
+
+  test("un AbortError también se traduce a 504", () => {
+    const err = new DOMException("The operation was aborted.", "AbortError");
+    expect(classifyGatewayError(err).status).toBe(504);
+  });
+
+  test("cualquier otro fallo de red se traduce a 502", () => {
+    expect(classifyGatewayError(new TypeError("fetch failed")).status).toBe(502);
+    expect(classifyGatewayError("algo raro").status).toBe(502);
   });
 });

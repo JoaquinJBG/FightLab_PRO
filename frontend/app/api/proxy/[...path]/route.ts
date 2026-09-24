@@ -14,11 +14,18 @@ import {
   isOriginAllowed,
   buildProxyResponse,
   isRefreshTokenExpiredOrMalformed,
+  classifyGatewayError,
 } from "@/lib/proxy-guard";
 
 // Backend en Render (plan free): hasta ~50 s en frío. Deja margen bajo los 60 s
 // que soporta una función de Vercel (plan Hobby).
 export const maxDuration = 60;
+
+// Solo la primera petición necesita margen para un cold start de Render. Si
+// Django ya respondió (aunque fuera con un 401), ya está despierto: el
+// refresh y el reintento posterior usan un timeout corto para no encadenar
+// hasta 3×55 s, muy por encima de maxDuration.
+const RETRY_TIMEOUT_MS = 15_000;
 
 async function handle(req: Request, path: string[]) {
   if (!isPathSafe(path) || !isPrefixAllowed(path)) {
@@ -45,7 +52,9 @@ async function handle(req: Request, path: string[]) {
   const contentType = req.headers.get("content-type") ?? "";
   const isMultipart = contentType.startsWith("multipart/form-data");
   // La IP real del cliente, para que el throttling de Django no la confunda
-  // con la del propio BFF (Django necesita NUM_PROXIES=1 para leerla bien).
+  // con la del propio BFF. Cuántos saltos hay que descontar (NUM_PROXIES) lo
+  // decide el paquete A: Render puede añadir su propio salto delante de este
+  // valor, así que el número correcto puede no ser 1 (ver informe).
   const forwardedFor = req.headers.get("x-forwarded-for");
 
   let body: unknown = undefined;
@@ -61,52 +70,64 @@ async function handle(req: Request, path: string[]) {
     }
   }
 
-  const doReq = (acc: string | null) =>
+  const doReq = (acc: string | null, timeoutMs?: number) =>
     form
-      ? djangoRequest(target, { method, body: form, access: acc, forwardedFor })
+      ? djangoRequest(target, { method, body: form, access: acc, forwardedFor, timeoutMs })
       : djangoRequest(target, {
           method,
           headers: { "Content-Type": "application/json" },
           body: body !== undefined ? JSON.stringify(body) : undefined,
           access: acc,
           forwardedFor,
+          timeoutMs,
         });
 
-  let access = await getAccess();
-  let upstream = await doReq(access);
+  try {
+    let access = await getAccess();
+    let upstream = await doReq(access);
 
-  if (upstream.status === 401) {
-    const refreshBefore = await getRefresh();
-    if (!refreshBefore) {
-      await clearAuthCookies();
-      return NextResponse.json({ detail: "No autenticado" }, { status: 401 });
-    }
-    const ref = await djangoFetch("/auth/refresh", {
-      method: "POST",
-      body: { refresh: refreshBefore },
-    });
-    if (ref.status === 200 && ref.data && typeof ref.data === "object") {
-      const d = ref.data as { access: string; refresh?: string };
-      if (d.refresh) await setAuthCookies(d.access, d.refresh);
-      else await setAccessCookie(d.access);
-      access = d.access;
-      upstream = await doReq(access);
-    } else {
-      // Solo se borran las cookies si el refresh que teníamos ya no sirve
-      // (expirado o mal formado). Una petición concurrente puede haber
-      // rotado fl_refresh justo mientras este refresh fallaba (red, 500 de
-      // Django…); comparar cookies antes/después de esta misma petición no
-      // detecta esa rotación (cookies() ve el jar de ESTA petición, no el
-      // Set-Cookie que puso otra en paralelo), así que en vez de eso se
-      // decodifica el propio token para decidir.
-      if (isRefreshTokenExpiredOrMalformed(refreshBefore)) {
+    if (upstream.status === 401) {
+      const refreshBefore = await getRefresh();
+      if (!refreshBefore) {
         await clearAuthCookies();
+        return NextResponse.json({ detail: "No autenticado" }, { status: 401 });
       }
-      return NextResponse.json({ detail: "Sesión expirada" }, { status: 401 });
+      const ref = await djangoFetch("/auth/refresh", {
+        method: "POST",
+        body: { refresh: refreshBefore },
+        timeoutMs: RETRY_TIMEOUT_MS,
+      });
+      if (ref.status === 200 && ref.data && typeof ref.data === "object") {
+        const d = ref.data as { access: string; refresh?: string };
+        if (d.refresh) await setAuthCookies(d.access, d.refresh);
+        else await setAccessCookie(d.access);
+        access = d.access;
+        upstream = await doReq(access, RETRY_TIMEOUT_MS);
+      } else {
+        // Solo se borran las cookies si el refresh que teníamos ya no sirve
+        // (expirado o mal formado). Una petición concurrente puede haber
+        // rotado fl_refresh justo mientras este refresh fallaba (red, 500 de
+        // Django…); comparar cookies antes/después de esta misma petición no
+        // detecta esa rotación (cookies() ve el jar de ESTA petición, no el
+        // Set-Cookie que puso otra en paralelo), así que en vez de eso se
+        // decodifica el propio token para decidir.
+        if (isRefreshTokenExpiredOrMalformed(refreshBefore)) {
+          await clearAuthCookies();
+        }
+        return NextResponse.json({ detail: "Sesión expirada" }, { status: 401 });
+      }
     }
-  }
 
-  return buildProxyResponse(upstream);
+    return buildProxyResponse(upstream);
+  } catch (err) {
+    // Timeout (cold start que no llega a tiempo) o fallo de red al hablar con
+    // Django: sin este catch, el error se propaga como un 500 genérico. Antes
+    // del refresh esto podía además encadenar hasta 3 llamadas de hasta 55 s,
+    // muy por encima de maxDuration=60; RETRY_TIMEOUT_MS ya acorta el refresh
+    // y el reintento.
+    const { status, detail } = classifyGatewayError(err);
+    return NextResponse.json({ detail }, { status });
+  }
 }
 
 type Ctx = { params: Promise<{ path: string[] }> };
