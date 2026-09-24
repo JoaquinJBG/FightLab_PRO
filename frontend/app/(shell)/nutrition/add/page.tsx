@@ -76,7 +76,10 @@ function AddInner() {
   const [saving, setSaving] = useState(false); // anti doble-toque en acciones que añaden y navegan
 
   useEffect(() => {
+    // Lectura síncrona de localStorage tras montar (no existe en el
+    // servidor). Pre-existente a este cambio.
     const r = recentFoods();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRecents(r);
     setYesterday(yesterdayMealItems(meal));
     if (r.length > 0) setMode("recientes");

@@ -6,9 +6,12 @@ import { useBiometrics } from "@/lib/hooks";
 import { computeRecovery, type Recovery } from "@/lib/recovery";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
 import { fetchServerMetrics } from "@/lib/activities";
+import { useUserState } from "@/lib/user-state";
 import {
   CoachIcon, BoltIcon, ScaleIcon, MoonIcon, ChevronRight, GloveIcon,
 } from "@/components/icons";
+
+type FbEntry = { id: string; useful: boolean; ts: number };
 
 /* ------------------- contexto real del atleta (local) -------------------- */
 
@@ -147,10 +150,13 @@ function buildRecs(ctx: Ctx): Rec[] {
 const REC_ICON = { load: BoltIcon, weigh: ScaleIcon, rest: MoonIcon, log: GloveIcon } as const;
 const TONE_COLOR = { warn: "#ffd25a", info: "#45e9ff", good: "#43e8a0" } as const;
 
-const dismissKey = () => {
+// Clave "pelada" (sin el prefijo flp_): es la que espera useUserState, que
+// añade el prefijo por dentro para leer/escribir localStorage.
+const bareDismissKey = () => {
   const d = new Date();
-  return `flp_coach_dismissed_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return `coach_dismissed_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
+const dismissKey = () => `flp_${bareDismissKey()}`;
 
 /* --------------------------------- chat ----------------------------------- */
 
@@ -208,20 +214,22 @@ export default function CoachPage() {
   const { data: logs = [] } = useBiometrics();
   const [metrics, setMetrics] = useState<LoadMetrics | null>(null);
   const [weigh, setWeigh] = useState<{ target: number; date: string } | null>(null);
-  const [dismissed, setDismissed] = useState<string[]>([]);
+  const { value: dismissed, setValue: setDismissed } = useUserState<string[]>(bareDismissKey(), []);
+  const { value: fb, setValue: setFb } = useUserState<FbEntry[]>("coach_fb", []);
   const [feedback, setFeedback] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     let alive = true;
-    setMetrics(loadMetrics()); // pintura inmediata; el servidor sobreescribe al llegar
+    // Pintura inmediata desde local; el servidor sobreescribe al llegar.
+    // Pre-existente a este cambio.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMetrics(loadMetrics());
     fetchServerMetrics().then((m) => { if (alive && m) setMetrics(m); });
     try {
       const w = JSON.parse(localStorage.getItem("flp_weigh") ?? "null");
       if (w && typeof w.target === "number" && typeof w.date === "string" && !Number.isNaN(new Date(w.date).getTime())) {
         setWeigh(w);
       }
-      const d = JSON.parse(localStorage.getItem(dismissKey()) ?? "[]");
-      if (Array.isArray(d)) setDismissed(d);
       // Limpia los descartes de días anteriores para que no se acumulen
       const today = dismissKey();
       for (let i = localStorage.length - 1; i >= 0; i--) {
@@ -257,16 +265,11 @@ export default function CoachPage() {
   const recs = buildRecs(ctx).filter((r) => !dismissed.includes(r.id));
 
   function dismiss(id: string) {
-    const n = [...dismissed, id];
-    setDismissed(n);
-    try { localStorage.setItem(dismissKey(), JSON.stringify(n)); } catch { /* noop */ }
+    setDismissed([...dismissed, id]);
   }
   function vote(id: string, useful: boolean) {
     setFeedback((f) => ({ ...f, [id]: useful }));
-    try {
-      const arr = JSON.parse(localStorage.getItem("flp_coach_fb") ?? "[]");
-      localStorage.setItem("flp_coach_fb", JSON.stringify([...(Array.isArray(arr) ? arr : []), { id, useful, ts: Date.now() }].slice(-200)));
-    } catch { /* noop */ }
+    setFb([...fb, { id, useful, ts: Date.now() }].slice(-200));
   }
 
   /* chat */

@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUpdateProfile } from "@/lib/hooks";
+import { useUserState } from "@/lib/user-state";
 import { GloveIcon, PulseIcon, NutritionIcon, ChevronRight } from "@/components/icons";
 import { DobInput, validateDob, dobToIso, type Dob } from "@/components/dob-input";
+
+type ProfileExtra = { disciplines: string[]; experience: string; goal: string; freq: number | null };
 
 /* ----------------------------- opciones ---------------------------------- */
 
@@ -49,6 +52,7 @@ const TOTAL_STEPS = 3; // pasos con formulario (el 0 es bienvenida)
 export default function OnboardingPage() {
   const router = useRouter();
   const update = useUpdateProfile();
+  const { setValue: setProfileExtra } = useUserState<ProfileExtra | null>("profile_extra", null);
 
   const [step, setStep] = useState(0);
 
@@ -103,15 +107,9 @@ export default function OnboardingPage() {
         preferred_units: units,
       });
       // Campos aún sin columna en el backend (llegan en la fase 2):
-      // se guardan en local para personalizar copy/planes desde ya.
-      try {
-        localStorage.setItem(
-          "flp_profile_extra",
-          JSON.stringify({ disciplines, experience, goal, freq }),
-        );
-      } catch {
-        /* sin localStorage no pasa nada: son opcionales */
-      }
+      // se guardan en local (con copia de seguridad en el servidor) para
+      // personalizar copy/planes desde ya.
+      setProfileExtra({ disciplines, experience, goal, freq });
       router.replace("/dashboard");
     } catch {
       setStepError("No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.");
