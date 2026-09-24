@@ -1,3 +1,6 @@
+import functools
+import logging
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
@@ -15,6 +18,7 @@ from .tokens import (
 )
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 def is_beta_email_allowed(email: str) -> bool:
@@ -37,19 +41,30 @@ def is_beta_email_allowed(email: str) -> bool:
 
 
 def _send_verification_email(user) -> None:
+    """Envía el email de verificación.
+
+    Nunca deja escapar una excepción: un fallo del proveedor de email (SMTP
+    bloqueado, API caída, credenciales que faltan...) no debe tumbar la
+    petición de registro/reenvío que la llama ni, si se llama desde dentro
+    de una transacción, revertirla. El usuario siempre puede pedir el
+    reenvío desde /verify-email/resend si el correo no llega.
+    """
     token = generate_email_verification_token(user)
     link = f"{settings.FRONTEND_URL}/verify-email?token={token}"
-    html = render_to_string("users/verify_email.html", {"verification_link": link})
-    send_mail(
-        subject="Verifica tu cuenta de FightLab Pro",
-        message=(
-            f"Bienvenido a FightLab Pro. Verifica tu correo:\n\n{link}\n\n"
-            "Este enlace vence en 24 horas."
-        ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        html_message=html,
-    )
+    try:
+        html = render_to_string("users/verify_email.html", {"verification_link": link})
+        send_mail(
+            subject="Verifica tu cuenta de FightLab Pro",
+            message=(
+                f"Bienvenido a FightLab Pro. Verifica tu correo:\n\n{link}\n\n"
+                "Este enlace vence en 24 horas."
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html,
+        )
+    except Exception:
+        logger.exception("No se pudo enviar el email de verificación a %s", user.email)
     if settings.DEBUG:
         # Enlace limpio y copiable en consola (el email de dev va en quoted-printable).
         print(f"\n[DEV] Verificación para {user.email}:\n{link}\n", flush=True)
@@ -59,33 +74,41 @@ def _send_verification_email(user) -> None:
 def user_create(*, email: str, password: str):
     """Create an inactive user and send the verification email.
 
-    Si ya existe una cuenta con ese email pero SIN verificar, no es un error:
-    se reenvía el enlace de verificación. La contraseña que se manda en ESTE
-    intento no se usa (evita el secuestro por sobrescritura: cualquiera
-    podría "re-registrar" el email de otra persona con una contraseña suya
-    y quedarse con la cuenta). Pero tampoco se conserva la contraseña que ya
-    tuviera la cuenta: se deja sin contraseña utilizable
-    (set_unusable_password). Si no se hiciera así, cabría un secuestro
-    simétrico por PRE-registro: alguien registra primero el email de la
-    víctima (tiene que estar en BETA_ALLOWED_EMAILS) y, cuando la víctima se
-    registra después y verifica el enlace que le llega, entraría con la
-    contraseña que puso el atacante. Al dejarla sin contraseña utilizable,
-    quien verifique el enlace tiene que pasar por "recuperar contraseña"
-    antes de poder entrar, así que un pre-registro ajeno no da acceso a
-    nadie. Si la cuenta ya está verificada, sí es un error.
+    Si ya existe una cuenta con ese email pero SIN verificar, no es un
+    error de "email duplicado": se reenvía el enlace de verificación y se
+    responde igual que un alta nueva (201, sin enumerar). NO se toca la
+    contraseña ya guardada. El caso más común con diferencia es el propio
+    usuario legítimo pulsando "Crear cuenta" dos veces (el primer email
+    tarda, o coincide con el cold start de Render): tocar la contraseña en
+    ese caso dejaba al usuario sin poder entrar nunca tras verificar, sin
+    ninguna pista de qué había pasado (ver VerifyEmailView/needs_password
+    para el caso, ya heredado, de una cuenta sin contraseña utilizable).
+
+    Riesgo residual (documentado, no mitigado con más lógica): si alguien
+    registra ANTES que la víctima el email de otra persona (tiene que estar
+    invitado en BETA_ALLOWED_EMAILS) con una contraseña propia, esa cuenta
+    queda con la contraseña del atacante hasta que la víctima intente
+    entrar por primera vez y descubra que no puede (no hay enumeración de
+    "ya registrado", así que solo lo notaría al fallar el login, no al
+    registrarse). El atacante no puede verificar el email ajeno (el enlace
+    solo le llega a quien tiene acceso al buzón de la víctima), así que no
+    hay secuestro silencioso de una cuenta que la víctima ya usa, pero sí
+    de una cuenta que aún no ha estrenado. En la beta cerrada (invitación
+    explícita, pocos usuarios, ventana corta hasta el primer login) se
+    acepta este riesgo en vez de reintroducir el problema anterior
+    (invalidar contraseñas a ciegas). Si la cuenta ya está verificada, sí es
+    un error.
     """
     email = email.strip().lower()
     existing = User.objects.filter(email=email).first()
     if existing is not None:
         if existing.is_email_verified:
             raise ValueError("A user with this email already exists")
-        existing.set_unusable_password()
-        existing.save(update_fields=["password", "updated_at"])
-        _send_verification_email(existing)
+        transaction.on_commit(functools.partial(_send_verification_email, existing))
         return existing
 
     user = User.objects.create_user(email=email, password=password, is_active=False)
-    _send_verification_email(user)
+    transaction.on_commit(functools.partial(_send_verification_email, user))
     return user
 
 
@@ -117,23 +140,32 @@ def verification_resend(*, email: str) -> None:
         return  # do not leak which emails exist
     if user.is_email_verified:
         return
-    _send_verification_email(user)
+    transaction.on_commit(functools.partial(_send_verification_email, user))
 
 
 def _send_password_reset_email(user) -> None:
+    """Envía el email de recuperación de contraseña.
+
+    Igual que _send_verification_email: nunca deja escapar una excepción del
+    proveedor de email, para no tumbar la petición ni (llamada dentro de un
+    @transaction.atomic) revertir nada.
+    """
     uid, token = generate_password_reset_uid_and_token(user)
     link = f"{settings.FRONTEND_URL}/reset-password?uid={uid}&token={token}"
-    html = render_to_string("users/password_reset.html", {"reset_link": link})
-    send_mail(
-        subject="Recupera tu contraseña de FightLab Pro",
-        message=(
-            f"Hemos recibido una solicitud para restablecer tu contraseña:\n\n{link}\n\n"
-            "Si no fuiste tú, ignora este email."
-        ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        html_message=html,
-    )
+    try:
+        html = render_to_string("users/password_reset.html", {"reset_link": link})
+        send_mail(
+            subject="Recupera tu contraseña de FightLab Pro",
+            message=(
+                f"Hemos recibido una solicitud para restablecer tu contraseña:\n\n{link}\n\n"
+                "Si no fuiste tú, ignora este email."
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html,
+        )
+    except Exception:
+        logger.exception("No se pudo enviar el email de recuperación de contraseña a %s", user.email)
     if settings.DEBUG:
         print(f"\n[DEV] Recuperación de contraseña para {user.email}:\n{link}\n", flush=True)
 
@@ -151,7 +183,7 @@ def password_reset_request(*, email: str) -> None:
         return
     if not user.is_active:
         return
-    _send_password_reset_email(user)
+    transaction.on_commit(functools.partial(_send_password_reset_email, user))
 
 
 @transaction.atomic

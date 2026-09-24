@@ -20,7 +20,12 @@ services:
       - key: ADMIN_URL
         sync: false
       - key: NUM_PROXIES
-        value: "2"
+        # Solo se usa como fallback (sin BFF_SHARED_SECRET, o si alguien
+        # llama directo a *.onrender.com sin pasar por el BFF de Vercel):
+        # en ese camino hay UN único proxy de confianza (el borde de
+        # Render). Con 2 aquí, cualquiera podría saltarse el throttle de
+        # login/register/reset inventándose X-Forwarded-For.
+        value: "1"
       - key: DATABASE_URL
         sync: false
       - key: FRONTEND_URL
@@ -31,18 +36,19 @@ services:
         sync: false
       - key: BETA_ALLOWED_EMAILS
         sync: false
-      - key: EMAIL_BACKEND
-        value: django.core.mail.backends.smtp.EmailBackend
-      - key: EMAIL_HOST
-        value: smtp.gmail.com
-      - key: EMAIL_PORT
-        value: "587"
-      - key: EMAIL_USE_TLS
-        value: "True"
-      - key: EMAIL_HOST_USER
+      # Secreto compartido con el BFF de Next (mismo valor en Vercel): sin
+      # él, el throttle de auth no distingue visitantes detrás del BFF.
+      - key: BFF_SHARED_SECRET
         sync: false
-      - key: EMAIL_HOST_PASSWORD
+      # Render free bloquea el SMTP saliente (25/465/587): el envío va por
+      # la API HTTP de Brevo vía django-anymail. 'resend' es la alternativa
+      # si se cambia de proveedor (RESEND_API_KEY, sync:false, opcional).
+      - key: EMAIL_PROVIDER
+        value: brevo
+      - key: BREVO_API_KEY
         sync: false
+      - key: EMAIL_TIMEOUT
+        value: "10"
       - key: DEFAULT_FROM_EMAIL
         sync: false
       - key: ANTHROPIC_API_KEY

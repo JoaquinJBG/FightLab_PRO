@@ -15,6 +15,7 @@ from .serializers import (
     VerifyEmailSerializer,
 )
 from .throttling import TrustedBffScopedRateThrottle
+from .tokens import generate_password_reset_uid_and_token
 
 
 class NormalizedTokenObtainPairView(TokenObtainPairView):
@@ -54,10 +55,24 @@ class VerifyEmailView(APIView):
         serializer = VerifyEmailSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            services.email_verify(**serializer.validated_data)
+            user = services.email_verify(**serializer.validated_data)
         except ValueError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"detail": "Email verified"}, status=status.HTTP_200_OK)
+        # Cuentas heredadas sin contraseña utilizable (por ejemplo, de antes
+        # de este fix, cuando un re-registro sí la invalidaba): el email
+        # queda verificado, pero un login normal daría 401 sin ninguna pista
+        # de qué hacer. Se manda ya un uid/token de reset para que el
+        # frontend pueda saltar directo a /reset-password.
+        if not user.has_usable_password():
+            uid, token = generate_password_reset_uid_and_token(user)
+            return Response(
+                {"detail": "Email verified", "needs_password": True, "uid": uid, "token": token},
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {"detail": "Email verified", "needs_password": False},
+            status=status.HTTP_200_OK,
+        )
 
 
 class ResendVerificationView(APIView):
