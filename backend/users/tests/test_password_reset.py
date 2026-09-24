@@ -52,6 +52,15 @@ def test_password_reset_request_normalizes_email(verified_user):
 
 
 @pytest.mark.django_db
+def test_password_reset_confirm_rejects_password_similar_to_email(verified_user):
+    uid, token = generate_password_reset_uid_and_token(verified_user)
+    with pytest.raises(ValueError):
+        password_reset_confirm(uid=uid, token=token, password="a@b.com")
+    verified_user.refresh_from_db()
+    assert verified_user.check_password("pw-strong-123")  # no se tocó
+
+
+@pytest.mark.django_db
 def test_password_reset_confirm_sets_new_password(verified_user):
     uid, token = generate_password_reset_uid_and_token(verified_user)
     password_reset_confirm(uid=uid, token=token, password="pw-new-strong-999")

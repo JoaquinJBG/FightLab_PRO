@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.mail import send_mail
 from django.db import transaction
 from django.template.loader import render_to_string
@@ -147,10 +149,20 @@ def password_reset_request(*, email: str) -> None:
 
 @transaction.atomic
 def password_reset_confirm(*, uid: str, token: str, password: str) -> None:
-    """Validate the uid/token pair and set the new password."""
+    """Validate the uid/token pair and set the new password.
+
+    La fuerza de la contraseña se valida aquí (no en el serializer) porque
+    UserAttributeSimilarityValidator necesita el usuario para poder rechazar
+    una contraseña igual o parecida a su email, y el usuario solo se conoce
+    tras resolver el uid.
+    """
     user = get_user_from_password_reset_uid(uid)
     if user is None or not check_password_reset_token(user, token):
         raise ValueError("Invalid or expired reset link")
+    try:
+        validate_password(password, user)
+    except DjangoValidationError as exc:
+        raise ValueError(" ".join(exc.messages)) from exc
     user.set_password(password)
     user.save(update_fields=["password", "updated_at"])
     _blacklist_all_outstanding_tokens(user)
