@@ -149,7 +149,12 @@ export default function MmaPage() {
   const [sessions, setSessions] = useState<Sess[]>([]);
   const [savedFlash, setSavedFlash] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  useEffect(() => setSessions(loadSess()), []);
+  useEffect(() => {
+    // Lectura síncrona de localStorage tras montar: no existe en el servidor
+    // (evita el desajuste de hidratación). Pre-existente a este cambio.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSessions(loadSess());
+  }, []);
 
   // Historial + stats del mes: local (inmediato) y luego fusionado con el
   // servidor, para que funcione en otro dispositivo. Fallback local si no responde.
@@ -166,6 +171,17 @@ export default function MmaPage() {
   }, []);
 
   const load = minutes * rpe;
+
+  // "Repetir última": prellena tipo de trabajo, duración (rounds) y compañero
+  // desde la sesión más reciente (local o fusionada con el servidor).
+  function repeatLast() {
+    const last = sessions[0];
+    if (!last) return;
+    if ((ARTS as readonly string[]).includes(last.art)) setArt(last.art as Art);
+    if (last.type && (WORK_TYPES as readonly string[]).includes(last.type)) setWorkType(last.type as WorkType);
+    if (last.minutes > 0) setMinutes(last.minutes);
+    setPartner(last.partner ?? "");
+  }
 
   function saveSession() {
     const ts = Date.now();
@@ -275,7 +291,10 @@ export default function MmaPage() {
 
       {/* Plan sugerido */}
       <div className="glass neon-edge mt-4 p-4">
-        <p className="t-eyebrow text-neon">Plan sugerido</p>
+        <div className="flex items-center gap-2">
+          <p className="t-eyebrow text-neon">Plan sugerido</p>
+          <span className="badge">Demo · próximamente IA</span>
+        </div>
         <p className="t-body mt-1.5 text-ink">{planFor(art, workType, minutes)}</p>
         <p className="t-body mt-2 text-xs text-muted">⚠️ {reminderFor(art)}</p>
         <p className="t-body mt-3 border-t border-[rgba(150,190,255,0.1)] pt-2.5 text-[11px] text-muted">
@@ -285,7 +304,12 @@ export default function MmaPage() {
 
       {/* Registrar sesión */}
       <div className="mt-4">
-        <p className="t-eyebrow text-muted">Registrar sesión</p>
+        <div className="flex items-center justify-between">
+          <p className="t-eyebrow text-muted">Registrar sesión</p>
+          {sessions.length > 0 && (
+            <button type="button" onClick={repeatLast} className="t-label text-neon">↻ Repetir última</button>
+          )}
+        </div>
         <div className="mt-2 grid grid-cols-2 gap-3">
           <Stepper label="Duración" value={minutes} set={setMinutes} min={5} max={240} step={5} suffix=" min" />
           <Stepper label="RPE" value={rpe} set={setRpe} min={1} max={10} />
@@ -327,7 +351,7 @@ export default function MmaPage() {
                   <div className="h-1.5 flex-1 rounded-full bg-[rgba(150,190,255,0.12)]">
                     <div className="h-1.5 rounded-full" style={{ width: `${maxArtMin > 0 ? (min / maxArtMin) * 100 : 0}%`, background: "linear-gradient(90deg,#45e9ff,#3b74ff)" }} />
                   </div>
-                  <span className="t-body w-12 shrink-0 text-right text-[11px] text-muted">{min}'</span>
+                  <span className="t-body w-12 shrink-0 text-right text-[11px] text-muted">{`${min}'`}</span>
                 </div>
               ))}
             </div>
@@ -388,7 +412,7 @@ export default function MmaPage() {
               <div className="flex items-center gap-2">
                 <span className="text-neon"><CoachIcon className="h-5 w-5" /></span>
                 <p className="t-title text-ink">Coach IA</p>
-                <span className="badge badge-neon">simulado</span>
+                <span className="badge badge-neon">Demo · próximamente IA</span>
               </div>
               <button onClick={() => setChatOpen(false)} className="t-label text-muted">Cerrar ✕</button>
             </div>

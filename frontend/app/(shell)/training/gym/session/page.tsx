@@ -10,6 +10,8 @@ import {
   GYM_LIVE_KEY,
   GYM_REST_KEY,
   exerciseStats,
+  previousSet,
+  formatSetPreview,
   pushGymSession,
   loadGymSessions,
   gymSessionFromServer,
@@ -76,7 +78,9 @@ function SessionInner() {
   /* ---------- historial para "Última vez"/PR: local + servidor (otro dispositivo) ---------- */
   const [gymHistory, setGymHistory] = useState<GymSession[]>([]);
   useEffect(() => {
-    setGymHistory(loadGymSessions()); // pintura inmediata con lo local
+    // Pintura inmediata desde local; el servidor sobreescribe al llegar.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setGymHistory(loadGymSessions());
     let alive = true;
     fetchServerActivities("GYM").then((server) => {
       if (!alive || !server) return; // el servidor no respondió: se queda con lo local
@@ -95,7 +99,10 @@ function SessionInner() {
       const raw = localStorage.getItem(GYM_LIVE_KEY);
       if (raw) {
         const live: LiveGym = JSON.parse(raw);
+        // Lectura síncrona de localStorage tras montar (no existe en el
+        // servidor, evita el desajuste de hidratación).
         if (live && Array.isArray(live.exercises) && Date.now() - live.savedAt < 12 * 3600_000) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setFocus(live.focus);
           setExercises(live.exercises);
           setStartedAt(live.startedAt);
@@ -163,7 +170,9 @@ function SessionInner() {
   }, [restLeft, restUntil]);
 
   function startRest() {
+    // Se dispara al marcar una serie hecha (evento de usuario), no durante el render.
     restDone.current = false;
+    // eslint-disable-next-line react-hooks/purity
     setRestUntil(Date.now() + restDur * 1000);
   }
   function changeRest(v: number) {
@@ -176,6 +185,17 @@ function SessionInner() {
     setExercises((xs) =>
       xs.map((x, i) =>
         i !== ei ? x : { ...x, sets: x.sets.map((s, j) => (j !== si ? s : { ...s, [field]: value.replace(/[^\d.,]/g, "").slice(0, 6) })) },
+      ),
+    );
+  }
+  // logging fricción-mínima: un toque en "anterior: 80 kg × 8" copia esos
+  // valores a la serie actual (no toca `done`, por si el usuario quiere ajustarlos antes)
+  function applyPreviousSet(ei: number, si: number, set: { kg: number; reps: number }) {
+    setExercises((xs) =>
+      xs.map((x, i) =>
+        i !== ei
+          ? x
+          : { ...x, sets: x.sets.map((s, j) => (j !== si ? s : { ...s, kg: String(set.kg), reps: String(set.reps) })) },
       ),
     );
   }
@@ -224,9 +244,11 @@ function SessionInner() {
   const volume = Math.round(parsedExercises.reduce((a, x) => a + x.sets.reduce((b, s) => b + s.kg * s.reps, 0), 0));
 
   function save() {
+    // Se ejecuta al pulsar "Guardar" (evento de usuario), no durante el render.
     // tope de 4 h: una sesión restaurada horas después no debe inflar la carga
     const capped = Math.min(elapsed, 4 * 3600);
     const minutes = capped / 60;
+    // eslint-disable-next-line react-hooks/purity
     const ts = Date.now();
     const clientId = crypto.randomUUID();
     pushGymSession({
@@ -373,12 +395,16 @@ function SessionInner() {
                 <span className="t-label text-muted">kg</span>
                 <span className="t-label text-muted">reps</span>
                 <span />
-                {x.sets.map((s, si) => (
-                  <SetRow key={si} index={si} set={s}
-                    onKg={(v) => updateSet(ei, si, "kg", v)}
-                    onReps={(v) => updateSet(ei, si, "reps", v)}
-                    onDone={() => toggleDone(ei, si)} />
-                ))}
+                {x.sets.map((s, si) => {
+                  const prev = previousSet(x.name, si, gymHistory);
+                  return (
+                    <SetRow key={si} index={si} set={s} preview={formatSetPreview(prev)}
+                      onKg={(v) => updateSet(ei, si, "kg", v)}
+                      onReps={(v) => updateSet(ei, si, "reps", v)}
+                      onDone={() => toggleDone(ei, si)}
+                      onUsePreview={prev ? () => applyPreviousSet(ei, si, prev) : undefined} />
+                  );
+                })}
               </div>
               <button onClick={() => addSet(ei)} className="btn btn-tonal btn-sm mt-3 w-full">+ Serie</button>
             </div>
@@ -436,12 +462,14 @@ function SessionInner() {
   );
 }
 
-function SetRow({ index, set, onKg, onReps, onDone }: {
+function SetRow({ index, set, preview, onKg, onReps, onDone, onUsePreview }: {
   index: number;
   set: { kg: string; reps: string; done: boolean };
+  preview: string | null;
   onKg: (v: string) => void;
   onReps: (v: string) => void;
   onDone: () => void;
+  onUsePreview?: () => void;
 }) {
   return (
     <>
@@ -457,6 +485,12 @@ function SetRow({ index, set, onKg, onReps, onDone }: {
           : { borderColor: "rgba(150,190,255,0.25)", color: "var(--color-muted)" }}>
         ✓
       </button>
+      {preview && !set.done && (
+        <button type="button" onClick={onUsePreview} className="col-span-4 -mt-1 text-left"
+          aria-label={`Copiar serie anterior: ${preview}`}>
+          <span className="t-body text-[11px] text-muted hover:text-neon">anterior: {preview} · toca para copiar</span>
+        </button>
+      )}
     </>
   );
 }

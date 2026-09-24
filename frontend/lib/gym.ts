@@ -132,3 +132,28 @@ export function exerciseStats(
   }
   return { last, prKg };
 }
+
+/** Serie previa (misma posición) de un ejercicio, para logging estilo Hevy:
+    la sesión completada más reciente que incluya ese ejercicio, tomando la
+    serie del mismo índice (o la última registrada si esa sesión tuvo menos
+    series). Sirve para pintar "anterior: 80 kg × 8" y rellenar con un toque. */
+export function previousSet(
+  name: string,
+  setIndex: number,
+  sessions: GymSession[] = loadGymSessions(),
+): { kg: number; reps: number } | null {
+  for (const s of sessions) {
+    const ex = s.exercises.find((e) => e.name === name);
+    if (!ex || ex.sets.length === 0) continue;
+    const set = ex.sets[setIndex] ?? ex.sets[ex.sets.length - 1];
+    return { kg: set.kg, reps: set.reps };
+  }
+  return null;
+}
+
+/** Texto corto para el chip "anterior": "80 kg × 8" o, en ejercicios a peso
+    corporal (0 kg), solo "8 reps". null si no hay serie previa. */
+export function formatSetPreview(set: { kg: number; reps: number } | null): string | null {
+  if (!set) return null;
+  return set.kg > 0 ? `${set.kg} kg × ${set.reps}` : `${set.reps} reps`;
+}
