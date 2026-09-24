@@ -30,6 +30,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // No anunciar que el BFF corre sobre Next.js en la cabecera X-Powered-By.
+  poweredByHeader: false,
   // Solo en desarrollo: permite servir el dev server a través del túnel HTTPS
   // (cloudflared) para probar la PWA en el móvil sin avisos de origen cruzado.
   // En producción no aplica (Vercel sirve desde el dominio propio).
