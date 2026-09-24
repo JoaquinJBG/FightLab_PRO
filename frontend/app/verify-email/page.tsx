@@ -2,7 +2,33 @@
 
 import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+
+type VerifyEmailResponse = {
+  detail?: string;
+  needs_password?: boolean;
+  uid?: string;
+  token?: string;
+};
+
+/**
+ * Si alguien se registró dos veces antes de verificar el email, la cuenta
+ * se queda sin contraseña utilizable (set_unusable_password, para no
+ * permitir el pre-secuestro) y VerifyEmailView lo señala con
+ * needs_password + uid + token en vez de dejar que el login falle sin
+ * ninguna pista. Decide a dónde mandar al usuario tras verificar.
+ *
+ * Exportada para poder testearla sin montar el componente.
+ */
+export function resolveVerifyRedirect(data: unknown): string | null {
+  if (!data || typeof data !== "object") return null;
+  const { needs_password, uid, token } = data as VerifyEmailResponse;
+  if (needs_password && uid && token) {
+    const params = new URLSearchParams({ uid, token, mode: "create" });
+    return `/reset-password?${params.toString()}`;
+  }
+  return null;
+}
 
 function ResendVerification() {
   const [email, setEmail] = useState("");
@@ -62,6 +88,7 @@ function ResendVerification() {
 }
 
 function Verify() {
+  const router = useRouter();
   const token = useSearchParams().get("token");
   const [state, setState] = useState<"loading" | "ok" | "error">(token ? "loading" : "error");
 
@@ -72,9 +99,21 @@ function Verify() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),
     })
-      .then((r) => setState(r.ok ? "ok" : "error"))
+      .then(async (r) => {
+        if (!r.ok) {
+          setState("error");
+          return;
+        }
+        const data = await r.json().catch(() => null);
+        const redirect = resolveVerifyRedirect(data);
+        if (redirect) {
+          router.replace(redirect);
+          return;
+        }
+        setState("ok");
+      })
       .catch(() => setState("error"));
-  }, [token]);
+  }, [token, router]);
 
   return (
     <div className="glass neon-edge mt-6 p-6 text-center">
