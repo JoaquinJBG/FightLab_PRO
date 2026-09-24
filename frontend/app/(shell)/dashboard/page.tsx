@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useBiometrics, useMe } from "@/lib/hooks";
 import type { Biometrics } from "@/lib/schemas";
 import { computeRecovery } from "@/lib/recovery";
-import { loadMetrics, type LoadMetrics } from "@/lib/load";
+import { loadMetrics, LOAD_BAND_META, LOAD_BAND_MIN_DAYS, type LoadMetrics } from "@/lib/load";
 import { fetchServerMetrics, fetchServerActivities, serverActivityTs, mergeByClientId, type ActivityKind } from "@/lib/activities";
 import {
   ScaleIcon,
@@ -38,8 +38,8 @@ function daysSince(iso: string): number {
 }
 
 /* Estado de hoy: estimación con señales reales de recuperación (lib/recovery).
-   La carga (ACWR/AU) sale de las sesiones registradas (lib/load). Nada de
-   números inventados. */
+   La carga (banda vs tu rango / AU) sale de las sesiones registradas
+   (lib/load). Nada de números inventados. */
 
 /* ----------------------------- subcomponentes ----------------------------- */
 
@@ -115,43 +115,62 @@ type LocalData = {
   metrics: LoadMetrics | null;
 };
 
+type TsItem = { ts: number; client_id?: string };
+
+// Parseo por clave: una clave corrupta no debe tumbar al resto. Solo en el
+// cliente (localStorage no existe durante el render en el servidor).
+function parseLocalJSON(key: string): unknown {
+  if (typeof window === "undefined") return null;
+  try { return JSON.parse(localStorage.getItem(key) ?? "null"); } catch { return null; }
+}
+
+function tsItems(v: unknown): TsItem[] {
+  if (!Array.isArray(v)) return [];
+  const out: TsItem[] = [];
+  for (const s of v as { ts?: unknown; client_id?: unknown }[]) {
+    if (typeof s?.ts !== "number") continue;
+    out.push({ ts: s.ts, client_id: typeof s.client_id === "string" ? s.client_id : undefined });
+  }
+  return out;
+}
+
+function readLocalByKind(): Record<ActivityKind, TsItem[]> {
+  return {
+    SPORT: tsItems(parseLocalJSON("flp_activities")),
+    MMA: tsItems(parseLocalJSON("flp_mma")),
+    GYM: tsItems(parseLocalJSON("flp_gym_sessions")),
+  };
+}
+
+function readLocalData(): LocalData {
+  const weigh = parseLocalJSON("flp_weigh") as { target?: unknown } | null;
+  const week = parseLocalJSON("flp_gym_week");
+  const localByKind = readLocalByKind();
+  return {
+    weighTarget: weigh && typeof weigh.target === "number" ? weigh.target : null,
+    gymWeek: Array.isArray(week) && week.length === 7 ? (week as string[]) : null,
+    trainedTs: Object.values(localByKind).flatMap((items) => items.map((i) => i.ts)),
+    metrics: loadMetrics(),
+  };
+}
+
+function computeGreeting(): string {
+  const h = new Date().getHours();
+  return h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches";
+}
+
 export default function DashboardPage() {
   const { data: me } = useMe();
   const { data: logs = [], isLoading } = useBiometrics();
 
-  const [greeting, setGreeting] = useState("Hola");
-  const [local, setLocal] = useState<LocalData>({ weighTarget: null, gymWeek: null, trainedTs: [], metrics: null });
+  // Perezosos: ambos solo dependen del reloj/localStorage al montar, así que
+  // se calculan en la inicialización de useState (primera pintura ya real)
+  // en vez de con un setState síncrono dentro del efecto
+  // (react-hooks/set-state-in-effect).
+  const [greeting] = useState(() => computeGreeting());
+  const [local, setLocal] = useState<LocalData>(() => readLocalData());
 
   useEffect(() => {
-    const h = new Date().getHours();
-    setGreeting(h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches");
-    // Parseo por clave: una clave corrupta no debe tumbar al resto
-    const parse = (key: string): unknown => {
-      try { return JSON.parse(localStorage.getItem(key) ?? "null"); } catch { return null; }
-    };
-    const weigh = parse("flp_weigh") as { target?: unknown } | null;
-    const week = parse("flp_gym_week");
-    type TsItem = { ts: number; client_id?: string };
-    const tsItems = (v: unknown): TsItem[] => {
-      if (!Array.isArray(v)) return [];
-      const out: TsItem[] = [];
-      for (const s of v as { ts?: unknown; client_id?: unknown }[]) {
-        if (typeof s?.ts !== "number") continue;
-        out.push({ ts: s.ts, client_id: typeof s.client_id === "string" ? s.client_id : undefined });
-      }
-      return out;
-    };
-    const localByKind: Record<ActivityKind, TsItem[]> = {
-      SPORT: tsItems(parse("flp_activities")),
-      MMA: tsItems(parse("flp_mma")),
-      GYM: tsItems(parse("flp_gym_sessions")),
-    };
-    setLocal({
-      weighTarget: weigh && typeof weigh.target === "number" ? weigh.target : null,
-      gymWeek: Array.isArray(week) && week.length === 7 ? (week as string[]) : null,
-      trainedTs: Object.values(localByKind).flatMap((items) => items.map((i) => i.ts)),
-      metrics: loadMetrics(),
-    });
     let alive = true;
     fetchServerMetrics().then((m) => {
       if (alive && m) setLocal((cur) => ({ ...cur, metrics: m })); // el servidor manda
@@ -160,6 +179,7 @@ export default function DashboardPage() {
     // puntos de "Tu semana" solo verían lo registrado en este móvil. Se
     // fusiona por client_id (nunca se duplica un mismo entreno) y, si el
     // servidor no responde para algún tipo, ese tipo se queda con lo local.
+    const localByKind = readLocalByKind();
     const kinds: ActivityKind[] = ["SPORT", "MMA", "GYM"];
     Promise.all(kinds.map((k) => fetchServerActivities(k))).then((results) => {
       if (!alive) return;
@@ -500,22 +520,34 @@ export default function DashboardPage() {
               <p className="stat text-xl text-ink">{local.metrics.weekAU}<span className="text-xs text-muted"> AU</span></p>
             </div>
             <div>
-              <p className="t-label text-muted">ACWR</p>
-              <p className={`stat text-xl ${local.metrics.acwr != null ? (local.metrics.acwr >= 0.8 && local.metrics.acwr <= 1.3 ? "text-good" : "text-warn") : "text-muted"}`}>
-                {local.metrics.acwr != null ? `${local.metrics.acwr.toFixed(2)}${local.metrics.provisional ? "*" : ""}` : "—"}
-              </p>
+              <p className="t-label text-muted">Tu rango</p>
+              {local.metrics.band ? (
+                <p className="stat text-xl" style={{ color: LOAD_BAND_META[local.metrics.band.status].color }}>
+                  {LOAD_BAND_META[local.metrics.band.status].label}
+                </p>
+              ) : (
+                <p className="stat text-xl text-muted">—</p>
+              )}
             </div>
           </div>
         ) : (
           <div className="flex-1">
-            <p className="t-label text-ink">Carga de entreno (ACWR)</p>
+            <p className="t-label text-ink">Carga de entreno</p>
             <p className="t-body text-xs text-muted">Se activará cuando registres sesiones con RPE</p>
           </div>
         )}
         <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
       </Link>
-      {local.metrics?.acwr != null && local.metrics.provisional && (
-        <p className="t-body mt-1.5 text-[10px] text-muted">*ACWR provisional hasta acumular 4 semanas de historial</p>
+      {local.metrics && local.metrics.weekAU > 0 && (
+        local.metrics.band ? (
+          local.metrics.band.provisional && (
+            <p className="t-body mt-1.5 text-[10px] text-muted">*Rango calibrándose: {local.metrics.historyDays}/28 días de historial</p>
+          )
+        ) : (
+          <p className="t-body mt-1.5 text-[10px] text-muted">
+            Necesitamos {Math.max(0, LOAD_BAND_MIN_DAYS - local.metrics.historyDays)} días más para calcular tu rango personal
+          </p>
+        )
       )}
 
       {/* ---------- CTA ---------- */}

@@ -4,7 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useBiometrics } from "@/lib/hooks";
 import { computeRecovery, type Recovery } from "@/lib/recovery";
-import { loadMetrics, type LoadMetrics, type LoadBand, type LoadBandStatus } from "@/lib/load";
+import {
+  loadMetrics,
+  LOAD_BAND_META,
+  LOAD_BAND_MIN_DAYS,
+  ACWR_MIN_HISTORY_DAYS,
+  type LoadMetrics,
+  type LoadBand,
+} from "@/lib/load";
 import { fetchServerMetrics } from "@/lib/activities";
 import { BoltIcon, InfoIcon, ArrowUpRight } from "@/components/icons";
 
@@ -14,14 +21,12 @@ const INFO: Record<string, string> = {
   carga: "Carga de cada sesión = duración × RPE (unidades arbitrarias, AU). Aquí se suman tus sesiones de Deportes, MMA y Gimnasio registradas con RPE.",
   monotonia: "Cómo de iguales son tus cargas diarias (media/desviación de los últimos 7 días). Muy alta = poca variación, más riesgo; alterna días duros y suaves.",
   tension: "Tensión = carga semanal × monotonía. Mide el estrés acumulado total de la semana.",
+  acwr: "Ratio carga aguda (7 días) / crónica (hasta 28 días). Es un dato secundario: la referencia principal es tu banda de carga (arriba), porque la investigación no respalda una zona 'segura' fija para el ACWR.",
 };
 
-const BAND_META: Record<LoadBandStatus, { label: string; color: string; hint: string }> = {
-  descarga: { label: "Descarga", color: "var(--color-neon)", hint: "Por debajo de tu rango: semana de recuperación." },
-  sostenible: { label: "Sostenible", color: "var(--color-good)", hint: "Dentro de tu rango habitual: carga sostenible." },
-  elevada: { label: "Elevada", color: "var(--color-warn)", hint: "Por encima de tu rango: vigila la recuperación." },
-  alta: { label: "Alta", color: "var(--color-bad)", hint: "Muy por encima de tu rango: prioriza recuperar." },
-};
+// Mismo lenguaje que "Carga vs tu rango": lib/load.ts es la fuente única para
+// que el mini-resumen de Entreno y el Home no se desincronicen de esta vista.
+const BAND_META = LOAD_BAND_META;
 
 // Geometría de la banda: escala 0..(overreach + σ_eff) para que el marcador no se salga.
 function bandGeometry(b: LoadBand) {
@@ -59,12 +64,15 @@ function Tip({ k, open }: { k: string; open: string | null }) {
 
 export default function LoadPage() {
   const { data: logs = [] } = useBiometrics();
-  const [metrics, setMetrics] = useState<LoadMetrics | null>(null);
+  // Perezoso: pintura inmediata con lo local sin setState síncrono en el
+  // efecto (react-hooks/set-state-in-effect); loadMetrics() ya guarda
+  // typeof window por dentro.
+  const [metrics, setMetrics] = useState<LoadMetrics | null>(() => loadMetrics());
   const [open, setOpen] = useState<string | null>(null);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   useEffect(() => {
     let alive = true;
-    setMetrics(loadMetrics()); // pintura inmediata con lo local
     // El servidor manda en TODAS las métricas agregadas, incluida la banda
     // (paridad exacta con el motor local): si responde, sustituye por completo.
     fetchServerMetrics().then((s) => {
@@ -154,7 +162,7 @@ export default function LoadPage() {
         ) : (
           <p className="t-body mt-2 text-xs text-muted">
             {m && m.historyDays > 0
-              ? `Se activa con ~2 semanas de sesiones con RPE (llevas ${m.historyDays} ${m.historyDays === 1 ? "día" : "días"}).`
+              ? `Necesitamos ${Math.max(0, LOAD_BAND_MIN_DAYS - m.historyDays)} días más para calcular tu rango personal (llevas ${m.historyDays} ${m.historyDays === 1 ? "día" : "días"}).`
               : "Registra tus entrenos con RPE (Deportes, MMA o Gimnasio) y tu banda de carga se calculará sola."}
           </p>
         )}
@@ -204,6 +212,37 @@ export default function LoadPage() {
           <p className="stat mt-2 text-2xl text-ink">{m?.tension != null ? m.tension.toLocaleString("es") : "—"}</p>
           <Tip k="tension" open={open} />
         </div>
+      </section>
+
+      {/* Detalles avanzados: ACWR como dato secundario y sin semáforo (P0.1b) —
+          la referencia de riesgo es la banda de arriba, no una zona fija. */}
+      <section className="glass mt-4 p-4">
+        <button
+          type="button"
+          onClick={() => setAdvancedOpen((v) => !v)}
+          className="flex w-full items-center justify-between text-left"
+        >
+          <span className="t-label text-ink">Detalles avanzados</span>
+          <span className="t-label text-muted">{advancedOpen ? "Ocultar" : "Ver"}</span>
+        </button>
+        {advancedOpen && (
+          <div className="mt-3">
+            <div className="flex items-center gap-1.5">
+              <span className="t-label text-muted">ACWR</span>
+              <Info k="acwr" open={open} setOpen={setOpen} />
+            </div>
+            {m?.acwr != null ? (
+              <p className="stat mt-1 text-xl text-ink">{m.acwr.toFixed(2)}{m.provisional ? "*" : ""}</p>
+            ) : (
+              <p className="t-body mt-1 text-xs text-muted">
+                {m && m.historyDays > 0
+                  ? `Necesitamos ${Math.max(0, ACWR_MIN_HISTORY_DAYS - m.historyDays)} días más de historial para calcularlo.`
+                  : "Registra entrenos con RPE para calcularlo."}
+              </p>
+            )}
+            <Tip k="acwr" open={open} />
+          </div>
+        )}
       </section>
 
       <p className="t-body mt-4 text-center text-xs text-muted">
