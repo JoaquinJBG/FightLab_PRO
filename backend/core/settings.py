@@ -105,9 +105,19 @@ _default_db_url = "postgres://{user}:{password}@{host}:{port}/{name}".format(
     port=env("POSTGRES_PORT", default="5432"),
     name=env("POSTGRES_DB", default="fightlab"),
 )
+# Tolera lo que se suele pegar desde el panel de Neon: comillas, espacios o el
+# comando `psql '...'` entero en vez de solo la cadena de conexión.
+_raw_db_url = env.str("DATABASE_URL", default="").strip()
+if _raw_db_url.startswith("psql "):
+    _raw_db_url = _raw_db_url[len("psql "):].strip()
+_raw_db_url = _raw_db_url.strip("'\"")
 DATABASES = {
-    "default": env.db("DATABASE_URL", default=_default_db_url),
+    "default": environ.Env.db_url_config(_raw_db_url or _default_db_url),
 }
+if not DATABASES["default"].get("ENGINE"):
+    raise ImproperlyConfigured(
+        "DATABASE_URL no es válida: debe empezar por postgresql:// (sin comillas ni 'psql')."
+    )
 DATABASES["default"]["CONN_MAX_AGE"] = 60
 DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
 
