@@ -8,6 +8,7 @@ from django.utils.dateparse import parse_datetime
 from .models import UserState
 
 MAX_VALUE_BYTES = 64 * 1024  # 64 KB
+MAX_BULK_ITEMS = 200
 
 # Allowlist de claves que el servidor acepta como copia de seguridad de localStorage.
 # Ver frontend/lib/user-state.ts para las claves flp_* equivalentes.
@@ -83,3 +84,41 @@ def state_put(*, profile, key, value, client_updated_at=None):
 def state_delete(*, profile, key) -> None:
     validate_key(key)
     UserState.objects.filter(profile=profile, key=key).delete()
+
+
+def error_detail(exc: ValidationError):
+    return exc.message_dict if hasattr(exc, "message_dict") else exc.messages
+
+
+def state_put_bulk(*, profile, items):
+    """Aplica una lista de items `{key, value, updated_at}` con el mismo
+    last-write-wins de `state_put`, uno por uno: un item inválido (clave fuera
+    de la allowlist, valor demasiado grande) no aborta el resto del lote, solo
+    queda registrado como `ok: False` en su propia clave. Pensado para la
+    migración inicial en lote (ver frontend/lib/user-state.ts), donde cientos
+    de claves de localStorage se suben en tandas de hasta `MAX_BULK_ITEMS` sin
+    gastar una petición (y por tanto una unidad de throttle) por clave.
+
+    Devuelve un dict `{key: {...}}` con el resultado de CADA item recibido
+    (aunque la clave esté repetida o sea inválida), para que el cliente pueda
+    saber, item a item, si ya tiene una respuesta final."""
+    results = {}
+    for item in items:
+        key = item["key"]
+        try:
+            entry, accepted = state_put(
+                profile=profile,
+                key=key,
+                value=item["value"],
+                client_updated_at=item.get("updated_at"),
+            )
+        except ValidationError as exc:
+            results[key] = {"ok": False, "detail": error_detail(exc)}
+            continue
+        results[key] = {
+            "ok": True,
+            "accepted": accepted,
+            "value": entry.value,
+            "updated_at": entry.updated_at.isoformat(),
+        }
+    return results

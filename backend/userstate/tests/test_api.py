@@ -138,3 +138,74 @@ def test_requires_auth(db):
     client = APIClient()
     resp = client.get("/api/v1/me/state?keys=weigh")
     assert resp.status_code == 401
+
+
+@pytest.mark.django_db
+def test_bulk_applies_last_write_wins_per_item_and_reports_every_key(auth_client):
+    # "weigh" ya tiene algo más nuevo en el servidor: ese item del lote pierde.
+    auth_client.put(
+        "/api/v1/me/state/weigh", {"value": {"kg": 90}, "updated_at": "2026-09-24T12:00:00Z"}, format="json"
+    )
+    resp = auth_client.post(
+        "/api/v1/me/state/bulk",
+        {
+            "items": [
+                {"value": {"kg": 70}, "updated_at": "2026-09-24T09:00:00Z", "key": "weigh"},
+                {"value": {"kcal": 2200}, "updated_at": "2026-09-24T09:00:00Z", "key": "nutri_goal"},
+                {"value": {"x": 1}, "updated_at": "2026-09-24T09:00:00Z", "key": "no_permitida"},
+            ]
+        },
+        format="json",
+    )
+    assert resp.status_code == 200
+    results = resp.data["results"]
+    assert set(results.keys()) == {"weigh", "nutri_goal", "no_permitida"}
+
+    assert results["weigh"]["ok"] is True
+    assert results["weigh"]["accepted"] is False
+    assert results["weigh"]["value"] == {"kg": 90}  # gana el que ya estaba
+
+    assert results["nutri_goal"]["ok"] is True
+    assert results["nutri_goal"]["accepted"] is True
+    assert results["nutri_goal"]["value"] == {"kcal": 2200}
+
+    assert results["no_permitida"]["ok"] is False
+
+    got = auth_client.get("/api/v1/me/state?keys=nutri_goal")
+    assert got.data["nutri_goal"]["value"] == {"kcal": 2200}
+
+
+@pytest.mark.django_db
+def test_bulk_rejects_more_than_200_items(auth_client):
+    items = [{"key": "nutri_goal", "value": i} for i in range(201)]
+    resp = auth_client.post("/api/v1/me/state/bulk", {"items": items}, format="json")
+    assert resp.status_code == 400
+
+
+@pytest.mark.django_db
+def test_bulk_rejects_empty_items(auth_client):
+    resp = auth_client.post("/api/v1/me/state/bulk", {"items": []}, format="json")
+    assert resp.status_code == 400
+
+
+@pytest.mark.django_db
+def test_bulk_counts_as_a_single_throttle_request(auth_client, settings):
+    """El throttle de user-state es de N/min por usuario; un lote de 70 items
+    en una sola petición no debe gastar más de 1 unidad de ese contador (a
+    diferencia de mandar 70 PUT sueltos, que sí lo agotarían)."""
+    settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["user-state"] = "2/min"
+    from django.core.cache import cache
+    cache.clear()
+
+    items = [{"key": "nutri_goal", "value": f"v{i}"} for i in range(70)]
+    first = auth_client.post("/api/v1/me/state/bulk", {"items": items}, format="json")
+    assert first.status_code == 200
+    second = auth_client.get("/api/v1/me/state?keys=nutri_goal")
+    assert second.status_code == 200  # 2ª petición del minuto: todavía dentro del límite
+
+
+@pytest.mark.django_db
+def test_bulk_requires_auth(db):
+    client = APIClient()
+    resp = client.post("/api/v1/me/state/bulk", {"items": [{"key": "weigh", "value": 1}]}, format="json")
+    assert resp.status_code == 401
