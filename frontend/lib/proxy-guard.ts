@@ -3,15 +3,22 @@
  * separadas en funciones puras para poder probarlas sin un Request real.
  */
 
-const FORBIDDEN_CHARS = /[/\\%]/;
+// Allowlist estricta: solo caracteres "unreserved" de una URL. Next entrega los
+// segmentos ya decodificados, así que un intento de traversal como "..%09" o
+// "..%0A" llega aquí como ".." + un TAB o salto de línea real. El parser de
+// URL de fetch (WHATWG) descarta esos TAB/CR/LF al construir la URL final, lo
+// que reintroduce el ".." y permite escapar de /api/v1 (o alcanzar /admin, la
+// raíz del origen…) arrastrando el Bearer del usuario. Con esta allowlist esos
+// caracteres (y "?", "#", que delimitarían query/fragment) quedan rechazados
+// aquí, antes de que el segmento llegue a construirse en la URL.
+const SAFE_SEGMENT = /^[A-Za-z0-9._~-]+$/;
 
 /** Un segmento de ruta no puede ser vacío, "." o ".." (traversal) ni contener
- * separadores o "%" (para evitar un doble-decodificado que reintroduzca "/"). */
+ * ningún carácter fuera de la allowlist (separadores, "%", control chars,
+ * "?", "#"…). */
 export function isSegmentSafe(segment: string): boolean {
-  if (segment.length === 0) return false;
   if (segment === "." || segment === "..") return false;
-  if (FORBIDDEN_CHARS.test(segment)) return false;
-  return true;
+  return SAFE_SEGMENT.test(segment);
 }
 
 export function isPathSafe(segments: string[]): boolean {

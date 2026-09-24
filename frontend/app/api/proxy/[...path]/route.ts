@@ -33,8 +33,13 @@ async function handle(req: Request, path: string[]) {
     return NextResponse.json({ detail: "El cuerpo supera el límite de 10 MB" }, { status: 413 });
   }
 
-  // Conserva los query params (?tz=, ?kind=, ?limit=…) al reenviar a Django
-  const target = "/" + path.join("/") + new URL(req.url).search;
+  // Conserva los query params (?tz=, ?kind=, ?limit=…) al reenviar a Django.
+  // Defensa en profundidad: encodeURIComponent además de isPathSafe. Un
+  // segmento ya pasó la allowlist estricta de isSegmentSafe, así que esto no
+  // debería cambiar nada para una ruta legítima, pero evita que cualquier
+  // carácter que se colara igualmente acabe interpretado como separador o
+  // como "." / ".." por el parser de URL de fetch.
+  const target = "/" + path.map(encodeURIComponent).join("/") + new URL(req.url).search;
   const method = req.method;
   const contentType = req.headers.get("content-type") ?? "";
   const isMultipart = contentType.startsWith("multipart/form-data");

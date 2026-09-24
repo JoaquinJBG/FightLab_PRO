@@ -27,6 +27,16 @@ describe("isSegmentSafe", () => {
     expect(isSegmentSafe("me%2Fadmin")).toBe(false);
     expect(isSegmentSafe("a\\b")).toBe(false);
   });
+
+  test("rechaza '..' con TAB, salto de línea, '?' o '#' colados (bypass real reportado en revisión)", () => {
+    // Next entrega el segmento ya decodificado: "..%09" llega como ".." + TAB.
+    // El parser de URL de fetch descarta TAB/CR/LF, lo que reintroduce ".."
+    // y permitía escapar de /api/v1 arrastrando el Bearer del usuario.
+    expect(isSegmentSafe("..\t")).toBe(false);
+    expect(isSegmentSafe(".\n.")).toBe(false);
+    expect(isSegmentSafe("..?")).toBe(false);
+    expect(isSegmentSafe("..#")).toBe(false);
+  });
 });
 
 describe("isPathSafe", () => {
