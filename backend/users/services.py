@@ -4,9 +4,27 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.template.loader import render_to_string
 
-from .tokens import generate_email_verification_token, verify_email_verification_token
+from .tokens import (
+    check_password_reset_token,
+    generate_email_verification_token,
+    generate_password_reset_uid_and_token,
+    get_user_from_password_reset_uid,
+    verify_email_verification_token,
+)
 
 User = get_user_model()
+
+
+def is_beta_email_allowed(email: str) -> bool:
+    """Beta cerrada por invitación.
+
+    BETA_ALLOWED_EMAILS vacía + DEBUG -> se permite todo (dev local).
+    BETA_ALLOWED_EMAILS vacía + DEBUG=False -> no se permite ningún registro.
+    """
+    allowed = settings.BETA_ALLOWED_EMAILS
+    if not allowed:
+        return settings.DEBUG
+    return email.strip().lower() in allowed
 
 
 def _send_verification_email(user) -> None:
@@ -70,6 +88,7 @@ def email_verify(*, token: str):
 
 def verification_resend(*, email: str) -> None:
     """Resend the verification email if the user exists and is unverified."""
+    email = email.strip().lower()
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
@@ -77,3 +96,58 @@ def verification_resend(*, email: str) -> None:
     if user.is_email_verified:
         return
     _send_verification_email(user)
+
+
+def _send_password_reset_email(user) -> None:
+    uid, token = generate_password_reset_uid_and_token(user)
+    link = f"{settings.FRONTEND_URL}/reset-password?uid={uid}&token={token}"
+    html = render_to_string("users/password_reset.html", {"reset_link": link})
+    send_mail(
+        subject="Recupera tu contraseña de FightLab Pro",
+        message=(
+            f"Hemos recibido una solicitud para restablecer tu contraseña:\n\n{link}\n\n"
+            "Si no fuiste tú, ignora este email."
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        html_message=html,
+    )
+    if settings.DEBUG:
+        print(f"\n[DEV] Recuperación de contraseña para {user.email}:\n{link}\n", flush=True)
+
+
+def password_reset_request(*, email: str) -> None:
+    """Send the reset link if an active account with that email exists.
+
+    Nunca informa de si el email existe: la vista siempre responde 200.
+    """
+    email = email.strip().lower()
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return
+    if not user.is_active:
+        return
+    _send_password_reset_email(user)
+
+
+@transaction.atomic
+def password_reset_confirm(*, uid: str, token: str, password: str) -> None:
+    """Validate the uid/token pair and set the new password."""
+    user = get_user_from_password_reset_uid(uid)
+    if user is None or not check_password_reset_token(user, token):
+        raise ValueError("Invalid or expired reset link")
+    user.set_password(password)
+    user.save(update_fields=["password", "updated_at"])
+    _blacklist_all_outstanding_tokens(user)
+
+
+def _blacklist_all_outstanding_tokens(user) -> None:
+    """Cierra cualquier sesión abierta (refresh vivos) tras cambiar la contraseña."""
+    from rest_framework_simplejwt.token_blacklist.models import (
+        BlacklistedToken,
+        OutstandingToken,
+    )
+
+    for outstanding in OutstandingToken.objects.filter(user=user):
+        BlacklistedToken.objects.get_or_create(token=outstanding)

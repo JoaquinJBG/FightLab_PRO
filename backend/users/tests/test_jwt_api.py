@@ -1,6 +1,8 @@
 import pytest
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from rest_framework.test import APIClient
+from rest_framework.throttling import SimpleRateThrottle
 
 from users.services import user_create, email_verify
 from users.tokens import generate_email_verification_token
@@ -10,6 +12,7 @@ User = get_user_model()
 
 @pytest.fixture
 def client():
+    cache.clear()  # resetea el throttle de login entre tests
     return APIClient()
 
 
@@ -53,3 +56,22 @@ def test_logout_blacklists_refresh(client, verified_user):
     assert out.status_code == 205
     again = client.post("/api/v1/auth/refresh", {"refresh": refresh}, format="json")
     assert again.status_code == 401
+
+
+@pytest.mark.django_db
+def test_login_normalizes_email_case_and_whitespace(client, verified_user):
+    resp = client.post(
+        "/api/v1/auth/login",
+        {"email": "  A@B.COM  ", "password": "pw-strong-123"},
+        format="json",
+    )
+    assert resp.status_code == 200
+
+
+@pytest.mark.django_db
+def test_login_throttle_blocks_after_limit(client, verified_user, monkeypatch):
+    monkeypatch.setitem(SimpleRateThrottle.THROTTLE_RATES, "login", "2/min")
+    for _ in range(2):
+        client.post("/api/v1/auth/login", {"email": "a@b.com", "password": "wrong"}, format="json")
+    resp = client.post("/api/v1/auth/login", {"email": "a@b.com", "password": "wrong"}, format="json")
+    assert resp.status_code == 429

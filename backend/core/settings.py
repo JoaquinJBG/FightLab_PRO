@@ -9,6 +9,7 @@ env = environ.Env(
     ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1"]),
     CORS_ALLOWED_ORIGINS=(list, ["http://localhost:3000"]),
     EMAIL_VERIFICATION_TIMEOUT=(int, 86400),
+    BETA_ALLOWED_EMAILS=(list, []),
 )
 # Read repo-root .env (one level above BASE_DIR) if present.
 environ.Env.read_env(BASE_DIR.parent / ".env")
@@ -105,6 +106,9 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_THROTTLE_RATES": {
         "activities-sync": "30/min",
+        "login": "10/min",
+        "register": "5/hour",
+        "password-reset": "5/hour",
     },
 }
 
@@ -139,6 +143,11 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="FightLab Pro <no-reply@f
 # --- App config ---
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 EMAIL_VERIFICATION_TIMEOUT = env("EMAIL_VERIFICATION_TIMEOUT")
+
+# --- Beta cerrada por invitación ---
+# Emails separados por comas. Vacía + DEBUG -> se permite todo (dev local).
+# Vacía + DEBUG=False -> no se permite ningún registro (hay que pegar la lista en producción).
+BETA_ALLOWED_EMAILS = [e.strip().lower() for e in env("BETA_ALLOWED_EMAILS")]
 
 # --- IA (Anthropic) ---
 # Sin clave, los endpoints de IA responden 503 y el frontend degrada a reglas/simulado
