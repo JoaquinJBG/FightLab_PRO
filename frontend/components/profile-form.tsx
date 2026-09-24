@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useProfile, useUpdateProfile } from "@/lib/hooks";
 import { DobInput, validateDob, dobToIso, type Dob } from "./dob-input";
 
@@ -36,17 +36,19 @@ export function ProfileForm({
   const [units, setUnits] = useState("METRIC");
   const [formError, setFormError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (profile && !loaded) {
-      const [y = "", m = "", d = ""] = (profile.date_of_birth ?? "").split("-");
-      setDob({ day: d, month: m, year: y });
-      setGender(profile.gender ?? "");
-      setHeightCm(profile.height_cm != null ? String(profile.height_cm) : "");
-      setStance(profile.dominant_stance ?? "");
-      setUnits(profile.preferred_units ?? "METRIC");
-      setLoaded(true);
-    }
-  }, [profile, loaded]);
+  // Precarga el formulario la primera vez que llega el perfil (los datos
+  // tardan en cargar de forma asíncrona). Se hace durante el render, no en
+  // un efecto, para no disparar un re-render en cascada justo tras montar;
+  // `loaded` evita que se repita en renders posteriores.
+  if (profile && !loaded) {
+    const [y = "", m = "", d = ""] = (profile.date_of_birth ?? "").split("-");
+    setDob({ day: d, month: m, year: y });
+    setGender(profile.gender ?? "");
+    setHeightCm(profile.height_cm != null ? String(profile.height_cm) : "");
+    setStance(profile.dominant_stance ?? "");
+    setUnits(profile.preferred_units ?? "METRIC");
+    setLoaded(true);
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -7,60 +7,20 @@ import {
   FOODS,
   MEALS,
   addItem,
+  photoErrorForStatus,
   recentFoods,
   scale,
   yesterdayMealItems,
   type Item,
 } from "@/lib/nutrition";
+import { compressImage } from "@/lib/compress-image";
 
-/* Foto → lista de alimentos detectados. Con la IA configurada analiza la foto real
-   (Claude visión); si no, cae a un ejemplo simulado claramente marcado.
-   Cada componente lleva su base para reescalar al editar los gramos. */
+/* Foto → lista de alimentos detectados por la IA (visión de Claude).
+   Cada componente lleva su base para reescalar al editar los gramos.
+   Beta honesta: si la IA no responde (503/429/502) NO se inventa un plato
+   de ejemplo; se muestra el error (ver photoErrorForStatus en lib/nutrition)
+   y se deja la entrada manual disponible. */
 type Detected = { name: string; grams: number | null; kcal: number; p: number; c: number; f: number };
-
-/* Reescala la foto en el dispositivo (≤1280 px, JPEG) antes de subirla:
-   menos datos, más rápido y dentro de los límites de la API de visión. */
-async function toJpeg(file: File): Promise<Blob> {
-  try {
-    const bmp = await createImageBitmap(file);
-    const MAX = 1280;
-    const k = Math.min(1, MAX / Math.max(bmp.width, bmp.height));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(bmp.width * k));
-    canvas.height = Math.max(1, Math.round(bmp.height * k));
-    canvas.getContext("2d")!.drawImage(bmp, 0, 0, canvas.width, canvas.height);
-    bmp.close();
-    return await new Promise((res, rej) =>
-      canvas.toBlob((b) => (b ? res(b) : rej(new Error("blob"))), "image/jpeg", 0.85),
-    );
-  } catch {
-    return file; // formato que el navegador no decodifica: que lo valide el backend
-  }
-}
-
-function fromFood(name: string, grams: number): Detected {
-  const food = FOODS.find((f) => f.name === name);
-  if (!food) return { name, grams, kcal: 0, p: 0, c: 0, f: 0 };
-  return { name, grams, ...scale(food, grams) };
-}
-const PHOTO_PLATES: { name: string; items: Detected[] }[] = [
-  {
-    name: "Pollo con arroz y verduras",
-    items: [fromFood("Pechuga de pollo", 150), fromFood("Arroz blanco cocido", 200), { name: "Verduras salteadas", grams: 120, kcal: 80, p: 2, c: 9, f: 4 }],
-  },
-  {
-    name: "Ensalada con atún",
-    items: [fromFood("Atún en lata", 80), { name: "Ensalada mixta", grams: 150, kcal: 35, p: 2, c: 6, f: 0 }, { name: "Aceite de oliva", grams: 10, kcal: 90, p: 0, c: 0, f: 10 }],
-  },
-  {
-    name: "Tostada de aguacate y huevo",
-    items: [fromFood("Pan integral", 60), fromFood("Aguacate", 50), fromFood("Huevo", 60)],
-  },
-  {
-    name: "Bol de avena con plátano",
-    items: [fromFood("Avena", 60), fromFood("Plátano", 120), fromFood("Yogur natural", 125)],
-  },
-];
 
 type Mode = "recientes" | "buscar" | "rapido";
 
@@ -131,7 +91,6 @@ function AddInner() {
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [detected, setDetected] = useState<{
     name: string;
-    real: boolean;
     nota: string | null;
     items: (Detected & { base: Detected })[];
   } | null>(null);
@@ -150,13 +109,17 @@ function AddInner() {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     try {
+      // Comprime en el dispositivo antes de subir: menos datos, más rápido y
+      // dentro de los límites de la API de visión (lado largo más pequeño
+      // que el máximo general de subida, ya que aquí solo hace falta que la
+      // IA reconozca el plato).
+      const compressed = await compressImage(file, { maxSide: 1280 });
       const fd = new FormData();
-      fd.append("image", await toJpeg(file), "comida.jpg");
+      fd.append("image", compressed, "comida.jpg");
       const res = await fetch("/api/proxy/ai/food/analyze", { method: "POST", body: fd, signal: ctrl.signal });
-      if (res.status === 503) {
-        // IA aún sin configurar: ejemplo simulado, marcado como tal
-        const plate = PHOTO_PLATES[Math.floor(Math.random() * PHOTO_PLATES.length)];
-        setDetected({ name: plate.name, real: false, nota: null, items: plate.items.map((i) => ({ ...i, base: i })) });
+      const knownError = photoErrorForStatus(res.status);
+      if (knownError) {
+        setPhotoError(knownError);
         return;
       }
       if (!res.ok) throw new Error(String(res.status));
@@ -173,7 +136,7 @@ function AddInner() {
         setPhotoError(data.nota || "No he reconocido comida en la foto. Prueba con otra toma.");
         return;
       }
-      setDetected({ name: data.plato || "Plato detectado", real: true, nota: data.nota ?? null, items });
+      setDetected({ name: data.plato || "Plato detectado", nota: data.nota ?? null, items });
     } catch {
       if (ctrl.signal.aborted) return; // se salió de la vista: no tocar el estado
       setPhotoError("No se pudo analizar la foto. Revisa la conexión e inténtalo de nuevo.");
@@ -252,7 +215,7 @@ function AddInner() {
           <div className="mt-3 border-t border-[rgba(150,190,255,0.1)] pt-3">
             <div className="flex items-center justify-between">
               <p className="t-title text-ink">{detected.name}</p>
-              <span className="badge badge-neon">{detected.real ? "IA real" : "IA simulada"}</span>
+              <span className="badge badge-neon">Detectado por IA</span>
             </div>
             {detected.nota && <p className="t-body mt-1 text-[11px] text-muted">{detected.nota}</p>}
             <div className="mt-2 flex flex-col gap-2">

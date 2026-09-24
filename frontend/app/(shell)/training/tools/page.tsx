@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { CFG_KEY, readRoundConfig } from "@/lib/round-timer";
 
 /* ----------------------------- helpers ---------------------------------- */
 function fmtStopwatch(ms: number) {
@@ -78,7 +79,6 @@ const tick = () => beep(680, 0.07);
 const finalBell = () => bell(3);
 const vibe = (p: number | number[]) => { try { navigator.vibrate?.(p); } catch { /* noop */ } };
 
-const CFG_KEY = "flp_round_cfg";
 const WARN_OPTS: [number, string][] = [[0, "Off"], [10, "10 s"], [30, "30 s"]];
 
 type Phase = "prep" | "work" | "rest";
@@ -145,31 +145,37 @@ function Ring({ progress, color, children }: { progress: number; color: string; 
 }
 
 /* ----------------------------- rounds ------------------------------------ */
+
 function RoundTimer() {
-  const [rounds, setRounds] = useState(5);
-  const [workSec, setWorkSec] = useState(180);
-  const [restSec, setRestSec] = useState(60);
-  const [prepSec, setPrepSec] = useState(10);
-  const [warnSec, setWarnSec] = useState(10);
+  // Inicialización perezosa: se lee localStorage una sola vez, en el primer
+  // render del cliente (no en un efecto que llamaría a setState justo
+  // después de montar, lo que dispararía un re-render en cascada).
+  const [savedCfg] = useState(() => readRoundConfig());
+  const [rounds, setRounds] = useState(() => {
+    const v = savedCfg.rounds;
+    return typeof v === "number" ? Math.min(20, Math.max(1, v)) : 5;
+  });
+  const [workSec, setWorkSec] = useState(() => {
+    const v = savedCfg.work;
+    return typeof v === "number" ? Math.min(600, Math.max(10, v)) : 180;
+  });
+  const [restSec, setRestSec] = useState(() => {
+    const v = savedCfg.rest;
+    return typeof v === "number" ? Math.min(300, Math.max(0, v)) : 60;
+  });
+  const [prepSec, setPrepSec] = useState(() => {
+    const v = savedCfg.prep;
+    return typeof v === "number" ? Math.min(30, Math.max(0, v)) : 10;
+  });
+  const [warnSec, setWarnSec] = useState(() => {
+    const v = savedCfg.warn;
+    return typeof v === "number" && [0, 10, 30].includes(v) ? v : 10;
+  });
   const [running, setRunning] = useState(false);
   const [started, setStarted] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const prevSeg = useRef(-1);
   const doneRef = useRef(false);
-
-  // recuerda tu última configuración
-  useEffect(() => {
-    try {
-      const cfg = JSON.parse(localStorage.getItem(CFG_KEY) ?? "null");
-      if (cfg && typeof cfg === "object") {
-        if (typeof cfg.rounds === "number") setRounds(Math.min(20, Math.max(1, cfg.rounds)));
-        if (typeof cfg.work === "number") setWorkSec(Math.min(600, Math.max(10, cfg.work)));
-        if (typeof cfg.rest === "number") setRestSec(Math.min(300, Math.max(0, cfg.rest)));
-        if (typeof cfg.prep === "number") setPrepSec(Math.min(30, Math.max(0, cfg.prep)));
-        if ([0, 10, 30].includes(cfg.warn)) setWarnSec(cfg.warn);
-      }
-    } catch { /* config corrupta: defaults */ }
-  }, []);
 
   const { segs, total } = buildSegments(rounds, workSec, restSec, prepSec);
   const done = elapsed >= total;

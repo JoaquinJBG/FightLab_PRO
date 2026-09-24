@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { scale, targets } from "./nutrition";
+import { photoErrorForStatus, scale, targets } from "./nutrition";
 
 describe("scale", () => {
   test("escala los macros por gramos (valores por 100 g)", () => {
@@ -37,5 +37,25 @@ describe("targets", () => {
     const perder = targets(...base, "perder").kcal;
     expect(ganar).toBeGreaterThan(mantener);
     expect(mantener).toBeGreaterThan(perder);
+  });
+});
+
+describe("photoErrorForStatus", () => {
+  test("503 (IA no configurada/caída): mensaje de no disponible, no un plato inventado", () => {
+    expect(photoErrorForStatus(503)).toMatch(/no está disponible/i);
+  });
+
+  test("429 (cuota agotada): mensaje de límite diario", () => {
+    expect(photoErrorForStatus(429)).toMatch(/límite diario/i);
+  });
+
+  test("502 (respuesta inválida del proveedor): mensaje de fallo al analizar", () => {
+    expect(photoErrorForStatus(502)).toMatch(/no ha podido analizar/i);
+  });
+
+  test("200/otros códigos: no es un error conocido, devuelve null", () => {
+    expect(photoErrorForStatus(200)).toBeNull();
+    expect(photoErrorForStatus(500)).toBeNull();
+    expect(photoErrorForStatus(400)).toBeNull();
   });
 });
