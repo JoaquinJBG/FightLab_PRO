@@ -18,12 +18,17 @@ def test_user_create_makes_inactive_user_and_sends_email():
 
 
 @pytest.mark.django_db
-def test_user_create_resends_for_unverified_duplicate():
+def test_user_create_invalidates_password_on_reregister_of_unverified_account():
     user_create(email="a@b.com", password="pw-strong-123")  # sin verificar
     mail.outbox.clear()
     again = user_create(email="a@b.com", password="pw-strong-456")
     assert again.email == "a@b.com"
-    assert again.check_password("pw-strong-456")  # actualiza la contraseña
+    # Ni la contraseña original ni la del segundo intento quedan utilizables:
+    # evita tanto el secuestro por sobrescritura como el pre-secuestro (quien
+    # registró primero no puede entrar con lo que puso si otro re-registra).
+    assert not again.has_usable_password()
+    assert not again.check_password("pw-strong-123")
+    assert not again.check_password("pw-strong-456")
     assert len(mail.outbox) == 1  # reenvía el enlace
 
 

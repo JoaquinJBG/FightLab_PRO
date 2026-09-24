@@ -12,6 +12,7 @@ env = environ.Env(
     CORS_ALLOWED_ORIGINS=(list, ["http://localhost:3000"]),
     CSRF_TRUSTED_ORIGINS=(list, []),
     EMAIL_VERIFICATION_TIMEOUT=(int, 86400),
+    BETA_ALLOWED_EMAILS=(list, []),
 )
 # Read repo-root .env (one level above BASE_DIR) if present. Configurable con
 # ENV_FILE para que los tests puedan apuntar a una ruta que no exista sin
@@ -159,6 +160,8 @@ REST_FRAMEWORK = {
         "ai-food": "10/hour",
         "activities-sync": "30/min",
         "user-state": "60/min",
+        "resend": "5/hour",
+        "password-reset-confirm": "5/hour",
     },
     # Nº de proxies de confianza delante de Django, para que el throttling
     # por IP (SimpleRateThrottle.get_ident) recorte la cabecera X-Forwarded-For
@@ -258,10 +261,21 @@ EMAIL_VERIFICATION_TIMEOUT = env("EMAIL_VERIFICATION_TIMEOUT")
 # Ruta del admin, para no dejarlo en /admin/ en producción.
 ADMIN_URL = env("ADMIN_URL", default="admin/")
 
-# Beta cerrada por invitación: emails separados por comas.
-# Vacía en DEBUG -> se permite todo. Vacía en producción -> no se permite
-# a nadie. La comprueba el paquete de identidad (users) en el registro.
-BETA_ALLOWED_EMAILS = env.list("BETA_ALLOWED_EMAILS", default=[])
+# --- Beta cerrada por invitación ---
+# Emails separados por comas. Vacía + DEBUG -> se permite todo (dev local).
+# Vacía + DEBUG=False -> no se permite ningún registro (hay que pegar la lista en producción).
+BETA_ALLOWED_EMAILS = [e.strip().lower() for e in env("BETA_ALLOWED_EMAILS")]
+
+# --- Throttle detrás del BFF (Vercel -> Render) ---
+# Sin esto, Django ve todas las peticiones anónimas de auth/* llegando desde
+# las pocas IPs de salida del BFF y comparte un único contador de throttle
+# entre toda la beta. Cuando el BFF manda este mismo secreto en la cabecera
+# X-Bff-Secret junto con X-Bff-Client-Ip, el throttle de users/throttling.py
+# confía en esa IP como identidad real del visitante; sin el secreto (valor
+# por defecto, vacío) se ignora esa cabecera y se usa el comportamiento
+# estándar de DRF (REMOTE_ADDR / X-Forwarded-For según NUM_PROXIES), así que
+# nadie puede saltarse el throttle inventándose esas cabeceras.
+BFF_SHARED_SECRET = env("BFF_SHARED_SECRET", default="")
 
 # --- IA (Anthropic) ---
 # Sin clave, los endpoints de IA responden 503 y el frontend degrada a reglas/simulado

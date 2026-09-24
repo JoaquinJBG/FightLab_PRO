@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import { djangoFetch } from "@/lib/api";
+import { clientIpHeaders } from "@/lib/auth-forward";
 import { setAuthCookies } from "@/lib/cookies";
 
 export async function POST(req: Request) {
-  const body = await req.json();
-  const r = await djangoFetch("/auth/login", { method: "POST", body });
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ detail: "JSON inválido" }, { status: 400 });
+  }
+  const r = await djangoFetch("/auth/login", { method: "POST", body, headers: clientIpHeaders(req) });
   if (r.status === 200 && r.data && typeof r.data === "object") {
     const { access, refresh } = r.data as { access: string; refresh: string };
     await setAuthCookies(access, refresh);

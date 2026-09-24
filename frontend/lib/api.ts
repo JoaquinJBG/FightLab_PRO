@@ -88,11 +88,13 @@ export async function djangoFetch(
     access?: string | null;
     forwardedFor?: string | null;
     timeoutMs?: number;
+    /** Cabeceras extra (p. ej. las de lib/auth-forward.ts para el throttle). */
+    headers?: Record<string, string>;
   } = {},
 ): Promise<ApiResult> {
   const res = await djangoRequest(path, {
     method: opts.method,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...opts.headers },
     body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
     access: opts.access,
     forwardedFor: opts.forwardedFor,

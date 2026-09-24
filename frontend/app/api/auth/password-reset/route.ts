@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ detail: "JSON inválido" }, { status: 400 });
   }
-  const r = await djangoFetch("/auth/register", {
+  const r = await djangoFetch("/auth/password-reset", {
     method: "POST",
     body,
     headers: clientIpHeaders(req),
