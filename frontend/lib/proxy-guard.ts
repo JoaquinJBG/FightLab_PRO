@@ -103,3 +103,32 @@ export async function buildProxyResponse(upstream: Response): Promise<Response> 
   if (contentLength) headers.set("content-length", contentLength);
   return new Response(upstream.body, { status: upstream.status, headers });
 }
+
+/**
+ * Decodifica (sin verificar firma) el payload de un JWT para leer su "exp".
+ * Se usa solo para decidir si hay que limpiar las cookies de sesión tras un
+ * refresh fallido: Django es quien de verdad valida el token.
+ */
+function decodeJwtPayload(token: string): Record<string, unknown> {
+  const parts = token.split(".");
+  if (parts.length !== 3) throw new Error("JWT con formato inválido");
+  const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+  const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+  return JSON.parse(atob(padded)) as Record<string, unknown>;
+}
+
+/**
+ * Un refresh token se considera "seguro de invalidar" (limpiar sus cookies)
+ * solo si está expirado o mal formado. Si no, un 401 puntual en /auth/refresh
+ * (red, 500 de Django…) no debe desloguear al usuario: la próxima petición
+ * puede reintentarlo con el mismo refresh, que sigue siendo válido.
+ */
+export function isRefreshTokenExpiredOrMalformed(token: string): boolean {
+  try {
+    const payload = decodeJwtPayload(token);
+    if (typeof payload.exp !== "number") return true;
+    return payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
+}

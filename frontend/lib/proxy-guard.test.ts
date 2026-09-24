@@ -6,8 +6,16 @@ import {
   isBodyTooLarge,
   isOriginAllowed,
   buildProxyResponse,
+  isRefreshTokenExpiredOrMalformed,
   MAX_PROXY_BODY_BYTES,
 } from "./proxy-guard";
+
+/** Construye un JWT sin firmar (no hace falta firma real: la función bajo
+ * prueba solo decodifica el payload) con el "exp" indicado. */
+function fakeJwt(payload: Record<string, unknown>): string {
+  const b64url = (obj: unknown) => Buffer.from(JSON.stringify(obj)).toString("base64url");
+  return `${b64url({ alg: "none" })}.${b64url(payload)}.sig`;
+}
 
 describe("isSegmentSafe", () => {
   test("acepta un id o slug normal", () => {
@@ -161,5 +169,29 @@ describe("buildProxyResponse", () => {
     const res = await buildProxyResponse(upstream);
     expect(res.status).toBe(502);
     expect(await res.text()).toBe("Bad Gateway");
+  });
+});
+
+describe("isRefreshTokenExpiredOrMalformed", () => {
+  test("un token sin 3 partes es inválido", () => {
+    expect(isRefreshTokenExpiredOrMalformed("no-es-un-jwt")).toBe(true);
+  });
+
+  test("un token con payload no-JSON es inválido", () => {
+    expect(isRefreshTokenExpiredOrMalformed("a.b.c")).toBe(true);
+  });
+
+  test("un token sin 'exp' se trata como inválido", () => {
+    expect(isRefreshTokenExpiredOrMalformed(fakeJwt({ sub: "1" }))).toBe(true);
+  });
+
+  test("un token con 'exp' en el pasado está expirado", () => {
+    const exp = Math.floor(Date.now() / 1000) - 60;
+    expect(isRefreshTokenExpiredOrMalformed(fakeJwt({ exp }))).toBe(true);
+  });
+
+  test("un token con 'exp' en el futuro NO está expirado (no hay que borrar sus cookies)", () => {
+    const exp = Math.floor(Date.now() / 1000) + 3600;
+    expect(isRefreshTokenExpiredOrMalformed(fakeJwt({ exp }))).toBe(false);
   });
 });

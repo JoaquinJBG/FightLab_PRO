@@ -13,6 +13,7 @@ import {
   isBodyTooLarge,
   isOriginAllowed,
   buildProxyResponse,
+  isRefreshTokenExpiredOrMalformed,
 } from "@/lib/proxy-guard";
 
 // Backend en Render (plan free): hasta ~50 s en frío. Deja margen bajo los 60 s
@@ -91,10 +92,14 @@ async function handle(req: Request, path: string[]) {
       access = d.access;
       upstream = await doReq(access);
     } else {
-      // Defensa en profundidad: si otra petición concurrente ya rotó
-      // fl_refresh mientras este refresh fallaba, no lo pisamos borrándolo.
-      const refreshAfter = await getRefresh();
-      if (refreshAfter === refreshBefore) {
+      // Solo se borran las cookies si el refresh que teníamos ya no sirve
+      // (expirado o mal formado). Una petición concurrente puede haber
+      // rotado fl_refresh justo mientras este refresh fallaba (red, 500 de
+      // Django…); comparar cookies antes/después de esta misma petición no
+      // detecta esa rotación (cookies() ve el jar de ESTA petición, no el
+      // Set-Cookie que puso otra en paralelo), así que en vez de eso se
+      // decodifica el propio token para decidir.
+      if (isRefreshTokenExpiredOrMalformed(refreshBefore)) {
         await clearAuthCookies();
       }
       return NextResponse.json({ detail: "Sesión expirada" }, { status: 401 });
