@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "profiles",
     "ai",
     "activities",
+    "userstate",
 ]
 
 MIDDLEWARE = [
