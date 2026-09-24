@@ -33,10 +33,30 @@ def verified_user(db):
 
 
 @pytest.mark.django_db
-def test_password_reset_request_sends_email_for_active_user(verified_user):
-    password_reset_request(email="a@b.com")
+def test_password_reset_request_sends_email_for_active_user(
+    verified_user, django_capture_on_commit_callbacks
+):
+    # El envío va en transaction.on_commit: sin capturar los callbacks,
+    # mail.outbox seguiría vacío (la transacción del test nunca hace commit).
+    with django_capture_on_commit_callbacks(execute=True):
+        password_reset_request(email="a@b.com")
     assert len(mail.outbox) == 1
     assert "a@b.com" in mail.outbox[0].to
+
+
+@pytest.mark.django_db
+def test_password_reset_request_swallows_email_backend_failure(
+    verified_user, monkeypatch, django_capture_on_commit_callbacks
+):
+    """Bug crítico de email: un fallo del backend no debe propagar la
+    excepción (la vista siempre responde 200, exista o no la cuenta)."""
+
+    def _boom(*args, **kwargs):
+        raise OSError("SMTP timed out")
+
+    monkeypatch.setattr("users.services.send_mail", _boom)
+    with django_capture_on_commit_callbacks(execute=True):
+        password_reset_request(email="a@b.com")  # no debe lanzar
 
 
 @pytest.mark.django_db
@@ -46,8 +66,9 @@ def test_password_reset_request_is_silent_for_unknown_email():
 
 
 @pytest.mark.django_db
-def test_password_reset_request_normalizes_email(verified_user):
-    password_reset_request(email="  A@B.COM  ")
+def test_password_reset_request_normalizes_email(verified_user, django_capture_on_commit_callbacks):
+    with django_capture_on_commit_callbacks(execute=True):
+        password_reset_request(email="  A@B.COM  ")
     assert len(mail.outbox) == 1
 
 

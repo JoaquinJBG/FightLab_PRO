@@ -28,16 +28,16 @@ def test_register_creates_inactive_user(client):
 
 
 @pytest.mark.django_db
-def test_register_resends_for_unverified_duplicate_and_invalidates_password(client):
+def test_register_resends_for_unverified_duplicate_without_touching_password(client):
     client.post("/api/v1/auth/register", {"email": "a@b.com", "password": "pw-strong-123"}, format="json")
     resp = client.post("/api/v1/auth/register", {"email": "a@b.com", "password": "pw-strong-456"}, format="json")
-    assert resp.status_code == 201  # reenvía el enlace, no bloquea
+    assert resp.status_code == 201  # reenvía el enlace, no bloquea, no enumera
     user = User.objects.get(email="a@b.com")
-    # Ni la contraseña del primer registro ni la del segundo quedan
-    # utilizables: cierra tanto el secuestro por sobrescritura como el
-    # pre-secuestro (quien registró primero no se queda con acceso).
-    assert not user.has_usable_password()
-    assert not user.check_password("pw-strong-123")
+    # La contraseña del PRIMER registro se conserva: un segundo intento del
+    # propio usuario legítimo (el caso más común) no debe dejarlo sin poder
+    # entrar tras verificar. La del segundo intento se ignora.
+    assert user.has_usable_password()
+    assert user.check_password("pw-strong-123")
     assert not user.check_password("pw-strong-456")
 
 
@@ -58,8 +58,40 @@ def test_verify_email_activates(client):
     token = generate_email_verification_token(user)
     resp = client.post("/api/v1/auth/verify-email", {"token": token}, format="json")
     assert resp.status_code == 200
+    assert resp.data["needs_password"] is False
+    assert "uid" not in resp.data
     user.refresh_from_db()
     assert user.is_active is True
+
+
+@pytest.mark.django_db
+def test_verify_email_flags_needs_password_for_unusable_password_account(client):
+    """Bug major (re-registro/cuentas heredadas): si la cuenta no tiene
+    contraseña utilizable, verify-email debe devolver un uid/token de reset
+    en vez de dejar al usuario con un login que dará 401 sin explicación."""
+    client.post("/api/v1/auth/register", {"email": "a@b.com", "password": "pw-strong-123"}, format="json")
+    user = User.objects.get(email="a@b.com")
+    user.set_unusable_password()
+    user.save(update_fields=["password"])
+    token = generate_email_verification_token(user)
+
+    resp = client.post("/api/v1/auth/verify-email", {"token": token}, format="json")
+
+    assert resp.status_code == 200
+    assert resp.data["needs_password"] is True
+    assert resp.data["uid"]
+    assert resp.data["token"]
+
+    reset_resp = client.post(
+        "/api/v1/auth/password-reset/confirm",
+        {"uid": resp.data["uid"], "token": resp.data["token"], "password": "pw-new-strong-999"},
+        format="json",
+    )
+    assert reset_resp.status_code == 200
+    login = client.post(
+        "/api/v1/auth/login", {"email": "a@b.com", "password": "pw-new-strong-999"}, format="json"
+    )
+    assert login.status_code == 200
 
 
 @pytest.mark.django_db

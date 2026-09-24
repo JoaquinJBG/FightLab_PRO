@@ -72,6 +72,42 @@ def test_throttle_shares_one_counter_when_bff_secret_not_configured(client, monk
     assert resp.status_code == 429
 
 
+def _verify(client, token="not-a-real-token", client_ip=None, secret=None):
+    kwargs = {}
+    if client_ip is not None:
+        kwargs["HTTP_X_BFF_CLIENT_IP"] = client_ip
+    if secret is not None:
+        kwargs["HTTP_X_BFF_SECRET"] = secret
+    return client.post("/api/v1/auth/verify-email", {"token": token}, format="json", **kwargs)
+
+
+@pytest.mark.django_db
+def test_default_anon_throttle_trusts_bff_client_ip_with_correct_secret(client, settings, monkeypatch):
+    """VerifyEmailView no define throttle_classes propio: usa
+    DEFAULT_THROTTLE_CLASSES (TrustedBffAnonRateThrottle, scope "user").
+    Con el secreto correcto, cada IP real detrás del BFF tiene su propio
+    contador, igual que en las vistas con throttle_scope explícito."""
+    settings.BFF_SHARED_SECRET = "s3cret"
+    monkeypatch.setitem(SimpleRateThrottle.THROTTLE_RATES, "user", "1/min")
+
+    assert _verify(client, client_ip="1.1.1.1", secret="s3cret").status_code == 400  # token inválido, pero no throttled
+    assert _verify(client, client_ip="1.1.1.1", secret="s3cret").status_code == 429
+    # Otro visitante real detrás del mismo BFF: cupo independiente.
+    assert _verify(client, client_ip="2.2.2.2", secret="s3cret").status_code == 400
+
+
+@pytest.mark.django_db
+def test_default_anon_throttle_ignores_client_ip_header_without_correct_secret(client, monkeypatch):
+    """Sin el secreto (o con uno incorrecto), rotar X-Bff-Client-Ip en cada
+    petición NO evita el throttle por defecto: se cae al REMOTE_ADDR/XFF
+    estándar de DRF, compartido por el test client."""
+    monkeypatch.setitem(SimpleRateThrottle.THROTTLE_RATES, "user", "1/min")
+
+    assert _verify(client, client_ip="1.1.1.1").status_code == 400
+    resp = _verify(client, client_ip="9.9.9.9")
+    assert resp.status_code == 429
+
+
 @pytest.mark.django_db
 def test_resend_and_register_have_independent_throttle_scopes(client, monkeypatch):
     monkeypatch.setitem(SimpleRateThrottle.THROTTLE_RATES, "register", "0/min")

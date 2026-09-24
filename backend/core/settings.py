@@ -1,8 +1,11 @@
 """Django settings for core project (FightLab Pro)."""
+import logging
 import os
 from pathlib import Path
 import environ
 from django.core.exceptions import ImproperlyConfigured
+
+logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -52,6 +55,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
+    "anymail",
     # Local
     "users",
     "profiles",
@@ -147,8 +151,14 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
+    # TrustedBffAnonRateThrottle sustituye a UserRateThrottle: para peticiones
+    # autenticadas identifica por request.user.pk igual que la clase de DRF
+    # (sin cambios), pero para las anónimas (p. ej. VerifyEmailView, que no
+    # define throttle_classes propio) confía en X-Bff-Client-Ip+X-Bff-Secret
+    # como TrustedBffScopedRateThrottle, en vez de compartir un único
+    # contador por la IP de salida del BFF. Ver users/throttling.py.
     "DEFAULT_THROTTLE_CLASSES": (
-        "rest_framework.throttling.UserRateThrottle",
+        "users.throttling.TrustedBffAnonRateThrottle",
     ),
     # Nombres de scope válidos en todo el proyecto (los usan los views con
     # ScopedRateThrottle); "user" es el límite general por usuario/IP.
@@ -168,11 +178,14 @@ REST_FRAMEWORK = {
     # por IP (SimpleRateThrottle.get_ident) recorte la cabecera X-Forwarded-For
     # en la posición correcta en vez de fiarse de la cabecera entera (que el
     # cliente controla). DRF solo lee esta clave aquí dentro, no como setting
-    # de nivel superior. Cadena real: BFF de Next -> borde de Render ->
-    # gunicorn; Render añade la IP de quien conecta con él, así que con el
-    # BFF reenviando la IP del cliente el valor correcto es 2 (se fija en
-    # .env.example/render.yaml; el 1 de aquí es solo un valor de arranque
-    # seguro si alguien olvida definir la variable).
+    # de nivel superior. Este valor SOLO se usa como fallback (sin
+    # BFF_SHARED_SECRET, o con el secreto incorrecto): la URL pública de
+    # Render (*.onrender.com) se puede llamar directamente sin pasar por el
+    # BFF, y ahí solo hay UN proxy de confianza (el propio borde de Render),
+    # así que el valor correcto es 1 en todos los entornos (.env.example y
+    # render.yaml incluidos). Poner aquí 2 (asumiendo siempre BFF -> Render)
+    # dejaría que cualquiera que llame directo al backend se salte el
+    # throttle inventándose X-Forwarded-For.
     "NUM_PROXIES": env.int("NUM_PROXIES", default=1),
 }
 
@@ -241,19 +254,53 @@ LOGGING = {
 }
 
 # --- Email ---
-# Sin EMAIL_BACKEND en el .env -> consola (el enlace se imprime en el backend).
-# Con el backend SMTP -> envío real; los valores de Gmail se toman del .env.
-EMAIL_BACKEND = env(
-    "EMAIL_BACKEND",
-    default="django.core.mail.backends.console.EmailBackend",
-)
-if "smtp" in EMAIL_BACKEND.lower():
-    EMAIL_HOST = env("EMAIL_HOST", default="smtp.gmail.com")
-    EMAIL_PORT = env.int("EMAIL_PORT", default=587)
-    EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
-    EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
-    EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+# Desde septiembre de 2025, Render bloquea en los web services del plan free
+# el tráfico saliente a los puertos SMTP 25/465/587
+# (https://render.com/changelog/free-web-services-will-no-longer-allow-outbound-traffic-to-smtp-ports),
+# así que en producción no se puede usar el backend SMTP de Django. En su
+# lugar, EMAIL_PROVIDER elige entre 'smtp' (por defecto: compatibilidad con
+# el .env de dev/tests previo a este cambio, válido en local o en un plan de
+# pago), 'console' (el enlace se imprime en el log, para dev sin credenciales)
+# y 'brevo'/'resend' (envío real por su API HTTP vía django-anymail, la
+# opción para el plan free de Render).
+EMAIL_PROVIDER = env("EMAIL_PROVIDER", default="smtp")
+# Timeout de red para el envío de email. Django lee EMAIL_TIMEOUT de forma
+# nativa para el backend SMTP; para Anymail se reutiliza el mismo valor en
+# ANYMAIL["REQUESTS_TIMEOUT"] más abajo. Sin esto, un SMTP que no responde
+# (como el bloqueo silencioso de Render) deja la petición de registro
+# colgada hasta el timeout de gunicorn o del BFF.
+EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", default=10)
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="FightLab Pro <no-reply@fightlab.local>")
+
+if EMAIL_PROVIDER == "brevo":
+    EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
+    ANYMAIL = {
+        "BREVO_API_KEY": env("BREVO_API_KEY", default=""),
+        "REQUESTS_TIMEOUT": EMAIL_TIMEOUT,
+    }
+elif EMAIL_PROVIDER == "resend":
+    EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
+    ANYMAIL = {
+        "RESEND_API_KEY": env("RESEND_API_KEY", default=""),
+        "REQUESTS_TIMEOUT": EMAIL_TIMEOUT,
+    }
+elif EMAIL_PROVIDER == "console":
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+else:
+    # 'smtp' (valor por defecto de EMAIL_PROVIDER): sin EMAIL_BACKEND en el
+    # .env -> consola (el enlace se imprime en el backend). Con el backend
+    # SMTP -> envío real; los valores de Gmail se toman del .env. NO apto
+    # para el plan free de Render (ver EMAIL_PROVIDER más arriba).
+    EMAIL_BACKEND = env(
+        "EMAIL_BACKEND",
+        default="django.core.mail.backends.console.EmailBackend",
+    )
+    if "smtp" in EMAIL_BACKEND.lower():
+        EMAIL_HOST = env("EMAIL_HOST", default="smtp.gmail.com")
+        EMAIL_PORT = env.int("EMAIL_PORT", default=587)
+        EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+        EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+        EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 
 # --- App config ---
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
@@ -277,6 +324,13 @@ BETA_ALLOWED_EMAILS = [e.strip().lower() for e in env("BETA_ALLOWED_EMAILS")]
 # estándar de DRF (REMOTE_ADDR / X-Forwarded-For según NUM_PROXIES), así que
 # nadie puede saltarse el throttle inventándose esas cabeceras.
 BFF_SHARED_SECRET = env("BFF_SHARED_SECRET", default="")
+if not DEBUG and not BFF_SHARED_SECRET:
+    logger.warning(
+        "BFF_SHARED_SECRET no está configurado con DEBUG=False: el throttle "
+        "de auth (login, register, password-reset...) no podrá distinguir "
+        "a los visitantes detrás del BFF y compartirán un único contador "
+        "por la IP de salida de Vercel."
+    )
 
 # --- IA (Anthropic) ---
 # Sin clave, los endpoints de IA responden 503 y el frontend degrada a reglas/simulado
