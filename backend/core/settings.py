@@ -237,6 +237,14 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="FightLab Pro <no-reply@f
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 EMAIL_VERIFICATION_TIMEOUT = env("EMAIL_VERIFICATION_TIMEOUT")
 
+# Ruta del admin, para no dejarlo en /admin/ en producción.
+ADMIN_URL = env("ADMIN_URL", default="admin/")
+
+# Beta cerrada por invitación: emails separados por comas.
+# Vacía en DEBUG -> se permite todo. Vacía en producción -> no se permite
+# a nadie. La comprueba el paquete de identidad (users) en el registro.
+BETA_ALLOWED_EMAILS = env.list("BETA_ALLOWED_EMAILS", default=[])
+
 # --- IA (Anthropic) ---
 # Sin clave, los endpoints de IA responden 503 y el frontend degrada a reglas/simulado
 ANTHROPIC_API_KEY = env("ANTHROPIC_API_KEY", default="")
