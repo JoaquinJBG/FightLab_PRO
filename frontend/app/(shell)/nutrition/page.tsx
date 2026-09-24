@@ -13,10 +13,15 @@ import {
   removeItem,
   loadWater,
   saveWater,
+  hydrateRecentNutritionDays,
+  hydrateGoal,
   type Goal,
   type Item,
 } from "@/lib/nutrition";
+import { useUserState, jsonSerde } from "@/lib/user-state";
 import { NutritionIcon, ScaleIcon, ChevronRight } from "@/components/icons";
+
+type Weigh = { target: number; date: string };
 
 function ageFrom(dob: string | null): number {
   if (!dob) return 30;
@@ -47,15 +52,35 @@ export default function NutritionPage() {
   const { data: logs = [] } = useBiometrics();
   const [goal, setGoal] = useState<Goal>("mantener");
   const [items, setItems] = useState<Item[]>([]);
-  const [weigh, setWeigh] = useState<{ target: number; date: string } | null>(null);
+  const { value: weigh } = useUserState<Weigh | null>("weigh", null, jsonSerde());
   const [water, setWater] = useState(0);
   const [confirmItem, setConfirmItem] = useState<string | null>(null);
 
   useEffect(() => {
+    // Lectura síncrona de localStorage tras montar: hace falta un efecto
+    // porque en el servidor no existe localStorage (evita el desajuste de
+    // hidratación). Pre-existente a este cambio.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGoal(loadGoal());
     setItems(loadToday());
     setWater(loadWater());
-    try { const w = localStorage.getItem("flp_weigh"); if (w) setWeigh(JSON.parse(w)); } catch { /* noop */ }
+  }, []);
+
+  // Copia de seguridad en el servidor: trae lo de otros dispositivos (si es
+  // más nuevo) y refresca la vista. No bloquea nada si el backend no responde.
+  useEffect(() => {
+    let alive = true;
+    void (async () => {
+      await hydrateRecentNutritionDays();
+      const g = await hydrateGoal();
+      if (!alive) return;
+      if (g) setGoal(g);
+      setItems(loadToday());
+      setWater(loadWater());
+    })();
+    return () => {
+      alive = false;
+    };
   }, []);
 
   // Recarga al volver a la app: si pasó la medianoche, el diario y el agua

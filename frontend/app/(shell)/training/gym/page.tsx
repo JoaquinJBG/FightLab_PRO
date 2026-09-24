@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { TrainingIcon, CoachIcon, ChevronRight } from "@/components/icons";
 import { GYM_LIVE_KEY, loadGymSessions, type GymSession, type LiveGym } from "@/lib/gym";
+import { useUserState } from "@/lib/user-state";
 
 const DAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 const FOCI = ["Descanso", "Full body", "Empuje", "Tirón", "Pierna", "Torso", "Pecho", "Espalda", "Hombro", "Brazo", "Cardio"];
@@ -32,7 +33,7 @@ const REPS: Record<string, string> = {
   Mantenimiento: "8-10 reps",
 };
 
-const WEEK_KEY = "flp_gym_week";
+const DEFAULT_WEEK = Array(7).fill("Descanso");
 type RoutineDay = { day: number; focus: string; exercises: string[] };
 
 function fmtDate(ts: number) {
@@ -44,17 +45,17 @@ function fmtDate(ts: number) {
 
 export default function GymPage() {
   const [view, setView] = useState<"cal" | "ia">("cal");
-  const [week, setWeek] = useState<string[]>(() => Array(7).fill("Descanso"));
+  const { value: week, setValue: setWeek } = useUserState<string[]>("gym_week", DEFAULT_WEEK);
   const [live, setLive] = useState<LiveGym | null>(null);
   const [recent, setRecent] = useState<GymSession[]>([]);
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(WEEK_KEY);
-      if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr) && arr.length === 7) setWeek(arr); }
       const liveRaw = localStorage.getItem(GYM_LIVE_KEY);
       if (liveRaw) {
         const l: LiveGym = JSON.parse(liveRaw);
+        // Lectura síncrona de localStorage tras montar. Pre-existente.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (l && Date.now() - l.savedAt < 12 * 3600_000) setLive(l);
         else localStorage.removeItem(GYM_LIVE_KEY);
       }
@@ -69,7 +70,9 @@ export default function GymPage() {
       ? `/training/gym/session?focus=${encodeURIComponent(todayFocus)}`
       : "/training/gym/session";
   function setDay(i: number, v: string) {
-    setWeek((w) => { const n = [...w]; n[i] = v; localStorage.setItem(WEEK_KEY, JSON.stringify(n)); return n; });
+    const n = [...week];
+    n[i] = v;
+    setWeek(n);
   }
 
   // wizard IA
@@ -98,7 +101,6 @@ export default function GymPage() {
     const n = Array(7).fill("Descanso");
     routine.forEach((d, i) => { if (i < 7) n[i] = d.focus; });
     setWeek(n);
-    localStorage.setItem(WEEK_KEY, JSON.stringify(n));
     setView("cal");
   }
 

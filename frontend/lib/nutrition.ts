@@ -1,4 +1,8 @@
-// Lógica y datos de nutrición (mockup). Persistencia local; luego backend + IA.
+// Lógica y datos de nutrición (mockup). Persistencia local; copia de
+// seguridad y sincronización entre dispositivos vía backend/userstate
+// (ver lib/user-state.ts): localStorage sigue siendo la fuente inmediata.
+
+import { hydrateUserState, hydrateUserStatePrefix, rawStringSerde, syncUserState } from "@/lib/user-state";
 
 export type Item = {
   id: string;
@@ -57,11 +61,17 @@ export function targets(weightKg: number, heightCm: number, age: number, gender:
   return { kcal, p, c, f };
 }
 
+function isoDate(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 function dayKeyFor(d: Date) {
-  return `flp_nutri_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return `flp_nutri_${isoDate(d)}`;
 }
 function dayKey() {
   return dayKeyFor(new Date());
+}
+function bareDayKey(d: Date) {
+  return `nutri_${isoDate(d)}`;
 }
 
 export function loadToday(): Item[] {
@@ -79,15 +89,40 @@ function newId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 export function addItem(it: Omit<Item, "id">) {
+  let all: Item[] = [];
   try {
-    const all = [...loadToday(), { ...it, id: newId() }];
+    all = [...loadToday(), { ...it, id: newId() }];
     localStorage.setItem(dayKey(), JSON.stringify(all));
   } catch { /* almacenamiento lleno: no es crítico */ }
+  syncUserState(bareDayKey(new Date()), all);
 }
 export function removeItem(id: string) {
+  let all: Item[] = [];
   try {
-    localStorage.setItem(dayKey(), JSON.stringify(loadToday().filter((i) => i.id !== id)));
+    all = loadToday().filter((i) => i.id !== id);
+    localStorage.setItem(dayKey(), JSON.stringify(all));
   } catch { /* noop */ }
+  syncUserState(bareDayKey(new Date()), all);
+}
+
+/** Hidrata el diario y el agua de los últimos `days` días (hoy incluido) desde
+ *  el servidor si tiene algo más nuevo que lo local: útil al abrir la app en
+ *  un dispositivo nuevo, o tras usar otro dispositivo. Ver lib/user-state.ts. */
+export async function hydrateRecentNutritionDays(days = 7): Promise<void> {
+  const to = new Date();
+  const from = new Date();
+  from.setDate(from.getDate() - (days - 1));
+  await Promise.all([
+    hydrateUserStatePrefix("nutri_", isoDate(from), isoDate(to)),
+    hydrateUserStatePrefix("water_", isoDate(from), isoDate(to)),
+  ]);
+}
+
+/** Si el servidor tiene un objetivo (perder/mantener/ganar) más nuevo que el
+ *  local, lo adopta y lo devuelve; si no, null (el local ya vale). */
+export async function hydrateGoal(): Promise<Goal | null> {
+  const g = await hydrateUserState<string>("nutri_goal", rawStringSerde);
+  return g === "perder" || g === "ganar" || g === "mantener" ? g : null;
 }
 
 /** Alimentos usados recientemente (últimos 14 días), sin repetidos. */
@@ -132,8 +167,10 @@ export function yesterdayMealItems(meal: string): Item[] {
 
 /* ---- agua (vasos de ~250 ml, por día) ---- */
 function waterKey() {
-  const d = new Date();
-  return `flp_water_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return `flp_${bareWaterKey()}`;
+}
+function bareWaterKey() {
+  return `water_${isoDate(new Date())}`;
 }
 export function loadWater(): number {
   if (typeof window === "undefined") return 0;
@@ -141,9 +178,11 @@ export function loadWater(): number {
   return Number.isFinite(n) && n >= 0 ? Math.min(n, 30) : 0;
 }
 export function saveWater(n: number) {
+  const clamped = Math.max(0, Math.min(30, n));
   try {
-    localStorage.setItem(waterKey(), String(Math.max(0, Math.min(30, n))));
+    localStorage.setItem(waterKey(), String(clamped));
   } catch { /* noop */ }
+  syncUserState(bareWaterKey(), clamped);
 }
 
 export function loadGoal(): Goal {
@@ -153,4 +192,5 @@ export function loadGoal(): Goal {
 }
 export function saveGoal(g: Goal) {
   localStorage.setItem("flp_nutri_goal", g);
+  syncUserState("nutri_goal", g, rawStringSerde);
 }

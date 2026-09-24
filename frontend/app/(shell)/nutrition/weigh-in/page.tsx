@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useBiometrics } from "@/lib/hooks";
+import { useUserState } from "@/lib/user-state";
 import { ScaleIcon } from "@/components/icons";
 
 type Weigh = { target: number; date: string };
-const KEY = "flp_weigh";
 
 function daysUntil(iso: string) {
   const d = new Date(iso);
@@ -20,22 +20,24 @@ export default function WeighInPage() {
   const { data: logs = [] } = useBiometrics();
   const current = (() => { for (const l of logs) { const w = l.weight_kg ? parseFloat(l.weight_kg) : null; if (w) return w; } return null; })();
 
-  const [saved, setSaved] = useState<Weigh | null>(null);
+  const { value: saved, setValue: setSaved, remove: clearSaved } = useUserState<Weigh | null>("weigh", null);
   const [target, setTarget] = useState(70);
   const [days, setDays] = useState(14);
 
   useEffect(() => {
-    try { const w = localStorage.getItem(KEY); if (w) { const v = JSON.parse(w); setSaved(v); setTarget(v.target); } } catch { /* noop */ }
-  }, []);
+    // Sincroniza el borrador editable con el valor guardado (local o del
+    // servidor, vía useUserState) cuando cambia: no hay forma de derivarlo
+    // en el render sin perder lo que el usuario esté ajustando con +/-.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (saved) setTarget(saved.target);
+  }, [saved]);
 
   function save() {
     const date = new Date();
     date.setDate(date.getDate() + days);
-    const v: Weigh = { target, date: date.toISOString() };
-    localStorage.setItem(KEY, JSON.stringify(v));
-    setSaved(v);
+    setSaved({ target, date: date.toISOString() });
   }
-  function clear() { localStorage.removeItem(KEY); setSaved(null); }
+  function clear() { clearSaved(); }
 
   const left = saved ? daysUntil(saved.date) : null;
   const toGo = saved && current != null ? +(current - saved.target).toFixed(1) : null;
