@@ -36,6 +36,12 @@ def backfill_photo_data(apps, schema_editor):
         photo.height = height
         photo.save(update_fields=["data", "content_type", "width", "height"])
 
+    # Filas sin ImageField (image='' o NULL) nunca entran en el `qs` de
+    # arriba, así que su `data` sigue en NULL. 0005 exige `data` NOT NULL, así
+    # que aquí se cierra el hueco: quedan con data=b"" ("foto sin datos"), que
+    # la vista de listado descarta y que da 404 al pedir el archivo.
+    ProgressPhoto.objects.filter(data__isnull=True).update(data=b"")
+
 
 def _guess_content_type(name: str) -> str:
     name = (name or "").lower()
