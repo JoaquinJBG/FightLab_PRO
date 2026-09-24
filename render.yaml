@@ -19,6 +19,8 @@ services:
         sync: false
       - key: ADMIN_URL
         sync: false
+      - key: NUM_PROXIES
+        value: "2"
       - key: DATABASE_URL
         sync: false
       - key: FRONTEND_URL

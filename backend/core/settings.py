@@ -151,6 +151,16 @@ REST_FRAMEWORK = {
         "activities-sync": "30/min",
         "user-state": "60/min",
     },
+    # Nº de proxies de confianza delante de Django, para que el throttling
+    # por IP (SimpleRateThrottle.get_ident) recorte la cabecera X-Forwarded-For
+    # en la posición correcta en vez de fiarse de la cabecera entera (que el
+    # cliente controla). DRF solo lee esta clave aquí dentro, no como setting
+    # de nivel superior. Cadena real: BFF de Next -> borde de Render ->
+    # gunicorn; Render añade la IP de quien conecta con él, así que con el
+    # BFF reenviando la IP del cliente el valor correcto es 2 (se fija en
+    # .env.example/render.yaml; el 1 de aquí es solo un valor de arranque
+    # seguro si alguien olvida definir la variable).
+    "NUM_PROXIES": env.int("NUM_PROXIES", default=1),
 }
 
 from datetime import timedelta  # noqa: E402
@@ -164,11 +174,6 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
 }
-
-# Nº de proxies de confianza delante de Django (el BFF de Next reenvía
-# X-Forwarded-For): necesario para que el throttling por IP no agrupe a
-# todos los usuarios bajo la IP del proxy.
-NUM_PROXIES = 1
 
 # Caché en la base de datos: LocMem cuenta por separado en cada worker de
 # gunicorn, lo que rompería el throttling.
