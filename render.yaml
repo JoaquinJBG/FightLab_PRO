@@ -1,0 +1,55 @@
+# Blueprint de Render para el backend de FightLab Pro.
+# https://render.com/docs/blueprint-spec
+#
+# El frontend (Next.js) no va aquí: se despliega en Vercel.
+services:
+  - type: web
+    name: fightlab-backend
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        sync: false
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: ADMIN_URL
+        sync: false
+      - key: NUM_PROXIES
+        value: "2"
+      - key: DATABASE_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        value: ""
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: BETA_ALLOWED_EMAILS
+        sync: false
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.smtp.EmailBackend
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_USE_TLS
+        value: "True"
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: AI_MODEL_CHAT
+        value: claude-sonnet-4-6
+      - key: AI_MODEL_VISION
+        value: claude-sonnet-4-6
+      - key: DJANGO_LOG_LEVEL
+        value: INFO
