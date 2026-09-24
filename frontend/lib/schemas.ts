@@ -26,7 +26,9 @@ export type Biometrics = z.infer<typeof biometrics>;
 
 export const progressPhoto = z.object({
   id: z.number(),
-  image: z.string(), // ruta /media/... (se sirve vía /api/media)
+  // Ruta relativa a la API (con /api/v1): la foto vive en Postgres, no en
+  // disco, y se pide a través de /api/proxy<resto-de-file_url-sin-/api/v1>.
+  file_url: z.string(),
   taken_at: z.string(),
 });
 export type ProgressPhoto = z.infer<typeof progressPhoto>;
