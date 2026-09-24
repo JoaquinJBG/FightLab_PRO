@@ -11,7 +11,7 @@ const PROTECTED = [
   "/onboarding",
 ];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const needsAuth = PROTECTED.some((p) => pathname === p || pathname.startsWith(p + "/"));
   if (!needsAuth) return NextResponse.next();

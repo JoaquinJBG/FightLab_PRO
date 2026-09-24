@@ -1,7 +1,7 @@
 // @vitest-environment node
 //
 // Tests a nivel de ruta del proxy genérico del BFF.
-import { describe, test, expect, vi, beforeEach } from "vitest";
+import { describe, test, expect, vi, beforeEach, afterEach } from "vitest";
 
 const cookieStore = new Map<string, string>();
 
@@ -139,5 +139,83 @@ describe("POST /api/proxy/[...path] — refresh de sesión", () => {
     expect(cookieStore.get("fl_access")).toBe("access-nueva");
     expect(cookieStore.get("fl_refresh")).toBe("refresh-nueva");
     expect(djangoRequest).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("POST /api/proxy/[...path] — clientIpHeaders en vez de X-Forwarded-For crudo", () => {
+  beforeEach(() => {
+    cookieStore.set("fl_access", "access");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  test("una petición normal manda clientIpHeaders (con secreto), no X-Forwarded-For crudo", async () => {
+    vi.stubEnv("BFF_SHARED_SECRET", "top-secret");
+    djangoRequest.mockResolvedValueOnce(jsonResponse({ ok: true }, 200));
+
+    const req = new Request("https://app.example.com/api/proxy/me/state/foo", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: "https://app.example.com",
+        "x-forwarded-for": "203.0.113.9",
+      },
+      body: JSON.stringify({ a: 1 }),
+    });
+
+    await POST(req, ctx(["me", "state", "foo"]));
+
+    expect(djangoRequest).toHaveBeenCalledTimes(1);
+    const [, opts] = djangoRequest.mock.calls[0];
+    expect(opts.headers).toEqual({
+      "Content-Type": "application/json",
+      "X-Bff-Secret": "top-secret",
+      "X-Bff-Client-Ip": "203.0.113.9",
+    });
+    expect(opts.forwardedFor).toBeUndefined();
+  });
+
+  test("sin BFF_SHARED_SECRET no manda cabeceras de IP (comportamiento actual)", async () => {
+    vi.stubEnv("BFF_SHARED_SECRET", "");
+    djangoRequest.mockResolvedValueOnce(jsonResponse({ ok: true }, 200));
+
+    await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    const [, opts] = djangoRequest.mock.calls[0];
+    expect(opts.headers).toEqual({ "Content-Type": "application/json" });
+  });
+
+  test("el refresh interno tras un 401 también manda clientIpHeaders", async () => {
+    vi.stubEnv("BFF_SHARED_SECRET", "top-secret");
+    cookieStore.set("fl_refresh", fakeJwt({ exp: Math.floor(Date.now() / 1000) + 3600 }));
+
+    djangoRequest
+      .mockResolvedValueOnce(jsonResponse({ detail: "token inválido" }, 401))
+      .mockResolvedValueOnce(jsonResponse({ ok: true }, 200));
+    djangoFetch.mockResolvedValueOnce({
+      status: 200,
+      data: { access: "access-nueva", refresh: "refresh-nueva" },
+    });
+
+    const req = new Request("https://app.example.com/api/proxy/me/state/foo", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: "https://app.example.com",
+        "x-forwarded-for": "203.0.113.9",
+      },
+      body: JSON.stringify({ a: 1 }),
+    });
+
+    await POST(req, ctx(["me", "state", "foo"]));
+
+    expect(djangoFetch).toHaveBeenCalledWith(
+      "/auth/refresh",
+      expect.objectContaining({
+        headers: { "X-Bff-Secret": "top-secret", "X-Bff-Client-Ip": "203.0.113.9" },
+      }),
+    );
   });
 });
