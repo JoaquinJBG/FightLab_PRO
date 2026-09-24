@@ -43,19 +43,35 @@ AI_DAILY_QUOTA_FOOD = int(os.environ.get("AI_DAILY_QUOTA_FOOD", "20"))
 _QUOTA_CACHE_TIMEOUT = 60 * 60 * 26  # algo más de un día: no depende de un reinicio a medianoche exacta
 
 
-def _check_and_consume_daily_quota(*, user_id: int, kind: str, limit: int) -> bool:
-    """Incrementa en caché el contador diario del usuario y dice si sigue dentro de la cuota.
+def _quota_key(*, user_id: int, kind: str) -> str:
+    return f"ai:quota:{kind}:{user_id}:{timezone.localdate().isoformat()}"
 
-    Cuenta siempre (aunque se supere), para que un cliente que reintenta en bucle
-    no reinicie el contador. La clave incluye la fecha, así que cada día es una
-    cuota nueva sin necesidad de un cron de limpieza.
+
+def _within_daily_quota(*, user_id: int, kind: str, limit: int) -> bool:
+    """Dice si el usuario sigue dentro de su cuota diaria, sin consumirla.
+
+    No incrementa el contador: solo lo consulta. El incremento real ocurre en
+    ``_consume_daily_quota`` una vez la llamada a la IA ha tenido éxito, para
+    no gastar cupo legítimo cuando el fallo es del proveedor (IA no
+    configurada, rate limit transitorio, error del SDK) y no del usuario.
     """
     if limit <= 0:
         return True
-    key = f"ai:quota:{kind}:{user_id}:{timezone.localdate().isoformat()}"
+    count = cache.get(_quota_key(user_id=user_id, kind=kind), 0)
+    return count < limit
+
+
+def _consume_daily_quota(*, user_id: int, kind: str, limit: int) -> None:
+    """Incrementa en caché el contador diario del usuario tras una llamada con éxito.
+
+    La clave incluye la fecha, así que cada día es una cuota nueva sin
+    necesidad de un cron de limpieza.
+    """
+    if limit <= 0:
+        return
+    key = _quota_key(user_id=user_id, kind=kind)
     cache.add(key, 0, timeout=_QUOTA_CACHE_TIMEOUT)
-    count = cache.incr(key)
-    return count <= limit
+    cache.incr(key)
 
 
 class LiveScopedRateThrottle(ScopedRateThrottle):
@@ -68,8 +84,8 @@ class LiveScopedRateThrottle(ScopedRateThrottle):
     caliente (``self.scope`` ya lo rellena ``ScopedRateThrottle.allow_request``
     a partir de ``view.throttle_scope``) y, si el scope todavía no está
     configurado, no bloqueamos la beta por eso: la cuota diaria
-    (``_check_and_consume_daily_quota``) sigue siendo la protección real de
-    coste mientras tanto.
+    (``_within_daily_quota`` / ``_consume_daily_quota``) sigue siendo la
+    protección real de coste mientras tanto.
     """
 
     def get_rate(self):
@@ -103,7 +119,7 @@ class CoachChatView(APIView):
         if len(json.dumps(context)) > MAX_CONTEXT_CHARS:
             return Response({"detail": "Contexto demasiado grande."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not _check_and_consume_daily_quota(user_id=request.user.id, kind="chat", limit=AI_DAILY_QUOTA_CHAT):
+        if not _within_daily_quota(user_id=request.user.id, kind="chat", limit=AI_DAILY_QUOTA_CHAT):
             return Response(
                 {
                     "detail": (
@@ -128,6 +144,7 @@ class CoachChatView(APIView):
         except anthropic.APIError as exc:
             logger.exception("Fallo del SDK de Anthropic en el chat del coach: %s", exc)
             return Response({"detail": "Error del servicio de IA."}, status=status.HTTP_502_BAD_GATEWAY)
+        _consume_daily_quota(user_id=request.user.id, kind="chat", limit=AI_DAILY_QUOTA_CHAT)
         return Response({"reply": reply})
 
 
@@ -142,6 +159,19 @@ class FoodPhotoView(APIView):
             return Response({"detail": "Falta el archivo 'image'."}, status=status.HTTP_400_BAD_REQUEST)
         if image.size > MAX_PHOTO_BYTES:
             return Response({"detail": "La imagen supera los 4 MB."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Comprueba la cuota ANTES de decodificar/recodificar con Pillow (CPU):
+        # una petición que ya ha agotado su cupo no debe pagar ese coste.
+        if not _within_daily_quota(user_id=request.user.id, kind="food", limit=AI_DAILY_QUOTA_FOOD):
+            return Response(
+                {
+                    "detail": (
+                        f"Has alcanzado tu límite diario de {AI_DAILY_QUOTA_FOOD} fotos de comida analizadas. "
+                        "Vuelve a intentarlo mañana."
+                    )
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
 
         # Valida el CONTENIDO (no solo la extensión), saca el formato real y
         # redimensiona/recodifica a JPEG con el lado largo acotado antes de
@@ -169,17 +199,6 @@ class FoodPhotoView(APIView):
         except Exception:
             return Response({"detail": "El archivo no es una imagen válida."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not _check_and_consume_daily_quota(user_id=request.user.id, kind="food", limit=AI_DAILY_QUOTA_FOOD):
-            return Response(
-                {
-                    "detail": (
-                        f"Has alcanzado tu límite diario de {AI_DAILY_QUOTA_FOOD} fotos de comida analizadas. "
-                        "Vuelve a intentarlo mañana."
-                    )
-                },
-                status=status.HTTP_429_TOO_MANY_REQUESTS,
-            )
-
         try:
             result = services.food_photo_analyze(image_bytes=photo_bytes, media_type="image/jpeg")
         except services.AIUnavailable:
@@ -194,4 +213,5 @@ class FoodPhotoView(APIView):
         except anthropic.APIError as exc:
             logger.exception("Fallo del SDK de Anthropic en el análisis de comida: %s", exc)
             return Response({"detail": "Error del servicio de IA."}, status=status.HTTP_502_BAD_GATEWAY)
+        _consume_daily_quota(user_id=request.user.id, kind="food", limit=AI_DAILY_QUOTA_FOOD)
         return Response(result)
