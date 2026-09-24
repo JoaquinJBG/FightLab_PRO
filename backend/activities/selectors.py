@@ -8,7 +8,10 @@ Invariantes del port (¡no romper la paridad con el motor local!):
 - ACWR solo con history_days ≥ 10 y semana > 0; ventana crónica = últimos
   history_days días (incluida la semana aguda); provisional hasta 28 días.
 - Monotonía con history_days ≥ 7 y carga en la semana; SD=0 → sin_variacion.
+- band: port 1:1 de computeLoadBand (frontend/lib/load.ts) — mismas ventanas
+  móviles de 7 días, mismo suelo de anchura (10% de mu) y mismos umbrales.
 """
+import math
 from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
@@ -17,9 +20,14 @@ from django.utils import timezone
 
 from .models import Activity
 
-# Math.round de JS para positivos (half-up); round() de Python es half-even
+LoadBandStatus = str  # "descarga" | "sostenible" | "elevada" | "alta"
+
+
+# Math.round de JS = floor(x + 0.5) para CUALQUIER real (round() de Python es
+# half-even y además redondea negativos hacia cero, no hacia +∞: diverge en
+# ambos casos de Math.round).
 def _js_round(x: float) -> int:
-    return int(x + 0.5)
+    return math.floor(x + 0.5)
 
 
 def activity_list(*, user, kind: str | None = None, limit: int = 50):
@@ -40,6 +48,57 @@ def _resolve_tz(user, tzname: str | None) -> ZoneInfo:
     return ZoneInfo("UTC")
 
 
+def compute_load_band(daily28: list[int], week_au: int, history_days: int) -> dict | None:
+    """Banda de carga tipo Strava: sitúa la carga de la semana en curso dentro
+    del rango de las semanas previas del propio atleta. Port 1:1 de
+    computeLoadBand (frontend/lib/load.ts): mismas ventanas, mismo suelo de
+    anchura y mismos umbrales. None si no hay al menos una semana de baseline
+    antes de la semana actual."""
+    if history_days < 14:
+        return None
+
+    # Ventanas móviles de 7 días que terminan ANTES de la semana en curso
+    # (índices 21..27), acotadas al historial real.
+    d0 = 28 - history_days  # primer índice con datos reales
+    first_end = max(6, d0 + 6)  # primer día-fin con ventana completa dentro del historial
+    samples: list[float] = []
+    for e in range(first_end, 21):  # e en firstEnd..20 inclusive
+        samples.append(sum(daily28[e - 6:e + 1]))
+    if not samples:
+        return None
+
+    mu = sum(samples) / len(samples)
+    if mu <= 0:
+        return None  # baseline sin carga: nada que comparar
+
+    variance = sum((v - mu) ** 2 for v in samples) / len(samples)
+    sigma = variance ** 0.5
+    sigma_eff = max(sigma, 0.1 * mu)  # suelo de anchura (estabilidad visual, no umbral de seguridad)
+
+    low = mu - sigma_eff
+    high = mu + sigma_eff
+    overreach = mu + 2 * sigma_eff
+
+    status: LoadBandStatus
+    if week_au < low:
+        status = "descarga"
+    elif week_au <= high:
+        status = "sostenible"
+    elif week_au <= overreach:
+        status = "elevada"
+    else:
+        status = "alta"
+
+    return {
+        "week_au": _js_round(week_au),
+        "low": max(0, _js_round(low)),
+        "high": _js_round(high),
+        "overreach": _js_round(overreach),
+        "status": status,
+        "provisional": history_days < 28,
+    }
+
+
 def load_metrics(*, user, tzname: str | None = None) -> dict:
     tz = _resolve_tz(user, tzname)
     today_local = timezone.now().astimezone(tz).date()
@@ -56,6 +115,7 @@ def load_metrics(*, user, tzname: str | None = None) -> dict:
     empty = {
         "week_au": 0, "daily7": [0] * 7, "acwr": None, "provisional": True,
         "monotonia": None, "tension": None, "sin_variacion": False, "history_days": 0,
+        "band": None,
     }
     if first_started is None:
         return empty
@@ -98,8 +158,10 @@ def load_metrics(*, user, tzname: str | None = None) -> dict:
         else:
             sin_variacion = True  # cero variación = monotonía máxima (riesgo), no "sin datos"
 
+    band = compute_load_band(daily28, week_au, history_days)
+
     return {
         "week_au": week_au, "daily7": daily7, "acwr": acwr, "provisional": provisional,
         "monotonia": monotonia, "tension": tension, "sin_variacion": sin_variacion,
-        "history_days": history_days,
+        "history_days": history_days, "band": band,
     }

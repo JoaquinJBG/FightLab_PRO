@@ -8,6 +8,7 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from activities.models import Activity
+from activities.selectors import compute_load_band
 from users.services import email_verify, user_create
 from users.tokens import generate_email_verification_token
 
@@ -48,6 +49,7 @@ def test_sin_actividades(auth_client):
     assert resp.data == {
         "week_au": 0, "daily7": [0] * 7, "acwr": None, "provisional": True,
         "monotonia": None, "tension": None, "sin_variacion": False, "history_days": 0,
+        "band": None,
     }
 
 
@@ -186,3 +188,72 @@ def test_sesiones_con_carga_cero_no_cuentan(auth_client, user):
     resp = auth_client.get("/api/v1/activities/metrics")
     assert resp.data["history_days"] == 2  # la sesión de carga 0 no abre historial
     assert resp.data["week_au"] == 180
+
+
+def _daily28(loads_by_days_ago: dict[int, int]) -> list[int]:
+    """daily28[27] = hoy, igual que dailyAU/loadMetrics del frontend."""
+    arr = [0] * 28
+    for days_ago, load in loads_by_days_ago.items():
+        arr[27 - days_ago] = load
+    return arr
+
+
+class TestComputeLoadBandParidad:
+    """Port 1:1 de describe('loadMetrics().band') en frontend/lib/load.test.ts:
+    mismos escenarios, mismos daily28 (día 27 = hoy), para paridad EXACTA con
+    computeLoadBand."""
+
+    def test_historial_menor_14_dias_banda_null(self):
+        daily28 = _daily28({i: 100 for i in range(12)})
+        week_au = sum(daily28[-7:])
+        assert compute_load_band(daily28, week_au, 12) is None
+
+    def test_28_dias_estables_sostenible_no_provisional(self):
+        daily28 = _daily28({i: 100 for i in range(28)})
+        week_au = sum(daily28[-7:])
+        band = compute_load_band(daily28, week_au, 28)
+        assert band["status"] == "sostenible"
+        assert band["provisional"] is False
+
+    def test_suelo_de_anchura_sigma_cero(self):
+        """mu=700 (7×100), sigma=0 => sigmaEff=70 => low=630, high=770, overreach=840."""
+        daily28 = _daily28({i: 100 for i in range(28)})
+        week_au = sum(daily28[-7:])
+        band = compute_load_band(daily28, week_au, 28)
+        assert band["low"] == 630
+        assert band["high"] == 770
+        assert band["overreach"] == 840
+
+    def test_pico_fuerte_sobre_baseline_estable_alta(self):
+        daily28 = _daily28({i: (300 if i <= 6 else 100) for i in range(28)})
+        week_au = sum(daily28[-7:])
+        assert compute_load_band(daily28, week_au, 28)["status"] == "alta"
+
+    def test_semana_muy_suave_descarga(self):
+        daily28 = _daily28({i: (20 if i <= 6 else 100) for i in range(28)})
+        week_au = sum(daily28[-7:])
+        assert compute_load_band(daily28, week_au, 28)["status"] == "descarga"
+
+    def test_semana_por_encima_sin_pico_elevada(self):
+        daily28 = _daily28({i: (115 if i <= 6 else 100) for i in range(28)})
+        week_au = sum(daily28[-7:])
+        assert compute_load_band(daily28, week_au, 28)["status"] == "elevada"
+
+    def test_20_dias_historial_provisional(self):
+        daily28 = _daily28({i: 100 for i in range(20)})
+        week_au = sum(daily28[-7:])
+        assert compute_load_band(daily28, week_au, 20)["provisional"] is True
+
+
+@pytest.mark.django_db
+def test_metrics_endpoint_incluye_band(auth_client, user):
+    """Extremo a extremo: /activities/metrics expone band con la misma forma
+    que el motor local (28 días estables -> sostenible, no provisional)."""
+    for i in range(28):
+        add(user, days_ago=i, minutes=10, rpe=10)  # 100 AU/día
+    resp = auth_client.get("/api/v1/activities/metrics")
+    band = resp.data["band"]
+    assert band == {
+        "week_au": 700, "low": 630, "high": 770, "overreach": 840,
+        "status": "sostenible", "provisional": False,
+    }
