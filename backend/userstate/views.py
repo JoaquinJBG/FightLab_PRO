@@ -6,14 +6,14 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from . import selectors, services
-from .serializers import StatePutSerializer
+from .serializers import BulkStatePutSerializer, StatePutSerializer
 
 MAX_KEYS_PER_REQUEST = 200
 MAX_PREFIX_LEN = 64
 
 
 def _error_detail(exc: DjangoValidationError):
-    return exc.message_dict if hasattr(exc, "message_dict") else exc.messages
+    return services.error_detail(exc)
 
 
 def _serialize_entries(entries):
@@ -92,3 +92,24 @@ class StateDetailView(APIView):
             return Response({"detail": _error_detail(exc)}, status=status.HTTP_400_BAD_REQUEST)
         services.state_delete(profile=request.user.profile, key=key)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class StateBulkView(APIView):
+    """POST /me/state/bulk — hasta `services.MAX_BULK_ITEMS` items
+    `{key, value, updated_at}` en una sola petición (y por tanto un único
+    conteo de throttle `user-state`), pensado para la migración inicial en
+    lote de lo que ya hubiera en localStorage. Cada item se valida y aplica
+    por separado (allowlist, tamaño, last-write-wins): uno inválido no tira
+    abajo el resto del lote, solo queda como `ok: False` en su propia clave."""
+
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "user-state"
+
+    def post(self, request):
+        serializer = BulkStatePutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        results = services.state_put_bulk(
+            profile=request.user.profile, items=serializer.validated_data["items"]
+        )
+        return Response({"results": results})

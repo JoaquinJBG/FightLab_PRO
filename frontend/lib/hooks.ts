@@ -13,6 +13,7 @@ import {
   type ProgressPhoto,
 } from "./schemas";
 import { resetActivityUid, cachedActivityUid, flushActivities } from "./activities";
+import { flushUserState, resetUserStateQueue } from "./user-state";
 
 // Claves flp_* que son preferencias del DISPOSITIVO (no del usuario): sobreviven
 // al logout para no reconfigurar el timer de rounds o el descanso del gimnasio
@@ -23,9 +24,10 @@ const KEEP_ON_LOGOUT = new Set(["flp_round_cfg", "flp_gym_rest"]);
     `flp_*` del dispositivo salvo las preferencias de arriba. En un móvil
     compartido, así el siguiente usuario no ve la carga, la nutrición ni el
     peso del anterior (esas claves no van namespaced por uid).
-    NO toca `flp_pending_acts_*`/`flp_pending_dels_*` de OTRO uid: puede haber
-    quedado la cola sin subir de una cuenta anterior en este mismo móvil, y
-    borrarla a ciegas perdería esos entrenos para siempre. */
+    NO toca `flp_pending_acts_*`/`flp_pending_dels_*`/`flp_pending_state_*` de
+    OTRO uid: puede haber quedado la cola sin subir de una cuenta anterior en
+    este mismo móvil, y borrarla a ciegas perdería esos entrenos (o esa
+    nutrición/peso/coach_memory) para siempre. */
 export function clearDeviceState(currentUid: string | null): void {
   if (typeof window === "undefined") return;
   try {
@@ -36,7 +38,7 @@ export function clearDeviceState(currentUid: string | null): void {
     }
     for (const k of keys) {
       if (!k.startsWith("flp_") || KEEP_ON_LOGOUT.has(k)) continue;
-      const pending = /^flp_pending_(acts|dels)_(.+)$/.exec(k);
+      const pending = /^flp_pending_(acts|dels|state)_(.+)$/.exec(k);
       if (pending && pending[2] !== currentUid) continue; // pendiente de otro uid: se conserva
       localStorage.removeItem(k);
     }
@@ -170,23 +172,38 @@ export function useUpdateProfile() {
   });
 }
 
+// Extraído de useLogout para poder probarlo sin un árbol de React (no hay
+// react-testing-library en este proyecto): son las mismas funciones que usa
+// el `useMutation` de abajo, expuestas solo para el test.
+
+/** Mejor esfuerzo: intenta subir lo pendiente de ESTA cuenta (entrenos y
+ *  user-state) antes de cerrar sesión y borrar el dispositivo. Si falla (sin
+ *  red, servidor dormido), se sigue con el logout igualmente: es una copia de
+ *  seguridad, no un requisito para poder salir. Devuelve el uid capturado
+ *  ANTES de que nada lo borre. */
+export async function performLogout(): Promise<string | null> {
+  const uid = cachedActivityUid();
+  await flushActivities().catch(() => false);
+  await flushUserState().catch(() => undefined);
+  await sendJson("/api/auth/logout", "POST");
+  return uid;
+}
+
+/** Limpieza del dispositivo tras un logout con éxito. ANTES de
+ *  `clearDeviceState`: cancela timers/listeners de la cola de user-state para
+ *  que un reintento ya agendado no se dispare con las cookies de la SIGUIENTE
+ *  cuenta que entre en esta misma pestaña (sin recarga completa). */
+export function finishLogout(qc: { clear: () => void }, uid: string | null): void {
+  qc.clear();
+  resetUserStateQueue();
+  clearDeviceState(uid);
+  resetActivityUid(); // que nada se encole a nombre del usuario saliente
+}
+
 export function useLogout() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async () => {
-      const uid = cachedActivityUid(); // capturarlo ANTES de que nada lo borre
-      // Mejor esfuerzo: intenta subir lo pendiente de ESTA cuenta antes de
-      // cerrar sesión y borrar el dispositivo. Si falla (sin red, servidor
-      // dormido), se sigue con el logout igualmente: es una copia de
-      // seguridad, no un requisito para poder salir.
-      await flushActivities().catch(() => false);
-      await sendJson("/api/auth/logout", "POST");
-      return uid;
-    },
-    onSuccess: (uid) => {
-      qc.clear();
-      clearDeviceState(uid);
-      resetActivityUid(); // que nada se encole a nombre del usuario saliente
-    },
+    mutationFn: performLogout,
+    onSuccess: (uid) => finishLogout(qc, uid),
   });
 }

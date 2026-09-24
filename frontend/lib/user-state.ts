@@ -185,6 +185,10 @@ type Pending = {
   attempts: number;
   timer: ReturnType<typeof setTimeout> | null;
   serialize: (v: unknown) => string;
+  /** uid (resuelto en `flp_uid`) del usuario que encoló esta entrada, o null si
+   *  aún no se conocía. Se usa para no mandar, en la sesión de otra cuenta,
+   *  algo que quedó pendiente de la anterior (ver `runPending`). */
+  uid: string | null;
 };
 const pending = new Map<string, Pending>();
 const BACKOFF_MS = [3_000, 10_000, 30_000, 60_000];
@@ -195,14 +199,31 @@ function adoptServerValue(key: string, server: ServerEntry, serialize: (v: unkno
   writeMetaUpdatedAt(key, server.updated_at);
 }
 
+/** true si esta entrada es de una cuenta distinta a la que hay activa ahora
+ *  mismo (logout + login de otro usuario, en la misma pestaña, sin recargar).
+ *  Si cualquiera de los dos uid no se conoce todavía, no se considera
+ *  discrepancia (para no descartar por error algo escrito antes de resolver
+ *  el uid la primera vez). */
+function pendingBelongsToAnotherUser(entryUid: string | null): boolean {
+  const current = cachedUid();
+  return entryUid != null && current != null && entryUid !== current;
+}
+
 async function runPending(key: string): Promise<void> {
   const entry = pending.get(key);
   if (!entry) return;
+  if (pendingBelongsToAnotherUser(entry.uid)) {
+    if (entry.timer) clearTimeout(entry.timer);
+    pending.delete(key);
+    persistPendingForUid(entry.uid ?? ANON_UID);
+    return;
+  }
   const result = await putState(key, entry.value, entry.updatedAt);
   const current = pending.get(key);
   if (!current || current.updatedAt !== entry.updatedAt) return; // ya hay algo más nuevo en camino
   if (result.ok) {
     pending.delete(key);
+    persistPendingForUid(current.uid ?? ANON_UID);
     if (result.server && result.server.accepted === false) {
       adoptServerValue(key, result.server, current.serialize);
     }
@@ -217,20 +238,133 @@ async function runPending(key: string): Promise<void> {
 
 function scheduleWrite<T>(key: string, value: T, serialize: (v: T) => string): void {
   const updatedAt = new Date().toISOString();
+  const uid = cachedUid();
   const prev = pending.get(key);
   if (prev?.timer) clearTimeout(prev.timer);
-  pending.set(key, { value, updatedAt, attempts: 0, timer: null, serialize: serialize as (v: unknown) => string });
+  pending.set(key, {
+    value,
+    updatedAt,
+    attempts: 0,
+    timer: null,
+    serialize: serialize as (v: unknown) => string,
+    uid,
+  });
   writeMetaUpdatedAt(key, updatedAt);
+  ensureKickListeners();
+  persistPendingForUid(uid ?? ANON_UID);
   void runPending(key);
 }
 
-if (typeof window !== "undefined") {
-  // Reintenta lo pendiente al recuperar red o foco: útil tras un backend dormido.
-  const kick = () => {
-    for (const key of pending.keys()) void runPending(key);
-  };
-  window.addEventListener("online", kick);
-  window.addEventListener("focus", kick);
+/* --------------------- reintento al volver el foco/la red -------------------- */
+// Los listeners se enganchan de forma perezosa (al primer encolado) y se
+// pueden desenganchar con `resetUserStateQueue` (logout): así no quedan vivos
+// disparando reintentos con las cookies de la SIGUIENTE cuenta que entre en
+// la misma pestaña. Si esa cuenta vuelve a encolar algo, se re-enganchan solos.
+let kickListenersAttached = false;
+
+function kickPending(): void {
+  for (const key of pending.keys()) void runPending(key);
+}
+
+function ensureKickListeners(): void {
+  if (kickListenersAttached || typeof window === "undefined") return;
+  window.addEventListener("online", kickPending);
+  window.addEventListener("focus", kickPending);
+  kickListenersAttached = true;
+}
+
+function removeKickListeners(): void {
+  if (!kickListenersAttached || typeof window === "undefined") return;
+  window.removeEventListener("online", kickPending);
+  window.removeEventListener("focus", kickPending);
+  kickListenersAttached = false;
+}
+
+/* ------------------------- outbox persistido (por uid) ------------------------ */
+// Copia en localStorage de lo que hay en `pending`, para que sobreviva a
+// cerrar la pestaña/app (offline-first), igual que el outbox de
+// lib/activities.ts. Se reescribe entera para el uid afectado en cada alta o
+// baja de `pending` (los lotes son pequeños: un puñado de claves como mucho).
+// `frontend/lib/hooks.ts` (`clearDeviceState`) la trata igual que
+// `flp_pending_acts_*`/`flp_pending_dels_*`: se borra la del uid que cierra
+// sesión (ya se intentó mandar en el logout) y se conserva la de otra cuenta
+// en un móvil compartido.
+const PENDING_STATE_PREFIX = "flp_pending_state_";
+const ANON_UID = "anon";
+
+type PersistedPendingItem = { key: string; value: unknown; updatedAt: string };
+
+function pendingStorageKey(uid: string): string {
+  return PENDING_STATE_PREFIX + uid;
+}
+
+/** Serializador genérico para reconstruir la cola persistida: no se guarda la
+ *  función `serde` de cada `useUserState` (no es serializable), así que se
+ *  reconstruye con la misma regla que usan `jsonSerde`/`rawStringSerde`: un
+ *  string se guarda "pelado" (p. ej. `nutri_goal`), cualquier otra cosa como
+ *  JSON. Ninguna clave de la allowlist guarda un string JSON entrecomillado
+ *  como valor, así que esta regla no ambigua. */
+function genericSerialize(value: unknown): string {
+  return typeof value === "string" ? value : JSON.stringify(value);
+}
+
+function persistPendingForUid(uid: string): void {
+  try {
+    const items: PersistedPendingItem[] = [];
+    for (const [key, entry] of pending.entries()) {
+      if ((entry.uid ?? ANON_UID) !== uid) continue;
+      items.push({ key, value: entry.value, updatedAt: entry.updatedAt });
+    }
+    if (items.length === 0) {
+      localStorage.removeItem(pendingStorageKey(uid));
+    } else {
+      localStorage.setItem(pendingStorageKey(uid), JSON.stringify(items));
+    }
+  } catch {
+    /* noop */
+  }
+}
+
+function readPersistedPending(uid: string): PersistedPendingItem[] {
+  try {
+    const raw = localStorage.getItem(pendingStorageKey(uid));
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? (parsed as PersistedPendingItem[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+let restoredForUid: string | null = null;
+
+/** Recupera, una vez por uid y por carga de módulo, lo que quedó pendiente en
+ *  este dispositivo la última vez (p. ej. la app se cerró offline antes de
+ *  poder mandarlo). No pisa una entrada que ya esté en curso para la misma
+ *  clave (algo más nuevo ya en memoria gana): solo relanza las claves que
+ *  esta llamada añade de verdad, nunca TODO `pending` (que podría incluir una
+ *  clave con un envío ya en vuelo ahora mismo y mandarla dos veces a la vez). */
+function restorePersistedPendingOnce(uid: string): void {
+  if (restoredForUid === uid) return;
+  restoredForUid = uid;
+  const items = readPersistedPending(uid);
+  if (items.length === 0) return;
+  const restoredKeys: string[] = [];
+  for (const item of items) {
+    if (pending.has(item.key)) continue;
+    pending.set(item.key, {
+      value: item.value,
+      updatedAt: item.updatedAt,
+      attempts: 0,
+      timer: null,
+      serialize: genericSerialize,
+      uid,
+    });
+    restoredKeys.push(item.key);
+  }
+  if (restoredKeys.length === 0) return;
+  ensureKickListeners();
+  for (const key of restoredKeys) void runPending(key);
 }
 
 /* -------------------------------- API pública -------------------------------- */
@@ -249,12 +383,58 @@ export function syncUserStateDelete(key: string): void {
   const prev = pending.get(key);
   if (prev?.timer) clearTimeout(prev.timer);
   pending.delete(key);
+  if (prev) persistPendingForUid(prev.uid ?? ANON_UID);
   try {
     localStorage.removeItem(LS_META_PREFIX + key);
   } catch {
     /* noop */
   }
   void deleteState(key);
+}
+
+const DEFAULT_FLUSH_TIMEOUT_MS = 4_000;
+
+async function sendPendingNow(key: string): Promise<void> {
+  const entry = pending.get(key);
+  if (!entry) return;
+  if (entry.timer) {
+    clearTimeout(entry.timer);
+    entry.timer = null;
+  }
+  await runPending(key);
+}
+
+/** Intenta mandar YA todo lo que haya en la cola (sin esperar al backoff),
+ *  con un timeout corto: pensado para `useLogout`, para darle a lo pendiente
+ *  de ESTA cuenta una última oportunidad de llegar al servidor mientras las
+ *  cookies todavía son las suyas. Si no da tiempo, lo que quede sigue en
+ *  `pending` (se reintentará solo, o se descartará con
+ *  `resetUserStateQueue` si de todos modos toca cerrar sesión). */
+export async function flushUserState(timeoutMs: number = DEFAULT_FLUSH_TIMEOUT_MS): Promise<void> {
+  if (typeof window === "undefined") return;
+  const keys = Array.from(pending.keys());
+  if (keys.length === 0) return;
+  const attempt = Promise.allSettled(keys.map((key) => sendPendingNow(key)));
+  await Promise.race([
+    attempt.then(() => undefined),
+    new Promise<void>((resolve) => setTimeout(resolve, timeoutMs)),
+  ]);
+}
+
+/** Cancela toda la cola en memoria: los timers de reintento y los listeners
+ *  de foco/conexión. Pensado para el logout, justo después de
+ *  `flushUserState`: sin esto, un reintento ya agendado podía dispararse con
+ *  las cookies de la SIGUIENTE cuenta que entrara en la misma pestaña (sin
+ *  recarga completa), escribiendo los datos de quien salió en la cuenta de
+ *  quien entra. No toca localStorage: lo que quede sin subir de esta cuenta lo
+ *  limpia `clearDeviceState` (frontend/lib/hooks.ts); lo de otra cuenta en
+ *  este dispositivo se conserva ahí. */
+export function resetUserStateQueue(): void {
+  for (const entry of pending.values()) {
+    if (entry.timer) clearTimeout(entry.timer);
+  }
+  pending.clear();
+  removeKickListeners();
 }
 
 /** Si el servidor tiene un valor más nuevo que el local, lo adopta (local +
@@ -316,12 +496,44 @@ function collectLegacyCandidates(): { key: string; raw: string }[] {
 
 let migrationInFlight: Promise<void> | null = null;
 
+// Debe coincidir con `userstate.services.MAX_BULK_ITEMS` en el backend.
+const MAX_BULK_MIGRATION_ITEMS = 200;
+
+type BulkPutItem = { key: string; value: unknown; updated_at: string };
+type BulkItemResult = { ok: boolean; accepted?: boolean };
+
+/** Un solo POST a /me/state/bulk (hasta `MAX_BULK_MIGRATION_ITEMS` items). Null
+ *  si la petición entera no llegó a completarse (red caída, backend dormido,
+ *  429 de throttle, sesión perdida, 5xx): en ese caso NINGUNA clave del lote
+ *  tiene todavía una respuesta final. Si la petición sí completa, cada clave
+ *  del lote tiene su propio resultado (aceptada o rechazada: ambas son
+ *  finales), aunque falte alguna del `results` por una respuesta rara. */
+async function putStateBulk(items: BulkPutItem[]): Promise<Record<string, BulkItemResult> | null> {
+  try {
+    const res = await fetch("/api/proxy/me/state/bulk", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items }),
+    });
+    if (!res.ok) return null; // incluye 429 (throttle) y cualquier 4xx/5xx de la petición completa
+    const data = (await res.json().catch(() => null)) as { results?: Record<string, BulkItemResult> } | null;
+    return data?.results ?? null;
+  } catch {
+    return null; // red caída o backend dormido: se reintenta más tarde
+  }
+}
+
 /** Migración única (idempotente) de las claves flp_* que ya hubiera en este
  *  dispositivo al servidor, pensada para el primer login tras esta versión.
  *  Nunca pisa lo que ya haya en el servidor (manda un `updated_at` de época,
- *  así que solo "gana" si el servidor no tenía nada para esa clave). Si el
- *  backend no responde (dormido/caído), no marca nada: se reintenta en el
- *  próximo montaje de cualquier página conectada. */
+ *  así que solo "gana" si el servidor no tenía nada para esa clave). Va en
+ *  tandas de hasta `MAX_BULK_MIGRATION_ITEMS` claves por petición (no una
+ *  petición por clave: un histórico largo de nutrición/agua agotaría el
+ *  throttle de user-state y perdería el resto para siempre). Si el backend no
+ *  responde, o responde con un 429, o una tanda se queda sin respuesta final
+ *  para alguna clave, NO se marca nada: se reintenta entera en el próximo
+ *  montaje de cualquier página conectada. */
 export function migrateLegacyUserStateOnce(): void {
   if (typeof window === "undefined") return;
   if (migrationInFlight) return;
@@ -333,6 +545,7 @@ export function migrateLegacyUserStateOnce(): void {
 async function runMigration(): Promise<void> {
   const uid = await resolveUid();
   if (!uid) return; // sin sesión (u offline): se reintenta en el próximo mount
+  restorePersistedPendingOnce(uid);
   const flag = MIGRATED_PREFIX + uid;
   try {
     if (localStorage.getItem(flag) === "1") return;
@@ -351,18 +564,29 @@ async function runMigration(): Promise<void> {
   }
 
   const EPOCH = new Date(0).toISOString();
-  const results = await Promise.allSettled(
-    candidates.map(({ key, raw }) => putState(key, tryParseRaw(raw), EPOCH)),
-  );
-  const reachedServer = results.some((r) => r.status === "fulfilled" && r.value.ok);
-  if (reachedServer) {
+  const items: BulkPutItem[] = candidates.map(({ key, raw }) => ({
+    key,
+    value: tryParseRaw(raw),
+    updated_at: EPOCH,
+  }));
+
+  let allFinal = true;
+  for (let i = 0; i < items.length && allFinal; i += MAX_BULK_MIGRATION_ITEMS) {
+    const batch = items.slice(i, i + MAX_BULK_MIGRATION_ITEMS);
+    const results = await putStateBulk(batch);
+    if (results === null || batch.some((item) => results[item.key] === undefined)) {
+      allFinal = false; // la tanda no llegó, o llegó pero sin resultado para alguna clave
+    }
+  }
+
+  if (allFinal) {
     try {
       localStorage.setItem(flag, "1");
     } catch {
       /* noop */
     }
   }
-  // si nada llegó al servidor, no se marca: se reintenta en el próximo mount
+  // si algo se quedó sin respuesta final, no se marca: se reintenta en el próximo mount
 }
 
 /* --------------------------------- hook --------------------------------------- */

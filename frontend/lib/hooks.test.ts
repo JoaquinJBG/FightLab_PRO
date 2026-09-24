@@ -1,5 +1,32 @@
-import { describe, test, expect, beforeEach } from "vitest";
-import { clearDeviceState } from "./hooks";
+import { afterEach, describe, test, expect, beforeEach, vi } from "vitest";
+
+// vi.mock se hoistea sobre los imports de más abajo, así que "./hooks" (y lo
+// que importa de "./activities"/"./user-state") ya carga con estos stubs.
+// Registra el orden de llamadas en `calls` para comprobar la secuencia real
+// que sigue el logout (vaciar colas -> solo entonces cerrar sesión).
+const calls: string[] = [];
+
+vi.mock("./activities", () => ({
+  cachedActivityUid: vi.fn(() => "42"),
+  resetActivityUid: vi.fn(() => {
+    calls.push("resetActivityUid");
+  }),
+  flushActivities: vi.fn(async () => {
+    calls.push("flushActivities");
+    return true;
+  }),
+}));
+
+vi.mock("./user-state", () => ({
+  flushUserState: vi.fn(async () => {
+    calls.push("flushUserState");
+  }),
+  resetUserStateQueue: vi.fn(() => {
+    calls.push("resetUserStateQueue");
+  }),
+}));
+
+import { clearDeviceState, finishLogout, performLogout } from "./hooks";
 
 describe("clearDeviceState (useLogout)", () => {
   beforeEach(() => localStorage.clear());
@@ -60,5 +87,69 @@ describe("clearDeviceState (useLogout)", () => {
     clearDeviceState(null);
 
     expect(localStorage.getItem("flp_pending_acts_42")).toBe("[1]");
+  });
+
+  test("borra la cola pendiente de user-state del uid que cierra sesión", () => {
+    localStorage.setItem("flp_pending_state_42", "[1]");
+
+    clearDeviceState("42");
+
+    expect(localStorage.getItem("flp_pending_state_42")).toBeNull();
+  });
+
+  test("NO borra la cola pendiente de user-state de OTRO uid (móvil compartido)", () => {
+    localStorage.setItem("flp_pending_state_99", "[1]"); // otra cuenta, aún sin subir
+
+    clearDeviceState("42");
+
+    expect(localStorage.getItem("flp_pending_state_99")).toBe("[1]");
+  });
+});
+
+describe("performLogout / finishLogout (useLogout)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    calls.length = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        calls.push("logout-fetch");
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      }),
+    );
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  test("vacía primero la cola de activities y la de user-state, y solo entonces llama a /api/auth/logout", async () => {
+    const uid = await performLogout();
+
+    expect(uid).toBe("42"); // capturado antes de que nada lo borre
+    expect(calls).toEqual(["flushActivities", "flushUserState", "logout-fetch"]);
+  });
+
+  test("si el logout falla en la red, aun así se intentó vaciar lo pendiente antes", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        calls.push("logout-fetch");
+        throw new Error("offline");
+      }),
+    );
+    await expect(performLogout()).rejects.toThrow();
+    expect(calls).toEqual(["flushActivities", "flushUserState", "logout-fetch"]);
+  });
+
+  test("finishLogout cancela la cola de user-state (resetUserStateQueue) ANTES de limpiar el dispositivo", () => {
+    localStorage.setItem("flp_pending_state_42", "[1]"); // simula algo que no se pudo subir
+    const qc = { clear: () => calls.push("qc.clear") };
+
+    finishLogout(qc, "42");
+
+    expect(calls).toEqual(["qc.clear", "resetUserStateQueue", "resetActivityUid"]);
+    // resetUserStateQueue no toca localStorage: clearDeviceState es quien lo hace
+    expect(localStorage.getItem("flp_pending_state_42")).toBeNull();
   });
 });
