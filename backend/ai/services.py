@@ -6,6 +6,7 @@ responden 503 para que el frontend degrade a su modo por reglas/simulado.
 """
 import base64
 import json
+import re
 
 import anthropic
 from django.conf import settings
@@ -32,8 +33,11 @@ como un coach de esquina: frases cortas, sin relleno, máximo ~120 palabras.
 Reglas estrictas:
 - Usa SOLO los datos del "Contexto del atleta". Si un dato no está, dilo y sugiere \
 registrarlo en la app. NUNCA inventes números ni tendencias.
-- ACWR: zona segura 0.8–1.3; por encima, riesgo de lesión (recomienda bajar volumen); \
-por debajo con semana activa, hay margen para apretar.
+- ACWR: no hay una zona segura universal igual para todos; interprétalo SIEMPRE frente \
+al rango habitual de ESTE atleta (su propia media/tendencia reciente), nunca frente a un \
+umbral fijo válido para toda la población. Si sube muy por encima de su rango habitual, hay \
+más riesgo de lesión (recomienda bajar volumen); si está claramente por debajo con semana \
+activa, hay margen para apretar.
 - Si la recuperación está en "cuidado", prioriza técnica suave o descanso aunque la \
 carga dé margen.
 - Cortes de peso: prudencia siempre; nada de cortes agresivos de agua/sodio sin equipo \
@@ -41,9 +45,28 @@ profesional. No eres médico y no das consejo médico: ante dolor o síntomas, r
 profesional sanitario.
 - No uses markdown ni listas: responde en texto corrido, 1–3 frases por idea."""
 
+# Preferencias de tono (memoria persistente del atleta, ver `sanitize_coach_memory`):
+# instrucción breve que se añade al system prompt para cada valor.
+_TONE_INSTRUCTIONS = {
+    "directo": "El atleta prefiere que le hables DIRECTO: frases muy cortas, sin rodeos ni adornos, ve al grano.",
+    "motivador": "El atleta prefiere un tono MOTIVADOR: cercano, que anime explícitamente, sin dejar de ser honesto con los datos.",
+    "tecnico": "El atleta prefiere un tono TÉCNICO: cuando aporte algo, explica brevemente el porqué fisiológico (carga, recuperación) detrás del consejo.",
+}
+_FREQUENCY_INSTRUCTIONS = {
+    "alta": "El atleta quiere avisos frecuentes: no te cortes en señalar cualquier cosa relevante, aunque sea menor.",
+    "media": "El atleta quiere una frecuencia de avisos normal: señala lo relevante sin saturar.",
+    "baja": "El atleta quiere que le molestes lo mínimo: menciona SOLO lo que de verdad importa (riesgo, lesión, pesaje próximo); omite avisos menores.",
+}
 
-def coach_chat(*, messages: list[dict], context: dict) -> str:
-    """Chat del coach con el contexto real del atleta. Devuelve el texto de respuesta."""
+
+def coach_chat(*, messages: list[dict], context: dict, memory: dict | None = None) -> str:
+    """Chat del coach con el contexto real del atleta. Devuelve el texto de respuesta.
+
+    `memory` es la memoria persistente del atleta (P0.3), ya sanitizada por
+    `sanitize_coach_memory` — lesión activa, fase, fecha de la pelea, objetivo
+    de peso y preferencias de tono/frecuencia. Se lee en el servidor a partir
+    de `UserState` (clave `coach_memory`), no del cuerpo que manda el cliente.
+    """
     client = _client(timeout=30.0)
 
     # La API exige que el primer mensaje sea del usuario: descarta saludos previos del coach
@@ -62,6 +85,19 @@ def coach_chat(*, messages: list[dict], context: dict) -> str:
         + "\n\nContexto del atleta (datos reales de la app, hoy):\n"
         + json.dumps(context, ensure_ascii=False)
     )
+    if memory:
+        system += (
+            "\n\nLo que el atleta te ha contado de sí mismo, para que lo recuerdes entre "
+            "conversaciones (puede estar incompleto o desactualizado; no lo repitas literal, "
+            "úsalo para adaptar tus avisos y tu tono):\n" + json.dumps(memory, ensure_ascii=False)
+        )
+        tone_note = _TONE_INSTRUCTIONS.get(memory.get("tono"))
+        if tone_note:
+            system += "\n" + tone_note
+        freq_note = _FREQUENCY_INSTRUCTIONS.get(memory.get("frecuencia_avisos"))
+        if freq_note:
+            system += "\n" + freq_note
+
     resp = client.messages.create(
         model=settings.AI_MODEL_CHAT,
         max_tokens=500,
@@ -72,6 +108,55 @@ def coach_chat(*, messages: list[dict], context: dict) -> str:
     if not text:
         raise AIBadResponse("Respuesta vacía del modelo")
     return text
+
+
+# --- Memoria persistente del coach (P0.3) ---
+
+_FECHA_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+_TONOS_VALIDOS = frozenset(_TONE_INSTRUCTIONS)
+_FRECUENCIAS_VALIDAS = frozenset(_FREQUENCY_INSTRUCTIONS)
+MAX_LESION_CHARS = 200
+MAX_FASE_CHARS = 120
+
+
+def sanitize_coach_memory(raw) -> dict:
+    """Acota y valida la memoria persistente del atleta antes de meterla en el prompt.
+
+    Se lee del modelo `UserState` (clave `coach_memory`, ver `userstate` app),
+    escrito por el propio atleta desde `coach/page.tsx`. Es contenido de
+    usuario que llega al system prompt, así que solo se aceptan estos campos
+    concretos con sus propios límites de tamaño/formato — nada de texto libre
+    sin acotar, para no abrir una vía de inyección de instrucciones al modelo.
+    """
+    if not isinstance(raw, dict):
+        return {}
+    out: dict = {}
+
+    lesion = raw.get("lesion")
+    if isinstance(lesion, str) and lesion.strip():
+        out["lesion"] = lesion.strip()[:MAX_LESION_CHARS]
+
+    fase = raw.get("fase")
+    if isinstance(fase, str) and fase.strip():
+        out["fase"] = fase.strip()[:MAX_FASE_CHARS]
+
+    fecha_pelea = raw.get("fecha_pelea")
+    if isinstance(fecha_pelea, str) and _FECHA_RE.match(fecha_pelea):
+        out["fecha_pelea"] = fecha_pelea
+
+    objetivo_peso_kg = raw.get("objetivo_peso_kg")
+    if isinstance(objetivo_peso_kg, (int, float)) and not isinstance(objetivo_peso_kg, bool) and 0 < objetivo_peso_kg < 400:
+        out["objetivo_peso_kg"] = round(float(objetivo_peso_kg), 1)
+
+    tono = raw.get("tono")
+    if tono in _TONOS_VALIDOS:
+        out["tono"] = tono
+
+    frecuencia_avisos = raw.get("frecuencia_avisos")
+    if frecuencia_avisos in _FRECUENCIAS_VALIDAS:
+        out["frecuencia_avisos"] = frecuencia_avisos
+
+    return out
 
 
 FOOD_SYSTEM = """Eres un nutricionista deportivo experto en estimar comidas a partir de fotos. \

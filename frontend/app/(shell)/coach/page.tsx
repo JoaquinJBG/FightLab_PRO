@@ -1,12 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useBiometrics } from "@/lib/hooks";
 import { computeRecovery, type Recovery } from "@/lib/recovery";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
 import { fetchServerMetrics } from "@/lib/activities";
 import { useUserState } from "@/lib/user-state";
+import {
+  type CoachMemory,
+  type CoachMemoryDraft,
+  EMPTY_DRAFT,
+  FREQUENCY_LABELS,
+  TONE_LABELS,
+  draftFromMemory,
+  isCoachMemoryEmpty,
+  memoryFromDraft,
+  shouldShowRecForFrequency,
+} from "@/lib/coach-memory";
 import {
   CoachIcon, BoltIcon, ScaleIcon, MoonIcon, ChevronRight, GloveIcon,
 } from "@/components/icons";
@@ -73,7 +84,7 @@ function buildRecs(ctx: Ctx): Rec[] {
       icon: "load",
       tone: "warn",
       title: `Carga subiendo rápido (ACWR ${m.acwr.toFixed(2)})`,
-      why: "Tu semana va muy por encima de tu media. Mete un día de técnica o descanso para volver a zona segura (0.8–1.3).",
+      why: "Tu semana va muy por encima de tu media. Mete un día de técnica o descanso para volver a tu rango habitual.",
       action: { label: "Ver carga", href: "/training/load" },
     });
   } else if (m?.acwr != null && m.acwr < 0.8 && m.weekAU > 0 && ctx.recovery?.state !== "cuidado") {
@@ -194,7 +205,7 @@ function coachReply(text: string, ctx: Ctx): string {
   }
   if (/carga|acwr|riesgo/.test(low)) {
     return m && m.weekAU > 0
-      ? `Semana: ${m.weekAU} AU. ${acwrTxt}. Monotonía ${m.monotonia != null ? m.monotonia.toFixed(1) : "—"}. Zona segura: 0.8–1.3; evita dos picos seguidos.`
+      ? `Semana: ${m.weekAU} AU. ${acwrTxt}. Monotonía ${m.monotonia != null ? m.monotonia.toFixed(1) : "—"}. Míralo frente a tu rango habitual, no como un umbral fijo, y evita dos picos seguidos.`
       : "Aún no hay sesiones esta semana. Registra tus entrenos con RPE y te calculo carga, ACWR y avisos.";
   }
   if (/cómo voy|como voy|resumen/.test(low)) {
@@ -217,6 +228,23 @@ export default function CoachPage() {
   const { value: dismissed, setValue: setDismissed } = useUserState<string[]>(bareDismissKey(), []);
   const { value: fb, setValue: setFb } = useUserState<FbEntry[]>("coach_fb", []);
   const [feedback, setFeedback] = useState<Record<string, boolean>>({});
+
+  /* Memoria persistente del coach: lo que el atleta cuenta de sí mismo */
+  const { value: memory, setValue: setMemory, hydrated: memoryHydrated } = useUserState<CoachMemory>("coach_memory", {});
+  const [editingMemory, setEditingMemory] = useState(false);
+  const [memoryDraft, setMemoryDraft] = useState<CoachMemoryDraft>(EMPTY_DRAFT);
+
+  // El borrador se rellena al ABRIR la edición (evento), no en un efecto: así
+  // no hay parpadeo si el servidor todavía no ha terminado de hidratar.
+  function openMemoryEdit() {
+    setMemoryDraft(draftFromMemory(memory));
+    setEditingMemory(true);
+  }
+  function saveMemory(e: FormEvent) {
+    e.preventDefault();
+    setMemory(memoryFromDraft(memoryDraft));
+    setEditingMemory(false);
+  }
 
   useEffect(() => {
     let alive = true;
@@ -262,7 +290,9 @@ export default function CoachPage() {
     weighDays,
   };
 
-  const recs = buildRecs(ctx).filter((r) => !dismissed.includes(r.id));
+  const recs = buildRecs(ctx)
+    .filter((r) => !dismissed.includes(r.id))
+    .filter((r) => shouldShowRecForFrequency(r.tone, memory.frecuencia_avisos));
 
   function dismiss(id: string) {
     setDismissed([...dismissed, id]);
@@ -409,6 +439,110 @@ export default function CoachPage() {
           </div>
         </div>
       )}
+
+      {/* Memoria del coach */}
+      <section className="glass mt-5 p-5">
+        <div className="flex items-center justify-between">
+          <p className="t-eyebrow text-muted">Lo que tu coach sabe de ti</p>
+          {!editingMemory && memoryHydrated && (
+            <button onClick={openMemoryEdit} className="t-label text-neon">
+              {isCoachMemoryEmpty(memory) ? "Contarle a mi coach" : "Editar"}
+            </button>
+          )}
+        </div>
+
+        {editingMemory ? (
+          <form className="mt-3 flex flex-col gap-3" onSubmit={saveMemory}>
+            <label className="flex flex-col gap-1">
+              <span className="t-label text-muted">Lesión o molestia activa</span>
+              <input
+                value={memoryDraft.lesion}
+                onChange={(e) => setMemoryDraft((d) => ({ ...d, lesion: e.target.value }))}
+                placeholder="Ej.: molestia en el hombro derecho"
+                maxLength={200}
+                className="field px-3 py-2 text-sm"
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="t-label text-muted">Fase del campamento o de la temporada</span>
+              <input
+                value={memoryDraft.fase}
+                onChange={(e) => setMemoryDraft((d) => ({ ...d, fase: e.target.value }))}
+                placeholder="Ej.: base, pico, fuera de temporada…"
+                maxLength={120}
+                className="field px-3 py-2 text-sm"
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="t-label text-muted">Fecha de la pelea o competición</span>
+              <input
+                type="date"
+                value={memoryDraft.fechaPelea}
+                onChange={(e) => setMemoryDraft((d) => ({ ...d, fechaPelea: e.target.value }))}
+                className="field px-3 py-2 text-sm"
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="t-label text-muted">Objetivo de peso (kg)</span>
+              <input
+                inputMode="decimal"
+                value={memoryDraft.objetivoPesoKg}
+                onChange={(e) => setMemoryDraft((d) => ({ ...d, objetivoPesoKg: e.target.value }))}
+                placeholder="Ej.: 77.5"
+                className="field px-3 py-2 text-sm"
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="t-label text-muted">Cómo prefieres que te hable</span>
+              <select
+                value={memoryDraft.tono}
+                onChange={(e) => setMemoryDraft((d) => ({ ...d, tono: e.target.value as CoachMemoryDraft["tono"] }))}
+                className="field px-3 py-2 text-sm"
+              >
+                <option value="">Sin preferencia</option>
+                {(Object.keys(TONE_LABELS) as (keyof typeof TONE_LABELS)[]).map((t) => (
+                  <option key={t} value={t}>{TONE_LABELS[t]}</option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="t-label text-muted">Frecuencia de avisos</span>
+              <select
+                value={memoryDraft.frecuenciaAvisos}
+                onChange={(e) => setMemoryDraft((d) => ({ ...d, frecuenciaAvisos: e.target.value as CoachMemoryDraft["frecuenciaAvisos"] }))}
+                className="field px-3 py-2 text-sm"
+              >
+                <option value="">Sin preferencia</option>
+                {(Object.keys(FREQUENCY_LABELS) as (keyof typeof FREQUENCY_LABELS)[]).map((f) => (
+                  <option key={f} value={f}>{FREQUENCY_LABELS[f]}</option>
+                ))}
+              </select>
+            </label>
+            <p className="t-body text-[11px] text-muted">
+              Esto se guarda en tu cuenta para que el coach lo recuerde entre conversaciones y adapte sus avisos.
+              No es información médica ni se comparte con nadie más que tu coach de IA: bórrala cuando quieras.
+            </p>
+            <div className="flex gap-2">
+              <button type="submit" className="btn btn-primary btn-sm">Guardar</button>
+              <button type="button" onClick={() => setEditingMemory(false)} className="btn btn-outline btn-sm">Cancelar</button>
+            </div>
+          </form>
+        ) : isCoachMemoryEmpty(memory) ? (
+          <p className="t-body mt-2 text-xs text-muted">
+            Aún no me has contado nada. Cuéntame tu lesión, tu fase, tu próxima pelea, tu objetivo de peso o cómo prefieres
+            que te hable, y lo tendré en cuenta en el chat.
+          </p>
+        ) : (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {memory.lesion && <span className="badge">Lesión: {memory.lesion}</span>}
+            {memory.fase && <span className="badge">Fase: {memory.fase}</span>}
+            {memory.fecha_pelea && <span className="badge">Pelea: {memory.fecha_pelea}</span>}
+            {memory.objetivo_peso_kg != null && <span className="badge">Objetivo: {memory.objetivo_peso_kg} kg</span>}
+            {memory.tono && <span className="badge">Tono: {TONE_LABELS[memory.tono]}</span>}
+            {memory.frecuencia_avisos && <span className="badge">Avisos: {FREQUENCY_LABELS[memory.frecuencia_avisos]}</span>}
+          </div>
+        )}
+      </section>
 
       {/* Chat */}
       <div className="mt-5">

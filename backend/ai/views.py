@@ -12,6 +12,8 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
+from userstate.selectors import state_get_many
+
 from . import services
 
 logger = logging.getLogger(__name__)
@@ -74,6 +76,19 @@ def _consume_daily_quota(*, user_id: int, kind: str, limit: int) -> None:
     cache.incr(key)
 
 
+def _coach_memory_for(profile) -> dict:
+    """Lee la memoria persistente del coach (P0.3) directamente del servidor.
+
+    Se lee de `UserState` (clave `coach_memory`) en vez de confiar en lo que
+    mande el cliente en el cuerpo de la petición: así no depende de que el
+    frontend la reenvíe en cada mensaje y no se puede falsear desde el cliente.
+    """
+    entry = state_get_many(profile=profile, keys=["coach_memory"]).first()
+    if entry is None:
+        return {}
+    return services.sanitize_coach_memory(entry.value)
+
+
 class LiveScopedRateThrottle(ScopedRateThrottle):
     """``ScopedRateThrottle`` que relee la tasa de los settings en cada petición.
 
@@ -130,8 +145,10 @@ class CoachChatView(APIView):
                 status=status.HTTP_429_TOO_MANY_REQUESTS,
             )
 
+        memory = _coach_memory_for(request.user.profile)
+
         try:
-            reply = services.coach_chat(messages=messages, context=context)
+            reply = services.coach_chat(messages=messages, context=context, memory=memory)
         except services.AIUnavailable:
             return Response({"detail": "IA no configurada."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         except services.AIBadResponse:
