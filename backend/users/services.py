@@ -89,9 +89,11 @@ def email_verify(*, token: str):
 def verification_resend(*, email: str) -> None:
     """Resend the verification email if the user exists and is unverified."""
     email = email.strip().lower()
-    try:
-        user = User.objects.get(email=email)
-    except User.DoesNotExist:
+    # iexact: cubre cuentas guardadas con mayúsculas en la parte local del
+    # email (alta desde el admin, createsuperuser), que normalize_email no
+    # toca.
+    user = User.objects.filter(email__iexact=email).first()
+    if user is None:
         return  # do not leak which emails exist
     if user.is_email_verified:
         return
@@ -122,9 +124,10 @@ def password_reset_request(*, email: str) -> None:
     Nunca informa de si el email existe: la vista siempre responde 200.
     """
     email = email.strip().lower()
-    try:
-        user = User.objects.get(email=email)
-    except User.DoesNotExist:
+    # iexact: mismo motivo que en verification_resend (mayúsculas guardadas
+    # fuera del flujo de registro normal).
+    user = User.objects.filter(email__iexact=email).first()
+    if user is None:
         return
     if not user.is_active:
         return
