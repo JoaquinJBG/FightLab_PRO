@@ -10,6 +10,7 @@ import {
 import {
   RunIcon, WalkIcon, BikeIcon, SwimIcon, BallIcon, RopeIcon, PulseIcon, ChevronRight, InfoIcon,
 } from "@/components/icons";
+import { LIVE_KEY, readLiveSession, type LiveSession } from "@/lib/sports";
 
 const RPE_INFO =
   "RPE = Esfuerzo Percibido (escala 1-10): cómo de duro ha sido. 1 = muy suave, 10 = máximo esfuerzo (no podías más).";
@@ -60,7 +61,6 @@ type Activity = {
   ts: number;
 };
 const KEY = "flp_activities";
-const LIVE_KEY = "flp_live_session";
 
 function loadActivities(): Activity[] {
   if (typeof window === "undefined") return [];
@@ -112,8 +112,6 @@ function fmtDate(ts: number) {
   return sameDay ? `Hoy · ${time}` : `${d.toLocaleDateString("es", { day: "2-digit", month: "short" })} · ${time}`;
 }
 
-type LiveSession = { sportKey: string; elapsed: number; kcal: number; intIdx: number; savedAt: number };
-
 export default function SportsPage() {
   const { data: logs = [] } = useBiometrics();
   const latestWeight = (() => {
@@ -124,13 +122,16 @@ export default function SportsPage() {
   const weightNote = "Kcal estimadas según tu peso.";
 
   const [view, setView] = useState<"deporte" | "actividad">("deporte");
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [resume, setResume] = useState<LiveSession | null>(null);
+  // Inicialización perezosa: se lee localStorage una sola vez, en el primer
+  // render del cliente, en vez de en un efecto que llamaría a setState justo
+  // después de montar (evita el re-render en cascada).
+  const [activities, setActivities] = useState<Activity[]>(() => loadActivities());
+  const [resume, setResume] = useState<LiveSession | null>(() => readLiveSession(SPORTS.map((s) => s.key)));
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  // Historial: local (inmediato) y luego fusionado con el servidor, para que
-  // se vea igual en otro dispositivo. Si el servidor no responde, se queda
-  // con el local (fallback).
+  // Historial: local (inmediato, ya cargado arriba) y luego fusionado con el
+  // servidor, para que se vea igual en otro dispositivo. Si el servidor no
+  // responde, se queda con el local (fallback).
   useEffect(() => {
     let alive = true;
     fetchServerActivities("SPORT").then((server) => {
@@ -141,22 +142,6 @@ export default function SportsPage() {
       setActivities(merged.slice(0, 100));
     });
     return () => { alive = false; };
-  }, []);
-
-  useEffect(() => {
-    setActivities(loadActivities());
-    try {
-      const raw = localStorage.getItem(LIVE_KEY);
-      if (raw) {
-        const s: LiveSession = JSON.parse(raw);
-        // recuperable durante 12 h; más allá se descarta en silencio
-        if (s && SPORT_BY_KEY[s.sportKey] && Date.now() - s.savedAt < 12 * 3600_000 && s.elapsed > 0) {
-          setResume(s);
-        } else {
-          localStorage.removeItem(LIVE_KEY);
-        }
-      }
-    } catch { /* sesión corrupta: se ignora */ }
   }, []);
 
   /* ---------------- estado del tracker ---------------- */
@@ -192,7 +177,6 @@ export default function SportsPage() {
       }
     }, 500);
     return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running, sel, intIdx, weight]);
 
   // persistir la sesión en vivo (recuperable si se cierra la app)

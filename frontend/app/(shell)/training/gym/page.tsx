@@ -9,32 +9,7 @@ import { useUserState } from "@/lib/user-state";
 const DAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 const FOCI = ["Descanso", "Full body", "Empuje", "Tirón", "Pierna", "Torso", "Pecho", "Espalda", "Hombro", "Brazo", "Cardio"];
 
-const EXERCISES: Record<string, string[]> = {
-  "Full body": ["Sentadilla", "Press banca", "Remo", "Press militar"],
-  Empuje: ["Press banca", "Press militar", "Fondos", "Extensión tríceps"],
-  Tirón: ["Dominadas", "Remo con barra", "Curl bíceps", "Face pull"],
-  Pierna: ["Sentadilla", "Peso muerto rumano", "Prensa", "Gemelos"],
-  Torso: ["Press banca", "Remo", "Press militar", "Dominadas"],
-  Pecho: ["Press banca", "Press inclinado", "Aperturas", "Fondos"],
-  Espalda: ["Dominadas", "Remo", "Jalón al pecho", "Peso muerto"],
-  Hombro: ["Press militar", "Elevaciones laterales", "Pájaros", "Face pull"],
-  Brazo: ["Curl bíceps", "Extensión tríceps", "Curl martillo", "Fondos"],
-};
-const SPLITS: Record<string, string[]> = {
-  "Full body": ["Full body"],
-  "Torso / Pierna": ["Torso", "Pierna"],
-  "PPL (Empuje/Tirón/Pierna)": ["Empuje", "Tirón", "Pierna"],
-  "Dividida (Weider)": ["Pecho", "Espalda", "Pierna", "Hombro", "Brazo"],
-};
-const REPS: Record<string, string> = {
-  Fuerza: "4-6 reps · descansos largos",
-  Hipertrofia: "8-12 reps",
-  "Pérdida de grasa": "12-15 reps + cardio",
-  Mantenimiento: "8-10 reps",
-};
-
 const DEFAULT_WEEK = Array(7).fill("Descanso");
-type RoutineDay = { day: number; focus: string; exercises: string[] };
 
 function fmtDate(ts: number) {
   const d = new Date(ts);
@@ -73,35 +48,6 @@ export default function GymPage() {
     const n = [...week];
     n[i] = v;
     setWeek(n);
-  }
-
-  // wizard IA
-  const [nivel, setNivel] = useState("Intermedio");
-  const [dias, setDias] = useState(4);
-  const [tipo, setTipo] = useState("PPL (Empuje/Tirón/Pierna)");
-  const [objetivo, setObjetivo] = useState("Hipertrofia");
-  const [generating, setGenerating] = useState(false);
-  const [routine, setRoutine] = useState<RoutineDay[] | null>(null);
-
-  function generate() {
-    setGenerating(true);
-    setRoutine(null);
-    const seq = SPLITS[tipo];
-    setTimeout(() => {
-      const r: RoutineDay[] = Array.from({ length: dias }, (_, i) => {
-        const focus = seq[i % seq.length];
-        return { day: i + 1, focus, exercises: EXERCISES[focus] ?? [] };
-      });
-      setRoutine(r);
-      setGenerating(false);
-    }, 1000);
-  }
-  function applyToCalendar() {
-    if (!routine) return;
-    const n = Array(7).fill("Descanso");
-    routine.forEach((d, i) => { if (i < 7) n[i] = d.focus; });
-    setWeek(n);
-    setView("cal");
   }
 
   const selectCls = "field px-3 py-2.5 text-sm";
@@ -192,59 +138,24 @@ export default function GymPage() {
         <div className="mt-4">
           <div className="flex items-center gap-2">
             <p className="t-eyebrow text-muted">Crear rutina</p>
-            <span className="badge badge-neon">IA simulada</span>
+            <span className="badge">Próximamente</span>
           </div>
-          <p className="t-body mt-1 text-xs text-muted">Responde unas preguntas y la IA te arma la rutina.</p>
-
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <label className="flex flex-col gap-1.5">
-              <span className="t-label text-muted">Nivel</span>
-              <select value={nivel} onChange={(e) => setNivel(e.target.value)} className={selectCls}>
-                {["Principiante", "Intermedio", "Avanzado"].map((o) => <option key={o}>{o}</option>)}
-              </select>
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="t-label text-muted">Días/semana</span>
-              <select value={dias} onChange={(e) => setDias(Number(e.target.value))} className={selectCls}>
-                {[2, 3, 4, 5, 6].map((o) => <option key={o} value={o}>{o} días</option>)}
-              </select>
-            </label>
-            <label className="col-span-2 flex flex-col gap-1.5">
-              <span className="t-label text-muted">Tipo de rutina</span>
-              <select value={tipo} onChange={(e) => setTipo(e.target.value)} className={selectCls}>
-                {Object.keys(SPLITS).map((o) => <option key={o}>{o}</option>)}
-              </select>
-            </label>
-            <label className="col-span-2 flex flex-col gap-1.5">
-              <span className="t-label text-muted">Objetivo</span>
-              <select value={objetivo} onChange={(e) => setObjetivo(e.target.value)} className={selectCls}>
-                {Object.keys(REPS).map((o) => <option key={o}>{o}</option>)}
-              </select>
-            </label>
+          {/* Beta honesta: aquí antes había un generador simulado (setTimeout +
+              rutina hardcodeada) que se podía aplicar al calendario como si
+              fuera real. Hasta que haya una IA real generando rutinas, se
+              deshabilita en vez de fingir un resultado. */}
+          <div className="glass neon-edge mt-3 flex flex-col items-center gap-3 p-6 text-center">
+            <span className="text-neon glow flex h-14 w-14 items-center justify-center rounded-2xl bg-[rgba(69,233,255,0.07)]">
+              <CoachIcon className="h-7 w-7" />
+            </span>
+            <p className="t-title text-ink">Generar rutina con IA</p>
+            <p className="t-body text-sm text-muted">
+              Todavía no está disponible. De momento, monta tu semana a mano en el calendario.
+            </p>
+            <button className="btn btn-primary mt-1 w-full" disabled aria-disabled="true">
+              <CoachIcon className="h-4 w-4" /> Generar rutina con IA
+            </button>
           </div>
-
-          <button className="btn btn-primary mt-4 w-full" onClick={generate} disabled={generating}>
-            <CoachIcon className="h-4 w-4" /> {generating ? "Generando…" : "Generar rutina con IA"}
-          </button>
-
-          {generating && (
-            <div className="glass mt-4 p-4"><span className="pulse t-body text-sm text-muted">La IA está diseñando tu rutina ({nivel}, {dias} días, {objetivo.toLowerCase()})…</span></div>
-          )}
-
-          {routine && (
-            <div className="mt-4">
-              <p className="t-eyebrow text-neon">Rutina propuesta · {REPS[objetivo]}</p>
-              <div className="mt-2 flex flex-col gap-2">
-                {routine.map((d) => (
-                  <div key={d.day} className="glass p-3.5">
-                    <p className="t-label text-ink">Día {d.day} · <span className="text-neon">{d.focus}</span></p>
-                    <p className="t-body mt-1 text-xs text-muted">{d.exercises.join(" · ")}</p>
-                  </div>
-                ))}
-              </div>
-              <button className="btn btn-tonal mt-3 w-full" onClick={applyToCalendar}>Aplicar al calendario</button>
-            </div>
-          )}
         </div>
       )}
     </div>

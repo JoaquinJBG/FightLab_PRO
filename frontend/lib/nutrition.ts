@@ -194,3 +194,18 @@ export function saveGoal(g: Goal) {
   localStorage.setItem("flp_nutri_goal", g);
   syncUserState("nutri_goal", g, rawStringSerde);
 }
+
+/* ---- foto → plato: mensajes honestos para los fallos conocidos de la IA
+   de visión, en vez de inventar un plato de ejemplo ---- */
+
+/**
+ * Mensaje honesto para cada fallo conocido de la IA de visión. `null`
+ * significa "no es uno de estos códigos": el llamante decide qué hacer
+ * (seguir leyendo la respuesta o caer al error genérico de conexión).
+ */
+export function photoErrorForStatus(status: number): string | null {
+  if (status === 503) return "La IA no está disponible ahora mismo. Añade la comida a mano mientras tanto.";
+  if (status === 429) return "Has llegado al límite diario de fotos con IA. Añade la comida a mano mientras tanto.";
+  if (status === 502) return "La IA no ha podido analizar la foto. Añade la comida a mano mientras tanto.";
+  return null;
+}
