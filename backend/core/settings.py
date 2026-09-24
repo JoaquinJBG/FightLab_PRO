@@ -158,13 +158,65 @@ from datetime import timedelta  # noqa: E402
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
+    # Desactivados: con serverless (Vercel BFF) varias peticiones pueden
+    # disparar un refresh a la vez y la rotación cerraría sesión al azar.
+    # El logout sigue metiendo el refresh en la blacklist.
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+}
+
+# Nº de proxies de confianza delante de Django (el BFF de Next reenvía
+# X-Forwarded-For): necesario para que el throttling por IP no agrupe a
+# todos los usuarios bajo la IP del proxy.
+NUM_PROXIES = 1
+
+# Caché en la base de datos: LocMem cuenta por separado en cada worker de
+# gunicorn, lo que rompería el throttling.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache_table",
+    }
 }
 
 # --- CORS ---
 CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS")
 CORS_ALLOW_CREDENTIALS = True
+
+# --- Seguridad en producción ---
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    # /health no debe redirigirse: el health check de Render lo pide por HTTP.
+    SECURE_REDIRECT_EXEMPT = [r"^health/?$"]
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 3600
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
+
+# --- Logging (a consola: lo recoge el logging del propio PaaS) ---
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": env("DJANGO_LOG_LEVEL", default="INFO"),
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": env("DJANGO_LOG_LEVEL", default="INFO"),
+            "propagate": False,
+        },
+    },
+}
 
 # --- Email ---
 # Sin EMAIL_BACKEND en el .env -> consola (el enlace se imprime en el backend).
