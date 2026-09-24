@@ -30,6 +30,12 @@ else:
         ) from exc
 
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
+# Render asigna un subdominio *.onrender.com y lo expone en esta variable de
+# entorno: si no está en ALLOWED_HOSTS, su propio health check (que llega con
+# ese Host) recibe 400 y el despliegue nunca pasa a "healthy".
+_render_hostname = env("RENDER_EXTERNAL_HOSTNAME", default="")
+if _render_hostname and _render_hostname not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS = [*ALLOWED_HOSTS, _render_hostname]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
