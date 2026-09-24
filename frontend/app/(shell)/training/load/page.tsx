@@ -64,12 +64,11 @@ export default function LoadPage() {
 
   useEffect(() => {
     let alive = true;
-    const local = loadMetrics();
-    setMetrics(local); // pintura inmediata con lo local
-    // El servidor manda en las métricas agregadas, pero aún no calcula la banda:
-    // conservamos la banda local hasta que el backend la provea (parity: follow-up).
+    setMetrics(loadMetrics()); // pintura inmediata con lo local
+    // El servidor manda en TODAS las métricas agregadas, incluida la banda
+    // (paridad exacta con el motor local): si responde, sustituye por completo.
     fetchServerMetrics().then((s) => {
-      if (alive && s) setMetrics({ ...s, band: s.band ?? local.band });
+      if (alive && s) setMetrics(s);
     });
     return () => { alive = false; };
   }, []);

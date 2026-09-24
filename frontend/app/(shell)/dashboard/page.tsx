@@ -6,7 +6,7 @@ import { useBiometrics, useMe } from "@/lib/hooks";
 import type { Biometrics } from "@/lib/schemas";
 import { computeRecovery } from "@/lib/recovery";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
-import { fetchServerMetrics } from "@/lib/activities";
+import { fetchServerMetrics, fetchServerActivities, serverActivityTs, mergeByClientId, type ActivityKind } from "@/lib/activities";
 import {
   ScaleIcon,
   HeartIcon,
@@ -131,17 +131,51 @@ export default function DashboardPage() {
     };
     const weigh = parse("flp_weigh") as { target?: unknown } | null;
     const week = parse("flp_gym_week");
-    const ts = (v: unknown): number[] =>
-      Array.isArray(v) ? v.map((s: { ts?: unknown }) => s?.ts).filter((t): t is number => typeof t === "number") : [];
+    type TsItem = { ts: number; client_id?: string };
+    const tsItems = (v: unknown): TsItem[] => {
+      if (!Array.isArray(v)) return [];
+      const out: TsItem[] = [];
+      for (const s of v as { ts?: unknown; client_id?: unknown }[]) {
+        if (typeof s?.ts !== "number") continue;
+        out.push({ ts: s.ts, client_id: typeof s.client_id === "string" ? s.client_id : undefined });
+      }
+      return out;
+    };
+    const localByKind: Record<ActivityKind, TsItem[]> = {
+      SPORT: tsItems(parse("flp_activities")),
+      MMA: tsItems(parse("flp_mma")),
+      GYM: tsItems(parse("flp_gym_sessions")),
+    };
     setLocal({
       weighTarget: weigh && typeof weigh.target === "number" ? weigh.target : null,
       gymWeek: Array.isArray(week) && week.length === 7 ? (week as string[]) : null,
-      trainedTs: [...ts(parse("flp_activities")), ...ts(parse("flp_mma")), ...ts(parse("flp_gym_sessions"))],
+      trainedTs: Object.values(localByKind).flatMap((items) => items.map((i) => i.ts)),
       metrics: loadMetrics(),
     });
     let alive = true;
     fetchServerMetrics().then((m) => {
       if (alive && m) setLocal((cur) => ({ ...cur, metrics: m })); // el servidor manda
+    });
+    // Entrenos de OTRO dispositivo: sin esto, "Entreno de hoy hecho" y los
+    // puntos de "Tu semana" solo verían lo registrado en este móvil. Se
+    // fusiona por client_id (nunca se duplica un mismo entreno) y, si el
+    // servidor no responde para algún tipo, ese tipo se queda con lo local.
+    const kinds: ActivityKind[] = ["SPORT", "MMA", "GYM"];
+    Promise.all(kinds.map((k) => fetchServerActivities(k))).then((results) => {
+      if (!alive) return;
+      let anyServer = false;
+      const mergedTs: number[] = [];
+      results.forEach((server, i) => {
+        const kind = kinds[i];
+        if (!server) {
+          mergedTs.push(...localByKind[kind].map((it) => it.ts));
+          return;
+        }
+        anyServer = true;
+        const serverItems: TsItem[] = server.map((a) => ({ ts: serverActivityTs(a), client_id: a.client_id ?? undefined }));
+        mergedTs.push(...mergeByClientId(localByKind[kind], serverItems).map((it) => it.ts));
+      });
+      if (anyServer) setLocal((cur) => ({ ...cur, trainedTs: mergedTs }));
     });
     return () => { alive = false; };
   }, []);
