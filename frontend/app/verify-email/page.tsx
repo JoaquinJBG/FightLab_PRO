@@ -7,17 +7,24 @@ import { useSearchParams } from "next/navigation";
 function ResendVerification() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
+  const [error, setError] = useState<string | null>(null);
 
   async function onResend(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) return;
+    setError(null);
     setStatus("sending");
     try {
-      await fetch("/api/auth/resend", {
+      const res = await fetch("/api/auth/resend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim() }),
       });
+      if (res.status === 429) {
+        setStatus("idle");
+        setError("Demasiados intentos. Prueba de nuevo en un rato.");
+        return;
+      }
     } catch {
       // no revela nada de todos modos: seguimos al estado "enviado"
     }
@@ -46,6 +53,7 @@ function ResendVerification() {
           className="field px-4 py-3 text-sm"
         />
       </label>
+      {error && <p className="text-xs text-bad">{error}</p>}
       <button type="submit" disabled={status === "sending"} className="btn btn-tonal disabled:opacity-60">
         {status === "sending" ? "Enviando…" : "Reenviar email"}
       </button>

@@ -17,12 +17,18 @@ export default function ForgotPasswordPage() {
     }
     setStatus("sending");
     try {
-      await fetch("/api/auth/password-reset", {
+      const res = await fetch("/api/auth/password-reset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim() }),
       });
-      // Siempre "enviado": el servidor nunca revela si el email existe.
+      if (res.status === 429) {
+        setStatus("idle");
+        setError("Demasiados intentos. Prueba de nuevo en un rato.");
+        return;
+      }
+      // Siempre "enviado" (salvo el 429 anterior): el servidor nunca revela
+      // si el email existe.
       setStatus("sent");
     } catch {
       setStatus("idle");
