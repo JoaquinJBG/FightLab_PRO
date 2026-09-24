@@ -12,7 +12,36 @@ import {
   type Profile,
   type ProgressPhoto,
 } from "./schemas";
-import { resetActivityUid } from "./activities";
+import { resetActivityUid, cachedActivityUid, flushActivities } from "./activities";
+
+// Claves flp_* que son preferencias del DISPOSITIVO (no del usuario): sobreviven
+// al logout para no reconfigurar el timer de rounds o el descanso del gimnasio
+// cada vez que alguien más usa el móvil.
+const KEEP_ON_LOGOUT = new Set(["flp_round_cfg", "flp_gym_rest"]);
+
+/** Borra el estado local de la cuenta que cierra sesión: todas las claves
+    `flp_*` del dispositivo salvo las preferencias de arriba. En un móvil
+    compartido, así el siguiente usuario no ve la carga, la nutrición ni el
+    peso del anterior (esas claves no van namespaced por uid).
+    NO toca `flp_pending_acts_*`/`flp_pending_dels_*` de OTRO uid: puede haber
+    quedado la cola sin subir de una cuenta anterior en este mismo móvil, y
+    borrarla a ciegas perdería esos entrenos para siempre. */
+export function clearDeviceState(currentUid: string | null): void {
+  if (typeof window === "undefined") return;
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k) keys.push(k);
+    }
+    for (const k of keys) {
+      if (!k.startsWith("flp_") || KEEP_ON_LOGOUT.has(k)) continue;
+      const pending = /^flp_pending_(acts|dels)_(.+)$/.exec(k);
+      if (pending && pending[2] !== currentUid) continue; // pendiente de otro uid: se conserva
+      localStorage.removeItem(k);
+    }
+  } catch { /* noop */ }
+}
 
 async function getJson(path: string) {
   const res = await fetch(path, { credentials: "include" });
@@ -132,9 +161,19 @@ export function useUpdateProfile() {
 export function useLogout() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: () => sendJson("/api/auth/logout", "POST"),
-    onSuccess: () => {
+    mutationFn: async () => {
+      const uid = cachedActivityUid(); // capturarlo ANTES de que nada lo borre
+      // Mejor esfuerzo: intenta subir lo pendiente de ESTA cuenta antes de
+      // cerrar sesión y borrar el dispositivo. Si falla (sin red, servidor
+      // dormido), se sigue con el logout igualmente: es una copia de
+      // seguridad, no un requisito para poder salir.
+      await flushActivities().catch(() => false);
+      await sendJson("/api/auth/logout", "POST");
+      return uid;
+    },
+    onSuccess: (uid) => {
       qc.clear();
+      clearDeviceState(uid);
       resetActivityUid(); // que nada se encole a nombre del usuario saliente
     },
   });
