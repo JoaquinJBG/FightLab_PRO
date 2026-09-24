@@ -99,6 +99,22 @@ def test_upload_compresses_and_strips_exif(auth_client):
 
 
 @pytest.mark.django_db
+def test_upload_rejects_oversized_pixel_dimensions(auth_client):
+    # PNG de color liso: pesa poco (comprime muy bien) pero decodificado son
+    # 8000x8000 = 64 megapíxeles, por encima de MAX_INPUT_PIXELS (40 MP). No
+    # debe llegar a decodificarse en RGB a resolución completa: eso es lo que
+    # antes tumbaba el proceso por RSS en Render free.
+    buf = io.BytesIO()
+    Image.new("RGB", (8000, 8000), color=(10, 20, 30)).save(buf, format="PNG")
+    f = SimpleUploadedFile("gigante.png", buf.getvalue(), content_type="image/png")
+
+    resp = auth_client.post("/api/v1/me/photos", {"image": f}, format="multipart")
+
+    assert resp.status_code == 400
+    assert auth_client.get("/api/v1/me/photos").data == []
+
+
+@pytest.mark.django_db
 def test_photo_file_requires_auth():
     client = APIClient()
     resp = client.get("/api/v1/me/photos/1/file")
