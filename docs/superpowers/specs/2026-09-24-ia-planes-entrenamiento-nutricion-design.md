@@ -18,6 +18,7 @@ Lo que dijo el usuario:
 - Hay plan de varios días **y** ajuste del día.
 - Se entrena **3-4 semanas la misma plantilla semanal** (mesociclo) teniendo en cuenta lo anterior. Repetir el bloque previo con progresión es válido.
 - Enfoque elegido: **el más versátil**, con IA también en el ajuste diario (enfoque B). Un solo usuario, así que el coste no es una restricción fuerte.
+- Tras probar el coach con Claude real: **la conversación debe guardarse** y **lo que el coach propone en el chat debe poder pasar a la rutina**.
 
 Supuestos, validados en el diseño:
 
@@ -69,6 +70,18 @@ Sigue el patrón Services/Selectors del proyecto.
 | `adjustment` | JSON | `{changes: [...], reason}` o vacío |
 | `source` | str | `ai`, `rules` o `template` (sin ajustar) |
 
+**`CoachMessage`** (historial del chat del coach)
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `profile` | FK `UserProfile` | dueño |
+| `role` | str | `user` o `assistant` |
+| `text` | text | máx. 4000 caracteres |
+| `action` | JSON o null | tarjeta de acción propuesta por el coach (ver §4) con su `status`: `proposed`, `applied` o `dismissed` |
+| `created_at` | datetime | índice por `(profile, created_at)` |
+
+No se usa `UserState` para el chat porque su límite de 64 KB por clave se queda corto.
+
 **Reglas de negocio:**
 
 - Generar un bloque nuevo archiva el activo.
@@ -89,6 +102,10 @@ Todos bajo `/api/v1/`, autenticados y con prefijo permitido en la allowlist del 
 | `POST me/plan/day/adjust` | Ajuste del día con IA; fallback a reglas |
 | `POST me/plan/day/regenerate` | Regenera la sesión de un día con IA |
 | `POST me/plan/meals/suggest` | Sugerencias de comida para los macros restantes |
+| `GET me/coach/messages?before=` | Historial del chat paginado, de 50 en 50, del más nuevo al más antiguo |
+| `DELETE me/coach/messages` | Borra la conversación |
+| `POST me/coach/actions/<message_id>/apply` | Aplica la acción de una tarjeta del chat, con las mismas validaciones que el endpoint equivalente |
+| `POST me/coach/actions/<message_id>/dismiss` | Descarta la tarjeta |
 | `GET/PUT me/plan/preferences` | Preferencias de nutrición: alergias, alimentos que no gustan, presupuesto. Se guardan en `UserState` con la clave `plan_prefs`, añadida a la allowlist |
 
 Los borradores (`draft`) se limpian de forma perezosa al generar otro.
@@ -232,6 +249,17 @@ Van en el system prompt **y** se comprueban en el servidor.
 **Coach (chat)**
 
 - Recibe el bloque activo y el `DayPlan` de hoy como contexto (claves nuevas en `CONTEXT_KEYS`, montadas en el servidor).
+- **Historial persistente:**
+  - Cada mensaje del usuario y del coach se guarda en `CoachMessage`, y la vista carga el historial al abrirse (con caché local de los últimos 50 mensajes en `flp_coach_chat`, que se borra en el logout).
+  - La IA recibe los últimos ~20 mensajes y, si hay más, un resumen breve de los anteriores. El resumen se guarda y se regenera cada 20 mensajes nuevos.
+  - Botón "Borrar conversación".
+- **Acciones desde el chat** con tool use:
+  - Herramientas del coach: `propose_block` (generar un bloque), `modify_day` ("cámbiame el jueves"), `adjust_today` y `suggest_meals`.
+  - Cuando Claude las usa, el servidor ejecuta la misma generación y validación que los endpoints de §2 (esquema, límites de cordura, lesiones, banda y suelo de kcal) y guarda el resultado como `action` del mensaje, en estado `proposed`.
+  - En el chat se ve como una **tarjeta de acción** con el resumen del cambio y los botones **Aplicar** y **Descartar**. **Nunca se aplica nada sin confirmación.**
+  - Aplicar llama a `me/coach/actions/<id>/apply`, que reutiliza los services de `planning`. Si el estado cambió desde la propuesta (por ejemplo, ya hay otro bloque activo), se vuelve a validar y se avisa.
+  - Las tarjetas caducan a los 7 días.
+- El formulario "Generar bloque" sigue existiendo: el chat es otra forma de llegar a lo mismo.
 
 ## 5. Errores, modo sin IA y coste
 
@@ -273,13 +301,15 @@ Hay además límites por minuto (`throttle_scope` `ai-plan`, `ai-adjust` y `ai-m
   - suelo de kcal
   - la cuota no se consume si hay fallo
 - **Contexto acotado:** tamaño y ausencia de datos de otros usuarios.
+- **Chat:** el historial se guarda y se pagina, está aislado por usuario (404 para mensajes ajenos) y se puede borrar. Con el SDK mockeado, una llamada a una herramienta genera una tarjeta `proposed` validada; aplicarla crea o modifica el bloque y descartarla no cambia nada. Una tarjeta caducada o ajena se rechaza.
 - **Reglas:** ajuste por readiness y banda, plantillas predefinidas válidas contra el esquema.
 
 **Frontend (Vitest)**
 
 - `lib/plan.ts`: semana actual, resolución de objetivos por semana, caché, y mapeos a logger, timer y registro de MMA.
 - Comida sugerida → items del diario.
-- `clearDeviceState` borra `flp_plan_*`.
+- `clearDeviceState` borra `flp_plan_*` y `flp_coach_chat`.
+- Render de las tarjetas de acción del chat: los estados `proposed`, `applied` y `dismissed`.
 - Lint a 0, `tsc` y `next build`.
 
 **Prueba de punta a punta** contra el despliegue real con la clave: generar, aplicar, sesión de hoy, ajustar, añadir una comida sugerida y el modo sin IA (quitando la clave).
@@ -288,12 +318,12 @@ Hay además límites por minuto (`throttle_scope` `ai-plan`, `ai-adjust` y `ai-m
 
 Rama `feat/ia-planes`, con commits pequeños y **push tras cada commit**.
 
-1. **Backend base:** app `planning`, modelos y migraciones, selectors y services, endpoints `apply`, `active`, `day` y `PATCH`, y plantillas predefinidas (`source: rules`), con sus tests.
+1. **Backend base:** app `planning`, modelos y migraciones, selectors y services, endpoints `apply`, `active`, `day` y `PATCH`, y plantillas predefinidas (`source: rules`), con sus tests. Incluye el **historial persistente del chat** (`CoachMessage`, endpoints de mensajes y la vista del coach cargando y guardando el historial), porque es independiente y se ve enseguida.
 2. **IA:** `generate_block`, `adjust_day` y `suggest_meals`, con salida estructurada, validación, seguridad, fallback, cuotas y throttles, con sus tests.
 3. **Gimnasio:** formulario y vista previa del bloque, aplicar al calendario, logger precargado con objetivos y "Ajustar hoy".
 4. **MMA:** sesión del bloque en lugar de la demo, "Empezar" abre el timer configurado y el registro llega precargado.
 5. **Nutrición:** tarjeta de sugerencias, añadir con un toque, preferencias.
-6. **Dashboard y chat:** sesión de hoy y semana en Home, bloque como contexto del coach.
+6. **Dashboard y chat:** sesión de hoy y semana en Home, bloque como contexto del coach, y **acciones desde el chat** (herramientas, tarjetas y aplicar o descartar).
 7. **Documentación:** guía de usuario y `DEPLOY.md` (`AI_MODEL_PLAN` y `AI_DAILY_QUOTA_*`).
 
 Los pasos 3, 4 y 5 son independientes una vez terminado el 2. Si se paralelizan, se hace en worktrees creados a mano desde la rama correcta.
