@@ -41,13 +41,14 @@ a pantalla completa como una app nativa, **sin pasar por App Store / Play Store*
 
 | # | Módulo | Contenido | Estado |
 |---|--------|-----------|--------|
-| **M1** | Core / Auth | CustomUser, JWT + verificación email, perfil y biometría | ✅ Backend implementado |
-| **M2** | Entrenamiento | Planes, sesiones, librería de ejercicios, motor de carga (sRPE/ACWR), readiness | ⏳ Planificado |
-| **M3** | Nutrición | Planes, librería de alimentos, registro de comidas, corte de peso básico | ⏳ Planificado |
-| **M4** | Coach IA | Generación de rutinas/dietas, foto→kcal, recomendaciones proactivas, chat | ⏳ Planificado |
+| **M1** | Core / Auth | CustomUser, JWT + verificación email, recuperación de contraseña, beta cerrada por invitación, perfil y biometría | ✅ En producción (beta) |
+| **M2** | Entrenamiento | Deportes, MMA, Gimnasio (registro estilo Hevy), calendario, motor de carga (sRPE + banda personal / ACWR), readiness | ✅ En producción (beta) |
+| **M3** | Nutrición | Diario, macros calculados, agua, recientes/copiar de ayer, foto→kcal, corte de peso básico | ✅ En producción (beta) |
+| **M4** | Coach IA | Chat y briefing con Claude real, memoria persistente del coach, límites de uso diarios por usuario | ✅ En producción (beta) |
 
-> Cada módulo recorre su propio ciclo **spec → plan → implementación**. La IA es una
-> capa transversal que se monta al final.
+> Todos los módulos tienen ya su motor real en el backend y sesión sincronizada
+> con la cuenta (no solo `localStorage`). Lo que sigue siendo demo o está
+> pendiente se detalla en la checklist de [`docs/guia-usuario.md`](docs/guia-usuario.md).
 
 ## 📂 Estructura del repositorio
 
@@ -59,7 +60,7 @@ fightlab-pro/
 │   ├── profiles/           # UserProfile + BiometricsLog (M1)
 │   ├── requirements.txt
 │   └── Dockerfile
-├── frontend/               # PWA Next.js (próximamente)
+├── frontend/               # PWA Next.js (App Router) — BFF + M1-M4
 ├── docker-compose.yml      # db (PostgreSQL) + backend
 └── docs/superpowers/
     ├── specs/              # especificaciones de diseño
@@ -87,13 +88,16 @@ fightlab-pro/
    pip install -r backend/requirements.txt
    cd backend
    python manage.py migrate
-   python manage.py runserver
+   python manage.py runserver 8001
    ```
-   La API queda en `http://localhost:8000/api/v1/`. En desarrollo, los emails de
-   verificación se imprimen en la consola del servidor.
+   La API queda en `http://localhost:8001/api/v1/` (el **8000** se deja libre para
+   otros proyectos que puedan estar corriendo en la misma máquina; es el puerto
+   que ya espera `frontend/.env.example` por defecto). En desarrollo, los emails
+   de verificación se imprimen en la consola del servidor.
 
-> Alternativa todo-en-Docker: `docker compose up --build` (requiere el puerto 8000
-> libre). El contenedor backend usa `POSTGRES_HOST=db` automáticamente.
+> Alternativa todo-en-Docker: `docker compose up --build` (backend en el host en
+> `http://localhost:8010/`, configurable con `FL_BACKEND_PORT`). El contenedor
+> backend usa `POSTGRES_HOST=db` automáticamente.
 
 ### Tests
 
@@ -121,6 +125,8 @@ Base: `/api/v1`
 
 ## 📖 Documentación
 
+- **Guía de usuario (viva):** [`docs/guia-usuario.md`](docs/guia-usuario.md) — qué hace cada vista y checklist de estado real (✅/🎭/⏳).
+- **Desplegar la beta (Neon + Render + Vercel):** [`docs/DEPLOY.md`](docs/DEPLOY.md)
 - **Visión y arquitectura:** [`docs/superpowers/specs/2026-06-01-fightlab-pro-vision-design.md`](docs/superpowers/specs/2026-06-01-fightlab-pro-vision-design.md)
 - **Spec M1 (Core/Auth):** [`docs/superpowers/specs/2026-06-01-m1-core-auth-design.md`](docs/superpowers/specs/2026-06-01-m1-core-auth-design.md)
 - **Plan backend M1:** [`docs/superpowers/plans/2026-06-01-m1-backend-core-auth.md`](docs/superpowers/plans/2026-06-01-m1-backend-core-auth.md)
