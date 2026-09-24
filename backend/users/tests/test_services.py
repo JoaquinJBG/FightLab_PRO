@@ -18,12 +18,13 @@ def test_user_create_makes_inactive_user_and_sends_email():
 
 
 @pytest.mark.django_db
-def test_user_create_resends_for_unverified_duplicate():
+def test_user_create_resends_for_unverified_duplicate_without_touching_password():
     user_create(email="a@b.com", password="pw-strong-123")  # sin verificar
     mail.outbox.clear()
     again = user_create(email="a@b.com", password="pw-strong-456")
     assert again.email == "a@b.com"
-    assert again.check_password("pw-strong-456")  # actualiza la contraseña
+    assert again.check_password("pw-strong-123")  # la contraseña original NO cambia
+    assert not again.check_password("pw-strong-456")
     assert len(mail.outbox) == 1  # reenvía el enlace
 
 
