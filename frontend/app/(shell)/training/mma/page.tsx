@@ -3,7 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { GloveIcon, InfoIcon, CoachIcon } from "@/components/icons";
-import { deleteServerActivities, enqueueActivity } from "@/lib/activities";
+import {
+  deleteServerActivities, enqueueActivity, fetchServerActivities, pendingQueueItems, mergeByClientId,
+  type ServerActivity, type SyncItem,
+} from "@/lib/activities";
 
 const RPE_INFO =
   "RPE = Esfuerzo Percibido (escala 1-10): cómo de duro sientes el entreno. 1 = muy suave, 10 = máximo esfuerzo (no puedes más).";
@@ -75,6 +78,43 @@ type Sess = {
 };
 const KEY = "flp_mma";
 const loadSess = (): Sess[] => { try { return JSON.parse(localStorage.getItem(KEY) ?? "[]"); } catch { return []; } };
+
+/* ---- historial fusionado: local + cola pendiente + servidor (otro dispositivo) ---- */
+type MmaDetail = { art?: string; work_type?: string; partner?: string | null };
+
+function sessFromServer(a: ServerActivity): Sess {
+  const detail = a.detail as MmaDetail | null;
+  return {
+    id: a.client_id ?? `srv-${a.id}`,
+    client_id: a.client_id ?? undefined,
+    art: detail?.art ?? (a.title || "MMA"),
+    type: detail?.work_type,
+    minutes: Math.round(a.duration_sec / 60),
+    rpe: a.rpe ?? 0,
+    load: a.load_au ?? 0,
+    partner: detail?.partner ?? null,
+    notes: a.note || null,
+    ts: new Date(a.started_at).getTime() + a.duration_sec * 1000,
+  };
+}
+function sessFromPending(item: SyncItem): Sess {
+  const detail = item.detail as MmaDetail | null | undefined;
+  const minutes = Math.round(item.duration_sec / 60);
+  const rpe = item.rpe ?? 0;
+  return {
+    id: item.client_id,
+    client_id: item.client_id,
+    art: detail?.art ?? (item.title || "MMA"),
+    type: detail?.work_type,
+    minutes,
+    rpe,
+    load: rpe ? minutes * rpe : 0,
+    partner: detail?.partner ?? null,
+    notes: item.note || null,
+    ts: new Date(item.started_at).getTime() + item.duration_sec * 1000,
+  };
+}
+
 const fmtDate = (ts: number) => {
   const d = new Date(ts);
   const t = d.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
@@ -108,7 +148,23 @@ export default function MmaPage() {
   const [notes, setNotes] = useState("");
   const [sessions, setSessions] = useState<Sess[]>([]);
   const [savedFlash, setSavedFlash] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   useEffect(() => setSessions(loadSess()), []);
+
+  // Historial + stats del mes: local (inmediato) y luego fusionado con el
+  // servidor, para que funcione en otro dispositivo. Fallback local si no responde.
+  useEffect(() => {
+    let alive = true;
+    fetchServerActivities("MMA").then((server) => {
+      if (!alive || !server) return;
+      const pending = pendingQueueItems("MMA").map(sessFromPending);
+      const merged = mergeByClientId(loadSess(), pending, server.map(sessFromServer));
+      merged.sort((a, b) => b.ts - a.ts);
+      setSessions(merged.slice(0, 200));
+    });
+    return () => { alive = false; };
+  }, []);
+
   const load = minutes * rpe;
 
   function saveSession() {
@@ -284,7 +340,16 @@ export default function MmaPage() {
         <div className="mt-5">
           <div className="flex items-center justify-between">
             <p className="t-eyebrow text-muted">Tus sesiones MMA</p>
-            <button onClick={() => { localStorage.removeItem(KEY); setSessions([]); void deleteServerActivities("MMA"); }} className="t-label text-muted">Borrar</button>
+            {confirmDelete ? (
+              <button
+                onClick={() => { localStorage.removeItem(KEY); setSessions([]); void deleteServerActivities("MMA"); setConfirmDelete(false); }}
+                className="t-label text-bad"
+              >
+                ¿Borrar todo?
+              </button>
+            ) : (
+              <button onClick={() => setConfirmDelete(true)} className="t-label text-muted">Borrar</button>
+            )}
           </div>
           <div className="mt-2 flex flex-col gap-2">
             {sessions.map((s) => (

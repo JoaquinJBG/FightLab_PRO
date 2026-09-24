@@ -13,7 +13,7 @@
 // síncrono usa el uid cacheado. El historial legacy lo reclama un único uid
 // por dispositivo (flp_acts_legacy_owner) para no copiar datos de A a B.
 
-import type { LoadMetrics } from "@/lib/load";
+import type { LoadMetrics, LoadBandStatus } from "@/lib/load";
 
 export type ActivityKind = "SPORT" | "MMA" | "GYM";
 
@@ -70,6 +70,13 @@ export function resetActivityUid(): void {
   try { localStorage.removeItem(UID_CACHE_KEY); } catch { /* noop */ }
 }
 
+/** Uid cacheado SIN red (puede ser null si aún no se resolvió). Solo para
+    decidir qué claves `flp_pending_*` son "propias" al cerrar sesión: no vale
+    para encolar (usar resolveUidFresh vía flushActivities). */
+export function cachedActivityUid(): string | null {
+  return cachedUid();
+}
+
 /* --------------------------------- cola ----------------------------------- */
 
 function readQueue(key: string): SyncItem[] {
@@ -93,6 +100,25 @@ function removeFromQueue(key: string, done: Set<string>) {
   const cur = readQueue(key).filter((i) => !done.has(i.client_id));
   try { localStorage.setItem(key, JSON.stringify(cur)); } catch { /* noop */ }
   return cur.length;
+}
+
+/** Lo que este dispositivo tiene encolado (propio + adoptable de "anon") para
+    un tipo, sin tocar la red: se usa para que el historial muestre lo recién
+    guardado aunque el servidor todavía no lo haya confirmado. */
+export function pendingQueueItems(kind: ActivityKind): SyncItem[] {
+  if (typeof window === "undefined") return [];
+  const uid = cachedUid() ?? "anon";
+  const keys = uid === "anon" ? [queueKey("anon")] : [queueKey(uid), queueKey("anon")];
+  const seen = new Set<string>();
+  const out: SyncItem[] = [];
+  for (const k of keys) {
+    for (const item of readQueue(k)) {
+      if (item.kind !== kind || seen.has(item.client_id)) continue;
+      seen.add(item.client_id);
+      out.push(item);
+    }
+  }
+  return out;
 }
 
 function readDels(key: string): ActivityKind[] {
@@ -308,6 +334,60 @@ export async function migrateLocalActivities(): Promise<void> {
   }
 }
 
+/* --------------------------- historial del servidor ------------------------ */
+
+export type ServerActivity = {
+  id: number;
+  client_id: string | null;
+  kind: ActivityKind;
+  title: string;
+  started_at: string; // ISO
+  duration_sec: number;
+  rpe: number | null;
+  kcal: number | null;
+  note: string;
+  detail: Record<string, unknown> | null;
+  load_au: number | null;
+  source: string;
+  created_at: string;
+};
+
+/** Fin de sesión (lo que este proyecto usa como `ts`) a partir de una
+    actividad del servidor: inicio + duración, igual que el guardado local. */
+export function serverActivityTs(a: ServerActivity): number {
+  return new Date(a.started_at).getTime() + a.duration_sec * 1000;
+}
+
+/** Historial de un tipo desde el servidor (fuente de verdad para varios
+    dispositivos). null si no responde: la vista debe caer al historial local. */
+export async function fetchServerActivities(kind: ActivityKind, limit = 100): Promise<ServerActivity[] | null> {
+  if (typeof window === "undefined") return null;
+  try {
+    const res = await fetch(`/api/proxy/activities?kind=${kind}&limit=${limit}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return Array.isArray(data) ? (data as ServerActivity[]) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Combina varios historiales del mismo tipo sin duplicar por client_id.
+    Los grupos posteriores GANAN sobre los anteriores para un mismo client_id
+    (pásalos en orden de confianza ascendente: local, pendiente, servidor). Lo
+    sin client_id (legacy muy antiguo) se conserva tal cual, sin deduplicar. */
+export function mergeByClientId<T extends { client_id?: string | null }>(...groups: T[][]): T[] {
+  const byId = new Map<string, T>();
+  const noId: T[] = [];
+  for (const group of groups) {
+    for (const item of group) {
+      if (item.client_id) byId.set(item.client_id, item);
+      else noId.push(item);
+    }
+  }
+  return [...byId.values(), ...noId];
+}
+
 /* -------------------------------- métricas -------------------------------- */
 
 /** Métricas de carga del servidor (fuente de verdad). Read-your-writes real:
@@ -325,6 +405,7 @@ export async function fetchServerMetrics(): Promise<LoadMetrics | null> {
     const d = (await res.json()) as {
       week_au: number; daily7: number[]; acwr: number | null; provisional: boolean;
       monotonia: number | null; tension: number | null; sin_variacion: boolean; history_days: number;
+      band: { week_au: number; low: number; high: number; overreach: number; status: string; provisional: boolean } | null;
     };
     if (typeof d.week_au !== "number" || !Array.isArray(d.daily7)) return null;
     return {
@@ -335,7 +416,16 @@ export async function fetchServerMetrics(): Promise<LoadMetrics | null> {
       monotonia: d.monotonia,
       tension: d.tension,
       sinVariacion: d.sin_variacion,
-      band: null, // el motor de servidor aún no expone la banda (parity: follow-up); la UI usa la local
+      band: d.band
+        ? {
+            weekAU: d.band.week_au,
+            low: d.band.low,
+            high: d.band.high,
+            overreach: d.band.overreach,
+            status: d.band.status as LoadBandStatus,
+            provisional: d.band.provisional,
+          }
+        : null,
       historyDays: d.history_days,
     };
   } catch {

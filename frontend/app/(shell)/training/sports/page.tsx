@@ -3,7 +3,10 @@
 import { useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
 import Link from "next/link";
 import { useBiometrics } from "@/lib/hooks";
-import { deleteServerActivities, enqueueActivity } from "@/lib/activities";
+import {
+  deleteServerActivities, enqueueActivity, fetchServerActivities, pendingQueueItems, mergeByClientId,
+  type ServerActivity, type SyncItem,
+} from "@/lib/activities";
 import {
   RunIcon, WalkIcon, BikeIcon, SwimIcon, BallIcon, RopeIcon, PulseIcon, ChevronRight, InfoIcon,
 } from "@/components/icons";
@@ -67,6 +70,40 @@ function pushActivity(a: Activity) {
   const all = [a, ...loadActivities()].slice(0, 100);
   localStorage.setItem(KEY, JSON.stringify(all));
 }
+
+/* ---- historial fusionado: local + cola pendiente + servidor (otro dispositivo) ---- */
+type SportDetail = { sport_key?: string; intensity?: string };
+
+function activityFromServer(a: ServerActivity): Activity {
+  const detail = a.detail as SportDetail | null;
+  return {
+    id: a.client_id ?? `srv-${a.id}`,
+    client_id: a.client_id ?? undefined,
+    sportKey: detail?.sport_key ?? "",
+    sportName: a.title || "Deporte",
+    durationSec: a.duration_sec,
+    kcal: a.kcal ?? 0,
+    intensity: detail?.intensity ?? "",
+    rpe: a.rpe,
+    load: a.load_au,
+    ts: new Date(a.started_at).getTime() + a.duration_sec * 1000,
+  };
+}
+function activityFromPending(item: SyncItem): Activity {
+  const detail = item.detail as SportDetail | null | undefined;
+  return {
+    id: item.client_id,
+    client_id: item.client_id,
+    sportKey: detail?.sport_key ?? "",
+    sportName: item.title || "Deporte",
+    durationSec: item.duration_sec,
+    kcal: item.kcal ?? 0,
+    intensity: detail?.intensity ?? "",
+    rpe: item.rpe ?? null,
+    load: item.rpe ? Math.round((item.duration_sec / 60) * item.rpe) : null,
+    ts: new Date(item.started_at).getTime() + item.duration_sec * 1000,
+  };
+}
 function fmtDate(ts: number) {
   const d = new Date(ts);
   const today = new Date();
@@ -89,6 +126,22 @@ export default function SportsPage() {
   const [view, setView] = useState<"deporte" | "actividad">("deporte");
   const [activities, setActivities] = useState<Activity[]>([]);
   const [resume, setResume] = useState<LiveSession | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  // Historial: local (inmediato) y luego fusionado con el servidor, para que
+  // se vea igual en otro dispositivo. Si el servidor no responde, se queda
+  // con el local (fallback).
+  useEffect(() => {
+    let alive = true;
+    fetchServerActivities("SPORT").then((server) => {
+      if (!alive || !server) return;
+      const pending = pendingQueueItems("SPORT").map(activityFromPending);
+      const merged = mergeByClientId(loadActivities(), pending, server.map(activityFromServer));
+      merged.sort((a, b) => b.ts - a.ts);
+      setActivities(merged.slice(0, 100));
+    });
+    return () => { alive = false; };
+  }, []);
 
   useEffect(() => {
     setActivities(loadActivities());
@@ -441,7 +494,7 @@ export default function SportsPage() {
 
       <div className="glass mt-3 grid grid-cols-2 gap-1 rounded-2xl p-1">
         {([["deporte", "Deporte"], ["actividad", "Actividad"]] as const).map(([k, label]) => (
-          <button key={k} onClick={() => setView(k)} className="rounded-xl py-2.5 text-sm font-medium transition-colors"
+          <button key={k} onClick={() => { setView(k); setConfirmDelete(false); }} className="rounded-xl py-2.5 text-sm font-medium transition-colors"
             style={view === k ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)", color: "#03101c" } : { background: "transparent", color: "var(--color-muted)" }}>
             {label}
           </button>
@@ -472,7 +525,16 @@ export default function SportsPage() {
           <div className="flex items-center justify-between">
             <p className="t-eyebrow text-muted">Tu actividad</p>
             {activities.length > 0 && (
-              <button onClick={() => { localStorage.removeItem(KEY); setActivities([]); void deleteServerActivities("SPORT"); }} className="t-label text-muted">Borrar</button>
+              confirmDelete ? (
+                <button
+                  onClick={() => { localStorage.removeItem(KEY); setActivities([]); void deleteServerActivities("SPORT"); setConfirmDelete(false); }}
+                  className="t-label text-bad"
+                >
+                  ¿Borrar todo?
+                </button>
+              ) : (
+                <button onClick={() => setConfirmDelete(true)} className="t-label text-muted">Borrar</button>
+              )
             )}
           </div>
           {activities.length === 0 ? (

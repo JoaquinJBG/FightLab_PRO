@@ -11,10 +11,14 @@ import {
   GYM_REST_KEY,
   exerciseStats,
   pushGymSession,
+  loadGymSessions,
+  gymSessionFromServer,
+  gymSessionFromPending,
   type ExerciseEntry,
   type LiveGym,
+  type GymSession,
 } from "@/lib/gym";
-import { enqueueActivity } from "@/lib/activities";
+import { enqueueActivity, fetchServerActivities, pendingQueueItems, mergeByClientId } from "@/lib/activities";
 
 const RPE_INFO =
   "RPE = Esfuerzo Percibido de TODA la sesión (1-10). Con él calculamos tu carga (min × RPE).";
@@ -68,6 +72,21 @@ function SessionInner() {
   // búsqueda de ejercicios
   const [adding, setAdding] = useState(false);
   const [q, setQ] = useState("");
+
+  /* ---------- historial para "Última vez"/PR: local + servidor (otro dispositivo) ---------- */
+  const [gymHistory, setGymHistory] = useState<GymSession[]>([]);
+  useEffect(() => {
+    setGymHistory(loadGymSessions()); // pintura inmediata con lo local
+    let alive = true;
+    fetchServerActivities("GYM").then((server) => {
+      if (!alive || !server) return; // el servidor no respondió: se queda con lo local
+      const pending = pendingQueueItems("GYM").map(gymSessionFromPending);
+      const merged = mergeByClientId(loadGymSessions(), pending, server.map(gymSessionFromServer));
+      merged.sort((a, b) => b.ts - a.ts);
+      setGymHistory(merged);
+    });
+    return () => { alive = false; };
+  }, []);
 
   /* ---------- arranque: reanudar sesión viva o empezar nueva ---------- */
   useEffect(() => {
@@ -335,7 +354,7 @@ function SessionInner() {
       {/* ejercicios */}
       <div className="mt-4 flex flex-col gap-3">
         {exercises.map((x, ei) => {
-          const stats = exerciseStats(x.name);
+          const stats = exerciseStats(x.name, gymHistory);
           return (
             <div key={x.name} className="glass p-4">
               <div className="flex items-start justify-between gap-2">
