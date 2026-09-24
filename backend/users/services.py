@@ -51,16 +51,27 @@ def user_create(*, email: str, password: str):
     """Create an inactive user and send the verification email.
 
     Si ya existe una cuenta con ese email pero SIN verificar, no es un error:
-    se reenvía el enlace de verificación, pero la contraseña de esa cuenta
-    NO se toca. Si se sobrescribiera, cualquiera podría "registrarse" con el
-    email de otra persona y secuestrar la cuenta antes de que la verifique.
-    Si la cuenta ya está verificada, sí es un error.
+    se reenvía el enlace de verificación. La contraseña que se manda en ESTE
+    intento no se usa (evita el secuestro por sobrescritura: cualquiera
+    podría "re-registrar" el email de otra persona con una contraseña suya
+    y quedarse con la cuenta). Pero tampoco se conserva la contraseña que ya
+    tuviera la cuenta: se deja sin contraseña utilizable
+    (set_unusable_password). Si no se hiciera así, cabría un secuestro
+    simétrico por PRE-registro: alguien registra primero el email de la
+    víctima (tiene que estar en BETA_ALLOWED_EMAILS) y, cuando la víctima se
+    registra después y verifica el enlace que le llega, entraría con la
+    contraseña que puso el atacante. Al dejarla sin contraseña utilizable,
+    quien verifique el enlace tiene que pasar por "recuperar contraseña"
+    antes de poder entrar, así que un pre-registro ajeno no da acceso a
+    nadie. Si la cuenta ya está verificada, sí es un error.
     """
     email = email.strip().lower()
     existing = User.objects.filter(email=email).first()
     if existing is not None:
         if existing.is_email_verified:
             raise ValueError("A user with this email already exists")
+        existing.set_unusable_password()
+        existing.save(update_fields=["password", "updated_at"])
         _send_verification_email(existing)
         return existing
 

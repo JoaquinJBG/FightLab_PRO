@@ -28,12 +28,16 @@ def test_register_creates_inactive_user(client):
 
 
 @pytest.mark.django_db
-def test_register_resends_for_unverified_duplicate_without_touching_password(client):
+def test_register_resends_for_unverified_duplicate_and_invalidates_password(client):
     client.post("/api/v1/auth/register", {"email": "a@b.com", "password": "pw-strong-123"}, format="json")
     resp = client.post("/api/v1/auth/register", {"email": "a@b.com", "password": "pw-strong-456"}, format="json")
     assert resp.status_code == 201  # reenvía el enlace, no bloquea
     user = User.objects.get(email="a@b.com")
-    assert user.check_password("pw-strong-123")  # no se secuestra la cuenta a medio verificar
+    # Ni la contraseña del primer registro ni la del segundo quedan
+    # utilizables: cierra tanto el secuestro por sobrescritura como el
+    # pre-secuestro (quien registró primero no se queda con acceso).
+    assert not user.has_usable_password()
+    assert not user.check_password("pw-strong-123")
     assert not user.check_password("pw-strong-456")
 
 
