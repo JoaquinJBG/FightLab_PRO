@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.http import Http404, HttpResponse
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -6,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from . import selectors, services
+from .image_processing import process_progress_photo
 from .models import BiometricsLog, ProgressPhoto
 from .serializers import BiometricsSerializer, ProfileSerializer, ProgressPhotoSerializer
 
@@ -53,7 +55,10 @@ class BiometricsDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-MAX_PHOTO_BYTES = 8 * 1024 * 1024  # 8 MB
+# Límite de subida cruda (antes de procesar). El cliente ya comprime con
+# compress-image.ts a <1.5 MB / lado <=2048px, así que esto es margen extra
+# más que el tamaño final: el servidor siempre reprocesa a <=1600px / ~500 KB.
+MAX_PHOTO_BYTES = 6 * 1024 * 1024  # 6 MB
 
 
 class PhotoListCreateView(APIView):
@@ -68,20 +73,22 @@ class PhotoListCreateView(APIView):
         if image is None:
             return Response({"detail": "Falta el archivo 'image'."}, status=status.HTTP_400_BAD_REQUEST)
         if image.size > MAX_PHOTO_BYTES:
-            return Response({"detail": "La imagen supera los 8 MB."}, status=status.HTTP_400_BAD_REQUEST)
-        # Valida el CONTENIDO (no solo la extensión): nada de archivos disfrazados
+            return Response({"detail": "La imagen supera los 6 MB."}, status=status.HTTP_400_BAD_REQUEST)
+        # process_progress_photo valida el CONTENIDO real (no solo la extensión)
+        # al abrirlo con Pillow: nada de archivos disfrazados.
         try:
-            from PIL import Image
-
-            Image.open(image).verify()
+            data, content_type, width, height = process_progress_photo(image)
         except Exception:
             return Response({"detail": "El archivo no es una imagen válida."}, status=status.HTTP_400_BAD_REQUEST)
-        image.seek(0)  # verify() consume el stream
+
         from django.utils import timezone
 
         photo = ProgressPhoto(
             profile=request.user.profile,
-            image=image,
+            data=data,
+            content_type=content_type,
+            width=width,
+            height=height,
             taken_at=request.data.get("taken_at") or timezone.localdate(),
         )
         try:
@@ -100,6 +107,20 @@ class PhotoDetailView(APIView):
 
     def delete(self, request, pk):
         photo = get_object_or_404(ProgressPhoto, pk=pk, profile=request.user.profile)
-        photo.image.delete(save=False)  # borra también el archivo
         photo.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PhotoFileView(APIView):
+    """Sirve el binario de la foto. Aislado por `profile`: la de otro usuario
+    da 404 (no 403, para no confirmar que el id existe); sin token, 401."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        photo = get_object_or_404(ProgressPhoto, pk=pk, profile=request.user.profile)
+        if not photo.data:
+            raise Http404
+        response = HttpResponse(bytes(photo.data), content_type=photo.content_type)
+        response["Cache-Control"] = "private, max-age=3600"
+        return response

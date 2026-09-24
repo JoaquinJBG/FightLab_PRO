@@ -1,4 +1,5 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.urls import reverse
 from rest_framework import serializers
 
 from .models import BiometricsLog, ProgressPhoto, UserProfile
@@ -33,12 +34,13 @@ class BiometricsSerializer(serializers.ModelSerializer):
 
 
 class ProgressPhotoSerializer(serializers.ModelSerializer):
-    image = serializers.SerializerMethodField()
+    file_url = serializers.SerializerMethodField()
 
     class Meta:
         model = ProgressPhoto
-        fields = ("id", "image", "taken_at")
+        fields = ("id", "file_url", "taken_at")
 
-    def get_image(self, obj) -> str:
-        # Ruta relativa (/media/...): el frontend la sirve a través de su proxy.
-        return obj.image.url
+    def get_file_url(self, obj) -> str:
+        # Ruta relativa a la API (incluye /api/v1, sin dominio): el frontend la
+        # pide a través de /api/proxy, que reenvía binarios (paquete D).
+        return reverse("photos-file", args=[obj.pk])

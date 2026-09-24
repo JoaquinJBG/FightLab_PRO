@@ -89,12 +89,21 @@ class BiometricsLog(models.Model):
 
 
 class ProgressPhoto(models.Model):
-    """Foto de progreso corporal. Más adelante la IA (visión) podrá analizarlas."""
+    """Foto de progreso corporal, guardada en la propia base de datos.
+
+    El hosting gratuito (Render free) tiene disco efímero, así que la imagen
+    no vive en un ImageField sobre /media sino como bytes en `data`, ya
+    comprimida a JPEG sin EXIF/GPS por `image_processing.process_progress_photo`
+    antes de guardar. Más adelante la IA (visión) podrá analizarlas.
+    """
 
     profile = models.ForeignKey(
         UserProfile, on_delete=models.CASCADE, related_name="photos"
     )
-    image = models.ImageField(upload_to="progress/%Y/%m/")
+    data = models.BinaryField()
+    content_type = models.CharField(max_length=32, default="image/jpeg")
+    width = models.PositiveIntegerField(null=True, blank=True)
+    height = models.PositiveIntegerField(null=True, blank=True)
     taken_at = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
 
