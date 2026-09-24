@@ -12,7 +12,7 @@ User = get_user_model()
 # modelo UserProfile), pero es del paquete B (identidad y cuentas): backfill
 # de los usuarios que ya existieran sin perfil antes de que la señal
 # post_save de users.signals empezara a crearlo siempre.
-backfill = importlib.import_module("profiles.migrations.0003_backfill_profiles")
+backfill = importlib.import_module("profiles.migrations.0006_backfill_profiles")
 
 
 @pytest.mark.django_db

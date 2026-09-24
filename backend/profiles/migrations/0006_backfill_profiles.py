@@ -21,7 +21,7 @@ def noop_reverse(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("profiles", "0002_biometricslog_arm_cm_biometricslog_chest_cm_and_more"),
+        ("profiles", "0005_progressphoto_drop_image"),
         ("users", "0001_initial"),
     ]
 

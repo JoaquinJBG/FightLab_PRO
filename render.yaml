@@ -48,8 +48,8 @@ services:
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: AI_MODEL_CHAT
-        value: claude-sonnet-4-6
+        value: claude-sonnet-5
       - key: AI_MODEL_VISION
-        value: claude-sonnet-4-6
+        value: claude-sonnet-5
       - key: DJANGO_LOG_LEVEL
         value: INFO

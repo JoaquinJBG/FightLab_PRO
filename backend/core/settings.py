@@ -281,5 +281,5 @@ BFF_SHARED_SECRET = env("BFF_SHARED_SECRET", default="")
 # --- IA (Anthropic) ---
 # Sin clave, los endpoints de IA responden 503 y el frontend degrada a reglas/simulado
 ANTHROPIC_API_KEY = env("ANTHROPIC_API_KEY", default="")
-AI_MODEL_CHAT = env("AI_MODEL_CHAT", default="claude-sonnet-4-6")
-AI_MODEL_VISION = env("AI_MODEL_VISION", default="claude-sonnet-4-6")
+AI_MODEL_CHAT = env("AI_MODEL_CHAT", default="claude-sonnet-5")
+AI_MODEL_VISION = env("AI_MODEL_VISION", default="claude-sonnet-5")
