@@ -1,4 +1,5 @@
 """Django settings for core project (FightLab Pro)."""
+import os
 from pathlib import Path
 import environ
 from django.core.exceptions import ImproperlyConfigured
@@ -12,8 +13,10 @@ env = environ.Env(
     CSRF_TRUSTED_ORIGINS=(list, []),
     EMAIL_VERIFICATION_TIMEOUT=(int, 86400),
 )
-# Read repo-root .env (one level above BASE_DIR) if present.
-environ.Env.read_env(BASE_DIR.parent / ".env")
+# Read repo-root .env (one level above BASE_DIR) if present. Configurable con
+# ENV_FILE para que los tests puedan apuntar a una ruta que no exista sin
+# tocar el .env real del desarrollador (que no se debe mover ni borrar).
+environ.Env.read_env(os.environ.get("ENV_FILE", str(BASE_DIR.parent / ".env")))
 
 DEBUG = env("DEBUG")
 

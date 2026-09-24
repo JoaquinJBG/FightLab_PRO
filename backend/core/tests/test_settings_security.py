@@ -6,8 +6,6 @@ import subprocess
 import sys
 
 BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-WORKTREE_ROOT = os.path.dirname(BACKEND_DIR)
-DOTENV_PATH = os.path.join(WORKTREE_ROOT, ".env")
 
 # Variables que settings.py podría rellenar desde el .env local si no se
 # pasan explícitas: se limpian del entorno base para que el subproceso solo
@@ -16,7 +14,7 @@ _SETTINGS_KEYS = [
     "SECRET_KEY", "DEBUG", "ALLOWED_HOSTS", "DATABASE_URL",
     "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_HOST", "POSTGRES_PORT",
     "CORS_ALLOWED_ORIGINS", "CSRF_TRUSTED_ORIGINS", "FRONTEND_URL",
-    "EMAIL_VERIFICATION_TIMEOUT",
+    "EMAIL_VERIFICATION_TIMEOUT", "ENV_FILE",
 ]
 
 
@@ -33,26 +31,22 @@ def _run(extra_env, args):
     )
 
 
-def test_secret_key_obligatoria_sin_debug():
+def test_secret_key_obligatoria_sin_debug(tmp_path):
     """Sin SECRET_KEY y con DEBUG=False, Django no debe arrancar.
 
-    El .env del worktree (que sí trae un SECRET_KEY de desarrollo) se aparta
-    durante la llamada para que este test no dependa de él.
+    Se apunta ENV_FILE a una ruta que no existe en tmp_path para que el
+    subproceso no lea ningún .env real (ni el del worktree, que sí trae un
+    SECRET_KEY de desarrollo): así el test no toca ni renombra ficheros del
+    desarrollador, y no hay carrera si dos ejecuciones corren en paralelo.
     """
-    had_dotenv = os.path.exists(DOTENV_PATH)
-    if had_dotenv:
-        os.rename(DOTENV_PATH, DOTENV_PATH + ".test-bak")
-    try:
-        env = {
-            "DJANGO_SETTINGS_MODULE": "core.settings",
-            "DEBUG": "False",
-            "ALLOWED_HOSTS": "example.com",
-            "DATABASE_URL": "postgres://u:p@localhost:5432/db",
-        }
-        result = _run(env, [sys.executable, "-c", "import django; django.setup()"])
-    finally:
-        if had_dotenv:
-            os.rename(DOTENV_PATH + ".test-bak", DOTENV_PATH)
+    env = {
+        "DJANGO_SETTINGS_MODULE": "core.settings",
+        "ENV_FILE": str(tmp_path / "no-existe.env"),
+        "DEBUG": "False",
+        "ALLOWED_HOSTS": "example.com",
+        "DATABASE_URL": "postgres://u:p@localhost:5432/db",
+    }
+    result = _run(env, [sys.executable, "-c", "import django; django.setup()"])
     assert result.returncode != 0
     assert "SECRET_KEY" in result.stderr
 
