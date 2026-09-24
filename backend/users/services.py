@@ -22,6 +22,13 @@ def is_beta_email_allowed(email: str) -> bool:
 
     BETA_ALLOWED_EMAILS vacía + DEBUG -> se permite todo (dev local).
     BETA_ALLOWED_EMAILS vacía + DEBUG=False -> no se permite ningún registro.
+
+    Decisión consciente: si BETA_ALLOWED_EMAILS SÍ tiene contenido, la lista
+    manda también en DEBUG (no solo en producción). Así se puede probar
+    localmente el comportamiento real de la beta cerrada (los rechazos, el
+    403) sin tener que apagar DEBUG. Solo cuando la lista está vacía se usa
+    DEBUG para decidir "todo permitido" (dev sin configurar) frente a "nada
+    permitido" (producción sin configurar, fail-closed).
     """
     allowed = settings.BETA_ALLOWED_EMAILS
     if not allowed:
