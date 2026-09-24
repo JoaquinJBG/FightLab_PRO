@@ -108,7 +108,9 @@ REST_FRAMEWORK = {
         "activities-sync": "30/min",
         "login": "10/min",
         "register": "5/hour",
+        "resend": "5/hour",
         "password-reset": "5/hour",
+        "password-reset-confirm": "5/hour",
     },
 }
 
@@ -148,6 +150,17 @@ EMAIL_VERIFICATION_TIMEOUT = env("EMAIL_VERIFICATION_TIMEOUT")
 # Emails separados por comas. Vacía + DEBUG -> se permite todo (dev local).
 # Vacía + DEBUG=False -> no se permite ningún registro (hay que pegar la lista en producción).
 BETA_ALLOWED_EMAILS = [e.strip().lower() for e in env("BETA_ALLOWED_EMAILS")]
+
+# --- Throttle detrás del BFF (Vercel -> Render) ---
+# Sin esto, Django ve todas las peticiones anónimas de auth/* llegando desde
+# las pocas IPs de salida del BFF y comparte un único contador de throttle
+# entre toda la beta. Cuando el BFF manda este mismo secreto en la cabecera
+# X-Bff-Secret junto con X-Bff-Client-Ip, el throttle de users/throttling.py
+# confía en esa IP como identidad real del visitante; sin el secreto (valor
+# por defecto, vacío) se ignora esa cabecera y se usa el comportamiento
+# estándar de DRF (REMOTE_ADDR / X-Forwarded-For según NUM_PROXIES), así que
+# nadie puede saltarse el throttle inventándose esas cabeceras.
+BFF_SHARED_SECRET = env("BFF_SHARED_SECRET", default="")
 
 # --- IA (Anthropic) ---
 # Sin clave, los endpoints de IA responden 503 y el frontend degrada a reglas/simulado
