@@ -64,12 +64,12 @@ describe("isPrefixAllowed", () => {
     expect(isPrefixAllowed(["me"])).toBe(true);
     expect(isPrefixAllowed(["activities", "sync"])).toBe(true);
     expect(isPrefixAllowed(["ai", "coach", "chat"])).toBe(true);
-    expect(isPrefixAllowed(["health"])).toBe(true);
   });
 
-  test("bloquea cualquier otro prefijo, incluido /admin", () => {
+  test("bloquea cualquier otro prefijo, incluido /admin y /health (tiene su propia ruta estática)", () => {
     expect(isPrefixAllowed(["admin"])).toBe(false);
     expect(isPrefixAllowed(["auth", "login"])).toBe(false);
+    expect(isPrefixAllowed(["health"])).toBe(false);
     expect(isPrefixAllowed([])).toBe(false);
   });
 });
