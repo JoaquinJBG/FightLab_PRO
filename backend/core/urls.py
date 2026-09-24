@@ -1,10 +1,18 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import include, path
 
+
+def health(_request):
+    """GET /health, sin autenticación. Lo usa el health check de Render."""
+    return JsonResponse({"status": "ok"})
+
+
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("health", health, name="health"),
+    path(settings.ADMIN_URL, admin.site.urls),
     path("api/v1/", include("users.urls")),
     path("api/v1/", include("profiles.urls")),
     path("api/v1/", include("ai.urls")),
