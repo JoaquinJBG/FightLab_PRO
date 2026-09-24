@@ -16,6 +16,24 @@ export type LoadBand = {
   provisional: boolean; // 14..27 días de historial: el rango aún se calibra
 };
 
+// Umbrales de historial (en días) que gobiernan cuándo se puede mostrar cada
+// métrica. Únicos en todo el frontend: la vista de Carga, el mini-resumen de
+// Entreno y el Home leen de aquí para no repetir (ni desincronizar) el
+// "necesitamos X días más".
+export const LOAD_BAND_MIN_DAYS = 14; // por debajo: sin banda (baseline insuficiente)
+export const LOAD_BAND_FULL_DAYS = 28; // por debajo: banda "provisional" (aún calibrando)
+export const ACWR_MIN_HISTORY_DAYS = 10; // por debajo: ACWR null (con 7 sería tautológico, ver loadMetrics)
+
+// Mismo lenguaje en toda la app para el semáforo de banda (P0.1b): la tarjeta
+// "Carga vs tu rango" es la fuente de verdad, y el mini-resumen de Entreno y
+// el Home reutilizan esta misma etiqueta/color en vez de duplicarla.
+export const LOAD_BAND_META: Record<LoadBandStatus, { label: string; color: string; hint: string }> = {
+  descarga: { label: "Descarga", color: "var(--color-neon)", hint: "Por debajo de tu rango: semana de recuperación." },
+  sostenible: { label: "Sostenible", color: "var(--color-good)", hint: "Dentro de tu rango habitual: carga sostenible." },
+  elevada: { label: "Elevada", color: "var(--color-warn)", hint: "Por encima de tu rango: vigila la recuperación." },
+  alta: { label: "Alta", color: "var(--color-bad)", hint: "Muy por encima de tu rango: prioriza recuperar." },
+};
+
 const DAY = 86_400_000;
 const startOfDay = (ts: number) => {
   const d = new Date(ts);
@@ -78,7 +96,7 @@ export function computeLoadBand(
   weekAU: number,
   historyDays: number,
 ): LoadBand | null {
-  if (historyDays < 14) return null;
+  if (historyDays < LOAD_BAND_MIN_DAYS) return null;
 
   // Ventanas móviles de 7 días que terminan ANTES de la semana en curso (índices
   // 21..27), acotadas al historial real para no incluir días sin datos.
@@ -115,7 +133,7 @@ export function computeLoadBand(
     high: Math.round(high),
     overreach: Math.round(overreach),
     status,
-    provisional: historyDays < 28,
+    provisional: historyDays < LOAD_BAND_FULL_DAYS,
   };
 }
 
@@ -136,12 +154,12 @@ export function loadMetrics(): LoadMetrics {
   // 1.00 tautológico sin información.
   let acwr: number | null = null;
   let provisional = true;
-  if (historyDays >= 10 && weekAU > 0) {
+  if (historyDays >= ACWR_MIN_HISTORY_DAYS && weekAU > 0) {
     const chronicWindow = daily28.slice(-historyDays);
     const chronicAvg = chronicWindow.reduce((a, b) => a + b, 0) / historyDays;
     if (chronicAvg > 0) {
       acwr = weekAU / 7 / chronicAvg;
-      provisional = historyDays < 28;
+      provisional = historyDays < LOAD_BAND_FULL_DAYS;
     }
   }
 

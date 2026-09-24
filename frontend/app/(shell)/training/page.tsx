@@ -11,7 +11,7 @@ import {
   ChevronRight,
   BoltIcon,
 } from "@/components/icons";
-import { loadMetrics, type LoadMetrics } from "@/lib/load";
+import { loadMetrics, LOAD_BAND_META, LOAD_BAND_MIN_DAYS, type LoadMetrics } from "@/lib/load";
 import { fetchServerMetrics } from "@/lib/activities";
 
 const cards = [
@@ -23,10 +23,12 @@ const cards = [
 ];
 
 export default function TrainingHubPage() {
-  const [metrics, setMetrics] = useState<LoadMetrics | null>(null);
+  // Perezoso: loadMetrics() lee localStorage y solo debe correr en el cliente
+  // (guarda typeof window por dentro); así no hay setState síncrono en el
+  // efecto (react-hooks/set-state-in-effect) y la primera pintura ya es real.
+  const [metrics, setMetrics] = useState<LoadMetrics | null>(() => loadMetrics());
   useEffect(() => {
     let alive = true;
-    setMetrics(loadMetrics());
     fetchServerMetrics().then((m) => { if (alive && m) setMetrics(m); });
     return () => { alive = false; };
   }, []);
@@ -51,10 +53,14 @@ export default function TrainingHubPage() {
               <p className="stat text-xl text-ink">{metrics.weekAU}<span className="text-xs text-muted"> AU</span></p>
             </div>
             <div>
-              <p className="t-label text-muted">ACWR</p>
-              <p className={`stat text-xl ${metrics.acwr != null ? (metrics.acwr >= 0.8 && metrics.acwr <= 1.3 ? "text-good" : "text-warn") : "text-muted"}`}>
-                {metrics.acwr != null ? `${metrics.acwr.toFixed(2)}${metrics.provisional ? "*" : ""}` : "—"}
-              </p>
+              <p className="t-label text-muted">Tu rango</p>
+              {metrics.band ? (
+                <p className="stat text-xl" style={{ color: LOAD_BAND_META[metrics.band.status].color }}>
+                  {LOAD_BAND_META[metrics.band.status].label}
+                </p>
+              ) : (
+                <p className="stat text-xl text-muted">—</p>
+              )}
             </div>
           </div>
         ) : (
@@ -65,8 +71,16 @@ export default function TrainingHubPage() {
         )}
         <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
       </Link>
-      {metrics?.acwr != null && metrics.provisional && (
-        <p className="t-body mt-1.5 text-[10px] text-muted">*ACWR provisional hasta acumular 4 semanas de historial</p>
+      {metrics && metrics.weekAU > 0 && (
+        metrics.band ? (
+          metrics.band.provisional && (
+            <p className="t-body mt-1.5 text-[10px] text-muted">*Rango calibrándose: {metrics.historyDays}/28 días de historial</p>
+          )
+        ) : (
+          <p className="t-body mt-1.5 text-[10px] text-muted">
+            Necesitamos {Math.max(0, LOAD_BAND_MIN_DAYS - metrics.historyDays)} días más para calcular tu rango personal
+          </p>
+        )
       )}
 
       {/* Tarjetas */}

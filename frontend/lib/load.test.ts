@@ -1,5 +1,14 @@
 import { describe, test, expect, beforeEach } from "vitest";
-import { dailyAU, loadMetrics, type LoadPoint } from "./load";
+import {
+  dailyAU,
+  loadMetrics,
+  LOAD_BAND_META,
+  LOAD_BAND_MIN_DAYS,
+  LOAD_BAND_FULL_DAYS,
+  ACWR_MIN_HISTORY_DAYS,
+  type LoadPoint,
+  type LoadBandStatus,
+} from "./load";
 
 const DAY = 86_400_000;
 
@@ -134,5 +143,52 @@ describe("loadMetrics().band", () => {
     const sessions = Array.from({ length: 20 }, (_, i) => ({ ts: now - i * DAY, load: 100 }));
     seedActivities(sessions);
     expect(loadMetrics().band!.provisional).toBe(true);
+  });
+});
+
+// P0.1b: el semáforo pasa de la zona fija de ACWR (0.8–1.3) a la banda
+// personal. Estos tests fijan el contrato que consumen las 3 vistas (mini-
+// resumen de Entreno, Home y "Carga vs tu rango"): mismo lenguaje (label/
+// color) y mismos umbrales de historial para el mensaje de "faltan X días".
+describe("LOAD_BAND_META", () => {
+  test("define label, color y hint para cada estado de la banda", () => {
+    const statuses: LoadBandStatus[] = ["descarga", "sostenible", "elevada", "alta"];
+    for (const s of statuses) {
+      expect(LOAD_BAND_META[s].label.length).toBeGreaterThan(0);
+      expect(LOAD_BAND_META[s].color.length).toBeGreaterThan(0);
+      expect(LOAD_BAND_META[s].hint.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe("umbrales de historial (contrato compartido por las 3 vistas)", () => {
+  beforeEach(() => localStorage.clear());
+
+  test(`ACWR sigue null con ${ACWR_MIN_HISTORY_DAYS - 1} días (uno por debajo del umbral)`, () => {
+    const now = Date.now();
+    const sessions = Array.from({ length: ACWR_MIN_HISTORY_DAYS - 1 }, (_, i) => ({ ts: now - i * DAY, load: 100 }));
+    seedActivities(sessions);
+    expect(loadMetrics().acwr).toBeNull();
+  });
+
+  test(`banda null con ${LOAD_BAND_MIN_DAYS - 1} días (uno por debajo del umbral)`, () => {
+    const now = Date.now();
+    const sessions = Array.from({ length: LOAD_BAND_MIN_DAYS - 1 }, (_, i) => ({ ts: now - i * DAY, load: 100 }));
+    seedActivities(sessions);
+    const m = loadMetrics();
+    expect(m.band).toBeNull();
+    expect(m.historyDays).toBe(LOAD_BAND_MIN_DAYS - 1);
+  });
+
+  test(`banda deja de ser provisional exactamente al llegar a ${LOAD_BAND_FULL_DAYS} días`, () => {
+    const now = Date.now();
+    const under = Array.from({ length: LOAD_BAND_FULL_DAYS - 1 }, (_, i) => ({ ts: now - i * DAY, load: 100 }));
+    seedActivities(under);
+    expect(loadMetrics().band!.provisional).toBe(true);
+
+    localStorage.clear();
+    const full = Array.from({ length: LOAD_BAND_FULL_DAYS }, (_, i) => ({ ts: now - i * DAY, load: 100 }));
+    seedActivities(full);
+    expect(loadMetrics().band!.provisional).toBe(false);
   });
 });
