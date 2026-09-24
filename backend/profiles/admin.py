@@ -28,3 +28,9 @@ class ProgressPhotoAdmin(admin.ModelAdmin):
     readonly_fields = ("content_type", "width", "height", "created_at")
     search_fields = ("profile__user__email",)
     date_hierarchy = "taken_at"
+
+    def has_add_permission(self, request):
+        # `data` es obligatorio (NOT NULL) y está excluido del formulario: si
+        # se permitiera "Añadir" aquí, guardar reventaría con un
+        # IntegrityError. Las fotos solo se crean subiéndolas desde la app.
+        return False
