@@ -69,6 +69,24 @@ def test_login_normalizes_email_case_and_whitespace(client, verified_user):
 
 
 @pytest.mark.django_db
+def test_login_works_for_email_stored_with_uppercase_local_part(client, db):
+    # CustomUserManager.normalize_email (heredado) solo pone en minúsculas el
+    # dominio: una cuenta creada fuera del flujo de registro normal (admin,
+    # createsuperuser) puede quedar guardada con mayúsculas en la parte
+    # local. El login debe seguir funcionando aunque el usuario escriba su
+    # email en minúsculas.
+    User.objects.create_user(
+        email="Mixed@b.com", password="pw-strong-123", is_active=True, is_email_verified=True
+    )
+    resp = client.post(
+        "/api/v1/auth/login",
+        {"email": "mixed@b.com", "password": "pw-strong-123"},
+        format="json",
+    )
+    assert resp.status_code == 200
+
+
+@pytest.mark.django_db
 def test_login_throttle_blocks_after_limit(client, verified_user, monkeypatch):
     monkeypatch.setitem(SimpleRateThrottle.THROTTLE_RATES, "login", "2/min")
     for _ in range(2):
