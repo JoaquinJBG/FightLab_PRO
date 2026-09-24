@@ -4,6 +4,7 @@ from .views import (
     BiometricsDetailView,
     BiometricsListCreateView,
     PhotoDetailView,
+    PhotoFileView,
     PhotoListCreateView,
     ProfileView,
 )
@@ -14,4 +15,5 @@ urlpatterns = [
     path("me/biometrics/<int:pk>", BiometricsDetailView.as_view(), name="biometrics-detail"),
     path("me/photos", PhotoListCreateView.as_view(), name="photos"),
     path("me/photos/<int:pk>", PhotoDetailView.as_view(), name="photos-detail"),
+    path("me/photos/<int:pk>/file", PhotoFileView.as_view(), name="photos-file"),
 ]

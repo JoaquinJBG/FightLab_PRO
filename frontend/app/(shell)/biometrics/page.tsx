@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   useBiometrics,
@@ -10,9 +10,15 @@ import {
   useUploadPhoto,
   useDeletePhoto,
 } from "@/lib/hooks";
+import { compressImage } from "@/lib/compress-image";
 import { ScaleIcon, ArrowUpRight, InfoIcon, HeartIcon, PulseIcon } from "@/components/icons";
 
-const mediaUrl = (path: string) => `/api/media${path.replace(/^\/media/, "")}`;
+// Las fotos viven en Postgres (backend/profiles), no en /media. `file_url`
+// llega como ruta relativa a la API, p. ej. "/api/v1/me/photos/3/file"; el BFF
+// la sirve en /api/proxy/... . NOTA (paquete D): /api/proxy hoy solo hace
+// `NextResponse.json(...)`, que no vale para binarios — D debe añadir el
+// reenvío en streaming para content-types que no sean JSON.
+const photoUrl = (fileUrl: string) => `/api/proxy${fileUrl.replace(/^\/api\/v1/, "")}`;
 
 /* ----------------------------- helpers ----------------------------------- */
 
@@ -135,14 +141,16 @@ export default function BiometricsPage() {
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const [showInfo, setShowInfo] = useState(false);
   const [showImcInfo, setShowImcInfo] = useState(false);
-  const [weighTarget, setWeighTarget] = useState<number | null>(null);
-
-  useEffect(() => {
+  const [weighTarget] = useState<number | null>(() => {
     try {
       const w = JSON.parse(localStorage.getItem("flp_weigh") ?? "null");
-      if (w && typeof w.target === "number") setWeighTarget(w.target);
-    } catch { /* sin objetivo configurado */ }
-  }, []);
+      return w && typeof w.target === "number" ? w.target : null;
+    } catch {
+      return null; // sin objetivo configurado
+    }
+  });
+  // capturado una vez al montar: evita llamar a Date.now() (impuro) dentro del useMemo de abajo
+  const [nowMs] = useState(() => Date.now());
 
   // puntos de peso ascendentes en el rango elegido
   const { pts, trend } = useMemo(() => {
@@ -150,10 +158,10 @@ export default function BiometricsPage() {
       .map((l) => ({ t: new Date(l.timestamp).getTime(), w: num(l.weight_kg ?? null) }))
       .filter((p): p is Pt => p.w !== null && Number.isFinite(p.t))
       .sort((a, b) => a.t - b.t);
-    const cut = range === null ? -Infinity : Date.now() - range * 86_400_000;
+    const cut = range === null ? -Infinity : nowMs - range * 86_400_000;
     const filtered = asc.filter((p) => p.t >= cut);
     return { pts: filtered, trend: trendSeries(filtered) };
-  }, [logs, range]);
+  }, [logs, range, nowMs]);
 
   const trendNow = trend.length > 0 ? trend[trend.length - 1] : null;
   const rate = weeklyRate(pts, trend);
@@ -165,10 +173,18 @@ export default function BiometricsPage() {
       ? trendNow / Math.pow(heightCm / 100, 2)
       : null;
 
-  function onPhotoSelected(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onPhotoSelected(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = ""; // permite volver a elegir el mismo archivo
-    if (file) upload.mutate(file);
+    if (!file) return;
+    try {
+      const compressed = await compressImage(file);
+      upload.mutate(compressed);
+    } catch {
+      // si el navegador no puede comprimir (createImageBitmap/canvas no
+      // disponibles), se sube el original: el servidor igualmente reprocesa.
+      upload.mutate(file);
+    }
   }
 
   function onDeletePhoto(id: number) {
@@ -267,7 +283,7 @@ export default function BiometricsPage() {
             )}
             {showImcInfo && (
               <p className="t-body mt-2 rounded-xl border border-[rgba(150,190,255,0.12)] bg-[rgba(255,255,255,0.04)] p-2.5 text-xs text-[#cdd9ef]">
-                IMC = peso / altura². Referencia general: 18.5–24.9 se considera "normal". Ojo: en
+                IMC = peso / altura². Referencia general: 18.5–24.9 se considera &quot;normal&quot;. Ojo: en
                 atletas con masa muscular sobreestima la grasa — úsalo solo como orientación.
               </p>
             )}
@@ -373,9 +389,9 @@ export default function BiometricsPage() {
           <div className="mt-2 grid grid-cols-3 gap-2">
             {photos.map((p) => (
               <div key={p.id} className="relative overflow-hidden rounded-2xl border border-[rgba(150,190,255,0.14)]">
-                <a href={mediaUrl(p.image)} target="_blank" rel="noreferrer">
+                <a href={photoUrl(p.file_url)} target="_blank" rel="noreferrer">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={mediaUrl(p.image)} alt={`Foto de progreso ${p.taken_at}`} className="aspect-[3/4] w-full object-cover" />
+                  <img src={photoUrl(p.file_url)} alt={`Foto de progreso ${p.taken_at}`} className="aspect-[3/4] w-full object-cover" />
                 </a>
                 <span className="absolute bottom-1 left-1 rounded-md bg-[rgba(2,4,10,0.7)] px-1.5 py-0.5 text-[9px] text-muted">
                   {fmtDay(new Date(p.taken_at + "T12:00:00").getTime())}

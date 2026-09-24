@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { credentials, biometrics } from "./schemas";
+import { credentials, biometrics, progressPhoto } from "./schemas";
 
 describe("credentials", () => {
   test("acepta email válido y contraseña de 8+ caracteres", () => {
@@ -42,6 +42,26 @@ describe("biometrics", () => {
 
   test("el peso debe ser string|null, no número (viene serializado del backend)", () => {
     const r = biometrics.safeParse({ ...valido, weight_kg: 80.5 });
+    expect(r.success).toBe(false);
+  });
+});
+
+describe("progressPhoto", () => {
+  test("acepta file_url (ruta a /me/photos/<id>/file, servida por Postgres)", () => {
+    const r = progressPhoto.safeParse({
+      id: 3,
+      file_url: "/api/v1/me/photos/3/file",
+      taken_at: "2026-07-02",
+    });
+    expect(r.success).toBe(true);
+  });
+
+  test("ya no acepta el antiguo campo image (ruta a /media/...)", () => {
+    const r = progressPhoto.safeParse({
+      id: 3,
+      image: "/media/progress/2026/07/foto.jpg",
+      taken_at: "2026-07-02",
+    });
     expect(r.success).toBe(false);
   });
 });

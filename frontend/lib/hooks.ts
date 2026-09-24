@@ -85,10 +85,22 @@ export function usePhotos() {
   });
 }
 
+// Margen por debajo del límite de ~4.5 MB que Vercel impone al cuerpo de las
+// funciones del BFF. compressImage() ya deja los archivos muy por debajo de
+// esto (<1.5 MB); este tope solo entra en juego en su fallback, cuando el
+// navegador no puede comprimir (p. ej. HEIC fuera de Safari) y se sube el
+// archivo original tal cual.
+const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+
 export function useUploadPhoto() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (file: File) => {
+      if (file.size > MAX_UPLOAD_BYTES) {
+        throw new Error(
+          "La foto pesa demasiado para subirla sin comprimir. Prueba con otra foto o desde otro navegador.",
+        );
+      }
       const form = new FormData();
       form.append("image", file);
       const res = await fetch("/api/proxy/me/photos", {
