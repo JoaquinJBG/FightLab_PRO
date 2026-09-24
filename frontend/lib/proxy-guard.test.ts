@@ -5,11 +5,23 @@ import {
   isPrefixAllowed,
   isBodyTooLarge,
   isOriginAllowed,
+  guardAuthRequest,
   buildProxyResponse,
   isRefreshTokenExpiredOrMalformed,
   classifyGatewayError,
   MAX_PROXY_BODY_BYTES,
 } from "./proxy-guard";
+
+function authReq(opts: { origin?: string | null; contentType?: string | null } = {}) {
+  const headers = new Headers();
+  if (opts.origin !== null) headers.set("origin", opts.origin ?? "https://app.example.com");
+  if (opts.contentType !== null) headers.set("content-type", opts.contentType ?? "application/json");
+  return new Request("https://app.example.com/api/auth/login", {
+    method: "POST",
+    headers,
+    body: "{}",
+  });
+}
 
 /** Construye un JWT sin firmar (no hace falta firma real: la función bajo
  * prueba solo decodifica el payload) con el "exp" indicado. */
@@ -111,6 +123,42 @@ describe("isOriginAllowed", () => {
 
   test("sin cabecera Origin (clientes sin navegador) se deja pasar", () => {
     expect(isOriginAllowed("POST", null, self)).toBe(true);
+  });
+});
+
+describe("guardAuthRequest (reutiliza isOriginAllowed para las rutas /api/auth/*)", () => {
+  test("con Origin propio y Content-Type JSON, deja pasar (devuelve null)", () => {
+    expect(guardAuthRequest(authReq())).toBeNull();
+  });
+
+  test("con Origin ajeno, rechaza con 403 (bug: login/logout aceptaban cualquier Origin)", async () => {
+    const res = guardAuthRequest(authReq({ origin: "https://evil.example" }));
+    expect(res).not.toBeNull();
+    expect(res!.status).toBe(403);
+    expect(await res!.json()).toEqual({ detail: "Origen no permitido" });
+  });
+
+  test("sin cabecera Origin (clientes sin navegador) deja pasar, igual que el proxy genérico", () => {
+    expect(guardAuthRequest(authReq({ origin: null }))).toBeNull();
+  });
+
+  test("con Content-Type distinto de application/json, rechaza con 415 (bug: CSRF con text/plain)", async () => {
+    const res = guardAuthRequest(authReq({ contentType: "text/plain" }));
+    expect(res).not.toBeNull();
+    expect(res!.status).toBe(415);
+    expect(await res!.json()).toEqual({ detail: "Content-Type debe ser application/json" });
+  });
+
+  test("con requireJsonBody:false (logout) no exige Content-Type", () => {
+    const req = authReq({ contentType: "text/plain" });
+    expect(guardAuthRequest(req, { requireJsonBody: false })).toBeNull();
+  });
+
+  test("con requireJsonBody:false, el Origin ajeno se sigue rechazando", () => {
+    const req = authReq({ origin: "https://evil.example", contentType: "text/plain" });
+    const res = guardAuthRequest(req, { requireJsonBody: false });
+    expect(res).not.toBeNull();
+    expect(res!.status).toBe(403);
   });
 });
 

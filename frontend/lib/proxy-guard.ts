@@ -66,6 +66,38 @@ export function isOriginAllowed(method: string, origin: string | null, selfOrigi
   return origin === selfOrigin;
 }
 
+export type AuthGuardOptions = {
+  /** false para logout (y cualquier ruta que no espere cuerpo JSON). Por
+   * defecto true: casi todas las rutas de /api/auth/* reciben un JSON. */
+  requireJsonBody?: boolean;
+};
+
+/**
+ * Guard común de las rutas /api/auth/* (login, logout, register, resend,
+ * verify-email, password-reset y su confirmación): reutiliza
+ * isOriginAllowed para rechazar con 403 un Origin ajeno, y (salvo que se
+ * pida lo contrario) exige Content-Type: application/json con 415, ANTES
+ * de leer el cuerpo. Sin esto, un formulario cruzado con
+ * enctype="text/plain" podía montar un JSON válido y forzar un login o un
+ * logout (CSRF), porque el navegador nunca manda preflight para esas
+ * peticiones "simples".
+ *
+ * Devuelve la Response de error, o null si la petición puede continuar.
+ */
+export function guardAuthRequest(req: Request, opts: AuthGuardOptions = {}): Response | null {
+  const selfOrigin = new URL(req.url).origin;
+  if (!isOriginAllowed(req.method, req.headers.get("origin"), selfOrigin)) {
+    return Response.json({ detail: "Origen no permitido" }, { status: 403 });
+  }
+  if (opts.requireJsonBody ?? true) {
+    const contentType = req.headers.get("content-type") ?? "";
+    if (!contentType.toLowerCase().startsWith("application/json")) {
+      return Response.json({ detail: "Content-Type debe ser application/json" }, { status: 415 });
+    }
+  }
+  return null;
+}
+
 /**
  * Traduce la Response cruda de Django a la Response que el BFF le devuelve
  * al navegador.

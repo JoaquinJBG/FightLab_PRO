@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { djangoFetch, djangoRequest } from "@/lib/api";
+import { clientIpHeaders } from "@/lib/auth-forward";
 import {
   getAccess,
   getRefresh,
@@ -51,11 +52,15 @@ async function handle(req: Request, path: string[]) {
   const method = req.method;
   const contentType = req.headers.get("content-type") ?? "";
   const isMultipart = contentType.startsWith("multipart/form-data");
-  // La IP real del cliente, para que el throttling de Django no la confunda
-  // con la del propio BFF. Cuántos saltos hay que descontar (NUM_PROXIES) lo
-  // decide el paquete A: Render puede añadir su propio salto delante de este
-  // valor, así que el número correcto puede no ser 1 (ver informe).
-  const forwardedFor = req.headers.get("x-forwarded-for");
+  // La IP real del cliente, firmada con BFF_SHARED_SECRET, para que el
+  // throttling de Django no la confunda con la del propio BFF. Reenviar
+  // X-Forwarded-For tal cual no vale: es una cabecera que controla el
+  // propio cliente, así que cualquiera podría falsificarla para saltarse
+  // el límite si además se llamara directamente al backend público de
+  // Render. Django solo se fía de esta IP cuando viene con el secreto
+  // correcto (ver backend/users/throttling.py); sin BFF_SHARED_SECRET,
+  // clientIpHeaders() devuelve {} y el comportamiento es el de siempre.
+  const ipHeaders = clientIpHeaders(req);
 
   let body: unknown = undefined;
   let form: FormData | null = null;
@@ -72,13 +77,12 @@ async function handle(req: Request, path: string[]) {
 
   const doReq = (acc: string | null, timeoutMs?: number) =>
     form
-      ? djangoRequest(target, { method, body: form, access: acc, forwardedFor, timeoutMs })
+      ? djangoRequest(target, { method, body: form, access: acc, headers: ipHeaders, timeoutMs })
       : djangoRequest(target, {
           method,
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...ipHeaders },
           body: body !== undefined ? JSON.stringify(body) : undefined,
           access: acc,
-          forwardedFor,
           timeoutMs,
         });
 
@@ -96,6 +100,7 @@ async function handle(req: Request, path: string[]) {
         method: "POST",
         body: { refresh: refreshBefore },
         timeoutMs: RETRY_TIMEOUT_MS,
+        headers: ipHeaders,
       });
       if (ref.status === 200 && ref.data && typeof ref.data === "object") {
         const d = ref.data as { access: string; refresh?: string };

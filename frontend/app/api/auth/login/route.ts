@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { djangoFetch } from "@/lib/api";
 import { clientIpHeaders } from "@/lib/auth-forward";
+import { guardAuthRequest } from "@/lib/proxy-guard";
 import { setAuthCookies } from "@/lib/cookies";
 
 export async function POST(req: Request) {
+  const guardResponse = guardAuthRequest(req);
+  if (guardResponse) return guardResponse;
+
   let body: unknown;
   try {
     body = await req.json();
