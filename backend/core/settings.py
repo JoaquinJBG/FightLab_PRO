@@ -205,7 +205,11 @@ if not DEBUG:
     SECURE_REDIRECT_EXEMPT = [r"^health/?$"]
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = 3600
+    # 3600s es razonable para la beta. PRELOAD no tiene efecto real en un
+    # subdominio *.onrender.com (no se puede enviar a la lista de precarga
+    # de los navegadores); solo importa si algún día se usa dominio propio.
+    # Se deja porque no hace daño y evita un aviso más de check --deploy.
+    SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=3600)
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
