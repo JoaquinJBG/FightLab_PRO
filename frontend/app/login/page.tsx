@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowUpRight } from "@/components/icons";
 import { credentials } from "@/lib/schemas";
+import { resetActivityUid } from "@/lib/activities";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -22,14 +23,23 @@ export default function LoginPage() {
       return;
     }
     setLoading(true);
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsed.data),
-    });
-    setLoading(false);
-    if (res.ok) router.push("/dashboard");
-    else setError("Credenciales incorrectas o cuenta sin verificar");
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      });
+      if (res.ok) {
+        resetActivityUid(); // que nada se encole a nombre del usuario anterior de este móvil
+        router.push("/dashboard");
+        return;
+      }
+      setError("Credenciales incorrectas o cuenta sin verificar");
+    } catch {
+      setError("No se pudo conectar. Comprueba tu conexión e inténtalo de nuevo.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -68,6 +78,9 @@ export default function LoginPage() {
               className="field px-4 py-3.5 text-sm"
             />
           </label>
+          <Link href="/forgot-password" className="t-body self-end text-xs text-neon">
+            ¿Olvidaste tu contraseña?
+          </Link>
           {error && <p className="text-xs text-bad">{error}</p>}
           <button type="submit" disabled={loading} className="btn btn-primary mt-2 disabled:opacity-60">
             {loading ? "Entrando…" : "Entrar"}

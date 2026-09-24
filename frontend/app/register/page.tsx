@@ -40,16 +40,22 @@ export default function RegisterPage() {
       return;
     }
     setLoading(true);
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsed.data),
-    });
-    setLoading(false);
-    if (res.status === 201) setDone(true);
-    else {
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      });
+      if (res.status === 201) {
+        setDone(true);
+        return;
+      }
       const d = await res.json().catch(() => ({}));
       setError(typeof d?.detail === "string" ? d.detail : "No se pudo registrar");
+    } catch {
+      setError("No se pudo conectar. Comprueba tu conexión e inténtalo de nuevo.");
+    } finally {
+      setLoading(false);
     }
   }
 
