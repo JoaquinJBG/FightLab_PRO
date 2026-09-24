@@ -6,9 +6,15 @@ export type ApiResult = { status: number; data: unknown };
 
 export async function djangoFetch(
   path: string,
-  opts: { method?: string; body?: unknown; access?: string | null } = {},
+  opts: {
+    method?: string;
+    body?: unknown;
+    access?: string | null;
+    /** Cabeceras extra (p. ej. las de lib/auth-forward.ts para el throttle). */
+    headers?: Record<string, string>;
+  } = {},
 ): Promise<ApiResult> {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const headers: Record<string, string> = { "Content-Type": "application/json", ...opts.headers };
   if (opts.access) headers.Authorization = `Bearer ${opts.access}`;
   const res = await fetch(`${BASE}${path}`, {
     method: opts.method ?? "GET",
