@@ -31,6 +31,7 @@ export type SyncItem = {
 
 const UID_CACHE_KEY = "flp_uid";
 const LEGACY_OWNER_KEY = "flp_acts_legacy_owner";
+const DEVICE_OWNER_KEY = "flp_owner_uid"; // lo fija lib/user-state.ts (claimDeviceOwner)
 const queueKey = (uid: string) => `flp_pending_acts_${uid}`;
 const delsKey = (uid: string) => `flp_pending_dels_${uid}`;
 const migratedKey = (uid: string) => `flp_acts_migrated_${uid}`;
@@ -322,6 +323,8 @@ export async function migrateLocalActivities(): Promise<void> {
   if (!uid) return;
   try {
     if (localStorage.getItem(migratedKey(uid)) === "1") return;
+    const deviceOwner = localStorage.getItem(DEVICE_OWNER_KEY);
+    if (deviceOwner && deviceOwner !== uid) return; // los flp_* del dispositivo son de otra cuenta
     const owner = localStorage.getItem(LEGACY_OWNER_KEY);
     if (owner && owner !== uid) return; // el legacy es de otra cuenta
     localStorage.setItem(LEGACY_OWNER_KEY, uid);

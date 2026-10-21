@@ -26,7 +26,15 @@ vi.mock("./user-state", () => ({
   }),
 }));
 
-import { clearDeviceState, finishLogout, performLogout } from "./hooks";
+import {
+  ApiError,
+  clearDeviceState,
+  finishLogout,
+  handleSessionExpired,
+  isUnauthorized,
+  performLogout,
+  resetSessionExpiredGuard,
+} from "./hooks";
 
 describe("clearDeviceState (useLogout)", () => {
   beforeEach(() => localStorage.clear());
@@ -130,7 +138,7 @@ describe("performLogout / finishLogout (useLogout)", () => {
     expect(calls).toEqual(["flushActivities", "flushUserState", "logout-fetch"]);
   });
 
-  test("si el logout falla en la red, aun así se intentó vaciar lo pendiente antes", async () => {
+  test("si el logout falla en la red, performLogout NO rechaza y devuelve el uid", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => {
@@ -138,7 +146,9 @@ describe("performLogout / finishLogout (useLogout)", () => {
         throw new Error("offline");
       }),
     );
-    await expect(performLogout()).rejects.toThrow();
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    await expect(performLogout()).resolves.toBe("42");
+    err.mockRestore();
     expect(calls).toEqual(["flushActivities", "flushUserState", "logout-fetch"]);
   });
 
@@ -182,5 +192,56 @@ describe("applyProfileUpdate", () => {
     qc.setQueryData(["profile"], { date_of_birth: null, height_cm: null });
     applyProfileUpdate(qc, { raro: true });
     expect(qc.getQueryData(["profile"])).toBeUndefined();
+  });
+});
+
+describe("handleSessionExpired (401 global)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    calls.length = 0;
+    resetSessionExpiredGuard();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        calls.push("logout-fetch");
+        return new Response("{}", { status: 200 });
+      }),
+    );
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  test("isUnauthorized solo reconoce un ApiError 401", () => {
+    expect(isUnauthorized(new ApiError("401", 401))).toBe(true);
+    expect(isUnauthorized(new ApiError("500", 500))).toBe(false);
+    expect(isUnauthorized(new Error("401"))).toBe(false);
+  });
+
+  test("varios 401 a la vez: una sola limpieza y una sola navegación a /login?reason=expired", async () => {
+    localStorage.setItem("flp_weigh", "{}");
+    localStorage.setItem("flp_pending_acts_42", "[1]");
+    localStorage.setItem("flp_pending_state_42", "[1]");
+    const nav = vi.fn();
+    const qc = { clear: () => calls.push("qc.clear") };
+
+    await Promise.all([1, 2, 3].map(() => handleSessionExpired(qc, nav)));
+
+    expect(nav).toHaveBeenCalledTimes(1);
+    expect(nav).toHaveBeenCalledWith("/login?reason=expired");
+    expect(calls.filter((c) => c === "logout-fetch")).toHaveLength(1);
+    expect(localStorage.getItem("flp_weigh")).toBeNull();
+    expect(localStorage.getItem("flp_pending_acts_42")).toBe("[1]");
+    expect(localStorage.getItem("flp_pending_state_42")).toBe("[1]");
+  });
+
+  test("aunque la petición de logout falle, limpia y navega igualmente", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("offline"); }));
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const nav = vi.fn();
+    await handleSessionExpired({ clear: () => {} }, nav);
+    expect(nav).toHaveBeenCalledWith("/login?reason=expired");
+    err.mockRestore();
   });
 });

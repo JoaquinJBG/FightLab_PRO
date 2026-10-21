@@ -33,6 +33,10 @@ export const rawStringSerde: Serde<string> = { serialize: (v) => v, deserialize:
 const LS_PREFIX = "flp_";
 const LS_META_PREFIX = "flp_state_meta_";
 const MIGRATED_PREFIX = "flp_state_migrated_";
+const OWNER_KEY = "flp_owner_uid";
+const ACTS_LEGACY_OWNER_KEY = "flp_acts_legacy_owner";
+// Preferencias del dispositivo: igual que KEEP_ON_LOGOUT en lib/hooks.ts.
+const DEVICE_PREF_KEYS = new Set(["flp_round_cfg", "flp_gym_rest"]);
 const UID_CACHE_KEY = "flp_uid"; // mismo cache que lib/activities.ts (clave compartida, solo lectura aquí)
 
 type ServerEntry = { value: unknown; updated_at: string; accepted?: boolean };
@@ -83,6 +87,69 @@ async function resolveUid(): Promise<string | null> {
     return uid;
   } catch {
     return null;
+  }
+}
+
+/* ----------------------- propietario de los datos del dispositivo ------------- */
+
+/** Borra los `flp_*` de la cuenta anterior. Se conservan las preferencias del
+ *  dispositivo, las colas pendientes (de cualquier uid: son de su dueño y se
+ *  suben con sus cookies), los flags de migración por uid y el uid en caché. */
+function purgeForeignDeviceData(): void {
+  const keys: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k) keys.push(k);
+  }
+  for (const k of keys) {
+    if (!k.startsWith(LS_PREFIX) || DEVICE_PREF_KEYS.has(k)) continue;
+    if (k === UID_CACHE_KEY || k === OWNER_KEY || k === ACTS_LEGACY_OWNER_KEY) continue;
+    if (k.startsWith("flp_pending_") || k.startsWith(MIGRATED_PREFIX) || k.startsWith("flp_acts_migrated_")) continue;
+    localStorage.removeItem(k);
+  }
+}
+
+/** Deja el dispositivo a nombre de `uid`. Si los `flp_*` eran de otra cuenta
+ *  (marcador `flp_owner_uid`, o en dispositivos anteriores al marcador, un
+ *  flag de migración de otro uid) se borran antes de que nada los suba o los
+ *  muestre. Devuelve true si purgó. */
+export function claimDeviceOwner(uid: string): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const owner = localStorage.getItem(OWNER_KEY);
+    let foreign = false;
+    if (owner) {
+      foreign = owner !== uid;
+    } else if (localStorage.getItem(MIGRATED_PREFIX + uid) !== "1") {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(MIGRATED_PREFIX) && k !== MIGRATED_PREFIX + uid) {
+          foreign = true;
+          break;
+        }
+      }
+    }
+    if (foreign) purgeForeignDeviceData();
+    if (owner !== uid) localStorage.setItem(OWNER_KEY, uid);
+    return foreign;
+  } catch {
+    return false;
+  }
+}
+
+/** Tras un login: resuelve el uid contra /me (nunca de caché) y reclama el
+ *  dispositivo, para que la cuenta nueva no vea ni suba datos de la anterior.
+ *  Mejor esfuerzo y con tope de tiempo: nunca bloquea la entrada. */
+export async function claimDeviceForCurrentUser(timeoutMs = 5_000): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    const res = await fetch("/api/proxy/me", { credentials: "include", signal: AbortSignal.timeout(timeoutMs) });
+    if (!res.ok) return;
+    const me = (await res.json()) as { id?: number; email?: string };
+    const uid = me.id != null ? String(me.id) : (me.email ?? null);
+    if (uid) claimDeviceOwner(uid);
+  } catch {
+    /* la migración (runMigration) lo vuelve a comprobar */
   }
 }
 
@@ -545,6 +612,7 @@ export function migrateLegacyUserStateOnce(): void {
 async function runMigration(): Promise<void> {
   const uid = await resolveUid();
   if (!uid) return; // sin sesión (u offline): se reintenta en el próximo mount
+  claimDeviceOwner(uid);
   restorePersistedPendingOnce(uid);
   const flag = MIGRATED_PREFIX + uid;
   try {

@@ -529,6 +529,83 @@ describe("migrateLegacyUserStateOnce", () => {
   });
 });
 
+describe("dispositivo compartido: dueño de los flp_* (flp_owner_uid)", () => {
+  function seedUserA() {
+    localStorage.setItem("flp_owner_uid", "1");
+    localStorage.setItem("flp_nutri_2026-09-01", JSON.stringify([{ kcal: 500 }]));
+    localStorage.setItem("flp_weigh", JSON.stringify({ target: 70 }));
+    localStorage.setItem("flp_coach_memory", JSON.stringify({ injury: "rodilla" }));
+    localStorage.setItem("flp_state_meta_weigh", "2026-09-01T00:00:00Z");
+    localStorage.setItem("flp_state_migrated_1", "1");
+    localStorage.setItem("flp_pending_state_1", "[1]");
+    localStorage.setItem("flp_pending_acts_1", "[2]");
+    localStorage.setItem("flp_round_cfg", "{}");
+  }
+
+  it("A caduca y entra B: nada de A llega al servidor de B y se borra del dispositivo", async () => {
+    seedUserA();
+    fetchImpl = async (url, init) => {
+      if (url === "/api/proxy/me") return jsonResponse({ id: 2 });
+      return bulkAcceptAll(url, init) ?? jsonResponse({});
+    };
+    const mod = await importFresh();
+    mod.migrateLegacyUserStateOnce();
+    await vi.waitFor(() => expect(localStorage.getItem("flp_state_migrated_2")).toBe("1"));
+
+    expect(calls.some((c) => c.url === "/api/proxy/me/state/bulk")).toBe(false);
+    expect(calls.some((c) => c.method === "PUT" || c.method === "POST")).toBe(false);
+    for (const k of ["flp_nutri_2026-09-01", "flp_weigh", "flp_coach_memory", "flp_state_meta_weigh"]) {
+      expect(localStorage.getItem(k)).toBeNull();
+    }
+    expect(localStorage.getItem("flp_owner_uid")).toBe("2");
+    expect(localStorage.getItem("flp_pending_state_1")).toBe("[1]");
+    expect(localStorage.getItem("flp_pending_acts_1")).toBe("[2]");
+    expect(localStorage.getItem("flp_round_cfg")).toBe("{}");
+  });
+
+  it("dos uids sobre el mismo storage: el mismo dueño conserva sus datos, otro uid los purga", async () => {
+    seedUserA();
+    const mod = await importFresh();
+    expect(mod.claimDeviceOwner("1")).toBe(false);
+    expect(localStorage.getItem("flp_weigh")).not.toBeNull();
+    expect(mod.claimDeviceOwner("2")).toBe(true);
+    expect(localStorage.getItem("flp_weigh")).toBeNull();
+    localStorage.setItem("flp_weigh", JSON.stringify({ target: 90 }));
+    expect(mod.claimDeviceOwner("1")).toBe(true);
+    expect(localStorage.getItem("flp_weigh")).toBeNull();
+  });
+
+  it("sin marcador pero con el flag de migración de OTRO uid: se trata como suyo y no se migra a B", async () => {
+    localStorage.setItem("flp_state_migrated_1", "1");
+    localStorage.setItem("flp_weigh", JSON.stringify({ target: 70 }));
+    fetchImpl = async (url) => (url === "/api/proxy/me" ? jsonResponse({ id: 2 }) : jsonResponse({}));
+    const mod = await importFresh();
+    mod.migrateLegacyUserStateOnce();
+    await vi.waitFor(() => expect(localStorage.getItem("flp_state_migrated_2")).toBe("1"));
+    expect(calls.some((c) => c.url === "/api/proxy/me/state/bulk")).toBe(false);
+    expect(localStorage.getItem("flp_weigh")).toBeNull();
+  });
+
+  it("sin marcador y con el flag del propio uid: sus datos son suyos", async () => {
+    localStorage.setItem("flp_state_migrated_2", "1");
+    localStorage.setItem("flp_state_migrated_1", "1");
+    localStorage.setItem("flp_weigh", JSON.stringify({ target: 70 }));
+    const mod = await importFresh();
+    expect(mod.claimDeviceOwner("2")).toBe(false);
+    expect(localStorage.getItem("flp_weigh")).not.toBeNull();
+    expect(localStorage.getItem("flp_owner_uid")).toBe("2");
+  });
+
+  it("claimDeviceForCurrentUser resuelve el uid contra /me y purga antes de entrar", async () => {
+    seedUserA();
+    fetchImpl = async (url) => (url === "/api/proxy/me" ? jsonResponse({ id: 2 }) : jsonResponse({}));
+    const mod = await importFresh();
+    await mod.claimDeviceForCurrentUser();
+    expect(localStorage.getItem("flp_weigh")).toBeNull();
+    expect(localStorage.getItem("flp_owner_uid")).toBe("2");
+  });
+});
+
 describe("rawStringSerde", () => {
   it("no envuelve el valor en comillas JSON (compatibilidad con flp_nutri_goal)", async () => {
     const mod = await importFresh();

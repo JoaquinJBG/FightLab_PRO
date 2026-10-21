@@ -28,7 +28,10 @@ const KEEP_ON_LOGOUT = new Set(["flp_round_cfg", "flp_gym_rest"]);
     OTRO uid: puede haber quedado la cola sin subir de una cuenta anterior en
     este mismo móvil, y borrarla a ciegas perdería esos entrenos (o esa
     nutrición/peso/coach_memory) para siempre. */
-export function clearDeviceState(currentUid: string | null): void {
+export function clearDeviceState(
+  currentUid: string | null,
+  opts: { keepOwnPending?: boolean } = {},
+): void {
   if (typeof window === "undefined") return;
   try {
     const keys: string[] = [];
@@ -39,15 +42,28 @@ export function clearDeviceState(currentUid: string | null): void {
     for (const k of keys) {
       if (!k.startsWith("flp_") || KEEP_ON_LOGOUT.has(k)) continue;
       const pending = /^flp_pending_(acts|dels|state)_(.+)$/.exec(k);
-      if (pending && pending[2] !== currentUid) continue; // pendiente de otro uid: se conserva
+      if (pending && (opts.keepOwnPending || pending[2] !== currentUid)) continue; // pendiente de otro uid (o, si caducó la sesión, también el propio): se conserva
       localStorage.removeItem(k);
     }
   } catch { /* noop */ }
 }
 
+/** Error de una petición al BFF con su status HTTP. El mensaje sigue siendo el
+ *  status (o el `detail` del servidor) como antes. */
+export class ApiError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+export function isUnauthorized(err: unknown): boolean {
+  return err instanceof ApiError && err.status === 401;
+}
+
 async function getJson(path: string) {
   const res = await fetch(path, { credentials: "include" });
-  if (!res.ok) throw new Error(String(res.status));
+  if (!res.ok) throw new ApiError(String(res.status), res.status);
   return res.json();
 }
 
@@ -60,7 +76,7 @@ async function sendJson(path: string, method: string, body?: unknown) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(typeof data?.detail === "string" ? data.detail : String(res.status));
+    throw new ApiError(typeof data?.detail === "string" ? data.detail : String(res.status), res.status);
   }
   return data;
 }
@@ -186,27 +202,73 @@ export function useUpdateProfile() {
 // react-testing-library en este proyecto): son las mismas funciones que usa
 // el `useMutation` de abajo, expuestas solo para el test.
 
+const LOGOUT_TIMEOUT_MS = 10_000;
+
+/** Pide al BFF que cierre sesión (borra las cookies httpOnly). Mejor esfuerzo:
+ *  el BFF responde 200 aunque Django falle, y aquí un fallo de red o un
+ *  timeout solo se registra. */
+async function requestLogout(): Promise<void> {
+  try {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+      signal: AbortSignal.timeout(LOGOUT_TIMEOUT_MS),
+    });
+  } catch (err) {
+    console.error("logout request failed", err);
+  }
+}
+
 /** Mejor esfuerzo: intenta subir lo pendiente de ESTA cuenta (entrenos y
  *  user-state) antes de cerrar sesión y borrar el dispositivo. Si falla (sin
  *  red, servidor dormido), se sigue con el logout igualmente: es una copia de
- *  seguridad, no un requisito para poder salir. Devuelve el uid capturado
- *  ANTES de que nada lo borre. */
+ *  seguridad, no un requisito para poder salir. NUNCA rechaza: el llamador
+ *  (`profile/page.tsx`) espera `mutateAsync()` y luego navega a /login.
+ *  Devuelve el uid capturado ANTES de que nada lo borre. */
 export async function performLogout(): Promise<string | null> {
   const uid = cachedActivityUid();
   await flushActivities().catch(() => false);
   await flushUserState().catch(() => undefined);
-  await sendJson("/api/auth/logout", "POST");
+  await requestLogout();
   return uid;
+}
+
+let sessionExpiredHandled = false;
+
+/** Un 401 que llega hasta aquí ya pasó por el refresh del BFF: la sesión está
+ *  caída. Una sola vez por carga de página (varias queries fallan a la vez):
+ *  borra las cookies, limpia el dispositivo conservando las colas pendientes y
+ *  va a /login?reason=expired con una carga completa (estado de React limpio). */
+export async function handleSessionExpired(
+  qc: { clear: () => void },
+  navigate: (url: string) => void = (url) => window.location.assign(url),
+): Promise<void> {
+  if (typeof window === "undefined" || sessionExpiredHandled) return;
+  if (window.location.pathname.startsWith("/login")) return;
+  sessionExpiredHandled = true;
+  const uid = cachedActivityUid();
+  await requestLogout();
+  finishLogout(qc, uid, { keepOwnPending: true });
+  navigate("/login?reason=expired");
+}
+
+/** Solo para tests. */
+export function resetSessionExpiredGuard(): void {
+  sessionExpiredHandled = false;
 }
 
 /** Limpieza del dispositivo tras un logout con éxito. ANTES de
  *  `clearDeviceState`: cancela timers/listeners de la cola de user-state para
  *  que un reintento ya agendado no se dispare con las cookies de la SIGUIENTE
  *  cuenta que entre en esta misma pestaña (sin recarga completa). */
-export function finishLogout(qc: { clear: () => void }, uid: string | null): void {
+export function finishLogout(
+  qc: { clear: () => void },
+  uid: string | null,
+  opts: { keepOwnPending?: boolean } = {},
+): void {
   qc.clear();
   resetUserStateQueue();
-  clearDeviceState(uid);
+  clearDeviceState(uid, opts);
   resetActivityUid(); // que nada se encole a nombre del usuario saliente
 }
 
