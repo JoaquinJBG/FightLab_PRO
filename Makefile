@@ -16,7 +16,7 @@ PNPM := pnpm --dir frontend
 # Entorno del backend en tests: sin .env, sin clave de IA, DEBUG para SECRET_KEY de dev.
 BACKEND_ENV = ENV_FILE=/nonexistent DEBUG=True DATABASE_URL=$(TEST_DATABASE_URL) ANTHROPIC_API_KEY=
 
-.PHONY: test test-backend test-frontend test-e2e lint db-up db-down venv frontend-deps
+.PHONY: venv-deps test test-backend test-frontend test-e2e lint db-up db-down venv frontend-deps
 
 test: test-backend test-frontend
 
@@ -25,6 +25,9 @@ BOOT_PY ?= python
 venv:
 	@$(BOOT_PY) -c "import sys; sys.exit(0 if sys.version_info[:2] == (3, 12) else 1)" || 		{ echo "Se necesita Python 3.12 (usa BOOT_PY=ruta/a/python3.12)"; exit 1; }
 	$(BOOT_PY) -m venv .venv
+	$(MAKE) venv-deps
+
+venv-deps:
 	$(PY) -m pip install -r backend/requirements-dev.txt
 
 db-up:
