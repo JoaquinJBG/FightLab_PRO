@@ -1,6 +1,7 @@
 """Smoke contra la API real de Anthropic: comprueba que los ids de modelo
 configurados (AI_MODEL_CHAT / AI_MODEL_VISION) responden. Opt-in: se salta sin
-ANTHROPIC_API_KEY en el entorno, así que no corre en el CI por defecto."""
+RUN_LIVE_SMOKE=1 (y ANTHROPIC_API_KEY): settings carga el .env en el entorno, así
+que la clave sola no basta para evitar llamadas reales en un pytest normal."""
 import os
 
 import anthropic
@@ -9,7 +10,10 @@ from django.conf import settings
 
 API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
-pytestmark = pytest.mark.skipif(not API_KEY, reason="ANTHROPIC_API_KEY no definida")
+pytestmark = pytest.mark.skipif(
+    os.environ.get("RUN_LIVE_SMOKE") != "1" or not API_KEY,
+    reason="smoke en vivo: requiere RUN_LIVE_SMOKE=1 y ANTHROPIC_API_KEY",
+)
 
 
 @pytest.mark.parametrize("setting_name", ["AI_MODEL_CHAT", "AI_MODEL_VISION"])

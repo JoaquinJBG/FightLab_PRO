@@ -324,6 +324,12 @@ cada PR): job `backend` (Postgres 15 como servicio, `pytest -q`,
 avisa pero no bloquea el merge.
 
 **Smoke contra Anthropic (opt-in):** `backend/ai/tests/test_smoke_live.py` comprueba
-que `AI_MODEL_CHAT` y `AI_MODEL_VISION` responden. Se salta sin clave; para
-correrlo (el `Makefile` vacía la clave a propósito, así que se lanza a mano):
-`cd backend && ANTHROPIC_API_KEY=sk-... pytest ai/tests/test_smoke_live.py`.
+que `AI_MODEL_CHAT` y `AI_MODEL_VISION` responden. Se salta salvo con
+`RUN_LIVE_SMOKE=1` y clave (esta puede venir del `.env`; la variable explícita
+evita llamadas reales en un `pytest` normal):
+`cd backend && RUN_LIVE_SMOKE=1 ANTHROPIC_API_KEY=sk-... pytest ai/tests/test_smoke_live.py`.
+
+**Límites a tener en cuenta:** `make test` no ejecuta `next build` ni Playwright
+(sí lo hace el CI), así que verde en local no garantiza verde en CI: antes de
+subir, `make test-e2e` y `pnpm --dir frontend build`. Los *warnings* de eslint no
+hacen fallar el CI (solo los errores).

@@ -31,11 +31,12 @@ venv-deps:
 	$(PY) -m pip install -r backend/requirements-dev.txt
 
 db-up:
+	@if docker inspect $(TEST_DB_CONTAINER) >/dev/null 2>&1; then 		p=$$(docker port $(TEST_DB_CONTAINER) 5432/tcp | head -1 | sed 's/.*://'); 		if [ "$$p" != "$(TEST_DB_PORT)" ]; then 			echo "$(TEST_DB_CONTAINER) usa el puerto $$p, no $(TEST_DB_PORT): ejecuta 'make db-down' primero"; exit 1; 		fi; 	fi
 	@docker inspect $(TEST_DB_CONTAINER) >/dev/null 2>&1 || docker run -d --name $(TEST_DB_CONTAINER) \
 		-e POSTGRES_USER=fightlab -e POSTGRES_PASSWORD=fightlab -e POSTGRES_DB=$(TEST_DB_NAME) \
 		-p 127.0.0.1:$(TEST_DB_PORT):5432 postgres:15 >/dev/null
 	@docker start $(TEST_DB_CONTAINER) >/dev/null
-	@until docker exec $(TEST_DB_CONTAINER) pg_isready -U fightlab -d $(TEST_DB_NAME) >/dev/null 2>&1; do sleep 1; done
+	@for i in $$(seq 1 60); do 		docker exec $(TEST_DB_CONTAINER) pg_isready -U fightlab -d $(TEST_DB_NAME) -h 127.0.0.1 >/dev/null 2>&1 && exit 0; 		sleep 1; 	done; echo "Postgres de tests no respondió en 60 s"; exit 1
 	@echo "Postgres de tests listo en 127.0.0.1:$(TEST_DB_PORT)"
 
 db-down:

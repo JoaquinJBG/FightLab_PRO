@@ -102,9 +102,13 @@ fightlab-pro/
 ### Tests
 
 ```bash
-cd backend
-pytest          # requiere el contenedor `db` levantado
+make test       # Postgres propio en el 54329 + pytest, lint, tsc y vitest
 ```
+
+Primera vez: `make venv` (Python 3.12). Los comandos de pnpm se lanzan con
+`pnpm --dir frontend lint` (o desde `frontend/`): en la raíz del repo fallan con
+`ERR_PNPM_NO_PKG_MANIFEST`. Detalles, E2E, CI y protección de rama en
+[`docs/DEPLOY.md`](docs/DEPLOY.md#tests-y-ci).
 
 ## 🔌 API del M1 (Core / Auth)
 

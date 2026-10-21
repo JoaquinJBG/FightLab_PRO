@@ -39,7 +39,12 @@ export async function loginAsTestUser(page: Page, extraState: Seed = {}) {
     const { pathname } = new URL(route.request().url());
     const path = pathname.replace(/^\/api\/proxy\//, "");
     const json = (body: unknown, status = 200) =>
-      route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
+      route.fulfill({
+        status,
+        contentType: "application/json",
+        headers: { "x-e2e-mock": "1" },
+        body: JSON.stringify(body),
+      });
 
     if (path.startsWith("health")) return json({ status: "ok" });
     if (path.startsWith("me/profile")) return json(PROFILE);
