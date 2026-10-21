@@ -42,7 +42,7 @@ function Bar({ label, val, target, color }: { label: string; val: number; target
 
 export default function NutritionPage() {
   const { data: profile } = useProfile();
-  const { data: logs = [] } = useBiometrics();
+  const { data: logs = [], isSuccess: logsLoaded } = useBiometrics();
   const [goal, setGoal] = useState<Goal>("mantener");
   const [items, setItems] = useState<Item[]>([]);
   const { value: weigh } = useUserState<Weigh | null>("weigh", null, jsonSerde());
@@ -159,7 +159,7 @@ export default function NutritionPage() {
         )}
       </section>
 
-      {weight == null && <WeightPrompt what="tus objetivos de calorías y macros" />}
+      {logsLoaded && weight == null && <WeightPrompt what="tus objetivos de calorías y macros" />}
       {missingProfile.length > 0 && (
         <p className="t-body mt-3 text-xs text-muted">
           Falta tu {missingProfile.join(" y ")}. <Link href="/profile/edit" className="text-neon underline">Añádelo en tu perfil</Link>.
@@ -175,7 +175,7 @@ export default function NutritionPage() {
           </button>
         ))}
       </div>
-      <p className="t-body mt-2 text-xs text-muted">Objetivos calculados de tu perfil (peso, altura, edad).</p>
+      {t && <p className="t-body mt-2 text-xs text-muted">Objetivos calculados de tu perfil (peso, altura, edad).</p>}
 
       {/* Agua del día */}
       <div className="glass mt-4 flex items-center justify-between p-4">

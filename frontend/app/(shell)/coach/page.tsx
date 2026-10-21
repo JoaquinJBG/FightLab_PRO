@@ -215,10 +215,7 @@ export default function CoachPage() {
       {/* Recomendaciones por reglas */}
       {recs.length > 0 && (
         <div className="mt-5">
-          <div className="flex items-center justify-between">
-            <p className="t-eyebrow text-muted">Recomendaciones</p>
-            <span className="t-body text-[10px] text-muted">por reglas · IA real próximamente</span>
-          </div>
+          <p className="t-eyebrow text-muted">Recomendaciones</p>
           <div className="mt-2 flex flex-col gap-2.5">
             {recs.map((r) => {
               const Icon = REC_ICON[r.icon];
@@ -262,10 +259,10 @@ export default function CoachPage() {
 
       {/* Memoria del coach */}
       <section className="glass mt-5 p-5">
-        <div className="flex items-center justify-between">
-          <p className="t-eyebrow text-muted">Lo que tu coach sabe de ti</p>
+        <div className="flex items-center justify-between gap-3">
+          <p className="t-eyebrow min-w-0 text-muted">Lo que tu coach sabe de ti</p>
           {!editingMemory && memoryHydrated && (
-            <button onClick={openMemoryEdit} className="t-label text-neon">
+            <button onClick={openMemoryEdit} className="t-label shrink-0 whitespace-nowrap text-neon">
               {isCoachMemoryEmpty(memory) ? "Contarle a mi coach" : "Editar"}
             </button>
           )}

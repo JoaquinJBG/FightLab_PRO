@@ -249,7 +249,7 @@ export default function OnboardingPage() {
                   placeholder="Tu peso actual"
                   className="field px-4 py-3 text-sm"
                 />
-                <p className="t-body text-[11px] text-muted">Con tu altura, calcula tus calorías y macros.</p>
+                <p className="t-body text-[11px] text-muted">Tu peso, junto con la altura y la edad, sirve para calcular tus calorías y macros.</p>
               </label>
 
               <div className="flex flex-col gap-1.5">
