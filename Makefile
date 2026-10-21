@@ -20,8 +20,11 @@ BACKEND_ENV = ENV_FILE=/nonexistent DEBUG=True DATABASE_URL=$(TEST_DATABASE_URL)
 
 test: test-backend test-frontend
 
+BOOT_PY ?= python
+
 venv:
-	python -m venv .venv
+	@$(BOOT_PY) -c "import sys; sys.exit(0 if sys.version_info[:2] == (3, 12) else 1)" || 		{ echo "Se necesita Python 3.12 (usa BOOT_PY=ruta/a/python3.12)"; exit 1; }
+	$(BOOT_PY) -m venv .venv
 	$(PY) -m pip install -r backend/requirements-dev.txt
 
 db-up:
