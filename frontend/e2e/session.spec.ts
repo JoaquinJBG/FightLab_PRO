@@ -1,6 +1,6 @@
 import { test, expect } from "./fixtures";
 
-test("un 401 del proxy lleva una sola vez a /login?reason=expired y borra las cookies", async ({ page, session }) => {
+test("un 401 del proxy lleva una sola vez a /login?reason=expired", async ({ page, session }) => {
   void session;
   let logoutCalls = 0;
   await page.route("**/api/proxy/**", (route) =>
