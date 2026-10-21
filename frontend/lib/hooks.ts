@@ -28,10 +28,7 @@ const KEEP_ON_LOGOUT = new Set(["flp_round_cfg", "flp_gym_rest"]);
     OTRO uid: puede haber quedado la cola sin subir de una cuenta anterior en
     este mismo móvil, y borrarla a ciegas perdería esos entrenos (o esa
     nutrición/peso/coach_memory) para siempre. */
-export function clearDeviceState(
-  currentUid: string | null,
-  opts: { keepOwnPending?: boolean } = {},
-): void {
+export function clearDeviceState(currentUid: string | null): void {
   if (typeof window === "undefined") return;
   try {
     const keys: string[] = [];
@@ -42,7 +39,7 @@ export function clearDeviceState(
     for (const k of keys) {
       if (!k.startsWith("flp_") || KEEP_ON_LOGOUT.has(k)) continue;
       const pending = /^flp_pending_(acts|dels|state)_(.+)$/.exec(k);
-      if (pending && (opts.keepOwnPending || pending[2] !== currentUid)) continue; // pendiente de otro uid (o, si caducó la sesión, también el propio): se conserva
+      if (pending && pending[2] !== currentUid) continue; // pendiente de otro uid: se conserva
       localStorage.removeItem(k);
     }
   } catch { /* noop */ }
@@ -203,6 +200,7 @@ export function useUpdateProfile() {
 // el `useMutation` de abajo, expuestas solo para el test.
 
 const LOGOUT_TIMEOUT_MS = 10_000;
+const LOGOUT_FLUSH_BUDGET_MS = 4_000;
 
 /** Pide al BFF que cierre sesión (borra las cookies httpOnly). Mejor esfuerzo:
  *  el BFF responde 200 aunque Django falle, y aquí un fallo de red o un
@@ -225,10 +223,11 @@ async function requestLogout(): Promise<void> {
  *  seguridad, no un requisito para poder salir. NUNCA rechaza: el llamador
  *  (`profile/page.tsx`) espera `mutateAsync()` y luego navega a /login.
  *  Devuelve el uid capturado ANTES de que nada lo borre. */
-export async function performLogout(): Promise<string | null> {
+export async function performLogout(flushBudgetMs: number = LOGOUT_FLUSH_BUDGET_MS): Promise<string | null> {
   const uid = cachedActivityUid();
-  await flushActivities().catch(() => false);
-  await flushUserState().catch(() => undefined);
+  const flush = Promise.allSettled([flushActivities(), flushUserState()]);
+  // Si el backend se cuelga, el logout no espera: lo pendiente queda en las colas persistidas.
+  await Promise.race([flush, new Promise<void>((resolve) => setTimeout(resolve, flushBudgetMs))]);
   await requestLogout();
   return uid;
 }
@@ -237,8 +236,9 @@ let sessionExpiredHandled = false;
 
 /** Un 401 que llega hasta aquí ya pasó por el refresh del BFF: la sesión está
  *  caída. Una sola vez por carga de página (varias queries fallan a la vez):
- *  borra las cookies, limpia el dispositivo conservando las colas pendientes y
- *  va a /login?reason=expired con una carga completa (estado de React limpio). */
+ *  borra las cookies y va a /login?reason=expired con una carga completa. NO
+ *  borra los datos locales (borrador del entreno en curso, colas): el dueño
+ *  puede volver a entrar; si entra otra cuenta, `claimDeviceOwner` los purga. */
 export async function handleSessionExpired(
   qc: { clear: () => void },
   navigate: (url: string) => void = (url) => window.location.assign(url),
@@ -246,10 +246,21 @@ export async function handleSessionExpired(
   if (typeof window === "undefined" || sessionExpiredHandled) return;
   if (window.location.pathname.startsWith("/login")) return;
   sessionExpiredHandled = true;
-  const uid = cachedActivityUid();
   await requestLogout();
-  finishLogout(qc, uid, { keepOwnPending: true });
+  qc.clear();
+  resetUserStateQueue();
+  resetActivityUid();
   navigate("/login?reason=expired");
+}
+
+/** Handler de errores de React Query: solo un 401 definitivo cierra la sesión
+ *  (un 503/5xx transitorio del BFF no debe desloguear ni borrar nada). */
+export function handleQueryError(
+  qc: { clear: () => void },
+  err: unknown,
+  navigate?: (url: string) => void,
+): void {
+  if (isUnauthorized(err)) void handleSessionExpired(qc, navigate);
 }
 
 /** Solo para tests. */
@@ -261,21 +272,17 @@ export function resetSessionExpiredGuard(): void {
  *  `clearDeviceState`: cancela timers/listeners de la cola de user-state para
  *  que un reintento ya agendado no se dispare con las cookies de la SIGUIENTE
  *  cuenta que entre en esta misma pestaña (sin recarga completa). */
-export function finishLogout(
-  qc: { clear: () => void },
-  uid: string | null,
-  opts: { keepOwnPending?: boolean } = {},
-): void {
+export function finishLogout(qc: { clear: () => void }, uid: string | null): void {
   qc.clear();
   resetUserStateQueue();
-  clearDeviceState(uid, opts);
+  clearDeviceState(uid);
   resetActivityUid(); // que nada se encole a nombre del usuario saliente
 }
 
 export function useLogout() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: performLogout,
+    mutationFn: () => performLogout(),
     onSuccess: (uid) => finishLogout(qc, uid),
   });
 }

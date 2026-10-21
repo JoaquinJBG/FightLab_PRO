@@ -30,6 +30,7 @@ import {
   ApiError,
   clearDeviceState,
   finishLogout,
+  handleQueryError,
   handleSessionExpired,
   isUnauthorized,
   performLogout,
@@ -152,6 +153,15 @@ describe("performLogout / finishLogout (useLogout)", () => {
     expect(calls).toEqual(["flushActivities", "flushUserState", "logout-fetch"]);
   });
 
+  test("backend colgado: performLogout no espera al flush más allá del presupuesto y cierra sesión", async () => {
+    const { flushActivities } = await import("./activities");
+    vi.mocked(flushActivities).mockImplementationOnce(() => new Promise<boolean>(() => {}));
+    const t0 = Date.now();
+    await expect(performLogout(50)).resolves.toBe("42");
+    expect(Date.now() - t0).toBeLessThan(2_000);
+    expect(calls).toContain("logout-fetch");
+  });
+
   test("finishLogout cancela la cola de user-state (resetUserStateQueue) ANTES de limpiar el dispositivo", () => {
     localStorage.setItem("flp_pending_state_42", "[1]"); // simula algo que no se pudo subir
     const qc = { clear: () => calls.push("qc.clear") };
@@ -219,8 +229,11 @@ describe("handleSessionExpired (401 global)", () => {
     expect(isUnauthorized(new Error("401"))).toBe(false);
   });
 
-  test("varios 401 a la vez: una sola limpieza y una sola navegación a /login?reason=expired", async () => {
+  test("varios 401 a la vez: un solo logout y una sola navegación a /login?reason=expired, sin borrar datos locales", async () => {
     localStorage.setItem("flp_weigh", "{}");
+    localStorage.setItem("flp_gym_live", "{\"sets\":[1]}");
+    localStorage.setItem("flp_live_session", "{}");
+    localStorage.setItem("flp_gym_sessions", "[1]");
     localStorage.setItem("flp_pending_acts_42", "[1]");
     localStorage.setItem("flp_pending_state_42", "[1]");
     const nav = vi.fn();
@@ -231,9 +244,33 @@ describe("handleSessionExpired (401 global)", () => {
     expect(nav).toHaveBeenCalledTimes(1);
     expect(nav).toHaveBeenCalledWith("/login?reason=expired");
     expect(calls.filter((c) => c === "logout-fetch")).toHaveLength(1);
-    expect(localStorage.getItem("flp_weigh")).toBeNull();
+    expect(localStorage.getItem("flp_weigh")).toBe("{}");
+    expect(localStorage.getItem("flp_gym_live")).toBe("{\"sets\":[1]}");
+    expect(localStorage.getItem("flp_live_session")).toBe("{}");
+    expect(localStorage.getItem("flp_gym_sessions")).toBe("[1]");
     expect(localStorage.getItem("flp_pending_acts_42")).toBe("[1]");
     expect(localStorage.getItem("flp_pending_state_42")).toBe("[1]");
+  });
+
+  test("handleQueryError: un 503 (o cualquier no-401) no desloguea, no navega y no borra nada", async () => {
+    localStorage.setItem("flp_gym_live", "{}");
+    const nav = vi.fn();
+    const qc = { clear: vi.fn() };
+
+    for (const status of [503, 500, 429, 404]) handleQueryError(qc, new ApiError(String(status), status), nav);
+    handleQueryError(qc, new Error("401"), nav);
+    await Promise.resolve();
+
+    expect(nav).not.toHaveBeenCalled();
+    expect(qc.clear).not.toHaveBeenCalled();
+    expect(calls).not.toContain("logout-fetch");
+    expect(localStorage.getItem("flp_gym_live")).toBe("{}");
+  });
+
+  test("handleQueryError: un 401 sí cierra la sesión", async () => {
+    const nav = vi.fn();
+    handleQueryError({ clear: () => {} }, new ApiError("401", 401), nav);
+    await vi.waitFor(() => expect(nav).toHaveBeenCalledWith("/login?reason=expired"));
   });
 
   test("aunque la petición de logout falle, limpia y navega igualmente", async () => {

@@ -2,13 +2,11 @@
 
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
-import { handleSessionExpired, isUnauthorized } from "./hooks";
+import { handleQueryError } from "./hooks";
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
   const [client] = useState(() => {
-    const onError = (err: unknown) => {
-      if (isUnauthorized(err)) void handleSessionExpired(qc);
-    };
+    const onError = (err: unknown) => handleQueryError(qc, err);
     const qc: QueryClient = new QueryClient({
       queryCache: new QueryCache({ onError }),
       mutationCache: new MutationCache({ onError }),

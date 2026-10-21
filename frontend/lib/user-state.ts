@@ -35,6 +35,7 @@ const LS_META_PREFIX = "flp_state_meta_";
 const MIGRATED_PREFIX = "flp_state_migrated_";
 const OWNER_KEY = "flp_owner_uid";
 const ACTS_LEGACY_OWNER_KEY = "flp_acts_legacy_owner";
+const QUARANTINE_KEY = "flp_quarantine";
 // Preferencias del dispositivo: igual que KEEP_ON_LOGOUT en lib/hooks.ts.
 const DEVICE_PREF_KEYS = new Set(["flp_round_cfg", "flp_gym_rest"]);
 const UID_CACHE_KEY = "flp_uid"; // mismo cache que lib/activities.ts (clave compartida, solo lectura aquí)
@@ -92,21 +93,52 @@ async function resolveUid(): Promise<string | null> {
 
 /* ----------------------- propietario de los datos del dispositivo ------------- */
 
-/** Borra los `flp_*` de la cuenta anterior. Se conservan las preferencias del
- *  dispositivo, las colas pendientes (de cualquier uid: son de su dueño y se
- *  suben con sus cookies), los flags de migración por uid y el uid en caché. */
-function purgeForeignDeviceData(): void {
+/** `flp_*` de datos de cuenta: todo salvo preferencias del dispositivo, colas
+ *  pendientes (de cualquier uid: son de su dueño y se suben con sus cookies),
+ *  flags de migración por uid, el uid en caché y los marcadores de dueño. */
+function accountDataKeys(): string[] {
   const keys: string[] = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (k) keys.push(k);
-  }
-  for (const k of keys) {
-    if (!k.startsWith(LS_PREFIX) || DEVICE_PREF_KEYS.has(k)) continue;
-    if (k === UID_CACHE_KEY || k === OWNER_KEY || k === ACTS_LEGACY_OWNER_KEY) continue;
+    if (!k || !k.startsWith(LS_PREFIX) || DEVICE_PREF_KEYS.has(k)) continue;
+    if (k === UID_CACHE_KEY || k === OWNER_KEY || k === ACTS_LEGACY_OWNER_KEY || k === QUARANTINE_KEY) continue;
     if (k.startsWith("flp_pending_") || k.startsWith(MIGRATED_PREFIX) || k.startsWith("flp_acts_migrated_")) continue;
-    localStorage.removeItem(k);
+    keys.push(k);
   }
+  return keys;
+}
+
+function purgeForeignDeviceData(): void {
+  for (const k of accountDataKeys()) localStorage.removeItem(k);
+  localStorage.removeItem(QUARANTINE_KEY);
+}
+
+/** Aparta los datos locales (sin borrarlos) mientras no se sabe de quién son:
+ *  `claimDeviceOwner` los restaura si el dueño coincide o los descarta si no. */
+function quarantineDeviceData(): void {
+  try {
+    const keys = accountDataKeys();
+    if (keys.length === 0) return;
+    const blob: Record<string, string> = JSON.parse(localStorage.getItem(QUARANTINE_KEY) ?? "{}");
+    for (const k of keys) {
+      const v = localStorage.getItem(k);
+      if (v != null) blob[k] = v;
+      localStorage.removeItem(k);
+    }
+    localStorage.setItem(QUARANTINE_KEY, JSON.stringify(blob));
+  } catch {
+    /* noop */
+  }
+}
+
+function restoreQuarantine(): void {
+  const raw = localStorage.getItem(QUARANTINE_KEY);
+  if (!raw) return;
+  const blob = JSON.parse(raw) as Record<string, string>;
+  for (const [k, v] of Object.entries(blob)) {
+    if (localStorage.getItem(k) == null) localStorage.setItem(k, v);
+  }
+  localStorage.removeItem(QUARANTINE_KEY);
 }
 
 /** Deja el dispositivo a nombre de `uid`. Si los `flp_*` eran de otra cuenta
@@ -130,6 +162,7 @@ export function claimDeviceOwner(uid: string): boolean {
       }
     }
     if (foreign) purgeForeignDeviceData();
+    else restoreQuarantine();
     if (owner !== uid) localStorage.setItem(OWNER_KEY, uid);
     return foreign;
   } catch {
@@ -139,18 +172,24 @@ export function claimDeviceOwner(uid: string): boolean {
 
 /** Tras un login: resuelve el uid contra /me (nunca de caché) y reclama el
  *  dispositivo, para que la cuenta nueva no vea ni suba datos de la anterior.
- *  Mejor esfuerzo y con tope de tiempo: nunca bloquea la entrada. */
+ *  Con tope de tiempo: si /me no responde, aparta los datos locales (se
+ *  restauran si resulta ser el mismo dueño) en vez de bloquear la entrada. */
 export async function claimDeviceForCurrentUser(timeoutMs = 5_000): Promise<void> {
   if (typeof window === "undefined") return;
   try {
     const res = await fetch("/api/proxy/me", { credentials: "include", signal: AbortSignal.timeout(timeoutMs) });
-    if (!res.ok) return;
-    const me = (await res.json()) as { id?: number; email?: string };
-    const uid = me.id != null ? String(me.id) : (me.email ?? null);
-    if (uid) claimDeviceOwner(uid);
+    if (res.ok) {
+      const me = (await res.json()) as { id?: number; email?: string };
+      const uid = me.id != null ? String(me.id) : (me.email ?? null);
+      if (uid) {
+        claimDeviceOwner(uid);
+        return;
+      }
+    }
   } catch {
-    /* la migración (runMigration) lo vuelve a comprobar */
+    /* sin confirmar: se aparta abajo */
   }
+  quarantineDeviceData();
 }
 
 /* --------------------------------- red -------------------------------------- */

@@ -610,6 +610,52 @@ describe("dispositivo compartido: dueño de los flp_* (flp_owner_uid)", () => {
   });
 });
 
+describe("claimDeviceForCurrentUser sin confirmar (D4)", () => {
+  const seed = () => {
+    localStorage.setItem("flp_owner_uid", "1");
+    localStorage.setItem("flp_weigh", JSON.stringify({ target: 70 }));
+    localStorage.setItem("flp_gym_live", "{}");
+    localStorage.setItem("flp_pending_acts_1", "[2]");
+  };
+
+  it("si /me no responde, aparta los datos locales: nadie los lee mientras tanto", async () => {
+    seed();
+    fetchImpl = async () => {
+      throw new Error("timeout");
+    };
+    const mod = await importFresh();
+    await mod.claimDeviceForCurrentUser();
+    expect(localStorage.getItem("flp_weigh")).toBeNull();
+    expect(localStorage.getItem("flp_gym_live")).toBeNull();
+    expect(localStorage.getItem("flp_pending_acts_1")).toBe("[2]");
+  });
+
+  it("después, el mismo dueño recupera sus datos", async () => {
+    seed();
+    fetchImpl = async () => {
+      throw new Error("timeout");
+    };
+    const mod = await importFresh();
+    await mod.claimDeviceForCurrentUser();
+    expect(mod.claimDeviceOwner("1")).toBe(false);
+    expect(localStorage.getItem("flp_weigh")).toBe(JSON.stringify({ target: 70 }));
+    expect(localStorage.getItem("flp_gym_live")).toBe("{}");
+    expect(localStorage.getItem("flp_quarantine")).toBeNull();
+  });
+
+  it("y otra cuenta los pierde: no los ve ni los sube", async () => {
+    seed();
+    fetchImpl = async () => {
+      throw new Error("timeout");
+    };
+    const mod = await importFresh();
+    await mod.claimDeviceForCurrentUser();
+    expect(mod.claimDeviceOwner("2")).toBe(true);
+    expect(localStorage.getItem("flp_weigh")).toBeNull();
+    expect(localStorage.getItem("flp_quarantine")).toBeNull();
+  });
+});
+
 describe("rawStringSerde", () => {
   it("no envuelve el valor en comillas JSON (compatibilidad con flp_nutri_goal)", async () => {
     const mod = await importFresh();
