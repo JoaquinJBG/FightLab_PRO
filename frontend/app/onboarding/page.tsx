@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useUpdateProfile, useCreateBiometrics } from "@/lib/hooks";
 import { saveGoal } from "@/lib/nutrition";
 import { nutriGoalFromOnboarding } from "@/lib/body-inputs";
@@ -58,7 +57,6 @@ function deviceTimezone(): string | undefined {
 /* ----------------------------- página ------------------------------------ */
 
 export default function OnboardingPage() {
-  const router = useRouter();
   const update = useUpdateProfile();
   const createBio = useCreateBiometrics();
   const [weightSaved, setWeightSaved] = useState(false);
@@ -144,7 +142,7 @@ export default function OnboardingPage() {
         <p className="t-body mt-2 text-muted">
           Tu perfil está guardado. El primer paso para que la app sea tuya: registra tu primer entreno.
         </p>
-        <Link href="/training" className="btn btn-primary mt-8 w-full" onClick={() => router.prefetch("/training")}>
+        <Link href="/training" className="btn btn-primary mt-8 w-full">
           Registrar mi primer entreno <ChevronRight className="h-4 w-4" />
         </Link>
         <Link href="/dashboard" className="t-label mt-4 text-center text-muted">Ir al inicio</Link>

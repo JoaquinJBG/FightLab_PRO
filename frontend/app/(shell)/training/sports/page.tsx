@@ -468,7 +468,7 @@ export default function SportsPage() {
           <div className="min-w-0 flex-1">
             <p className="t-label text-ink">Sesión sin terminar</p>
             <p className="t-body text-xs text-muted">
-              {SPORT_BY_KEY[resume.sportKey]?.name} · {fmtClock(resume.elapsed)} · {Math.round(resume.kcal)} kcal
+              {SPORT_BY_KEY[resume.sportKey]?.name} · {fmtClock(resume.elapsed)} · {latestWeight != null ? `${Math.round(resume.kcal)} kcal` : "kcal —"}
             </p>
           </div>
           <button onClick={() => resumeSession(resume)} className="btn btn-tonal btn-sm shrink-0">Reanudar</button>
