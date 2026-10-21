@@ -563,6 +563,10 @@ describe("dispositivo compartido: dueño de los flp_* (flp_owner_uid)", () => {
     expect(localStorage.getItem("flp_round_cfg")).toBe("{}");
   });
 
+  function respondAsUser2(url: string): Response {
+    return url === "/api/proxy/me" ? jsonResponse({ id: 2 }) : jsonResponse({});
+  }
+
   it("dos uids sobre el mismo storage: el mismo dueño conserva sus datos, otro uid los purga", async () => {
     seedUserA();
     const mod = await importFresh();
@@ -578,7 +582,7 @@ describe("dispositivo compartido: dueño de los flp_* (flp_owner_uid)", () => {
   it("sin marcador pero con el flag de migración de OTRO uid: se trata como suyo y no se migra a B", async () => {
     localStorage.setItem("flp_state_migrated_1", "1");
     localStorage.setItem("flp_weigh", JSON.stringify({ target: 70 }));
-    fetchImpl = async (url) => (url === "/api/proxy/me" ? jsonResponse({ id: 2 }) : jsonResponse({}));
+    fetchImpl = async (url) => respondAsUser2(url);
     const mod = await importFresh();
     mod.migrateLegacyUserStateOnce();
     await vi.waitFor(() => expect(localStorage.getItem("flp_state_migrated_2")).toBe("1"));
@@ -598,7 +602,7 @@ describe("dispositivo compartido: dueño de los flp_* (flp_owner_uid)", () => {
 
   it("claimDeviceForCurrentUser resuelve el uid contra /me y purga antes de entrar", async () => {
     seedUserA();
-    fetchImpl = async (url) => (url === "/api/proxy/me" ? jsonResponse({ id: 2 }) : jsonResponse({}));
+    fetchImpl = async (url) => respondAsUser2(url);
     const mod = await importFresh();
     await mod.claimDeviceForCurrentUser();
     expect(localStorage.getItem("flp_weigh")).toBeNull();

@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import { gateView } from "@/components/onboarding-gate";
 
 const base = { isLoading: false, isError: false, incomplete: false, slow: false };
+const dashboard = { ...base, pathname: "/dashboard" };
 
 describe("gateView", () => {
   test("no bloquea /training/* mientras carga, tarda o falla el perfil", () => {
@@ -13,14 +14,14 @@ describe("gateView", () => {
   });
 
   test("fuera de /training: esqueleto al cargar, reintento si tarda ≥10 s o falla", () => {
-    expect(gateView({ ...base, pathname: "/dashboard", isLoading: true })).toBe("skeleton");
-    expect(gateView({ ...base, pathname: "/dashboard", isLoading: true, slow: true })).toBe("slow");
-    expect(gateView({ ...base, pathname: "/dashboard", isError: true })).toBe("error");
-    expect(gateView({ ...base, pathname: "/dashboard" })).toBe("children");
+    expect(gateView({ ...dashboard, isLoading: true })).toBe("skeleton");
+    expect(gateView({ ...dashboard, isLoading: true, slow: true })).toBe("slow");
+    expect(gateView({ ...dashboard, isError: true })).toBe("error");
+    expect(gateView(dashboard)).toBe("children");
   });
 
   test("perfil incompleto fuera de /training: no pinta el shell mientras redirige", () => {
-    expect(gateView({ ...base, pathname: "/dashboard", incomplete: true })).toBe("skeleton");
+    expect(gateView({ ...dashboard, incomplete: true })).toBe("skeleton");
   });
 
   test("/trainingfoo no cuenta como /training", () => {
