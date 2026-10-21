@@ -74,7 +74,7 @@ test("kg en blanco con ✓ se guarda como 0 kg y las series sin ✓ no se guarda
   await dialog.getByRole("button", { name: "Terminar igualmente" }).click();
 
   await expect(page.getByText("kg totales")).toBeVisible();
-  await expect(page.getByText("series", { exact: true })).toBeVisible();
+  await expect(page.getByText("serie", { exact: true })).toBeVisible();
   const help = (await page.getByRole("button", { name: "Qué es RPE" }).boundingBox())!;
   expect(help.width).toBeGreaterThanOrEqual(43.5);
   expect(help.height).toBeGreaterThanOrEqual(43.5);
@@ -149,4 +149,87 @@ test("30 ejercicios × 8 series: detalle completo en local y ≤ 8 KB al servido
   const [s] = await savedSessions(page);
   expect(s.exercises).toHaveLength(30);
   expect(s.exercises[0].sets).toHaveLength(8);
+});
+
+const names = (page: Page) => page.locator(".glass .t-title").allInnerTexts();
+
+test("quitar dos ejercicios seguidos: Deshacer recupera ambos, en orden", async ({ page }) => {
+  await open(page, [
+    { name: "Press banca", sets: [{ kg: "80", reps: "8", done: true }] },
+    { name: "Remo con barra", sets: [{ kg: "60", reps: "10", done: true }] },
+  ]);
+  await page.getByRole("button", { name: "Quitar Press banca" }).click();
+  await page.getByRole("button", { name: "Quitar Remo con barra" }).click();
+  await expect(page.getByRole("status")).toContainText("Remo con barra (+1)");
+  await page.getByRole("button", { name: "Deshacer" }).click();
+  await page.getByRole("button", { name: "Deshacer" }).click();
+  expect(await names(page)).toEqual(["Press banca", "Remo con barra"]);
+});
+
+test("doble toque en la misma posición no pierde ejercicios", async ({ page }) => {
+  await open(page, [
+    { name: "Press banca", sets: [{ kg: "80", reps: "8", done: true }] },
+    { name: "Remo con barra", sets: [{ kg: "60", reps: "10", done: true }] },
+  ]);
+  const x = (await page.getByRole("button", { name: "Quitar Press banca" }).boundingBox())!;
+  await page.touchscreen.tap(x.x + x.width / 2, x.y + x.height / 2);
+  await page.touchscreen.tap(x.x + x.width / 2, x.y + x.height / 2);
+  const undo = page.getByRole("button", { name: "Deshacer" });
+  while (await undo.count()) await undo.click();
+  expect(await names(page)).toEqual(["Press banca", "Remo con barra"]);
+});
+
+test("deshacer con el ejercicio ya re-añadido une las series", async ({ page }) => {
+  await open(page, [{ name: "Press banca", sets: [{ kg: "80", reps: "8", done: true }, { kg: "85", reps: "6", done: true }] }]);
+  await page.getByRole("button", { name: "Quitar Press banca" }).click();
+  await page.getByRole("button", { name: "+ Añadir ejercicio" }).click();
+  await page.getByRole("button", { name: /^Press banca/ }).click();
+  await page.getByRole("button", { name: "Deshacer" }).click();
+  await expect(page.getByLabel("Peso, serie 1")).toHaveValue("80");
+  await expect(page.getByLabel("Peso, serie 2")).toHaveValue("85");
+});
+
+test("el aviso de deshacer no tapa ninguna fila tocable", async ({ page }) => {
+  await open(page, [
+    { name: "Press banca", sets: [{ kg: "80", reps: "8", done: true }] },
+    { name: "Remo con barra", sets: [{ kg: "60", reps: "10", done: true }] },
+    { name: "Sentadilla", sets: [{ kg: "100", reps: "5", done: false }] },
+  ]);
+  await page.getByRole("button", { name: "Quitar Press banca" }).click();
+  const bar = (await page.getByRole("status").boundingBox())!;
+  const undo = (await page.getByRole("button", { name: "Deshacer" }).boundingBox())!;
+  expect(undo.height).toBeGreaterThanOrEqual(43.5);
+  for (const label of ["Peso, serie 1", "Serie 1 hecha"]) {
+    for (const el of await page.getByLabel(label).all()) {
+      const b = (await el.boundingBox())!;
+      expect(b.y >= bar.y + bar.height - 0.5 || b.y + b.height <= bar.y + 0.5).toBe(true);
+    }
+  }
+});
+
+test("singular en el resumen: '1 serie'", async ({ page }) => {
+  await open(page, [{ name: "Dominadas", sets: [{ kg: "", reps: "8", done: true }] }]);
+  await page.getByRole("button", { name: "Terminar entreno" }).click();
+  await expect(page.getByText("1 serie", { exact: true })).toBeVisible();
+  await expect(page.getByText("serie", { exact: true })).toBeVisible();
+});
+
+test("sin 'Primera vez' mientras el historial del servidor carga", async ({ page }) => {
+  await loginAsTestUser(page, live([{ name: "Press banca", sets: [{ kg: "", reps: "", done: false }] }]));
+  await page.route("**/api/proxy/activities?kind=GYM*", async (route) => {
+    await new Promise((r) => setTimeout(r, 1500));
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([{
+        id: 1, client_id: "srv-1", kind: "GYM", title: "Gimnasio", started_at: "2026-10-01T10:00:00Z",
+        duration_sec: 3600, rpe: 7, kcal: null, note: "", load_au: 420, source: "app", created_at: "2026-10-01T11:00:00Z",
+        detail: { focus: null, volume_kg: 640, exercises: [{ name: "Press banca", sets: [{ kg: 80, reps: 8 }] }] },
+      }]),
+    });
+  });
+  await page.goto("/training/gym/session");
+  await expect(page.getByLabel("Peso, serie 1")).toBeVisible();
+  await expect(page.getByText("Primera vez")).toBeHidden();
+  await expect(page.getByText("Última vez: 1×8 · 80 kg")).toBeVisible();
 });

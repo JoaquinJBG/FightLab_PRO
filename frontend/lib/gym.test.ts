@@ -6,6 +6,7 @@ import {
   savedExercises,
   sessionTotals,
   incompleteSets,
+  restoreExercise,
   buildActivityDetail,
   gymSessionFromServer,
   GYM_SESS_KEY,
@@ -177,5 +178,33 @@ describe("buildActivityDetail", () => {
     const { detail, breakdown } = buildActivityDetail("X", 5, big(30, 8), 500);
     expect(breakdown).toBe(false);
     expect(detail).toEqual({ focus: "X", volume_kg: 5 });
+  });
+});
+
+describe("restoreExercise", () => {
+  const ex = (name: string, ...sets: [string, string, boolean][]): ExerciseEntry => ({
+    name,
+    sets: sets.map(([kg, reps, done]) => ({ kg, reps, done })),
+  });
+
+  test("lo reinserta en su posición", () => {
+    const xs = [ex("A", ["1", "1", true]), ex("C", ["3", "3", true])];
+    expect(restoreExercise(xs, ex("B", ["2", "2", true]), 1).map((x) => x.name)).toEqual(["A", "B", "C"]);
+  });
+
+  test("posición fuera de rango: al final", () => {
+    expect(restoreExercise([ex("A", ["1", "1", true])], ex("B", ["2", "2", true]), 5).map((x) => x.name)).toEqual(["A", "B"]);
+  });
+
+  test("si se volvió a añadir, une las series y descarta las vacías", () => {
+    const readded = ex("Press banca", ["", "", false]);
+    const out = restoreExercise([readded], ex("Press banca", ["80", "8", true], ["85", "6", true]), 0);
+    expect(out).toHaveLength(1);
+    expect(out[0].sets.map((s) => s.kg)).toEqual(["80", "85"]);
+  });
+
+  test("conserva las series nuevas con datos", () => {
+    const out = restoreExercise([ex("A", ["50", "", false])], ex("A", ["80", "8", true]), 0);
+    expect(out[0].sets.map((s) => s.kg)).toEqual(["80", "50"]);
   });
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Fragment, Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { TrainingIcon, InfoIcon } from "@/components/icons";
@@ -16,6 +16,7 @@ import {
   savedExercises,
   sessionTotals,
   incompleteSets,
+  restoreExercise,
   buildActivityDetail,
   pushGymSession,
   loadGymSessions,
@@ -71,7 +72,7 @@ function SessionInner() {
   const [rpe, setRpe] = useState<number | null>(DEFAULT_RPE);
   const [rpeInfo, setRpeInfo] = useState(false);
   const [confirm, setConfirm] = useState<"finish" | "discard" | null>(null);
-  const [undo, setUndo] = useState<{ ex: ExerciseEntry; index: number } | null>(null);
+  const [undos, setUndos] = useState<{ ex: ExerciseEntry; index: number }[]>([]);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // descanso entre series
@@ -85,13 +86,16 @@ function SessionInner() {
 
   /* ---------- historial para "Última vez"/PR: local + servidor (otro dispositivo) ---------- */
   const [gymHistory, setGymHistory] = useState<GymSession[]>([]);
+  const [historyReady, setHistoryReady] = useState(false);
   useEffect(() => {
     // Pintura inmediata desde local; el servidor sobreescribe al llegar.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setGymHistory(loadGymSessions());
     let alive = true;
     fetchServerActivities("GYM").then((server) => {
-      if (!alive || !server) return; // el servidor no respondió: se queda con lo local
+      if (!alive) return;
+      setHistoryReady(true);
+      if (!server) return; // el servidor no respondió: se queda con lo local
       const pending = pendingQueueItems("GYM").map(gymSessionFromPending);
       const merged = mergeByClientId(loadGymSessions(), pending, server.map(gymSessionFromServer));
       merged.sort((a, b) => b.ts - a.ts);
@@ -232,16 +236,17 @@ function SessionInner() {
     const ex = exercises[ei];
     if (!ex) return;
     setExercises((xs) => xs.filter((_, i) => i !== ei));
-    setUndo({ ex, index: ei });
+    setUndos((u) => [...u, { ex, index: ei }]);
     if (undoTimer.current) clearTimeout(undoTimer.current);
-    undoTimer.current = setTimeout(() => setUndo(null), 8000);
+    undoTimer.current = setTimeout(() => setUndos([]), 8000);
   }
   function undoRemove() {
-    if (!undo) return;
-    const { ex, index } = undo;
-    setExercises((xs) => (xs.some((x) => x.name === ex.name) ? xs : [...xs.slice(0, index), ex, ...xs.slice(index)]));
-    setUndo(null);
+    const last = undos[undos.length - 1];
+    if (!last) return;
+    setExercises((xs) => restoreExercise(xs, last.ex, last.index));
+    setUndos((u) => u.slice(0, -1));
     if (undoTimer.current) clearTimeout(undoTimer.current);
+    undoTimer.current = setTimeout(() => setUndos([]), 8000);
   }
   useEffect(() => () => { if (undoTimer.current) clearTimeout(undoTimer.current); }, []);
   function addExercise(name: string) {
@@ -316,7 +321,7 @@ function SessionInner() {
           <p className="t-title text-ink">{focus ? `Entreno · ${focus}` : "Entreno de gimnasio"}</p>
           <div className="mt-3 flex justify-between text-center">
             <div><p className="stat text-xl text-ink">{fmtClock(elapsed)}</p><p className="t-label text-muted">duración</p></div>
-            <div><p className="stat text-xl text-ink">{totalSets}</p><p className="t-label text-muted">series</p></div>
+            <div><p className="stat text-xl text-ink">{totalSets}</p><p className="t-label text-muted">{totalSets === 1 ? "serie" : "series"}</p></div>
             <div><p className="stat text-xl neon-text">{volume.toLocaleString("es")}</p><p className="t-label text-muted">kg totales</p></div>
           </div>
           {parsedExercises.length > 0 && (
@@ -324,7 +329,7 @@ function SessionInner() {
               {parsedExercises.map((x) => (
                 <li key={x.name} className="t-body flex justify-between text-xs text-muted">
                   <span>{x.name}</span>
-                  <span className="text-ink">{x.sets.length} series</span>
+                  <span className="text-ink">{x.sets.length} {x.sets.length === 1 ? "serie" : "series"}</span>
                 </li>
               ))}
             </ul>
@@ -378,6 +383,17 @@ function SessionInner() {
   }
 
   /* ============================ EN VIVO ============================ */
+  const lastUndo = undos[undos.length - 1];
+  const undoAt = lastUndo ? Math.min(lastUndo.index, exercises.length) : -1;
+  const undoBar = lastUndo && (
+    <div role="status" className="glass flex items-center justify-between gap-3 px-4 py-1">
+      <span className="t-body min-w-0 truncate text-xs text-ink">
+        Quitado: {lastUndo.ex.name}{undos.length > 1 ? ` (+${undos.length - 1})` : ""}
+      </span>
+      <button onClick={undoRemove} className="t-label min-h-11 shrink-0 px-2 text-neon">Deshacer</button>
+    </div>
+  );
+
   return (
     <div className="pt-4 pb-24">
       <div className="flex items-center justify-between">
@@ -406,12 +422,14 @@ function SessionInner() {
         {exercises.map((x, ei) => {
           const stats = exerciseStats(x.name, gymHistory);
           return (
-            <div key={x.name} className="glass p-4">
+            <Fragment key={x.name}>
+            {undoAt === ei && undoBar}
+            <div className="glass p-4">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="t-title text-ink">{x.name}</p>
                   <p className="t-body text-[11px] text-muted">
-                    {stats.last ? `Última vez: ${stats.last}` : "Primera vez — a estrenar"}
+                    {stats.last ? `Última vez: ${stats.last}` : historyReady ? "Primera vez — a estrenar" : "\u00a0"}
                     {stats.prKg !== null ? ` · PR ${stats.prKg} kg` : ""}
                   </p>
                 </div>
@@ -436,8 +454,10 @@ function SessionInner() {
               </div>
               <button onClick={() => addSet(ei)} className="btn btn-tonal btn-sm mt-3 min-h-11 w-full">+ Serie</button>
             </div>
+            </Fragment>
           );
         })}
+        {undoAt === exercises.length && undoBar}
       </div>
 
       {/* añadir ejercicio */}
@@ -478,13 +498,6 @@ function SessionInner() {
         />
       ) : (
         <button onClick={finish} className="btn btn-primary mt-4 min-h-11 w-full">Terminar entreno</button>
-      )}
-
-      {undo && (
-        <div role="status" className={`glass fixed inset-x-4 z-50 flex items-center justify-between gap-3 px-4 py-2 ${restLeft !== null && restLeft > 0 ? "bottom-44" : "bottom-24"}`}>
-          <span className="t-body min-w-0 truncate text-xs text-ink">Quitado: {undo.ex.name}</span>
-          <button onClick={undoRemove} className="t-label min-h-11 shrink-0 px-2 text-neon">Deshacer</button>
-        </div>
       )}
 
       {/* chip flotante de descanso */}

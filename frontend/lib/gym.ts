@@ -174,7 +174,7 @@ export function formatSetPreview(set: { kg: number; reps: number } | null): stri
 
 /* ------------------------- Qué se guarda al terminar ------------------------ */
 
-export const MAX_DETAIL_CHARS = 8000; // tope del backend (activities/serializers.py)
+export const MAX_DETAIL_CHARS = 8000; // margen bajo el tope del backend (8192, activities/serializers.py)
 export const DEFAULT_RPE = 7;
 
 const num = (v: string) => parseFloat(v.replace(",", "."));
@@ -195,6 +195,17 @@ export function sessionTotals(saved: GymSession["exercises"]): { totalSets: numb
   const totalSets = saved.reduce((a, x) => a + x.sets.length, 0);
   const volume = Math.round(saved.reduce((a, x) => a + x.sets.reduce((b, s) => b + s.kg * s.reps, 0), 0));
   return { totalSets, volume };
+}
+
+const isBlankSet = (s: SetEntry) => s.kg.trim() === "" && s.reps.trim() === "" && !s.done;
+
+/** Deshace un "quitar ejercicio". Si el ejercicio se volvió a añadir mientras
+    tanto, las series recuperadas se unen a las nuevas (sin las vacías). */
+export function restoreExercise(xs: ExerciseEntry[], ex: ExerciseEntry, index: number): ExerciseEntry[] {
+  const at = xs.findIndex((x) => x.name === ex.name);
+  if (at === -1) return [...xs.slice(0, index), ex, ...xs.slice(index)];
+  const merged = [...ex.sets, ...xs[at].sets.filter((s) => !isBlankSet(s))];
+  return xs.map((x, i) => (i === at ? { ...x, sets: merged } : x));
 }
 
 /** Series que el usuario podría creer guardadas y no lo serán. */
