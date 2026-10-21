@@ -160,7 +160,8 @@ describe("POST /api/proxy/[...path] — clientIpHeaders en vez de X-Forwarded-Fo
       headers: {
         "content-type": "application/json",
         origin: "https://app.example.com",
-        "x-forwarded-for": "203.0.113.9",
+        "x-real-ip": "203.0.113.9",
+        "x-forwarded-for": "6.6.6.6",
       },
       body: JSON.stringify({ a: 1 }),
     });
@@ -204,7 +205,8 @@ describe("POST /api/proxy/[...path] — clientIpHeaders en vez de X-Forwarded-Fo
       headers: {
         "content-type": "application/json",
         origin: "https://app.example.com",
-        "x-forwarded-for": "203.0.113.9",
+        "x-real-ip": "203.0.113.9",
+        "x-forwarded-for": "6.6.6.6",
       },
       body: JSON.stringify({ a: 1 }),
     });
@@ -217,5 +219,68 @@ describe("POST /api/proxy/[...path] — clientIpHeaders en vez de X-Forwarded-Fo
         headers: { "X-Bff-Secret": "top-secret", "X-Bff-Client-Ip": "203.0.113.9" },
       }),
     );
+  });
+});
+
+describe("POST /api/proxy/[...path] — deadline por petición", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
+    cookieStore.set("fl_access", "access");
+    cookieStore.set("fl_refresh", fakeJwt({ exp: Math.floor(Date.now() / 1000) + 3600 }));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  test("si el upstream lento consume el presupuesto, no intenta refresh y responde 504 (no 401)", async () => {
+    djangoRequest.mockImplementationOnce(async () => {
+      vi.advanceTimersByTime(45_000);
+      return jsonResponse({ detail: "token inválido" }, 401);
+    });
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(504);
+    expect(djangoFetch).not.toHaveBeenCalled();
+    expect(cookieStore.has("fl_access")).toBe(true);
+  });
+
+  test("con margen suficiente hace refresh, y el reintento nunca supera lo que queda", async () => {
+    djangoRequest
+      .mockImplementationOnce(async () => {
+        vi.advanceTimersByTime(30_000);
+        return jsonResponse({ detail: "token inválido" }, 401);
+      })
+      .mockResolvedValueOnce(jsonResponse({ ok: true }, 200));
+    djangoFetch.mockImplementationOnce(async () => {
+      vi.advanceTimersByTime(10_000);
+      return { status: 200, data: { access: "nueva" } };
+    });
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(200);
+    expect(djangoRequest.mock.calls[0][1].timeoutMs).toBe(55_000);
+    expect(djangoFetch.mock.calls[0][1].timeoutMs).toBeLessThanOrEqual(15_000);
+    // 40 s ya gastados: solo quedan 15 s para el reintento.
+    expect(djangoRequest.mock.calls[1][1].timeoutMs).toBe(15_000);
+  });
+
+  test("si el refresh agota el presupuesto, no reintenta y responde 504", async () => {
+    djangoRequest.mockImplementationOnce(async () => {
+      vi.advanceTimersByTime(30_000);
+      return jsonResponse({ detail: "token inválido" }, 401);
+    });
+    djangoFetch.mockImplementationOnce(async () => {
+      vi.advanceTimersByTime(25_000);
+      return { status: 200, data: { access: "nueva" } };
+    });
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(504);
+    expect(djangoRequest).toHaveBeenCalledTimes(1);
   });
 });

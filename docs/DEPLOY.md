@@ -91,9 +91,9 @@ Salvo que se diga lo contrario, el valor es texto plano (no secreto) y va como
 | Variable | Obligatoria | Secreto | Ejemplo / cómo generarla |
 |---|---|---|---|
 | `DEBUG` | Sí | No | `False` (ya viene fija en `render.yaml`) |
-| `SECRET_KEY` | Sí | **Sí** | `python -c "from django.core.management.utils import get_random_secret_key as f; print(f())"` |
+| `SECRET_KEY` | Sí | **Sí** | Mínimo 50 caracteres: con `DEBUG=False` el backend se niega a arrancar si es más corta. `python -c "from django.core.management.utils import get_random_secret_key as f; print(f())"` |
 | `ALLOWED_HOSTS` | Sí | No | `fightlab-backend.onrender.com` (el hostname de Render se añade solo, pero conviene ponerlo igual) |
-| `ADMIN_URL` | Sí | Semi (no lo publiques) | Una ruta rara con barra final, ej. `panel-x7k2q9/` — nunca `admin/` |
+| `ADMIN_URL` | Sí | Semi (no lo publiques) | Una ruta rara con barra final, ej. `panel-x7k2q9/` — nunca `admin/`. Si no la pones con `DEBUG=False`, el admin no se monta. El login del admin se bloquea por IP tras 5 fallos (`ADMIN_LOGIN_MAX_FAILURES`) durante 15 min (`ADMIN_LOGIN_LOCKOUT_SECONDS`) |
 | `NUM_PROXIES` | Sí | No | **`1`** — es la cadena real vista desde la URL pública de Render (un solo proxy de confianza delante de gunicorn). No pongas `2`: con la app detrás del BFF y llamada directamente a la URL de Render a la vez, un valor más alto deja que quien llame directo se invente la IP y salte el límite de intentos de login |
 | `DATABASE_URL` | Sí | **Sí** | La cadena directa de Neon del paso 1, con `?sslmode=require` |
 | `FRONTEND_URL` | Sí | No | `https://<tu-proyecto>.vercel.app` (sin barra final). Se usa en los enlaces de verificación de email y de recuperar contraseña |
@@ -287,6 +287,22 @@ Dos formas:
   arriba) y reintenta.
 
 ---
+
+## IP del cliente y throttling (verificado en la documentación de Vercel)
+
+Fuente: <https://vercel.com/docs/headers/request-headers> (revisada el 2026-10-21).
+
+- `x-forwarded-for`: IP pública del cliente. Vercel **sobrescribe** esta cabecera y no reenvía IPs externas, para evitar el spoofing (solo en Enterprise con *Trusted Proxy* se puede conservar una propia).
+- `x-real-ip`: "idéntica" a `x-forwarded-for`.
+- `x-vercel-forwarded-for`: idéntica a `x-forwarded-for`, pero no se sobrescribe si hay un proxy delante de Vercel.
+
+Consecuencias en el código:
+
+- El BFF (`frontend/lib/auth-forward.ts`) toma la IP de `x-real-ip` y, si falta, de `x-vercel-forwarded-for`. **Nunca** del primer salto de `x-forwarded-for`.
+- La reenvía a Django en `X-Bff-Client-Ip` junto con `X-Bff-Secret`; Django solo la acepta si el secreto coincide (comparación con `hmac.compare_digest`).
+- Sin esas cabeceras (llamada directa a la URL de Render) Django usa `NUM_PROXIES=1`, es decir el último salto de `X-Forwarded-For`, el que añade Render; lo que anteponga el cliente no cuenta.
+- Si algún día se pone un proxy/CDN propio delante de Vercel, `x-real-ip` pasa a ser la IP de ese proxy: habría que revisar esta decisión.
+- Limitación: en local (`next dev`) esas cabeceras no existen, así que no se manda IP y se aplica el throttle estándar.
 
 ## Tests y CI
 

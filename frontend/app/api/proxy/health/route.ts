@@ -1,10 +1,21 @@
 import { DJANGO_ORIGIN, assertDjangoConfigured } from "@/lib/api";
 
 // El backend de Render (plan free) se duerme tras 15 min de inactividad y puede
-// tardar hasta ~50 s en volver a responder. Este endpoint solo sirve para
+// tardar ~50 s en volver a responder. Este endpoint solo sirve para
 // despertarlo: no lleva autenticación ni pasa por el proxy genérico, porque
 // /health vive en la raíz del origen de Django, no bajo /api/v1.
-export const maxDuration = 60;
+// El timeout es corto a propósito: es una sonda, el cliente la reintenta, y
+// esperar 55 s mantendría ocupada una función por cada llamada en bucle.
+export const maxDuration = 15;
+
+const TIMEOUT_MS = 10_000;
+const CACHE_TTL_MS = 10_000;
+
+let lastOk = 0;
+
+function ok() {
+  return new Response(null, { status: 204, headers: { "Cache-Control": "private, max-age=10" } });
+}
 
 export async function GET() {
   try {
@@ -13,18 +24,17 @@ export async function GET() {
     console.error(e);
     return new Response(null, { status: 500 });
   }
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 55_000);
+  if (Date.now() - lastOk < CACHE_TTL_MS) return ok();
   try {
     const res = await fetch(`${DJANGO_ORIGIN}/health`, {
       method: "GET",
       cache: "no-store",
-      signal: controller.signal,
+      signal: AbortSignal.timeout(TIMEOUT_MS),
     });
-    return new Response(null, { status: res.ok ? 204 : 502 });
+    if (!res.ok) return new Response(null, { status: 502 });
+    lastOk = Date.now();
+    return ok();
   } catch {
     return new Response(null, { status: 502 });
-  } finally {
-    clearTimeout(timeout);
   }
 }

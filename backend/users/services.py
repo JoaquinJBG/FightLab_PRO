@@ -64,10 +64,32 @@ def _send_verification_email(user) -> None:
             html_message=html,
         )
     except Exception:
-        logger.exception("No se pudo enviar el email de verificación a %s", user.email)
+        logger.exception("No se pudo enviar el email de verificación al usuario %s", user.pk)
     if settings.DEBUG:
         # Enlace limpio y copiable en consola (el email de dev va en quoted-printable).
         print(f"\n[DEV] Verificación para {user.email}:\n{link}\n", flush=True)
+
+
+def _send_account_exists_email(user) -> None:
+    """Aviso al dueño de una cuenta verificada que alguien intentó registrar.
+
+    Nunca deja escapar una excepción (igual que _send_verification_email).
+    """
+    link = f"{settings.FRONTEND_URL}/login"
+    try:
+        send_mail(
+            subject="Ya tienes una cuenta en FightLab Pro",
+            message=(
+                "Alguien intentó crear una cuenta con este correo, pero ya tienes una.\n\n"
+                f"Entra aquí: {link}\n\n"
+                "Si olvidaste la contraseña, usa «Recuperar contraseña». "
+                "Si no fuiste tú, ignora este email."
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+        )
+    except Exception:
+        logger.exception("No se pudo enviar el aviso de cuenta existente al usuario %s", user.pk)
 
 
 @transaction.atomic
@@ -96,15 +118,18 @@ def user_create(*, email: str, password: str):
     de una cuenta que aún no ha estrenado. En la beta cerrada (invitación
     explícita, pocos usuarios, ventana corta hasta el primer login) se
     acepta este riesgo en vez de reintroducir el problema anterior
-    (invalidar contraseñas a ciegas). Si la cuenta ya está verificada, sí es
-    un error.
+    (invalidar contraseñas a ciegas). Si la cuenta ya está verificada, la
+    respuesta es la misma y el aviso va solo al buzón del dueño.
     """
     email = email.strip().lower()
     existing = User.objects.filter(email=email).first()
     if existing is not None:
         if existing.is_email_verified:
-            raise ValueError("A user with this email already exists")
-        transaction.on_commit(functools.partial(_send_verification_email, existing))
+            # Misma respuesta que un alta nueva (sin enumerar): al dueño de
+            # la cuenta le llega un aviso por email en vez de un error.
+            transaction.on_commit(functools.partial(_send_account_exists_email, existing))
+        else:
+            transaction.on_commit(functools.partial(_send_verification_email, existing))
         return existing
 
     user = User.objects.create_user(email=email, password=password, is_active=False)
@@ -165,7 +190,7 @@ def _send_password_reset_email(user) -> None:
             html_message=html,
         )
     except Exception:
-        logger.exception("No se pudo enviar el email de recuperación de contraseña a %s", user.email)
+        logger.exception("No se pudo enviar el email de recuperación al usuario %s", user.pk)
     if settings.DEBUG:
         print(f"\n[DEV] Recuperación de contraseña para {user.email}:\n{link}\n", flush=True)
 

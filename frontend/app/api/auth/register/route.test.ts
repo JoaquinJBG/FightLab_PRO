@@ -52,7 +52,7 @@ describe("POST /api/auth/register", () => {
   test("reenvía clientIpHeaders a Django", async () => {
     vi.stubEnv("BFF_SHARED_SECRET", "top-secret");
     const r = req();
-    r.headers.set("x-forwarded-for", "203.0.113.9");
+    r.headers.set("x-real-ip", "203.0.113.9");
 
     await POST(r);
 

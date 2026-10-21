@@ -65,3 +65,26 @@ def test_check_deploy_sin_avisos_con_produccion_simulada():
     result = _run(env, [sys.executable, "manage.py", "check", "--deploy"])
     assert result.returncode == 0, result.stdout + result.stderr
     assert "System check identified no issues" in result.stdout
+
+
+def _boot(secret_key):
+    env = {
+        "DJANGO_SETTINGS_MODULE": "core.settings",
+        "ENV_FILE": os.devnull,
+        "DEBUG": "False",
+        "SECRET_KEY": secret_key,
+        "ALLOWED_HOSTS": "example.com",
+        "DATABASE_URL": "postgres://u:p@localhost:5432/db",
+    }
+    return _run(env, [sys.executable, "-c", "import django; django.setup()"])
+
+
+def test_secret_key_corta_no_arranca_sin_debug():
+    result = _boot("x" * 24)
+    assert result.returncode != 0
+    assert "SECRET_KEY" in result.stderr
+
+
+def test_secret_key_de_50_caracteres_arranca_sin_debug():
+    result = _boot("x" * 50)
+    assert result.returncode == 0, result.stderr
