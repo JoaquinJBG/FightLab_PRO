@@ -112,12 +112,22 @@ async function handle(req: Request, path: string[]) {
         await clearAuthCookies();
         return NextResponse.json({ detail: "No autenticado" }, { status: 401 });
       }
-      const ref = await djangoFetch("/auth/refresh", {
-        method: "POST",
-        body: { refresh: refreshBefore },
-        timeoutMs: Math.min(RETRY_TIMEOUT_MS, remaining()),
-        headers: ipHeaders,
-      });
+      // 401 solo si el refresh es inservible de verdad; cualquier otro fallo
+      // es 503 (el cliente cierra sesión ante un 401 y se perdería un refresh
+      // aún válido).
+      const refreshUnavailable = () =>
+        NextResponse.json({ code: "refresh_unavailable" }, { status: 503 });
+      let ref: Awaited<ReturnType<typeof djangoFetch>>;
+      try {
+        ref = await djangoFetch("/auth/refresh", {
+          method: "POST",
+          body: { refresh: refreshBefore },
+          timeoutMs: Math.min(RETRY_TIMEOUT_MS, remaining()),
+          headers: ipHeaders,
+        });
+      } catch {
+        return refreshUnavailable();
+      }
       if (ref.status === 200 && ref.data && typeof ref.data === "object") {
         const d = ref.data as { access: string; refresh?: string };
         if (d.refresh) await setAuthCookies(d.access, d.refresh);
@@ -139,10 +149,13 @@ async function handle(req: Request, path: string[]) {
         // detecta esa rotación (cookies() ve el jar de ESTA petición, no el
         // Set-Cookie que puso otra en paralelo), así que en vez de eso se
         // decodifica el propio token para decidir.
-        if (isRefreshTokenExpiredOrMalformed(refreshBefore)) {
-          await clearAuthCookies();
+        const unusable = isRefreshTokenExpiredOrMalformed(refreshBefore);
+        const rejected = ref.status === 401 || ref.status === 400;
+        if (unusable) await clearAuthCookies();
+        if (unusable || rejected) {
+          return NextResponse.json({ detail: "Sesión expirada" }, { status: 401 });
         }
-        return NextResponse.json({ detail: "Sesión expirada" }, { status: 401 });
+        return refreshUnavailable();
       }
     }
 
