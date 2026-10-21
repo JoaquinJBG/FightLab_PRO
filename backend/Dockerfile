@@ -16,7 +16,7 @@ COPY . .
 # que collectstatic no falle sin tocar la base de datos, ya que STATIC_ROOT
 # y STORAGES no dependen de ella. Las variables reales las pone Render en
 # tiempo de ejecución.
-RUN DEBUG=False SECRET_KEY=build-time-only-not-used-at-runtime \
+RUN DEBUG=False SECRET_KEY=build-time-only-not-used-at-runtime-0123456789-abcdefghij \
     python manage.py collectstatic --noinput
 
 # Usuario sin privilegios: con una sola instancia (plan free de Render) no
