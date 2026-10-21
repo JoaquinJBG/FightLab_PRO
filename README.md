@@ -90,6 +90,7 @@ fightlab-pro/
    pip install -r backend/requirements.txt
    cd backend
    python manage.py migrate
+   python manage.py createcachetable   # los límites de uso viven en la tabla de caché
    python manage.py runserver 8001
    ```
    La API queda en `http://localhost:8001/api/v1/` (el **8000** se deja libre para
