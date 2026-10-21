@@ -260,7 +260,10 @@ function SessionInner() {
 
   function finish() {
     if (incomplete.tickedEmpty + incomplete.unticked > 0) setConfirm("finish");
-    else setPhase("summary");
+    else {
+      setConfirm(null);
+      setPhase("summary");
+    }
   }
 
   function save() {
@@ -356,7 +359,7 @@ function SessionInner() {
         </div>
 
         <div className="mt-4 flex gap-3">
-          <button onClick={() => setPhase("live")} className="btn btn-outline min-h-11 flex-1">Volver</button>
+          <button onClick={() => { setConfirm(null); setPhase("live"); }} className="btn btn-outline min-h-11 flex-1">Volver</button>
           <button onClick={save} disabled={totalSets === 0} className="btn btn-primary flex-1 min-h-11 disabled:opacity-60">Guardar</button>
         </div>
         {totalSets === 0 && <p className="t-body mt-2 text-center text-[11px] text-muted">Marca ✓ al menos una serie con reps para guardar.</p>}
@@ -478,7 +481,7 @@ function SessionInner() {
       )}
 
       {undo && (
-        <div role="status" className="glass fixed inset-x-4 bottom-24 z-50 flex items-center justify-between gap-3 px-4 py-2">
+        <div role="status" className={`glass fixed inset-x-4 z-50 flex items-center justify-between gap-3 px-4 py-2 ${restLeft !== null && restLeft > 0 ? "bottom-44" : "bottom-24"}`}>
           <span className="t-body min-w-0 truncate text-xs text-ink">Quitado: {undo.ex.name}</span>
           <button onClick={undoRemove} className="t-label min-h-11 shrink-0 px-2 text-neon">Deshacer</button>
         </div>

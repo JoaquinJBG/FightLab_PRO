@@ -75,6 +75,9 @@ test("kg en blanco con ✓ se guarda como 0 kg y las series sin ✓ no se guarda
 
   await expect(page.getByText("kg totales")).toBeVisible();
   await expect(page.getByText("series", { exact: true })).toBeVisible();
+  const help = (await page.getByRole("button", { name: "Qué es RPE" }).boundingBox())!;
+  expect(help.width).toBeGreaterThanOrEqual(43.5);
+  expect(help.height).toBeGreaterThanOrEqual(43.5);
   // RPE 7 preseleccionado
   await expect(page.getByRole("button", { name: "7", exact: true })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Guardar" }).click();
