@@ -32,7 +32,8 @@ test("la fila de serie cabe en la tarjeta y los objetivos táctiles son ≥ 44 p
   // borde interior de la tarjeta = borde - padding (p-4 = 16 px)
   expect(doneBox.x + doneBox.width).toBeLessThanOrEqual(cardBox.x + cardBox.width - 16 + 0.5);
 
-  await done.click(); // arranca el descanso: aparecen +30s / Saltar
+  // los botones del descanso (+30s / Saltar) solo existen tras marcar una serie
+  await done.click();
   await expect(page.getByRole("button", { name: "Saltar" })).toBeVisible();
 
   const targets = [
@@ -68,7 +69,6 @@ test("kg en blanco con ✓ se guarda como 0 kg y las series sin ✓ no se guarda
     { name: "Fondos", sets: [{ kg: "", reps: "12", done: true }, { kg: "20", reps: "8", done: false }] },
   ]);
   await page.getByRole("button", { name: "Terminar entreno" }).click();
-  // hay una serie con datos sin marcar → un aviso claro
   const dialog = page.getByRole("alertdialog");
   await expect(dialog).toContainText("1 serie(s) con datos sin marcar");
   await dialog.getByRole("button", { name: "Terminar igualmente" }).click();
@@ -78,7 +78,6 @@ test("kg en blanco con ✓ se guarda como 0 kg y las series sin ✓ no se guarda
   const help = (await page.getByRole("button", { name: "Qué es RPE" }).boundingBox())!;
   expect(help.width).toBeGreaterThanOrEqual(43.5);
   expect(help.height).toBeGreaterThanOrEqual(43.5);
-  // RPE 7 preseleccionado
   await expect(page.getByRole("button", { name: "7", exact: true })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Guardar" }).click();
   await page.waitForURL("**/training/gym");
@@ -100,7 +99,6 @@ test("quitar un ejercicio se puede deshacer y descartar pide confirmación", asy
   await page.getByRole("button", { name: "Deshacer" }).click();
   await expect(page.getByText("Press banca", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Peso, serie 2").first()).toHaveValue("80");
-  await expect(page.getByText("Press banca", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Terminar entreno" }).click();
   await page.getByRole("alertdialog").getByRole("button", { name: "Terminar igualmente" }).click();
