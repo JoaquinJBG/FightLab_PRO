@@ -42,13 +42,27 @@ def test_register_resends_for_unverified_duplicate_without_touching_password(cli
 
 
 @pytest.mark.django_db
-def test_register_rejects_verified_duplicate(client):
+def test_register_verified_duplicate_is_indistinguishable_and_emails_owner(
+    client, mailoutbox, django_capture_on_commit_callbacks
+):
+    resp_new = client.post("/api/v1/auth/register", {"email": "new@b.com", "password": "pw-strong-123"}, format="json")
+    assert resp_new.status_code == 201
+
     client.post("/api/v1/auth/register", {"email": "a@b.com", "password": "pw-strong-123"}, format="json")
     user = User.objects.get(email="a@b.com")
     token = generate_email_verification_token(user)
     client.post("/api/v1/auth/verify-email", {"token": token}, format="json")
-    resp = client.post("/api/v1/auth/register", {"email": "a@b.com", "password": "pw-strong-456"}, format="json")
-    assert resp.status_code == 400
+    mailoutbox.clear()
+
+    with django_capture_on_commit_callbacks(execute=True):
+        resp_dup = client.post("/api/v1/auth/register", {"email": "a@b.com", "password": "pw-strong-456"}, format="json")
+
+    assert resp_dup.status_code == resp_new.status_code == 201
+    assert resp_dup.content == resp_new.content
+    user.refresh_from_db()
+    assert user.check_password("pw-strong-123")
+    assert [m.to for m in mailoutbox] == [["a@b.com"]]
+    assert "ya tienes una cuenta" in mailoutbox[0].subject.lower()
 
 
 @pytest.mark.django_db

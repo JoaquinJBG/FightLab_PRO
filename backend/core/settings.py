@@ -35,6 +35,11 @@ else:
         raise ImproperlyConfigured(
             "SECRET_KEY es obligatoria cuando DEBUG=False."
         ) from exc
+    # Misma longitud mínima que comprueba `check --deploy` (security.W009).
+    if len(SECRET_KEY) < 50:
+        raise ImproperlyConfigured(
+            "SECRET_KEY debe tener al menos 50 caracteres cuando DEBUG=False."
+        )
 
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 # Render asigna un subdominio *.onrender.com y lo expone en esta variable de
@@ -316,8 +321,14 @@ else:
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 EMAIL_VERIFICATION_TIMEOUT = env("EMAIL_VERIFICATION_TIMEOUT")
 
-# Ruta del admin, para no dejarlo en /admin/ en producción.
-ADMIN_URL = env("ADMIN_URL", default="admin/")
+# Ruta del admin, para no dejarlo en /admin/ en producción. Con DEBUG=False y
+# sin ADMIN_URL el admin no se monta (core/urls.py).
+ADMIN_URL = env("ADMIN_URL", default="admin/" if DEBUG else "")
+
+# Bloqueo del login del admin (core/admin_lockout.py): tras N intentos
+# fallidos desde una IP, esa IP queda bloqueada durante la ventana.
+ADMIN_LOGIN_MAX_FAILURES = env.int("ADMIN_LOGIN_MAX_FAILURES", default=5)
+ADMIN_LOGIN_LOCKOUT_SECONDS = env.int("ADMIN_LOGIN_LOCKOUT_SECONDS", default=900)
 
 # --- Beta cerrada por invitación ---
 # Emails separados por comas. Vacía + DEBUG -> se permite todo (dev local).

@@ -57,7 +57,7 @@ describe("POST /api/auth/login", () => {
     vi.mocked(djangoFetch).mockResolvedValue({ status: 200, data: { access: "acc", refresh: "ref" } });
     vi.stubEnv("BFF_SHARED_SECRET", "top-secret");
     const r = req();
-    r.headers.set("x-forwarded-for", "203.0.113.9");
+    r.headers.set("x-real-ip", "203.0.113.9");
 
     const res = await POST(r);
 

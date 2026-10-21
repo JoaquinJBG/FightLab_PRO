@@ -41,10 +41,7 @@ class RegisterView(APIView):
                 {"detail": "Registro solo por invitación"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        try:
-            services.user_create(**serializer.validated_data)
-        except ValueError as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        services.user_create(**serializer.validated_data)
         return Response(status=status.HTTP_201_CREATED)
 
 

@@ -41,7 +41,7 @@ describe("POST /api/auth/verify-email", () => {
   test("reenvía clientIpHeaders a Django (antes era uno de los huecos citados en el bug)", async () => {
     vi.stubEnv("BFF_SHARED_SECRET", "top-secret");
     const r = req();
-    r.headers.set("x-forwarded-for", "203.0.113.9");
+    r.headers.set("x-real-ip", "203.0.113.9");
 
     const res = await POST(r);
 

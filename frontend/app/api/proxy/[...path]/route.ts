@@ -28,7 +28,15 @@ export const maxDuration = 60;
 // hasta 3×55 s, muy por encima de maxDuration.
 const RETRY_TIMEOUT_MS = 15_000;
 
+// Presupuesto total de la petición, con margen bajo maxDuration. Cada paso
+// (petición, refresh, reintento) se recorta a lo que queda, así que el peor
+// caso nunca pasa de aquí; con menos de RETRY_TIMEOUT_MS no se intenta el
+// refresh porque no daría tiempo a completarlo.
+const DEADLINE_MS = 55_000;
+
 async function handle(req: Request, path: string[]) {
+  const deadline = Date.now() + DEADLINE_MS;
+  const remaining = () => deadline - Date.now();
   if (!isPathSafe(path) || !isPrefixAllowed(path)) {
     return NextResponse.json({ detail: "Ruta no permitida" }, { status: 404 });
   }
@@ -88,25 +96,50 @@ async function handle(req: Request, path: string[]) {
 
   try {
     let access = await getAccess();
-    let upstream = await doReq(access);
+    let upstream = await doReq(access, remaining());
 
     if (upstream.status === 401) {
+      // 504 y no 401: un 401 haría que el cliente cierre sesión por un simple
+      // problema de tiempo.
+      if (remaining() < RETRY_TIMEOUT_MS) {
+        return NextResponse.json(
+          { detail: "El backend ha tardado demasiado en responder" },
+          { status: 504 },
+        );
+      }
       const refreshBefore = await getRefresh();
       if (!refreshBefore) {
         await clearAuthCookies();
         return NextResponse.json({ detail: "No autenticado" }, { status: 401 });
       }
-      const ref = await djangoFetch("/auth/refresh", {
-        method: "POST",
-        body: { refresh: refreshBefore },
-        timeoutMs: RETRY_TIMEOUT_MS,
-        headers: ipHeaders,
-      });
+      // 401 solo si el refresh es inservible de verdad; cualquier otro fallo
+      // es 503 (el cliente cierra sesión ante un 401 y se perdería un refresh
+      // aún válido).
+      const refreshUnavailable = () =>
+        NextResponse.json({ code: "refresh_unavailable" }, { status: 503 });
+      let ref: Awaited<ReturnType<typeof djangoFetch>>;
+      try {
+        ref = await djangoFetch("/auth/refresh", {
+          method: "POST",
+          body: { refresh: refreshBefore },
+          timeoutMs: Math.min(RETRY_TIMEOUT_MS, remaining()),
+          headers: ipHeaders,
+        });
+      } catch {
+        return refreshUnavailable();
+      }
       if (ref.status === 200 && ref.data && typeof ref.data === "object") {
         const d = ref.data as { access: string; refresh?: string };
         if (d.refresh) await setAuthCookies(d.access, d.refresh);
         else await setAccessCookie(d.access);
         access = d.access;
+        const left = remaining();
+        if (left < RETRY_TIMEOUT_MS) {
+          return NextResponse.json(
+            { detail: "El backend ha tardado demasiado en responder" },
+            { status: 504 },
+          );
+        }
         upstream = await doReq(access, RETRY_TIMEOUT_MS);
       } else {
         // Solo se borran las cookies si el refresh que teníamos ya no sirve
@@ -116,10 +149,13 @@ async function handle(req: Request, path: string[]) {
         // detecta esa rotación (cookies() ve el jar de ESTA petición, no el
         // Set-Cookie que puso otra en paralelo), así que en vez de eso se
         // decodifica el propio token para decidir.
-        if (isRefreshTokenExpiredOrMalformed(refreshBefore)) {
-          await clearAuthCookies();
+        const unusable = isRefreshTokenExpiredOrMalformed(refreshBefore);
+        const rejected = ref.status === 401 || ref.status === 400;
+        if (unusable) await clearAuthCookies();
+        if (unusable || rejected) {
+          return NextResponse.json({ detail: "Sesión expirada" }, { status: 401 });
         }
-        return NextResponse.json({ detail: "Sesión expirada" }, { status: 401 });
+        return refreshUnavailable();
       }
     }
 

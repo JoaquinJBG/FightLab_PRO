@@ -48,7 +48,7 @@ describe("POST /api/auth/logout", () => {
   test("reenvía clientIpHeaders también en el logout (antes era uno de los huecos del bug)", async () => {
     vi.stubEnv("BFF_SHARED_SECRET", "top-secret");
     const r = req();
-    r.headers.set("x-forwarded-for", "203.0.113.9");
+    r.headers.set("x-real-ip", "203.0.113.9");
 
     await POST(r);
 
