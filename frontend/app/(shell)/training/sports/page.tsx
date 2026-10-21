@@ -11,6 +11,8 @@ import {
   RunIcon, WalkIcon, BikeIcon, SwimIcon, BallIcon, RopeIcon, PulseIcon, ChevronRight, InfoIcon,
 } from "@/components/icons";
 import { LIVE_KEY, readLiveSession, type LiveSession } from "@/lib/sports";
+import { latestWeightKg } from "@/lib/body-inputs";
+import { WeightPrompt } from "@/components/weight-prompt";
 
 const RPE_INFO =
   "RPE = Esfuerzo Percibido (escala 1-10): cómo de duro ha sido. 1 = muy suave, 10 = máximo esfuerzo (no podías más).";
@@ -54,7 +56,7 @@ type Activity = {
   sportKey: string;
   sportName: string;
   durationSec: number;
-  kcal: number;
+  kcal: number | null;
   intensity: string;
   rpe: number | null;
   load: number | null; // sRPE: minutos × RPE (AU)
@@ -82,7 +84,7 @@ function activityFromServer(a: ServerActivity): Activity {
     sportKey: detail?.sport_key ?? "",
     sportName: a.title || "Deporte",
     durationSec: a.duration_sec,
-    kcal: a.kcal ?? 0,
+    kcal: a.kcal ?? null,
     intensity: detail?.intensity ?? "",
     rpe: a.rpe,
     load: a.load_au,
@@ -97,7 +99,7 @@ function activityFromPending(item: SyncItem): Activity {
     sportKey: detail?.sport_key ?? "",
     sportName: item.title || "Deporte",
     durationSec: item.duration_sec,
-    kcal: item.kcal ?? 0,
+    kcal: item.kcal ?? null,
     intensity: detail?.intensity ?? "",
     rpe: item.rpe ?? null,
     load: item.rpe ? Math.round((item.duration_sec / 60) * item.rpe) : null,
@@ -113,13 +115,10 @@ function fmtDate(ts: number) {
 }
 
 export default function SportsPage() {
-  const { data: logs = [] } = useBiometrics();
-  const latestWeight = (() => {
-    for (const l of logs) { const w = l.weight_kg ? parseFloat(l.weight_kg) : null; if (w && Number.isFinite(w)) return w; }
-    return null;
-  })();
-  const weight = latestWeight ?? 70;
-  const weightNote = "Kcal estimadas según tu peso.";
+  const { data: logs = [], isSuccess: logsLoaded } = useBiometrics();
+  const latestWeight = latestWeightKg(logs);
+  const weight = latestWeight ?? 0;
+  const weightNote = latestWeight != null ? "Kcal estimadas según tu peso." : "Pon tu peso para estimar las kcal.";
 
   const [view, setView] = useState<"deporte" | "actividad">("deporte");
   // Inicialización perezosa: se lee localStorage una sola vez, en el primer
@@ -251,7 +250,7 @@ export default function SportsPage() {
       sportKey: sel.key,
       sportName: sel.name,
       durationSec: elapsed,
-      kcal: Math.round(kcalAcc),
+      kcal: latestWeight != null ? Math.round(kcalAcc) : null,
       intensity: INTENSITIES[intIdx][0],
       rpe,
       load: rpe ? Math.round(minutes * rpe) : null,
@@ -265,7 +264,7 @@ export default function SportsPage() {
       started_at: new Date(ts - elapsed * 1000).toISOString(),
       duration_sec: Math.min(86_400, Math.max(1, Math.round(elapsed))),
       rpe,
-      kcal: Math.min(20_000, Math.max(0, Math.round(kcalAcc))),
+      kcal: latestWeight != null ? Math.min(20_000, Math.max(0, Math.round(kcalAcc))) : null,
       detail: { sport_key: sel.key, intensity: INTENSITIES[intIdx][0] },
     });
     localStorage.removeItem(LIVE_KEY);
@@ -324,7 +323,7 @@ export default function SportsPage() {
             <p className="t-title text-ink">{sel.name}</p>
             <div className="flex gap-8">
               <div><p className="stat text-3xl text-ink">{fmtClock(elapsed)}</p><p className="t-label text-muted">tiempo</p></div>
-              <div><p className="stat text-3xl neon-text">{Math.round(kcalAcc)}</p><p className="t-label text-muted">kcal</p></div>
+              <div><p className="stat text-3xl neon-text">{latestWeight != null ? Math.round(kcalAcc) : "—"}</p><p className="t-label text-muted">kcal</p></div>
             </div>
           </div>
 
@@ -387,6 +386,7 @@ export default function SportsPage() {
           <h1 className="t-display text-2xl text-ink">{sel.name}</h1>
         </div>
         <p className="t-body mt-2 text-xs text-muted">{weightNote}</p>
+        {logsLoaded && latestWeight == null && <WeightPrompt what="las kcal de esta sesión" />}
 
         <div className="glass neon-edge mt-4 flex flex-col items-center gap-2 p-6">
           {phase === "countdown" ? (
@@ -394,7 +394,7 @@ export default function SportsPage() {
           ) : (
             <>
               <span className="stat text-6xl text-ink tabular-nums">{fmtClock(elapsed)}</span>
-              <span className="stat text-2xl neon-text">{Math.round(kcalAcc)} <span className="text-sm text-muted">kcal</span></span>
+              <span className="stat text-2xl neon-text">{latestWeight != null ? Math.round(kcalAcc) : "—"} <span className="text-sm text-muted">kcal</span></span>
             </>
           )}
         </div>
@@ -468,7 +468,7 @@ export default function SportsPage() {
           <div className="min-w-0 flex-1">
             <p className="t-label text-ink">Sesión sin terminar</p>
             <p className="t-body text-xs text-muted">
-              {SPORT_BY_KEY[resume.sportKey]?.name} · {fmtClock(resume.elapsed)} · {Math.round(resume.kcal)} kcal
+              {SPORT_BY_KEY[resume.sportKey]?.name} · {fmtClock(resume.elapsed)} · {latestWeight != null ? `${Math.round(resume.kcal)} kcal` : "kcal —"}
             </p>
           </div>
           <button onClick={() => resumeSession(resume)} className="btn btn-tonal btn-sm shrink-0">Reanudar</button>
@@ -491,13 +491,14 @@ export default function SportsPage() {
             <PulseIcon className="h-4 w-4 shrink-0 text-neon" />
             <p className="t-body text-xs text-muted">{weightNote}</p>
           </div>
+          {logsLoaded && latestWeight == null && <WeightPrompt what="las kcal de cada deporte" />}
           <div className="mt-4 flex flex-col gap-3">
             {SPORTS.map((s, i) => (
               <button key={s.key} onClick={() => openSport(s)} className="glass rise flex items-center gap-4 p-4 text-left" style={{ animationDelay: `${i * 35}ms` }}>
                 <span className="text-neon flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[rgba(69,233,255,0.07)]"><s.Icon className="h-6 w-6" /></span>
                 <span className="min-w-0 flex-1">
                   <span className="t-title block text-lg text-ink">{s.name}</span>
-                  <span className="t-body text-xs text-muted">~{kcalOf(s.met, 1, weight, 30)} kcal / 30 min</span>
+                  {latestWeight != null && <span className="t-body text-xs text-muted">~{kcalOf(s.met, 1, weight, 30)} kcal / 30 min</span>}
                 </span>
                 <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
               </button>
@@ -540,7 +541,7 @@ export default function SportsPage() {
                     </div>
                     <div className="text-right">
                       <p className="stat text-ink">{fmtClock(a.durationSec)}</p>
-                      <p className="t-body text-[11px] text-neon">{a.kcal} kcal</p>
+                      <p className="t-body text-[11px] text-neon">{a.kcal != null ? `${a.kcal} kcal` : "— kcal"}</p>
                     </div>
                   </div>
                 );

@@ -14,10 +14,6 @@ const stances: [string, string][] = [
   ["SOUTHPAW", "Zurdo"],
   ["SWITCH", "Switch"],
 ];
-const unitOpts: [string, string][] = [
-  ["METRIC", "Métrico (kg · cm)"],
-  ["IMPERIAL", "Imperial (lb · in)"],
-];
 
 export function ProfileForm({
   submitLabel,
@@ -33,7 +29,6 @@ export function ProfileForm({
   const [gender, setGender] = useState("");
   const [heightCm, setHeightCm] = useState("");
   const [stance, setStance] = useState("");
-  const [units, setUnits] = useState("METRIC");
   const [formError, setFormError] = useState<string | null>(null);
 
   // Precarga el formulario la primera vez que llega el perfil (los datos
@@ -46,7 +41,6 @@ export function ProfileForm({
     setGender(profile.gender ?? "");
     setHeightCm(profile.height_cm != null ? String(profile.height_cm) : "");
     setStance(profile.dominant_stance ?? "");
-    setUnits(profile.preferred_units ?? "METRIC");
     setLoaded(true);
   }
 
@@ -69,7 +63,6 @@ export function ProfileForm({
       gender: gender || null,
       height_cm: heightCm ? Number(heightCm) : null,
       dominant_stance: stance || null,
-      preferred_units: units,
     };
     try {
       await update.mutateAsync(payload);
@@ -114,13 +107,6 @@ export function ProfileForm({
         <select value={stance} onChange={(e) => setStance(e.target.value)} className={selectCls}>
           <option value="">Selecciona…</option>
           {stances.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-        </select>
-      </label>
-
-      <label className="flex flex-col gap-1.5">
-        <span className="t-label text-muted">Unidades</span>
-        <select value={units} onChange={(e) => setUnits(e.target.value)} className={selectCls}>
-          {unitOpts.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
       </label>
 

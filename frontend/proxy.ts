@@ -9,6 +9,7 @@ const PROTECTED = [
   "/profile",
   "/biometrics",
   "/onboarding",
+  "/ui",
 ];
 
 export function proxy(req: NextRequest) {
@@ -33,5 +34,6 @@ export const config = {
     "/profile/:path*",
     "/biometrics/:path*",
     "/onboarding",
+    "/ui/:path*",
   ],
 };

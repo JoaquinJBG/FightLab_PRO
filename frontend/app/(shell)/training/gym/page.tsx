@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { TrainingIcon, CoachIcon, ChevronRight } from "@/components/icons";
+import { TrainingIcon, ChevronRight } from "@/components/icons";
 import { GYM_LIVE_KEY, loadGymSessions, type GymSession, type LiveGym } from "@/lib/gym";
 import { useUserState } from "@/lib/user-state";
 
@@ -19,7 +19,6 @@ function fmtDate(ts: number) {
 }
 
 export default function GymPage() {
-  const [view, setView] = useState<"cal" | "ia">("cal");
   const { value: week, setValue: setWeek } = useUserState<string[]>("gym_week", DEFAULT_WEEK);
   const [live, setLive] = useState<LiveGym | null>(null);
   const [recent, setRecent] = useState<GymSession[]>([]);
@@ -82,17 +81,7 @@ export default function GymPage() {
         </Link>
       )}
 
-      {/* toggle */}
-      <div className="glass mt-4 grid grid-cols-2 gap-1 rounded-2xl p-1">
-        {([["cal", "Calendario"], ["ia", "Crear rutina"]] as const).map(([k, label]) => (
-          <button key={k} onClick={() => setView(k)} className="rounded-xl py-2.5 text-sm font-medium transition-colors"
-            style={view === k ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)", color: "#03101c" } : { background: "transparent", color: "var(--color-muted)" }}>
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {view === "cal" ? (
+      {(
         <div className="mt-4">
           <p className="t-eyebrow text-muted">Tu semana</p>
           <div className="mt-2 flex flex-col gap-2">
@@ -108,7 +97,7 @@ export default function GymPage() {
               );
             })}
           </div>
-          <p className="t-body mt-3 text-xs text-muted">Apunta qué toca cada día. Se guarda solo en tu dispositivo (luego, en tu cuenta).</p>
+          <p className="t-body mt-3 text-xs text-muted">Apunta qué toca cada día. Se guarda en tu cuenta y se sincroniza entre tus dispositivos.</p>
 
           {/* últimos entrenos */}
           {recent.length > 0 && (
@@ -133,29 +122,6 @@ export default function GymPage() {
               </div>
             </div>
           )}
-        </div>
-      ) : (
-        <div className="mt-4">
-          <div className="flex items-center gap-2">
-            <p className="t-eyebrow text-muted">Crear rutina</p>
-            <span className="badge">Próximamente</span>
-          </div>
-          {/* Beta honesta: aquí antes había un generador simulado (setTimeout +
-              rutina hardcodeada) que se podía aplicar al calendario como si
-              fuera real. Hasta que haya una IA real generando rutinas, se
-              deshabilita en vez de fingir un resultado. */}
-          <div className="glass neon-edge mt-3 flex flex-col items-center gap-3 p-6 text-center">
-            <span className="text-neon glow flex h-14 w-14 items-center justify-center rounded-2xl bg-[rgba(69,233,255,0.07)]">
-              <CoachIcon className="h-7 w-7" />
-            </span>
-            <p className="t-title text-ink">Generar rutina con IA</p>
-            <p className="t-body text-sm text-muted">
-              Todavía no está disponible. De momento, monta tu semana a mano en el calendario.
-            </p>
-            <button className="btn btn-primary mt-1 w-full" disabled aria-disabled="true">
-              <CoachIcon className="h-4 w-4" /> Generar rutina con IA
-            </button>
-          </div>
         </div>
       )}
     </div>
