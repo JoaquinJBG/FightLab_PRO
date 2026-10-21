@@ -124,13 +124,13 @@ async function handle(req: Request, path: string[]) {
         else await setAccessCookie(d.access);
         access = d.access;
         const left = remaining();
-        if (left <= 0) {
+        if (left < RETRY_TIMEOUT_MS) {
           return NextResponse.json(
             { detail: "El backend ha tardado demasiado en responder" },
             { status: 504 },
           );
         }
-        upstream = await doReq(access, Math.min(RETRY_TIMEOUT_MS, left));
+        upstream = await doReq(access, RETRY_TIMEOUT_MS);
       } else {
         // Solo se borran las cookies si el refresh que teníamos ya no sirve
         // (expirado o mal formado). Una petición concurrente puede haber

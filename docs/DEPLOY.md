@@ -295,6 +295,7 @@ Fuente: <https://vercel.com/docs/headers/request-headers> (revisada el 2026-10-2
 - `x-forwarded-for`: IP pública del cliente. Vercel **sobrescribe** esta cabecera y no reenvía IPs externas, para evitar el spoofing (solo en Enterprise con *Trusted Proxy* se puede conservar una propia).
 - `x-real-ip`: "idéntica" a `x-forwarded-for`.
 - `x-vercel-forwarded-for`: idéntica a `x-forwarded-for`, pero no se sobrescribe si hay un proxy delante de Vercel.
+- Vercel sobrescribe estas cabeceras en su borde; eso es una propiedad de la plataforma, no de nuestro código.
 
 Consecuencias en el código:
 
@@ -302,7 +303,8 @@ Consecuencias en el código:
 - La reenvía a Django en `X-Bff-Client-Ip` junto con `X-Bff-Secret`; Django solo la acepta si el secreto coincide (comparación con `hmac.compare_digest`).
 - Sin esas cabeceras (llamada directa a la URL de Render) Django usa `NUM_PROXIES=1`, es decir el último salto de `X-Forwarded-For`, el que añade Render; lo que anteponga el cliente no cuenta.
 - Si algún día se pone un proxy/CDN propio delante de Vercel, `x-real-ip` pasa a ser la IP de ese proxy: habría que revisar esta decisión.
-- Limitación: en local (`next dev`) esas cabeceras no existen, así que no se manda IP y se aplica el throttle estándar.
+- **Solo es de fiar en Vercel**, que sobrescribe estas cabeceras. En cualquier otro host, incluido `next dev`, el cliente controla `x-real-ip` y `x-vercel-forwarded-for`, y podría elegir su propio cubo de throttle. No despliegues el BFF fuera de Vercel con `BFF_SHARED_SECRET` sin revisar esto antes.
+- En local (`next dev`) además esas cabeceras normalmente no existen, así que no se manda IP y se aplica el throttle estándar.
 
 ## Tests y CI
 

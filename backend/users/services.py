@@ -3,6 +3,7 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.mail import send_mail
@@ -121,6 +122,9 @@ def user_create(*, email: str, password: str):
     email = email.strip().lower()
     existing = User.objects.filter(email=email).first()
     if existing is not None:
+        # Mismo coste de hash que un alta nueva, para que el tiempo de
+        # respuesta no delate si el email existe.
+        make_password(password)
         if existing.is_email_verified:
             # Aviso por email en vez de error, para no enumerar cuentas.
             transaction.on_commit(functools.partial(_send_account_exists_email, existing))

@@ -131,3 +131,30 @@ def test_email_send_failure_logs_user_id_not_address(monkeypatch, caplog):
     assert caplog.records
     assert "pii@example.com" not in caplog.text
     assert str(user.pk) in caplog.text
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("verified", [False, True])
+def test_register_hashes_password_on_new_and_existing_paths(monkeypatch, verified):
+    from django.contrib.auth.hashers import PBKDF2PasswordHasher
+
+    calls = []
+    real = PBKDF2PasswordHasher.encode
+
+    def counting(self, *args, **kwargs):
+        calls.append(1)
+        return real(self, *args, **kwargs)
+
+    monkeypatch.setattr(PBKDF2PasswordHasher, "encode", counting)
+
+    user_create(email="new@b.com", password="pw-strong-123")
+    new_calls = len(calls)
+
+    existing = User.objects.get(email="new@b.com")
+    if verified:
+        email_verify(token=generate_email_verification_token(existing))
+    calls.clear()
+    user_create(email="new@b.com", password="pw-strong-456")
+
+    assert new_calls >= 1
+    assert len(calls) == new_calls

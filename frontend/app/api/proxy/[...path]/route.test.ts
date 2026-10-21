@@ -284,3 +284,31 @@ describe("POST /api/proxy/[...path] — deadline por petición", () => {
     expect(djangoRequest).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("POST /api/proxy/[...path] — reintento tras refresh con poco margen", () => {
+  test("si tras el refresh quedan menos de 15 s, no reintenta: 504 y conserva las cookies nuevas", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
+    try {
+      cookieStore.set("fl_access", "vieja");
+      cookieStore.set("fl_refresh", fakeJwt({ exp: Math.floor(Date.now() / 1000) + 3600 }));
+      djangoRequest.mockImplementationOnce(async () => {
+        vi.advanceTimersByTime(30_000);
+        return jsonResponse({ detail: "token inválido" }, 401);
+      });
+      djangoFetch.mockImplementationOnce(async () => {
+        vi.advanceTimersByTime(14_000);
+        return { status: 200, data: { access: "nueva", refresh: "refresh-nueva" } };
+      });
+
+      const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+      expect(res.status).toBe(504);
+      expect(djangoRequest).toHaveBeenCalledTimes(1);
+      expect(cookieStore.get("fl_access")).toBe("nueva");
+      expect(cookieStore.get("fl_refresh")).toBe("refresh-nueva");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
