@@ -1,8 +1,8 @@
 # 🥊 FightLab Pro
 
 Plataforma para **atletas de combate (MMA)** y deportistas multidisciplinares que
-unifica la ciencia del entrenamiento, la nutrición periodizada y un **coach con IA**
-en una sola app instalable en el móvil.
+unifica la ciencia del entrenamiento, el seguimiento de nutrición y peso, y un
+**coach con IA** en una sola app instalable en el móvil.
 
 > Proyecto personal de aprendizaje con estándares de producción.
 
@@ -14,10 +14,13 @@ en una sola app instalable en el móvil.
   fuerza, cardio) y el sistema calcula la carga de entrenamiento (sRPE), la
   monotonía, la tensión y el **ACWR** (ratio carga aguda/crónica) para prevenir
   lesiones.
-- **Nutrición periodizada.** Macros que se ajustan según el bloque de
-  entrenamiento, timing de nutrientes y seguimiento de peso de cara al pesaje.
-- **Coach IA (Anthropic Claude).** Genera rutinas y dietas, **cuenta kcal a partir
-  de una foto del plato** y propone ajustes proactivos según tu fatiga y tu ACWR.
+- **Nutrición.** Objetivos de kcal y macros calculados con tu peso, altura y edad
+  (Mifflin-St Jeor + objetivo perder/mantener/ganar), diario, agua y seguimiento
+  de peso de cara al pesaje. Los macros periodizados por bloque de entrenamiento
+  están en la hoja de ruta, no en la app actual.
+- **Coach IA (Anthropic Claude).** Chat y briefing con tu contexto real (carga
+  frente a tu rango personal, recuperación, peso) y **kcal a partir de una foto
+  del plato**. La generación de rutinas y dietas con IA aún no está disponible.
 
 ## 📱 Producto
 
@@ -42,12 +45,11 @@ a pantalla completa como una app nativa, **sin pasar por App Store / Play Store*
 | # | Módulo | Contenido | Estado |
 |---|--------|-----------|--------|
 | **M1** | Core / Auth | CustomUser, JWT + verificación email, recuperación de contraseña, beta cerrada por invitación, perfil y biometría | ✅ En producción (beta) |
-| **M2** | Entrenamiento | Deportes, MMA, Gimnasio (registro estilo Hevy), calendario, motor de carga (sRPE + banda personal / ACWR), readiness | ✅ En producción (beta) |
-| **M3** | Nutrición | Diario, macros calculados, agua, recientes/copiar de ayer, foto→kcal, corte de peso básico | ✅ En producción (beta) |
-| **M4** | Coach IA | Chat y briefing con Claude real, memoria persistente del coach, límites de uso diarios por usuario | ✅ En producción (beta) |
+| **M2** | Entrenamiento | Deportes, MMA, Gimnasio (registro estilo Hevy), calendario, motor de carga (sRPE + banda personal / ACWR), readiness | 🟡 Beta: gimnasio, deportes y MMA reales; crear rutina con IA y rutinas de entrenador, pendientes |
+| **M3** | Nutrición | Diario, macros calculados, agua, recientes/copiar de ayer, foto→kcal, corte de peso básico | 🟡 Beta: diario y objetivos reales; macros periodizados y objetivo adaptativo, pendientes |
+| **M4** | Coach IA | Chat y briefing con Claude real, memoria persistente del coach, límites de uso diarios por usuario | 🟡 Beta: el chat y la foto son reales; la IA aún no aprende de tu feedback ni genera planes |
 
-> Todos los módulos tienen ya su motor real en el backend y sesión sincronizada
-> con la cuenta (no solo `localStorage`). Lo que sigue siendo demo o está
+> Los datos se sincronizan con la cuenta (no solo `localStorage`). Lo que está
 > pendiente se detalla en la checklist de [`docs/guia-usuario.md`](docs/guia-usuario.md).
 
 ## 📂 Estructura del repositorio
@@ -102,9 +104,13 @@ fightlab-pro/
 ### Tests
 
 ```bash
-cd backend
-pytest          # requiere el contenedor `db` levantado
+make test       # Postgres propio en el 54329 + pytest, lint, tsc y vitest
 ```
+
+Primera vez: `make venv` (Python 3.12). Los comandos de pnpm se lanzan con
+`pnpm --dir frontend lint` (o desde `frontend/`): en la raíz del repo fallan con
+`ERR_PNPM_NO_PKG_MANIFEST`. Detalles, E2E, CI y protección de rama en
+[`docs/DEPLOY.md`](docs/DEPLOY.md#tests-y-ci).
 
 ## 🔌 API del M1 (Core / Auth)
 

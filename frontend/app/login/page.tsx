@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowUpRight } from "@/components/icons";
 import { credentials } from "@/lib/schemas";
 import { resetActivityUid } from "@/lib/activities";
+import { claimDeviceForCurrentUser } from "@/lib/user-state";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,6 +14,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const expired = useSyncExternalStore(
+    () => () => {},
+    () => new URLSearchParams(window.location.search).get("reason") === "expired",
+    () => false,
+  );
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,6 +37,7 @@ export default function LoginPage() {
       });
       if (res.ok) {
         resetActivityUid(); // que nada se encole a nombre del usuario anterior de este móvil
+        await claimDeviceForCurrentUser(); // si los datos locales eran de otra cuenta, se borran antes de entrar
         router.push("/dashboard");
         return;
       }
@@ -54,6 +61,11 @@ export default function LoginPage() {
           </h1>
           <p className="t-body mt-2 text-muted">Rendimiento de combate, medido y entrenado.</p>
         </div>
+        {expired && (
+          <p role="status" className="t-body mb-3 text-center text-sm text-muted">
+            Sesión caducada. Vuelve a iniciar sesión para continuar.
+          </p>
+        )}
         <form className="flex flex-col gap-3" onSubmit={onSubmit}>
           <label className="flex flex-col gap-1.5">
             <span className="t-label text-muted">Email</span>

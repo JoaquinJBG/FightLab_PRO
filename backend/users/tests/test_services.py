@@ -67,11 +67,13 @@ def test_user_create_does_not_roll_back_when_email_backend_fails(
 
 
 @pytest.mark.django_db
-def test_user_create_rejects_verified_duplicate():
+def test_user_create_verified_duplicate_returns_existing_without_error():
     user = user_create(email="a@b.com", password="pw-strong-123")
     email_verify(token=generate_email_verification_token(user))
-    with pytest.raises(ValueError):
-        user_create(email="a@b.com", password="pw-strong-456")
+    again = user_create(email="a@b.com", password="pw-strong-456")
+    assert again.pk == user.pk
+    again.refresh_from_db()
+    assert again.check_password("pw-strong-123")
 
 
 @pytest.mark.django_db
@@ -109,3 +111,50 @@ def test_verification_resend_swallows_email_backend_failure(
     monkeypatch.setattr("users.services.send_mail", _boom)
     with django_capture_on_commit_callbacks(execute=True):
         verification_resend(email="a@b.com")  # no debe lanzar
+
+
+@pytest.mark.django_db
+def test_email_send_failure_logs_user_id_not_address(monkeypatch, caplog):
+    from users import services
+
+    user = User.objects.create_user(email="pii@example.com", password="pw-strong-123")
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("smtp down")
+
+    monkeypatch.setattr(services, "send_mail", boom)
+    with caplog.at_level("ERROR"):
+        services._send_verification_email(user)
+        services._send_password_reset_email(user)
+        services._send_account_exists_email(user)
+
+    assert caplog.records
+    assert "pii@example.com" not in caplog.text
+    assert str(user.pk) in caplog.text
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("verified", [False, True])
+def test_register_hashes_password_on_new_and_existing_paths(monkeypatch, verified):
+    from django.contrib.auth.hashers import PBKDF2PasswordHasher
+
+    calls = []
+    real = PBKDF2PasswordHasher.encode
+
+    def counting(self, *args, **kwargs):
+        calls.append(1)
+        return real(self, *args, **kwargs)
+
+    monkeypatch.setattr(PBKDF2PasswordHasher, "encode", counting)
+
+    user_create(email="new@b.com", password="pw-strong-123")
+    new_calls = len(calls)
+
+    existing = User.objects.get(email="new@b.com")
+    if verified:
+        email_verify(token=generate_email_verification_token(existing))
+    calls.clear()
+    user_create(email="new@b.com", password="pw-strong-456")
+
+    assert new_calls >= 1
+    assert len(calls) == new_calls

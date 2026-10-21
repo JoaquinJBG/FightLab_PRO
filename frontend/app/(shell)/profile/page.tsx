@@ -6,7 +6,6 @@ import { useMe, useProfile, useLogout } from "@/lib/hooks";
 
 const GENDER: Record<string, string> = { MALE: "Hombre", FEMALE: "Mujer", OTHER: "Otro" };
 const STANCE: Record<string, string> = { ORTHODOX: "Ortodoxo", SOUTHPAW: "Zurdo", SWITCH: "Switch" };
-const UNITS: Record<string, string> = { METRIC: "Métrico", IMPERIAL: "Imperial" };
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
@@ -51,7 +50,6 @@ export default function ProfilePage() {
         <Row label="Sexo" value={dash(profile?.gender ? GENDER[profile.gender] : null)} />
         <Row label="Altura" value={profile?.height_cm != null ? `${profile.height_cm} cm` : "—"} />
         <Row label="Guardia" value={dash(profile?.dominant_stance ? STANCE[profile.dominant_stance] : null)} />
-        <Row label="Unidades" value={dash(profile?.preferred_units ? UNITS[profile.preferred_units] : null)} />
       </section>
 
       <Link href="/profile/edit" className="btn btn-tonal mt-4 w-full">

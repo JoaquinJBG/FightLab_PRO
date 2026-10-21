@@ -48,7 +48,7 @@ describe("POST /api/auth/logout", () => {
   test("reenvía clientIpHeaders también en el logout (antes era uno de los huecos del bug)", async () => {
     vi.stubEnv("BFF_SHARED_SECRET", "top-secret");
     const r = req();
-    r.headers.set("x-forwarded-for", "203.0.113.9");
+    r.headers.set("x-real-ip", "203.0.113.9");
 
     await POST(r);
 
@@ -65,6 +65,26 @@ describe("POST /api/auth/logout", () => {
     const res = await POST(req());
     expect(res.status).toBe(200);
     expect(djangoFetch).not.toHaveBeenCalled();
+    expect(clearAuthCookies).toHaveBeenCalled();
+  });
+
+  test("si Django hace timeout o falla, limpia cookies y responde 200 igualmente", async () => {
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    for (const failure of [new DOMException("timeout", "TimeoutError"), new Error("ECONNREFUSED")]) {
+      vi.mocked(clearAuthCookies).mockClear();
+      vi.mocked(djangoFetch).mockRejectedValue(failure);
+      const res = await POST(req());
+      expect(res.status).toBe(200);
+      expect(clearAuthCookies).toHaveBeenCalledTimes(1);
+    }
+    expect(err).toHaveBeenCalled();
+    err.mockRestore();
+  });
+
+  test("si Django responde 500, también limpia cookies y responde 200", async () => {
+    vi.mocked(djangoFetch).mockResolvedValue({ status: 500, data: {} });
+    const res = await POST(req());
+    expect(res.status).toBe(200);
     expect(clearAuthCookies).toHaveBeenCalled();
   });
 });

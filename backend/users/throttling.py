@@ -1,3 +1,5 @@
+import hmac
+
 from django.conf import settings
 from rest_framework.throttling import ScopedRateThrottle, UserRateThrottle
 
@@ -23,13 +25,44 @@ class TrustedBffIdentityMixin:
     """
 
     def get_ident(self, request):
-        secret = settings.BFF_SHARED_SECRET
-        if secret:
-            sent_secret = request.headers.get("X-Bff-Secret")
-            client_ip = request.headers.get("X-Bff-Client-Ip")
-            if sent_secret and client_ip and sent_secret == secret:
-                return client_ip.strip()
+        ip = trusted_bff_client_ip(request)
+        if ip:
+            return ip
         return super().get_ident(request)
+
+
+def trusted_bff_client_ip(request) -> str | None:
+    """IP real del visitante según el BFF, o None si la petición no es de fiar.
+
+    El BFF la toma de x-real-ip / x-vercel-forwarded-for (las fija Vercel, ver
+    docs/DEPLOY.md), nunca del primer salto de X-Forwarded-For. Comparar el
+    secreto en tiempo constante evita adivinarlo byte a byte por latencia.
+    """
+    secret = settings.BFF_SHARED_SECRET
+    if not secret:
+        return None
+    sent_secret = request.headers.get("X-Bff-Secret")
+    client_ip = request.headers.get("X-Bff-Client-Ip")
+    if not (sent_secret and client_ip):
+        return None
+    if not hmac.compare_digest(sent_secret.encode(), secret.encode()):
+        return None
+    return client_ip.strip()
+
+
+def client_ip(request) -> str:
+    """Identidad para peticiones fuera de DRF (p. ej. el login del admin)."""
+    ip = trusted_bff_client_ip(request)
+    if ip:
+        return ip
+    # Mismo criterio que SimpleRateThrottle.get_ident con NUM_PROXIES.
+    num_proxies = settings.REST_FRAMEWORK.get("NUM_PROXIES")
+    xff = request.META.get("HTTP_X_FORWARDED_FOR")
+    remote = request.META.get("REMOTE_ADDR", "")
+    if not num_proxies or not xff:
+        return remote
+    addrs = [a.strip() for a in xff.split(",")]
+    return addrs[-min(num_proxies, len(addrs))]
 
 
 class TrustedBffScopedRateThrottle(TrustedBffIdentityMixin, ScopedRateThrottle):

@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useUpdateProfile } from "@/lib/hooks";
+import { useUpdateProfile, useCreateBiometrics } from "@/lib/hooks";
+import { saveGoal } from "@/lib/nutrition";
+import { nutriGoalFromOnboarding } from "@/lib/body-inputs";
+import { parseWeightKg } from "@/components/weight-prompt";
+import Link from "next/link";
 import { useUserState } from "@/lib/user-state";
 import { GloveIcon, PulseIcon, NutritionIcon, ChevronRight } from "@/components/icons";
 import { DobInput, validateDob, dobToIso, type Dob } from "@/components/dob-input";
@@ -20,10 +23,6 @@ const STANCES: [string, string][] = [
   ["ORTHODOX", "Ortodoxo"],
   ["SOUTHPAW", "Zurdo"],
   ["SWITCH", "Switch"],
-];
-const UNITS: [string, string][] = [
-  ["METRIC", "Métrico (kg · cm)"],
-  ["IMPERIAL", "Imperial (lb · in)"],
 ];
 const DISCIPLINES = ["Boxeo", "Kickboxing", "Muay Thai", "BJJ", "Lucha", "Taekwondo", "Karate", "MMA"];
 const EXPERIENCE: [string, string][] = [
@@ -47,11 +46,21 @@ const FREQS: [number, string][] = [
 
 const TOTAL_STEPS = 3; // pasos con formulario (el 0 es bienvenida)
 
+function deviceTimezone(): string | undefined {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /* ----------------------------- página ------------------------------------ */
 
 export default function OnboardingPage() {
-  const router = useRouter();
   const update = useUpdateProfile();
+  const createBio = useCreateBiometrics();
+  const [weightSaved, setWeightSaved] = useState(false);
+  const [done, setDone] = useState(false);
   const { setValue: setProfileExtra } = useUserState<ProfileExtra | null>("profile_extra", null);
 
   const [step, setStep] = useState(0);
@@ -60,6 +69,7 @@ export default function OnboardingPage() {
   const [dob, setDob] = useState<Dob>({ day: "", month: "", year: "" });
   const [gender, setGender] = useState("");
   const [height, setHeight] = useState("");
+  const [weight, setWeight] = useState("");
   const [stepError, setStepError] = useState<string | null>(null);
 
   // Paso 2 · combate (skippable)
@@ -70,9 +80,6 @@ export default function OnboardingPage() {
   // Paso 3 · objetivo (skippable)
   const [goal, setGoal] = useState("");
   const [freq, setFreq] = useState<number | null>(null);
-  const [units, setUnits] = useState("METRIC");
-
-  const selectCls = "field px-3 py-3 text-sm";
 
   function toggleDiscipline(d: string) {
     setDisciplines((s) => (s.includes(d) ? s.filter((x) => x !== d) : [...s, d]));
@@ -91,12 +98,16 @@ export default function OnboardingPage() {
         setStepError("Introduce una altura válida en cm (100–230).");
         return;
       }
+      if (parseWeightKg(weight) == null) {
+        setStepError("Introduce tu peso en kg (30–300).");
+        return;
+      }
     }
     setStep((s) => s + 1);
   }
 
   async function finish() {
-    if (update.isPending) return; // evita doble submit
+    if (update.isPending || createBio.isPending) return; // evita doble submit
     setStepError(null);
     try {
       await update.mutateAsync({
@@ -104,16 +115,39 @@ export default function OnboardingPage() {
         gender: gender || null,
         height_cm: Number(height),
         dominant_stance: stance || null,
-        preferred_units: units,
+        timezone: deviceTimezone(),
       });
+      const kg = parseWeightKg(weight);
+      if (kg != null && !weightSaved) {
+        await createBio.mutateAsync({ weight_kg: kg.toFixed(1) });
+        setWeightSaved(true);
+      }
+      const nutri = nutriGoalFromOnboarding(goal);
+      if (nutri) saveGoal(nutri);
       // Campos aún sin columna en el backend (llegan en la fase 2):
       // se guardan en local (con copia de seguridad en el servidor) para
       // personalizar copy/planes desde ya.
       setProfileExtra({ disciplines, experience, goal, freq });
-      router.replace("/dashboard");
+      setDone(true);
     } catch {
       setStepError("No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.");
     }
+  }
+
+  /* --------------------------- final: primera acción ----------------------- */
+  if (done) {
+    return (
+      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-6 safe-top safe-bottom">
+        <h1 className="t-display text-3xl text-ink">Todo <span className="neon-text">listo</span></h1>
+        <p className="t-body mt-2 text-muted">
+          Tu perfil está guardado. El primer paso para que la app sea tuya: registra tu primer entreno.
+        </p>
+        <Link href="/training" className="btn btn-primary mt-8 w-full">
+          Registrar mi primer entreno <ChevronRight className="h-4 w-4" />
+        </Link>
+        <Link href="/dashboard" className="t-label mt-4 text-center text-muted">Ir al inicio</Link>
+      </div>
+    );
   }
 
   /* --------------------------- paso 0: bienvenida -------------------------- */
@@ -200,10 +234,22 @@ export default function OnboardingPage() {
                   inputMode="numeric"
                   value={height}
                   onChange={(e) => setHeight(e.target.value)}
-                  placeholder="175"
+                  placeholder="Tu altura actual"
                   className="field px-4 py-3 text-sm"
                 />
-                <p className="t-body text-[11px] text-muted">Con tu peso, calcula tus calorías y macros.</p>
+              </label>
+
+              <label className="flex flex-col gap-1.5">
+                <span className="t-label text-muted">Peso (kg)</span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  placeholder="Tu peso actual"
+                  className="field px-4 py-3 text-sm"
+                />
+                <p className="t-body text-[11px] text-muted">Tu peso, junto con la altura y la edad, sirve para calcular tus calorías y macros.</p>
               </label>
 
               <div className="flex flex-col gap-1.5">
@@ -311,21 +357,15 @@ export default function OnboardingPage() {
                 </div>
               </div>
 
-              <label className="flex flex-col gap-1.5">
-                <span className="t-label text-muted">Unidades</span>
-                <select value={units} onChange={(e) => setUnits(e.target.value)} className={selectCls}>
-                  {UNITS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                </select>
-              </label>
             </div>
 
             {stepError && <p className="mt-3 text-xs text-bad">{stepError}</p>}
             <div className="mt-6 flex items-center gap-3">
-              <button onClick={finish} disabled={update.isPending} className="t-label px-2 text-muted disabled:opacity-50">
+              <button onClick={finish} disabled={update.isPending || createBio.isPending} className="t-label px-2 text-muted disabled:opacity-50">
                 Saltar
               </button>
-              <button onClick={finish} disabled={update.isPending} className="btn btn-primary flex-1 disabled:opacity-60">
-                {update.isPending ? "Guardando…" : "Empezar"}
+              <button onClick={finish} disabled={update.isPending || createBio.isPending} className="btn btn-primary flex-1 disabled:opacity-60">
+                {update.isPending || createBio.isPending ? "Guardando…" : "Empezar"}
               </button>
             </div>
           </>

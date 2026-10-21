@@ -142,3 +142,58 @@ def test_password_reset_request_and_confirm_have_independent_throttle_scopes(
         format="json",
     )
     assert confirm_resp.status_code == 200
+
+
+@pytest.mark.django_db
+def test_throttle_bucket_survives_spoofed_x_forwarded_for(client, settings, monkeypatch):
+    """Con identidad de confianza del BFF, rotar X-Forwarded-For no cambia de
+    cubo: la IP la manda el BFF con el secreto, no el primer salto de XFF."""
+    settings.BFF_SHARED_SECRET = "s3cret"
+    monkeypatch.setitem(SimpleRateThrottle.THROTTLE_RATES, "register", "1/min")
+
+    def reg(email, xff):
+        return client.post(
+            "/api/v1/auth/register",
+            {"email": email, "password": "pw-strong-123"},
+            format="json",
+            HTTP_X_BFF_CLIENT_IP="1.1.1.1",
+            HTTP_X_BFF_SECRET="s3cret",
+            HTTP_X_FORWARDED_FOR=xff,
+        )
+
+    assert reg("a@b.com", "6.6.6.1, 10.0.0.1").status_code == 201
+    assert reg("c@d.com", "6.6.6.2, 10.0.0.1").status_code == 429
+
+
+@pytest.mark.django_db
+def test_throttle_bucket_survives_spoofed_xff_when_called_directly(client, monkeypatch):
+    """Llamada directa a Django (sin BFF): NUM_PROXIES=1 toma el último salto
+    (el que añade el proxy de confianza); lo que el cliente antepone no cuenta."""
+    monkeypatch.setitem(SimpleRateThrottle.THROTTLE_RATES, "register", "1/min")
+
+    def reg(email, xff):
+        return client.post(
+            "/api/v1/auth/register",
+            {"email": email, "password": "pw-strong-123"},
+            format="json",
+            HTTP_X_FORWARDED_FOR=xff,
+        )
+
+    assert reg("a@b.com", "6.6.6.1, 9.9.9.9").status_code == 201
+    assert reg("c@d.com", "6.6.6.2, 9.9.9.9").status_code == 429
+
+
+def test_secret_is_compared_in_constant_time(settings, monkeypatch):
+    import hmac
+
+    from django.test import RequestFactory
+
+    from users.throttling import trusted_bff_client_ip
+
+    settings.BFF_SHARED_SECRET = "s3cret"
+    calls = []
+    real = hmac.compare_digest
+    monkeypatch.setattr(hmac, "compare_digest", lambda a, b: calls.append(1) or real(a, b))
+    req = RequestFactory().get("/", HTTP_X_BFF_SECRET="s3cret", HTTP_X_BFF_CLIENT_IP=" 1.2.3.4 ")
+    assert trusted_bff_client_ip(req) == "1.2.3.4"
+    assert calls

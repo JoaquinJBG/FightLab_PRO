@@ -91,9 +91,9 @@ Salvo que se diga lo contrario, el valor es texto plano (no secreto) y va como
 | Variable | Obligatoria | Secreto | Ejemplo / cómo generarla |
 |---|---|---|---|
 | `DEBUG` | Sí | No | `False` (ya viene fija en `render.yaml`) |
-| `SECRET_KEY` | Sí | **Sí** | `python -c "from django.core.management.utils import get_random_secret_key as f; print(f())"` |
+| `SECRET_KEY` | Sí | **Sí** | Mínimo 50 caracteres: con `DEBUG=False` el backend se niega a arrancar si es más corta. `python -c "from django.core.management.utils import get_random_secret_key as f; print(f())"` |
 | `ALLOWED_HOSTS` | Sí | No | `fightlab-backend.onrender.com` (el hostname de Render se añade solo, pero conviene ponerlo igual) |
-| `ADMIN_URL` | Sí | Semi (no lo publiques) | Una ruta rara con barra final, ej. `panel-x7k2q9/` — nunca `admin/` |
+| `ADMIN_URL` | Sí | Semi (no lo publiques) | Una ruta rara con barra final, ej. `panel-x7k2q9/` — nunca `admin/`. Si no la pones con `DEBUG=False`, el admin no se monta. El login del admin se bloquea por IP tras 5 fallos (`ADMIN_LOGIN_MAX_FAILURES`) durante 15 min (`ADMIN_LOGIN_LOCKOUT_SECONDS`) |
 | `NUM_PROXIES` | Sí | No | **`1`** — es la cadena real vista desde la URL pública de Render (un solo proxy de confianza delante de gunicorn). No pongas `2`: con la app detrás del BFF y llamada directamente a la URL de Render a la vez, un valor más alto deja que quien llame directo se invente la IP y salte el límite de intentos de login |
 | `DATABASE_URL` | Sí | **Sí** | La cadena directa de Neon del paso 1, con `?sslmode=require` |
 | `FRONTEND_URL` | Sí | No | `https://<tu-proyecto>.vercel.app` (sin barra final). Se usa en los enlaces de verificación de email y de recuperar contraseña |
@@ -285,3 +285,69 @@ Dos formas:
 - **`createsuperuser` no aparece o la Shell no responde.** La Shell de Render
   solo está disponible con el servicio despierto: espera al cold start (ver
   arriba) y reintenta.
+
+---
+
+## IP del cliente y throttling (verificado en la documentación de Vercel)
+
+Fuente: <https://vercel.com/docs/headers/request-headers> (revisada el 2026-10-21).
+
+- `x-forwarded-for`: IP pública del cliente. Vercel **sobrescribe** esta cabecera y no reenvía IPs externas, para evitar el spoofing (solo en Enterprise con *Trusted Proxy* se puede conservar una propia).
+- `x-real-ip`: "idéntica" a `x-forwarded-for`.
+- `x-vercel-forwarded-for`: idéntica a `x-forwarded-for`, pero no se sobrescribe si hay un proxy delante de Vercel.
+- Vercel sobrescribe estas cabeceras en su borde; eso es una propiedad de la plataforma, no de nuestro código.
+
+Consecuencias en el código:
+
+- El BFF (`frontend/lib/auth-forward.ts`) toma la IP de `x-real-ip` y, si falta, de `x-vercel-forwarded-for`. **Nunca** del primer salto de `x-forwarded-for`.
+- La reenvía a Django en `X-Bff-Client-Ip` junto con `X-Bff-Secret`; Django solo la acepta si el secreto coincide (comparación con `hmac.compare_digest`).
+- Sin esas cabeceras (llamada directa a la URL de Render) Django usa `NUM_PROXIES=1`, es decir el último salto de `X-Forwarded-For`, el que añade Render; lo que anteponga el cliente no cuenta.
+- Si algún día se pone un proxy/CDN propio delante de Vercel, `x-real-ip` pasa a ser la IP de ese proxy: habría que revisar esta decisión.
+- **Solo es de fiar en Vercel**, que sobrescribe estas cabeceras. En cualquier otro host, incluido `next dev`, el cliente controla `x-real-ip` y `x-vercel-forwarded-for`, y podría elegir su propio cubo de throttle. No despliegues el BFF fuera de Vercel con `BFF_SHARED_SECRET` sin revisar esto antes.
+- En local (`next dev`) además esas cabeceras normalmente no existen, así que no se manda IP y se aplica el throttle estándar.
+
+## Tests y CI
+
+**Un comando:** `make test` desde la raíz (necesita Docker, Python 3.12 y pnpm).
+Levanta un Postgres propio (`fightlab-test-db`, `postgres:15`) en
+`127.0.0.1:54329` con su `DATABASE_URL`, sin tocar el 5432 de nada más ni leer
+el `.env` del repo, y ejecuta `pytest`, `makemigrations --check --dry-run`,
+`check --deploy` (entorno de producción de mentira), eslint, `tsc --noEmit` y
+vitest. No hace falta ningún secreto. Primera vez: `make venv` (crea `.venv`
+con `backend/requirements-dev.txt`). Otros objetivos: `make test-backend`,
+`make test-frontend`, `make test-e2e`, `make db-down`. El puerto se cambia con
+`TEST_DB_PORT=...`.
+
+**Python 3.12** en los tres sitios: `backend/Dockerfile`, `.github/workflows/ci.yml`
+y esta guía. Si se sube de versión, se cambian los tres a la vez.
+
+**pnpm desde la raíz:** `pnpm lint` / `pnpm test` en la raíz del repo fallan con
+`ERR_PNPM_NO_PKG_MANIFEST` porque el `package.json` está en `frontend/`. Usa
+`pnpm --dir frontend lint` (o `cd frontend`); los objetivos del `Makefile` ya lo hacen.
+
+**E2E móvil (Playwright):** `frontend/e2e/`, proyectos a 320, 360 y 390 px. No
+necesita backend: `e2e/fixtures.ts` (`loginAsTestUser`) siembra las cookies
+`fl_refresh`/`fl_access` y `flp_owner_uid` en localStorage, y mockea `/api/proxy/*`.
+Primera vez: `pnpm --dir frontend exec playwright install chromium`. En local
+arranca `next dev` en el 3100; con `CI=1` usa `next start` (hace falta `next build` antes).
+
+**GitHub Actions** (`.github/workflows/ci.yml`, en push a `main`/`staging` y en
+cada PR): job `backend` (Postgres 15 como servicio, `pytest -q`,
+`makemigrations --check --dry-run`, `check --deploy`) y job `frontend` (eslint,
+`tsc`, vitest, `next build`, Playwright). No usa secretos.
+
+**Protección de rama (hacer a mano en GitHub):** Settings → Branches → regla para
+`main` (y `staging`): *Require status checks to pass before merging* con los checks
+`backend` y `frontend`, y *Require branches to be up to date*. Sin esto, el CI
+avisa pero no bloquea el merge.
+
+**Smoke contra Anthropic (opt-in):** `backend/ai/tests/test_smoke_live.py` comprueba
+que `AI_MODEL_CHAT` y `AI_MODEL_VISION` responden. Se salta salvo con
+`RUN_LIVE_SMOKE=1` y clave (esta puede venir del `.env`; la variable explícita
+evita llamadas reales en un `pytest` normal):
+`cd backend && RUN_LIVE_SMOKE=1 ANTHROPIC_API_KEY=sk-... pytest ai/tests/test_smoke_live.py`.
+
+**Límites a tener en cuenta:** `make test` no ejecuta `next build` ni Playwright
+(sí lo hace el CI), así que verde en local no garantiza verde en CI: antes de
+subir, `make test-e2e` y `pnpm --dir frontend build`. Los *warnings* de eslint no
+hacen fallar el CI (solo los errores).

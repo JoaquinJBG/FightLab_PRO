@@ -4,6 +4,8 @@ from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import include, path
 
+from .admin_lockout import lockout_login
+
 
 def health(_request):
     """GET /health, sin autenticación. Lo usa el health check de Render."""
@@ -12,13 +14,16 @@ def health(_request):
 
 urlpatterns = [
     path("health", health, name="health"),
-    path(settings.ADMIN_URL, admin.site.urls),
     path("api/v1/", include("users.urls")),
     path("api/v1/", include("profiles.urls")),
     path("api/v1/", include("ai.urls")),
     path("api/v1/", include("activities.urls")),
     path("api/v1/", include("userstate.urls")),
 ]
+
+if settings.ADMIN_URL:
+    admin.site.login = lockout_login(admin.site.login)
+    urlpatterns.insert(1, path(settings.ADMIN_URL, admin.site.urls))
 
 if settings.DEBUG:
     # Sirve las fotos subidas en desarrollo (en producción lo hará el servidor web)
