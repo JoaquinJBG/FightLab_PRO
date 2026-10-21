@@ -11,6 +11,8 @@ import {
   RunIcon, WalkIcon, BikeIcon, SwimIcon, BallIcon, RopeIcon, PulseIcon, ChevronRight, InfoIcon,
 } from "@/components/icons";
 import { LIVE_KEY, readLiveSession, type LiveSession } from "@/lib/sports";
+import { latestWeightKg } from "@/lib/body-inputs";
+import { WeightPrompt } from "@/components/weight-prompt";
 
 const RPE_INFO =
   "RPE = Esfuerzo Percibido (escala 1-10): cómo de duro ha sido. 1 = muy suave, 10 = máximo esfuerzo (no podías más).";
@@ -114,12 +116,9 @@ function fmtDate(ts: number) {
 
 export default function SportsPage() {
   const { data: logs = [] } = useBiometrics();
-  const latestWeight = (() => {
-    for (const l of logs) { const w = l.weight_kg ? parseFloat(l.weight_kg) : null; if (w && Number.isFinite(w)) return w; }
-    return null;
-  })();
-  const weight = latestWeight ?? 70;
-  const weightNote = "Kcal estimadas según tu peso.";
+  const latestWeight = latestWeightKg(logs);
+  const weight = latestWeight ?? 0;
+  const weightNote = latestWeight != null ? "Kcal estimadas según tu peso." : "Pon tu peso para estimar las kcal.";
 
   const [view, setView] = useState<"deporte" | "actividad">("deporte");
   // Inicialización perezosa: se lee localStorage una sola vez, en el primer
@@ -324,7 +323,7 @@ export default function SportsPage() {
             <p className="t-title text-ink">{sel.name}</p>
             <div className="flex gap-8">
               <div><p className="stat text-3xl text-ink">{fmtClock(elapsed)}</p><p className="t-label text-muted">tiempo</p></div>
-              <div><p className="stat text-3xl neon-text">{Math.round(kcalAcc)}</p><p className="t-label text-muted">kcal</p></div>
+              <div><p className="stat text-3xl neon-text">{latestWeight != null ? Math.round(kcalAcc) : "—"}</p><p className="t-label text-muted">kcal</p></div>
             </div>
           </div>
 
@@ -387,6 +386,7 @@ export default function SportsPage() {
           <h1 className="t-display text-2xl text-ink">{sel.name}</h1>
         </div>
         <p className="t-body mt-2 text-xs text-muted">{weightNote}</p>
+        {latestWeight == null && <WeightPrompt what="las kcal de esta sesión" />}
 
         <div className="glass neon-edge mt-4 flex flex-col items-center gap-2 p-6">
           {phase === "countdown" ? (
@@ -394,7 +394,7 @@ export default function SportsPage() {
           ) : (
             <>
               <span className="stat text-6xl text-ink tabular-nums">{fmtClock(elapsed)}</span>
-              <span className="stat text-2xl neon-text">{Math.round(kcalAcc)} <span className="text-sm text-muted">kcal</span></span>
+              <span className="stat text-2xl neon-text">{latestWeight != null ? Math.round(kcalAcc) : "—"} <span className="text-sm text-muted">kcal</span></span>
             </>
           )}
         </div>
@@ -491,13 +491,14 @@ export default function SportsPage() {
             <PulseIcon className="h-4 w-4 shrink-0 text-neon" />
             <p className="t-body text-xs text-muted">{weightNote}</p>
           </div>
+          {latestWeight == null && <WeightPrompt what="las kcal de cada deporte" />}
           <div className="mt-4 flex flex-col gap-3">
             {SPORTS.map((s, i) => (
               <button key={s.key} onClick={() => openSport(s)} className="glass rise flex items-center gap-4 p-4 text-left" style={{ animationDelay: `${i * 35}ms` }}>
                 <span className="text-neon flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[rgba(69,233,255,0.07)]"><s.Icon className="h-6 w-6" /></span>
                 <span className="min-w-0 flex-1">
                   <span className="t-title block text-lg text-ink">{s.name}</span>
-                  <span className="t-body text-xs text-muted">~{kcalOf(s.met, 1, weight, 30)} kcal / 30 min</span>
+                  {latestWeight != null && <span className="t-body text-xs text-muted">~{kcalOf(s.met, 1, weight, 30)} kcal / 30 min</span>}
                 </span>
                 <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
               </button>

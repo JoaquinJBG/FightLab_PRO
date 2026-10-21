@@ -23,11 +23,11 @@ FightLab Pro es una **PWA** (app web instalable) para atletas de combate y multi
 ### Onboarding (primera vez)
 Wizard de 4 pasos con barra de progreso:
 - **Bienvenida** — qué te da la app.
-- **Paso 1 · Físico (obligatorio)** — fecha de nacimiento (cajas DD/MM/AAAA con auto-avance), altura y sexo (opcional). Cada dato explica para qué se usa.
+- **Paso 1 · Físico (obligatorio)** — fecha de nacimiento (cajas DD/MM/AAAA con auto-avance), altura, **peso** (se guarda como tu primera medida) y sexo (opcional). Tu zona horaria se toma del dispositivo. Cada dato explica para qué se usa.
 - **Paso 2 · Combate (saltable)** — disciplinas que practicas, guardia, experiencia.
-- **Paso 3 · Objetivo (saltable)** — qué buscas, días de entreno/semana, unidades.
+- **Paso 3 · Objetivo (saltable)** — qué buscas (se usa para tu objetivo de nutrición), días de entreno/semana.
 
-Al terminar entras en el **Home**. Todo se puede cambiar después en *Perfil → Editar perfil*.
+Al terminar te propone **registrar tu primer entreno**. Todo se puede cambiar después en *Perfil → Editar perfil*.
 
 ### Sesión
 - La sesión se mantiene sola (tokens seguros en cookies; se renuevan en segundo plano).
@@ -94,12 +94,10 @@ La **intensidad** tiene rangos orientativos: km/h en deportes de ritmo (correr 9
 
 ### 4.2 MMA
 - Elige **arte marcial** (desplegable) y **tipo de trabajo**: Sparring, Drilling, Pads, Saco, Técnica o Acondicionamiento — cada uno con su descripción.
-- **Plan sugerido**, marcado **"Demo · próximamente IA"**, según arte+tipo+duración *(por reglas; pronto lo personalizará la IA con tu historial)* + aviso de protecciones.
 - **↻ Repetir última**: rellena arte, tipo de trabajo, duración y compañero con los de tu última sesión, para apuntar rápido sin volver a elegirlo todo.
 - **Registrar sesión**: duración + RPE + **compañero** y **notas** opcionales (técnicas trabajadas, sensaciones…) → **carga en AU**.
 - **Stats del mes**: sesiones, horas, AU totales y reparto de minutos por arte.
 - **Historial** con tipo, compañero y notas de cada sesión.
-- **Burbuja del coach** (abajo a la derecha), marcada **"Demo · próximamente IA"**: chat que te prepara la sesión, recuerda calentar/estirar/hidratarte.
 
 ### 4.3 Gimnasio
 - **▶ Empezar entreno** (con el foco de hoy precargado del calendario) → **registro en sesión** estilo Hevy:
@@ -111,12 +109,8 @@ La **intensidad** tiene rangos orientativos: km/h en deportes de ritmo (correr 9
   - Al terminar: resumen (duración, series, **kg totales levantados**) + **RPE** → carga en AU → guardar.
 - **Últimos entrenos** en la pestaña calendario. Los entrenos cuentan como "entreno hecho" en el Home.
 - **Calendario**: asigna un foco a cada día de la semana (empuje, tirón, pierna, descanso…). El Home lo lee para tu "próxima acción".
-- **Crear rutina**: marcado **"Próximamente"** — el generador automático se ha desactivado para no fingir un resultado; llegará con la IA real y tu historial.
 
-### 4.4 Mi rutina
-Marcado **"Próximamente"**: aquí verás el plan semanal (gym + MMA) que te asigne tu **entrenador**, con ejercicios por día y marcar como hecho — pendiente del rol de entrenador y su panel.
-
-### 4.5 Herramientas
+### 4.4 Herramientas
 - **Timer de rounds**: presets (Boxeo 3×3, MMA 5×5, Tabata, HIIT) o configura rounds/trabajo/descanso/preparación — tu configuración **se recuerda**. **Campana de boxeo real** (doble al empezar, triple al acabar), **aviso de fin de round configurable** (Off / 10 s / 30 s con "clack" de tablas), cuenta 3-2-1, anillo con color por fase, **vibración**, pantalla siempre encendida y saltar round.
 - **Cronómetro** con vueltas.
 
@@ -142,7 +136,7 @@ como hasta ahora.
 
 ### Diario del día
 - **Kcal de hoy vs objetivo** + barras de **proteína / carbohidratos / grasa**.
-- Los objetivos se **calculan de tu perfil** (peso, altura, edad, sexo — fórmula Mifflin-St Jeor) y del selector **Perder / Mantener / Ganar**.
+- Los objetivos se **calculan de tu perfil** (peso, altura, edad, sexo — fórmula Mifflin-St Jeor) y del selector **Perder / Mantener / Ganar**. Si falta tu peso, altura o edad, no inventamos cifras: te pide el dato (el peso se apunta ahí mismo). Lo mismo con las kcal de Deportes.
 - **Agua 💧**: cuenta tus vasos del día (~250 ml) hacia el objetivo de ~2 L.
 - 4 comidas (desayuno, comida, cena, snack) con su subtotal, botón **+** y **borrado** de cualquier alimento en dos toques (✕ → ¿Borrar?).
 
@@ -166,7 +160,7 @@ Además:
 
 - **Chips de contexto reales**: lo que el coach "ve" de verdad — tu carga (banda personal), tu carga semanal (AU), tu peso, los días al pesaje y tu estado de recuperación.
 - **Briefing de hoy**: generado **por reglas con tus datos** (recuperación baja → suave; carga elevada → frena; pesaje cerca → ojo al déficit…), hablando de "tu rango habitual" en vez de un umbral fijo igual para todo el mundo.
-- **Recomendaciones por reglas**: carga alta/margen, recuperación baja, pesaje, peso sin apuntar… con **Descartar** (vuelven al día siguiente) y **feedback 👍/👎** que se guarda para entrenar a la IA futura.
+- **Recomendaciones por reglas**: carga alta/margen, recuperación baja, pesaje, peso sin apuntar… con **Descartar** (vuelven al día siguiente) y **feedback 👍/👎** que se guarda en tu cuenta (de momento no se usa para ajustar nada).
 - **Memoria del coach**: cuéntale una vez tu lesión actual, tu fase (pretemporada, a X semanas de una pelea…), tu objetivo de peso y qué tono prefieres (más o menos frecuente), y lo tiene en cuenta en el chat y el briefing sin que se lo repitas cada vez. Se guarda en tu cuenta, la puedes editar o vaciar cuando quieras desde la propia pantalla del Coach, y solo se usa para dar mejores respuestas (nunca para nada más).
 - **Chat**: pregúntale "¿cómo voy?", por el entreno, tu carga o tu peso. Con la clave de Anthropic configurada responde **Claude de verdad** usando tu contexto real (carga, recuperación, peso, pesaje, memoria) — etiqueta **"IA real"**, con un límite de mensajes por día para que la IA no se dispare de coste. Si la IA no está disponible o agotaste tu límite del día, cae a respuestas **por reglas con tus números** y lo indica.
 - ⚠️ El coach es orientativo, **no es consejo médico**.
@@ -175,7 +169,7 @@ Además:
 
 ## 7. Perfil
 
-- **Ver**: email, rol y tus datos (nacimiento, sexo, altura, guardia, unidades).
+- **Ver**: email, rol y tus datos (nacimiento, sexo, altura, guardia).
 - **Editar perfil**: mismos campos, con las cajas DD/MM/AAAA para la fecha.
 - **Cerrar sesión** aquí.
 
@@ -201,11 +195,12 @@ Además:
 | Home: próxima acción / semana / objetivo de peso | ✅ | — |
 | Deportes: tracker en vivo + RPE + AU + historial | ✅ | Historial y stats ya se leen del servidor (ActivityLog), con cola offline si no hay conexión |
 | MMA: sesiones pro (tipo, compañero, notas), "Repetir última" + stats del mes + historial | ✅ | Historial y stats ya se leen del servidor (ActivityLog), con cola offline si no hay conexión |
-| MMA: plan sugerido + chat coach | 🎭 Demo | IA real con tu historial |
+| MMA: plan sugerido + chat coach | ⏳ Retirado de la app | IA real con tu historial |
 | Gimnasio: calendario semanal | ✅ | Sincronizado con la cuenta (`localStorage` + copia en servidor) |
 | Gimnasio: registro en sesión (series×reps×kg, valor anterior tipo Hevy, rest timer automático, PRs, volumen) | ✅ | Modelos detallados Exercise/SetLog + gráfica de progresión histórica |
-| Gimnasio: crear rutina con IA | 🎭 Próximamente | Generador honesto (sin fingir resultado) hasta tener IA real con biblioteca de ejercicios |
-| Mi rutina (asignada por coach) | 🎭 Próximamente | Rol entrenador + su panel |
+| Gimnasio: crear rutina con IA | ⏳ Retirado de la app | Volverá con IA real y biblioteca de ejercicios |
+| Mi rutina (asignada por coach) | ⏳ Retirado de la app | Rol entrenador + su panel |
+| Unidades imperiales | ⏳ Oculto | Hasta que exista la conversión |
 | Herramientas: timer de rounds (campana real, aviso configurable, config recordada) + cronómetro | ✅ | — |
 | Carga vs tu rango (banda de carga personal, sustituye al semáforo fijo de ACWR) | ✅ | Calculada en el servidor (misma fórmula, con fallback local sin conexión) · gráfica PMC histórica pendiente |
 | ACWR numérico (sección avanzada, sin semáforo) | ✅ | — |
@@ -238,5 +233,5 @@ Lo que trae esta pasada respecto a la v1 completa:
 - **Memoria del coach**: cuéntale tu lesión, tu fase, tu objetivo de peso y el tono que prefieres, y lo recuerda en el chat y el briefing.
 - **Gimnasio más rápido de registrar**: valor de tu última vez por serie (toca para copiar), estilo Hevy.
 - **MMA con "Repetir última"**: una sesión igual a la anterior, en un toque.
-- **Lo que aún no es real se dice claramente**: el generador de rutina de gimnasio y "Mi rutina" pasan a "Próximamente" en vez de fingir un resultado; el plan sugerido y el chat del coach de MMA quedan marcados como "Demo".
+- **Lo que aún no es real se dice claramente**: se retiran de la app el generador de rutina de gimnasio, "Mi rutina", el plan sugerido y el chat del coach de MMA, y el micrófono del coach, que eran simulados; nutrición y deportes piden tu peso en vez de usar uno inventado.
 - **IA con límites diarios por usuario**, para que nadie agote sin querer el presupuesto de toda la beta.

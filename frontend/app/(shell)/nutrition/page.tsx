@@ -20,17 +20,10 @@ import {
 } from "@/lib/nutrition";
 import { useUserState, jsonSerde } from "@/lib/user-state";
 import { NutritionIcon, ScaleIcon, ChevronRight } from "@/components/icons";
+import { WeightPrompt } from "@/components/weight-prompt";
+import { nutritionInputs, latestWeightKg } from "@/lib/body-inputs";
 
 type Weigh = { target: number; date: string };
-
-function ageFrom(dob: string | null): number {
-  if (!dob) return 30;
-  const d = new Date(dob);
-  const now = new Date();
-  let a = now.getFullYear() - d.getFullYear();
-  if (now.getMonth() < d.getMonth() || (now.getMonth() === d.getMonth() && now.getDate() < d.getDate())) a--;
-  return a > 0 && a < 120 ? a : 30;
-}
 
 function Bar({ label, val, target, color }: { label: string; val: number; target: number; color: string }) {
   const pct = target > 0 ? Math.min(100, (val / target) * 100) : 0;
@@ -120,12 +113,14 @@ export default function NutritionPage() {
     setItems(loadToday());
   }
 
-  const weight = (() => { for (const l of logs) { const w = l.weight_kg ? parseFloat(l.weight_kg) : null; if (w) return w; } return 75; })();
-  const t = targets(weight, profile?.height_cm ?? 175, ageFrom(profile?.date_of_birth ?? null), profile?.gender ?? null, goal);
+  const { inputs, missing } = nutritionInputs(logs, profile);
+  const weight = latestWeightKg(logs);
+  const t = inputs ? targets(inputs.weight, inputs.height, inputs.age, profile?.gender ?? null, goal) : null;
+  const missingProfile = missing.filter((m) => m !== "peso");
 
   const sum = items.reduce((a, i) => ({ kcal: a.kcal + i.kcal, p: a.p + i.p, c: a.c + i.c, f: a.f + i.f }), { kcal: 0, p: 0, c: 0, f: 0 });
-  const remaining = t.kcal - sum.kcal;
-  const kcalPct = t.kcal > 0 ? Math.min(100, (sum.kcal / t.kcal) * 100) : 0;
+  const remaining = t ? t.kcal - sum.kcal : null;
+  const kcalPct = t && t.kcal > 0 ? Math.min(100, (sum.kcal / t.kcal) * 100) : 0;
 
   function changeGoal(g: Goal) { setGoal(g); saveGoal(g); }
 
@@ -141,22 +136,35 @@ export default function NutritionPage() {
         <div className="flex items-end justify-between">
           <div>
             <p className="t-eyebrow text-muted">Hoy</p>
-            <p className="stat mt-1 text-4xl text-ink">{sum.kcal}<span className="text-base text-muted"> / {t.kcal} kcal</span></p>
+            <p className="stat mt-1 text-4xl text-ink">{sum.kcal}<span className="text-base text-muted"> {t ? `/ ${t.kcal} ` : ""}kcal</span></p>
           </div>
-          <div className="text-right">
-            <p className={`stat text-2xl ${remaining < 0 ? "text-bad" : "neon-text"}`}>{remaining}</p>
-            <p className="t-label text-muted">restantes</p>
-          </div>
+          {remaining != null && (
+            <div className="text-right">
+              <p className={`stat text-2xl ${remaining < 0 ? "text-bad" : "neon-text"}`}>{remaining}</p>
+              <p className="t-label text-muted">restantes</p>
+            </div>
+          )}
         </div>
         <div className="mt-3 h-2.5 rounded-full bg-[rgba(150,190,255,0.12)]">
           <div className="h-2.5 rounded-full" style={{ width: `${kcalPct}%`, background: "linear-gradient(90deg,#45e9ff,#3b74ff)" }} />
         </div>
-        <div className="mt-4 grid grid-cols-3 gap-3">
-          <Bar label="Proteína" val={sum.p} target={t.p} color="#45e9ff" />
-          <Bar label="Carbos" val={sum.c} target={t.c} color="#7b5cff" />
-          <Bar label="Grasa" val={sum.f} target={t.f} color="#ffd25a" />
-        </div>
+        {t ? (
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            <Bar label="Proteína" val={sum.p} target={t.p} color="#45e9ff" />
+            <Bar label="Carbos" val={sum.c} target={t.c} color="#7b5cff" />
+            <Bar label="Grasa" val={sum.f} target={t.f} color="#ffd25a" />
+          </div>
+        ) : (
+          <p className="t-body mt-3 text-xs text-muted">Sin tus datos no calculamos objetivos: lo que registres sí se suma.</p>
+        )}
       </section>
+
+      {weight == null && <WeightPrompt what="tus objetivos de calorías y macros" />}
+      {missingProfile.length > 0 && (
+        <p className="t-body mt-3 text-xs text-muted">
+          Falta tu {missingProfile.join(" y ")}. <Link href="/profile/edit" className="text-neon underline">Añádelo en tu perfil</Link>.
+        </p>
+      )}
 
       {/* Objetivo */}
       <div className="glass mt-4 grid grid-cols-3 gap-1 rounded-2xl p-1">
@@ -167,7 +175,7 @@ export default function NutritionPage() {
           </button>
         ))}
       </div>
-      <p className="t-body mt-2 text-xs text-muted">Objetivos calculados de tu perfil (peso, altura, edad). Edítalos a futuro.</p>
+      <p className="t-body mt-2 text-xs text-muted">Objetivos calculados de tu perfil (peso, altura, edad).</p>
 
       {/* Agua del día */}
       <div className="glass mt-4 flex items-center justify-between p-4">
@@ -228,7 +236,7 @@ export default function NutritionPage() {
         <div className="flex-1">
           <p className="t-label text-ink">Pesaje</p>
           <p className="t-body text-xs text-muted">
-            {weigh ? `Objetivo ${weigh.target} kg · ${weight} kg ahora` : "Configura tu peso objetivo y fecha"}
+            {weigh ? `Objetivo ${weigh.target} kg${weight != null ? ` · ${weight} kg ahora` : ""}` : "Configura tu peso objetivo y fecha"}
           </p>
         </div>
         <ChevronRight className="h-5 w-5 text-muted" />

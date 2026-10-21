@@ -6,7 +6,6 @@ import {
   RunIcon,
   GloveIcon,
   TrainingIcon,
-  ClipboardIcon,
   TimerIcon,
   ChevronRight,
   BoltIcon,
@@ -16,9 +15,8 @@ import { fetchServerMetrics } from "@/lib/activities";
 
 const cards = [
   { href: "/training/sports", Icon: RunIcon, title: "Deportes", sub: "Corre, nada, pedalea… y cuenta kcal" },
-  { href: "/training/mma", Icon: GloveIcon, title: "Entrenamiento MMA", sub: "Sparring, técnica, intensidad · coach IA" },
-  { href: "/training/gym", Icon: TrainingIcon, title: "Gimnasio", sub: "Registro en sesión + calendario + rutina IA" },
-  { href: "/training/my-routine", Icon: ClipboardIcon, title: "Mi rutina", sub: "La que te asigna tu coach" },
+  { href: "/training/mma", Icon: GloveIcon, title: "Entrenamiento MMA", sub: "Sparring, técnica e intensidad" },
+  { href: "/training/gym", Icon: TrainingIcon, title: "Gimnasio", sub: "Registro en sesión y calendario semanal" },
   { href: "/training/tools", Icon: TimerIcon, title: "Herramientas", sub: "Cronómetro y timer de rounds" },
 ];
 

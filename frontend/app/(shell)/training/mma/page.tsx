@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { GloveIcon, InfoIcon, CoachIcon } from "@/components/icons";
+import { GloveIcon, InfoIcon } from "@/components/icons";
 import {
   deleteServerActivities, enqueueActivity, fetchServerActivities, pendingQueueItems, mergeByClientId,
   type ServerActivity, type SyncItem,
@@ -13,7 +13,6 @@ const RPE_INFO =
 
 const ARTS = ["Boxeo", "Kickboxing", "Muay Thai", "BJJ", "Lucha", "Taekwondo", "Karate", "MMA"] as const;
 type Art = (typeof ARTS)[number];
-const GRAPPLING: Art[] = ["BJJ", "Lucha"];
 
 // Tipo de trabajo: lo que registran los cuadernos de entrenamiento de combate
 const WORK_TYPES = ["Sparring", "Drilling", "Pads", "Saco", "Técnica", "Acondicionamiento"] as const;
@@ -27,41 +26,6 @@ const TYPE_HINT: Record<WorkType, string> = {
   Técnica: "Sombra y forma sin oposición. RPE bajo — precisión.",
   Acondicionamiento: "HIIT/fuerza específica de combate. RPE alto.",
 };
-
-function planFor(art: Art, type: WorkType, minutes: number): string {
-  const grap = GRAPPLING.includes(art);
-  switch (type) {
-    case "Sparring":
-      return `${art} · sparring ${minutes}': divide en rounds (p. ej. ${Math.max(3, Math.round(minutes / 6))}×3' con 1' de descanso), empieza al 60% y sube. Cierra con 5' suaves.`;
-    case "Drilling":
-      return `${art} · drilling ${minutes}': elige 1-2 ${grap ? "posiciones o transiciones" : "combinaciones"} y repítelas limpias por rondas, cambiando con tu compañero.`;
-    case "Pads":
-      return `${art} · pads ${minutes}': rounds de manoplas con combinaciones marcadas; busca técnica primero y ritmo después.`;
-    case "Saco":
-      return `${art} · saco ${minutes}': alterna rounds de técnica (precisión) con rounds de potencia o ritmo. Usa el timer de rounds de Herramientas.`;
-    case "Técnica":
-      return `${art} · técnica ${minutes}': sombra frente a espejo trabajando guardia, footwork y 2-3 movimientos concretos. Sin prisa.`;
-    case "Acondicionamiento":
-      return `${art} · acondicionamiento ${minutes}': intervalos específicos (cuerda, burpees, clinch, sprawls). Mantén la forma aunque llegue la fatiga.`;
-  }
-}
-function reminderFor(art: Art): string {
-  if (GRAPPLING.includes(art)) return "Uñas cortas, higiene del kimono/rashguard y cuida codos y rodillas.";
-  return `Lleva ${art === "Muay Thai" || art === "Kickboxing" ? "vendas, espinilleras y bucal" : "vendas y bucal"}; protege las muñecas.`;
-}
-function coachReply(text: string, art: Art, type: WorkType, minutes: number): string {
-  const low = text.toLowerCase();
-  const mins = low.match(/(\d{1,3})\s*min/);
-  if (/estir|stretch/.test(low)) return "Cierra con 5-8 min de estiramientos suaves (cadera, isquios, hombros, cuello), 20-30 s cada uno, sin rebotes.";
-  if (/calent|warm|caliento/.test(low)) return "Calienta 8-10 min: movilidad, cuerda o trote suave y series progresivas de la técnica del día. No entres en frío al sparring.";
-  if (/hidrat|agua|beb/.test(low)) return "Bebe a sorbos toda la sesión; en intensidad alta añade electrolitos. Llega ya hidratado.";
-  if (mins) return `${planFor(art, type, Number(mins[1]))} ${reminderFor(art)}`;
-  if (/qué|que|plan|rutina|hoy|empez|hago/.test(low)) return `${planFor(art, type, minutes)} ${reminderFor(art)}`;
-  return `Entendido. ${planFor(art, type, minutes)} ${reminderFor(art)}`;
-}
-
-type Msg = { role: "coach" | "user"; text: string };
-const QUICK = ["¿Qué hago hoy?", "Tengo 30 min", "Recuérdame estirar"];
 
 type Sess = {
   id: string;
@@ -232,29 +196,6 @@ export default function MmaPage() {
   const topArts = Object.entries(byArt).sort((a, b) => b[1] - a[1]).slice(0, 3);
   const maxArtMin = topArts[0]?.[1] ?? 0;
 
-  // chat
-  const [chatOpen, setChatOpen] = useState(false);
-  const [msgs, setMsgs] = useState<Msg[]>([{ role: "coach", text: "¡Listo para entrenar! Dime qué quieres hacer (o usa el micro) y te preparo la sesión." }]);
-  const [input, setInput] = useState("");
-  const [typing, setTyping] = useState(false);
-  const [listening, setListening] = useState(false);
-  const endRef = useRef<HTMLDivElement>(null);
-  useEffect(() => { if (chatOpen) endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, typing, chatOpen]);
-
-  function send(text: string) {
-    const t = text.trim();
-    if (!t) return;
-    setInput("");
-    setMsgs((m) => [...m, { role: "user", text: t }]);
-    setTyping(true);
-    const reply = coachReply(t, art, workType, minutes);
-    setTimeout(() => { setMsgs((m) => [...m, { role: "coach", text: reply }]); setTyping(false); }, 650);
-  }
-  function mockVoice() {
-    setListening(true);
-    setTimeout(() => { setListening(false); send(`Hoy quiero hacer ${workType.toLowerCase()} de ${art.toLowerCase()}, unos ${minutes} min`); }, 1300);
-  }
-
   return (
     <div className="pt-4">
       <Link href="/training" className="t-label text-muted">← Entreno</Link>
@@ -287,19 +228,6 @@ export default function MmaPage() {
           <button type="button" onClick={() => setRpeInfo((v) => !v)} aria-label="Qué es RPE" className={`shrink-0 ${rpeInfo ? "text-neon" : "text-muted hover:text-neon"}`}><InfoIcon className="h-3.5 w-3.5" /></button>
         </div>
         {rpeInfo && <p className="t-body mt-2 rounded-xl border border-[rgba(150,190,255,0.12)] bg-[rgba(255,255,255,0.04)] p-2.5 text-xs text-[#cdd9ef]">{RPE_INFO}</p>}
-      </div>
-
-      {/* Plan sugerido */}
-      <div className="glass neon-edge mt-4 p-4">
-        <div className="flex items-center gap-2">
-          <p className="t-eyebrow text-neon">Plan sugerido</p>
-          <span className="badge">Demo · próximamente IA</span>
-        </div>
-        <p className="t-body mt-1.5 text-ink">{planFor(art, workType, minutes)}</p>
-        <p className="t-body mt-2 text-xs text-muted">⚠️ {reminderFor(art)}</p>
-        <p className="t-body mt-3 border-t border-[rgba(150,190,255,0.1)] pt-2.5 text-[11px] text-muted">
-          Ahora se basa solo en el arte y el tipo. Pronto: <span className="text-neon">personalizada por IA</span> según tu historial y tu carga.
-        </p>
       </div>
 
       {/* Registrar sesión */}
@@ -397,50 +325,6 @@ export default function MmaPage() {
         </div>
       )}
 
-      {/* Burbuja coach IA */}
-      <button onClick={() => setChatOpen(true)} aria-label="Abrir chat del coach"
-        className="btn-neon fixed bottom-28 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full"
-        style={{ borderRadius: "9999px" }}>
-        <CoachIcon className="h-7 w-7" />
-      </button>
-
-      {/* Overlay chat */}
-      {chatOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end" style={{ background: "rgba(2,4,10,0.55)" }} onClick={() => setChatOpen(false)}>
-          <div className="glass mx-auto flex h-[78dvh] w-full max-w-md flex-col rounded-t-3xl p-3 safe-bottom" onClick={(e) => e.stopPropagation()}>
-            <div className="mb-2 flex items-center justify-between px-1">
-              <div className="flex items-center gap-2">
-                <span className="text-neon"><CoachIcon className="h-5 w-5" /></span>
-                <p className="t-title text-ink">Coach IA</p>
-                <span className="badge badge-neon">Demo · próximamente IA</span>
-              </div>
-              <button onClick={() => setChatOpen(false)} className="t-label text-muted">Cerrar ✕</button>
-            </div>
-
-            <div className="flex-1 space-y-3 overflow-y-auto pr-1">
-              {msgs.map((m, i) => (
-                <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm ${m.role === "user" ? "text-[#03101c]" : "text-ink"}`}
-                    style={m.role === "user" ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)" } : { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(150,190,255,0.14)" }}>
-                    {m.text}
-                  </div>
-                </div>
-              ))}
-              {typing && <div className="flex justify-start"><div className="rounded-2xl border border-[rgba(150,190,255,0.14)] bg-[rgba(255,255,255,0.06)] px-3.5 py-2.5"><span className="pulse text-sm text-muted">El coach está escribiendo…</span></div></div>}
-              <div ref={endRef} />
-            </div>
-
-            <div className="mt-2 flex flex-wrap gap-2">
-              {QUICK.map((q) => <button key={q} onClick={() => send(q)} className="badge">{q}</button>)}
-            </div>
-            <form className="mt-2 flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); send(input); }}>
-              <button type="button" onClick={mockVoice} aria-label="Hablar" className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${listening ? "btn-primary pulse" : "btn-tonal"}`}>🎤</button>
-              <input value={input} onChange={(e) => setInput(e.target.value)} placeholder={listening ? "Escuchando…" : "Escribe o pulsa el micro…"} className="field flex-1 px-3.5 py-2.5 text-sm" />
-              <button type="submit" className="btn btn-primary btn-sm shrink-0">Enviar</button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
