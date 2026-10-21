@@ -45,9 +45,22 @@ export function clearDeviceState(currentUid: string | null): void {
   } catch { /* noop */ }
 }
 
+/** Error de una petición al BFF con su status HTTP. El mensaje sigue siendo el
+ *  status (o el `detail` del servidor) como antes. */
+export class ApiError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+export function isUnauthorized(err: unknown): boolean {
+  return err instanceof ApiError && err.status === 401;
+}
+
 async function getJson(path: string) {
   const res = await fetch(path, { credentials: "include" });
-  if (!res.ok) throw new Error(String(res.status));
+  if (!res.ok) throw new ApiError(String(res.status), res.status);
   return res.json();
 }
 
@@ -60,7 +73,7 @@ async function sendJson(path: string, method: string, body?: unknown) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(typeof data?.detail === "string" ? data.detail : String(res.status));
+    throw new ApiError(typeof data?.detail === "string" ? data.detail : String(res.status), res.status);
   }
   return data;
 }
@@ -186,17 +199,73 @@ export function useUpdateProfile() {
 // react-testing-library en este proyecto): son las mismas funciones que usa
 // el `useMutation` de abajo, expuestas solo para el test.
 
+const LOGOUT_TIMEOUT_MS = 10_000;
+const LOGOUT_FLUSH_BUDGET_MS = 4_000;
+
+/** Pide al BFF que cierre sesión (borra las cookies httpOnly). Mejor esfuerzo:
+ *  el BFF responde 200 aunque Django falle, y aquí un fallo de red o un
+ *  timeout solo se registra. */
+async function requestLogout(): Promise<void> {
+  try {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+      signal: AbortSignal.timeout(LOGOUT_TIMEOUT_MS),
+    });
+  } catch (err) {
+    console.error("logout request failed", err);
+  }
+}
+
 /** Mejor esfuerzo: intenta subir lo pendiente de ESTA cuenta (entrenos y
  *  user-state) antes de cerrar sesión y borrar el dispositivo. Si falla (sin
  *  red, servidor dormido), se sigue con el logout igualmente: es una copia de
- *  seguridad, no un requisito para poder salir. Devuelve el uid capturado
- *  ANTES de que nada lo borre. */
-export async function performLogout(): Promise<string | null> {
+ *  seguridad, no un requisito para poder salir. NUNCA rechaza: el llamador
+ *  (`profile/page.tsx`) espera `mutateAsync()` y luego navega a /login.
+ *  Devuelve el uid capturado ANTES de que nada lo borre. */
+export async function performLogout(flushBudgetMs: number = LOGOUT_FLUSH_BUDGET_MS): Promise<string | null> {
   const uid = cachedActivityUid();
-  await flushActivities().catch(() => false);
-  await flushUserState().catch(() => undefined);
-  await sendJson("/api/auth/logout", "POST");
+  const flush = Promise.allSettled([flushActivities(), flushUserState()]);
+  // Si el backend se cuelga, el logout no espera: lo pendiente queda en las colas persistidas.
+  await Promise.race([flush, new Promise<void>((resolve) => setTimeout(resolve, flushBudgetMs))]);
+  await requestLogout();
   return uid;
+}
+
+let sessionExpiredHandled = false;
+
+/** Un 401 que llega hasta aquí ya pasó por el refresh del BFF: la sesión está
+ *  caída. Una sola vez por carga de página (varias queries fallan a la vez):
+ *  borra las cookies y va a /login?reason=expired con una carga completa. NO
+ *  borra los datos locales (borrador del entreno en curso, colas): el dueño
+ *  puede volver a entrar; si entra otra cuenta, `claimDeviceOwner` los purga. */
+export async function handleSessionExpired(
+  qc: { clear: () => void },
+  navigate: (url: string) => void = (url) => window.location.assign(url),
+): Promise<void> {
+  if (typeof window === "undefined" || sessionExpiredHandled) return;
+  if (window.location.pathname.startsWith("/login")) return;
+  sessionExpiredHandled = true;
+  await requestLogout();
+  qc.clear();
+  resetUserStateQueue();
+  resetActivityUid();
+  navigate("/login?reason=expired");
+}
+
+/** Handler de errores de React Query: solo un 401 definitivo cierra la sesión
+ *  (un 503/5xx transitorio del BFF no debe desloguear ni borrar nada). */
+export function handleQueryError(
+  qc: { clear: () => void },
+  err: unknown,
+  navigate?: (url: string) => void,
+): void {
+  if (isUnauthorized(err)) void handleSessionExpired(qc, navigate);
+}
+
+/** Solo para tests. */
+export function resetSessionExpiredGuard(): void {
+  sessionExpiredHandled = false;
 }
 
 /** Limpieza del dispositivo tras un logout con éxito. ANTES de
@@ -213,7 +282,7 @@ export function finishLogout(qc: { clear: () => void }, uid: string | null): voi
 export function useLogout() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: performLogout,
+    mutationFn: () => performLogout(),
     onSuccess: (uid) => finishLogout(qc, uid),
   });
 }

@@ -1,6 +1,6 @@
 import { test as base, expect, type Page } from "@playwright/test";
 
-export const TEST_UID = "e2e-user";
+export const TEST_UID = "1"; // = ME.id: claimDeviceOwner purga si el dueño no coincide
 
 const PROFILE = {
   date_of_birth: "1995-04-02",
