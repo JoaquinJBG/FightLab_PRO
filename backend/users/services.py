@@ -71,10 +71,7 @@ def _send_verification_email(user) -> None:
 
 
 def _send_account_exists_email(user) -> None:
-    """Aviso al dueño de una cuenta verificada que alguien intentó registrar.
-
-    Nunca deja escapar una excepción (igual que _send_verification_email).
-    """
+    """Aviso al dueño de una cuenta verificada que alguien intentó registrar."""
     link = f"{settings.FRONTEND_URL}/login"
     try:
         send_mail(
@@ -125,8 +122,7 @@ def user_create(*, email: str, password: str):
     existing = User.objects.filter(email=email).first()
     if existing is not None:
         if existing.is_email_verified:
-            # Misma respuesta que un alta nueva (sin enumerar): al dueño de
-            # la cuenta le llega un aviso por email en vez de un error.
+            # Aviso por email en vez de error, para no enumerar cuentas.
             transaction.on_commit(functools.partial(_send_account_exists_email, existing))
         else:
             transaction.on_commit(functools.partial(_send_verification_email, existing))

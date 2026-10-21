@@ -4,8 +4,7 @@ import { DJANGO_ORIGIN, assertDjangoConfigured } from "@/lib/api";
 // tardar ~50 s en volver a responder. Este endpoint solo sirve para
 // despertarlo: no lleva autenticación ni pasa por el proxy genérico, porque
 // /health vive en la raíz del origen de Django, no bajo /api/v1.
-// El timeout es corto a propósito: es una sonda, el cliente la reintenta, y
-// esperar 55 s mantendría ocupada una función por cada llamada en bucle.
+// Timeout corto: el cliente reintenta la sonda, y esperar más ocuparía una función por intento.
 export const maxDuration = 15;
 
 const TIMEOUT_MS = 10_000;
