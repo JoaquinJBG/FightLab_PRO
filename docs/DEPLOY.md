@@ -285,3 +285,51 @@ Dos formas:
 - **`createsuperuser` no aparece o la Shell no responde.** La Shell de Render
   solo está disponible con el servicio despierto: espera al cold start (ver
   arriba) y reintenta.
+
+---
+
+## Tests y CI
+
+**Un comando:** `make test` desde la raíz (necesita Docker, Python 3.12 y pnpm).
+Levanta un Postgres propio (`fightlab-test-db`, `postgres:15`) en
+`127.0.0.1:54329` con su `DATABASE_URL`, sin tocar el 5432 de nada más ni leer
+el `.env` del repo, y ejecuta `pytest`, `makemigrations --check --dry-run`,
+`check --deploy` (entorno de producción de mentira), eslint, `tsc --noEmit` y
+vitest. No hace falta ningún secreto. Primera vez: `make venv` (crea `.venv`
+con `backend/requirements-dev.txt`). Otros objetivos: `make test-backend`,
+`make test-frontend`, `make test-e2e`, `make db-down`. El puerto se cambia con
+`TEST_DB_PORT=...`.
+
+**Python 3.12** en los tres sitios: `backend/Dockerfile`, `.github/workflows/ci.yml`
+y esta guía. Si se sube de versión, se cambian los tres a la vez.
+
+**pnpm desde la raíz:** `pnpm lint` / `pnpm test` en la raíz del repo fallan con
+`ERR_PNPM_NO_PKG_MANIFEST` porque el `package.json` está en `frontend/`. Usa
+`pnpm --dir frontend lint` (o `cd frontend`); los objetivos del `Makefile` ya lo hacen.
+
+**E2E móvil (Playwright):** `frontend/e2e/`, proyectos a 320, 360 y 390 px. No
+necesita backend: `e2e/fixtures.ts` (`loginAsTestUser`) siembra las cookies
+`fl_refresh`/`fl_access` y `flp_owner_uid` en localStorage, y mockea `/api/proxy/*`.
+Primera vez: `pnpm --dir frontend exec playwright install chromium`. En local
+arranca `next dev` en el 3100; con `CI=1` usa `next start` (hace falta `next build` antes).
+
+**GitHub Actions** (`.github/workflows/ci.yml`, en push a `main`/`staging` y en
+cada PR): job `backend` (Postgres 15 como servicio, `pytest -q`,
+`makemigrations --check --dry-run`, `check --deploy`) y job `frontend` (eslint,
+`tsc`, vitest, `next build`, Playwright). No usa secretos.
+
+**Protección de rama (hacer a mano en GitHub):** Settings → Branches → regla para
+`main` (y `staging`): *Require status checks to pass before merging* con los checks
+`backend` y `frontend`, y *Require branches to be up to date*. Sin esto, el CI
+avisa pero no bloquea el merge.
+
+**Smoke contra Anthropic (opt-in):** `backend/ai/tests/test_smoke_live.py` comprueba
+que `AI_MODEL_CHAT` y `AI_MODEL_VISION` responden. Se salta salvo con
+`RUN_LIVE_SMOKE=1` y clave (esta puede venir del `.env`; la variable explícita
+evita llamadas reales en un `pytest` normal):
+`cd backend && RUN_LIVE_SMOKE=1 ANTHROPIC_API_KEY=sk-... pytest ai/tests/test_smoke_live.py`.
+
+**Límites a tener en cuenta:** `make test` no ejecuta `next build` ni Playwright
+(sí lo hace el CI), así que verde en local no garantiza verde en CI: antes de
+subir, `make test-e2e` y `pnpm --dir frontend build`. Los *warnings* de eslint no
+hacen fallar el CI (solo los errores).

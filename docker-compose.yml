@@ -9,6 +9,7 @@ services:
       # 5434 en el host por defecto: 5432 lo ocupa caes_api_postgres y 5433
       # lo ocupa miot-postgres en esta máquina. Configurable con FL_PG_PORT
       # si en otra máquina también está libre otro puerto.
+      # (`make test` NO usa este servicio: levanta su propio Postgres en el 54329.)
       - "${FL_PG_PORT:-5434}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
