@@ -12,6 +12,11 @@ import {
   exerciseStats,
   previousSet,
   formatSetPreview,
+  DEFAULT_RPE,
+  savedExercises,
+  sessionTotals,
+  incompleteSets,
+  buildActivityDetail,
   pushGymSession,
   loadGymSessions,
   gymSessionFromServer,
@@ -63,8 +68,11 @@ function SessionInner() {
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [now, setNow] = useState(0);
   const [phase, setPhase] = useState<"live" | "summary">("live");
-  const [rpe, setRpe] = useState<number | null>(null);
+  const [rpe, setRpe] = useState<number | null>(DEFAULT_RPE);
   const [rpeInfo, setRpeInfo] = useState(false);
+  const [confirm, setConfirm] = useState<"finish" | "discard" | null>(null);
+  const [undo, setUndo] = useState<{ ex: ExerciseEntry; index: number } | null>(null);
+  const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // descanso entre series
   const [restDur, setRestDur] = useState(90);
@@ -221,8 +229,21 @@ function SessionInner() {
     );
   }
   function removeExercise(ei: number) {
+    const ex = exercises[ei];
+    if (!ex) return;
     setExercises((xs) => xs.filter((_, i) => i !== ei));
+    setUndo({ ex, index: ei });
+    if (undoTimer.current) clearTimeout(undoTimer.current);
+    undoTimer.current = setTimeout(() => setUndo(null), 8000);
   }
+  function undoRemove() {
+    if (!undo) return;
+    const { ex, index } = undo;
+    setExercises((xs) => (xs.some((x) => x.name === ex.name) ? xs : [...xs.slice(0, index), ex, ...xs.slice(index)]));
+    setUndo(null);
+    if (undoTimer.current) clearTimeout(undoTimer.current);
+  }
+  useEffect(() => () => { if (undoTimer.current) clearTimeout(undoTimer.current); }, []);
   function addExercise(name: string) {
     setExercises((xs) =>
       xs.some((x) => x.name === name) ? xs : [...xs, { name, sets: [{ kg: "", reps: "", done: false }] }],
@@ -232,16 +253,15 @@ function SessionInner() {
   }
 
   /* ---------- terminar y guardar ---------- */
-  const parsedExercises = exercises
-    .map((x) => ({
-      name: x.name,
-      sets: x.sets
-        .map((s) => ({ kg: parseFloat(s.kg.replace(",", ".")), reps: parseInt(s.reps, 10) }))
-        .filter((s) => Number.isFinite(s.kg) && Number.isFinite(s.reps) && s.reps > 0),
-    }))
-    .filter((x) => x.sets.length > 0);
-  const totalSets = parsedExercises.reduce((a, x) => a + x.sets.length, 0);
-  const volume = Math.round(parsedExercises.reduce((a, x) => a + x.sets.reduce((b, s) => b + s.kg * s.reps, 0), 0));
+  const parsedExercises = savedExercises(exercises);
+  const { totalSets, volume } = sessionTotals(parsedExercises);
+  const incomplete = incompleteSets(exercises);
+  const breakdownFits = buildActivityDetail(focus, volume, parsedExercises).breakdown;
+
+  function finish() {
+    if (incomplete.tickedEmpty + incomplete.unticked > 0) setConfirm("finish");
+    else setPhase("summary");
+  }
 
   function save() {
     // Se ejecuta al pulsar "Guardar" (evento de usuario), no durante el render.
@@ -262,11 +282,7 @@ function SessionInner() {
       volume,
       exercises: parsedExercises,
     });
-    let detail: Record<string, unknown> = { focus, volume_kg: volume, exercises: parsedExercises };
-    try {
-      // tope del backend: si el desglose no cabe, se queda el resumen
-      if (JSON.stringify(detail).length > 8000) detail = { focus, volume_kg: volume };
-    } catch { detail = { focus }; }
+    const { detail } = buildActivityDetail(focus, volume, parsedExercises);
     enqueueActivity({
       client_id: clientId,
       kind: "GYM",
@@ -316,15 +332,15 @@ function SessionInner() {
           <div className="flex items-center gap-1.5">
             <p className="t-label text-ink">Esfuerzo de la sesión (RPE)</p>
             <button type="button" onClick={() => setRpeInfo((v) => !v)} aria-label="Qué es RPE"
-              className={rpeInfo ? "text-neon" : "text-muted hover:text-neon"}>
+              className={`flex h-11 w-11 items-center justify-center ${rpeInfo ? "text-neon" : "text-muted hover:text-neon"}`}>
               <InfoIcon className="h-3.5 w-3.5" />
             </button>
           </div>
           {rpeInfo && <p className="t-body mt-2 rounded-xl border border-[rgba(150,190,255,0.12)] bg-[rgba(255,255,255,0.04)] p-2.5 text-xs text-[#cdd9ef]">{RPE_INFO}</p>}
           <div className="mt-3 grid grid-cols-5 gap-1.5">
             {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-              <button key={n} type="button" onClick={() => setRpe(rpe === n ? null : n)}
-                className="rounded-xl py-2 text-sm font-medium transition-colors"
+              <button key={n} type="button" onClick={() => setRpe(n)} aria-pressed={rpe === n}
+                className="min-h-11 rounded-xl py-2 text-sm font-medium transition-colors"
                 style={rpe === n
                   ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)", color: "#03101c" }
                   : { background: "rgba(255,255,255,0.05)", color: "var(--color-muted)" }}>
@@ -340,11 +356,20 @@ function SessionInner() {
         </div>
 
         <div className="mt-4 flex gap-3">
-          <button onClick={() => setPhase("live")} className="btn btn-outline flex-1">Volver</button>
-          <button onClick={save} disabled={totalSets === 0} className="btn btn-primary flex-1 disabled:opacity-60">Guardar</button>
+          <button onClick={() => setPhase("live")} className="btn btn-outline min-h-11 flex-1">Volver</button>
+          <button onClick={save} disabled={totalSets === 0} className="btn btn-primary flex-1 min-h-11 disabled:opacity-60">Guardar</button>
         </div>
-        {totalSets === 0 && <p className="t-body mt-2 text-center text-[11px] text-muted">Completa al menos una serie con kg y reps para guardar.</p>}
-        <button onClick={discard} className="t-label mt-3 w-full text-center text-muted">Descartar entreno</button>
+        {totalSets === 0 && <p className="t-body mt-2 text-center text-[11px] text-muted">Marca ✓ al menos una serie con reps para guardar.</p>}
+        {totalSets > 0 && !breakdownFits && (
+          <p role="status" className="t-body mt-2 rounded-xl border border-[rgba(255,180,80,0.3)] p-2.5 text-center text-[11px] text-[#ffd08a]">
+            Desglose solo en este dispositivo: la sesión es demasiado grande para sincronizar el detalle por ejercicio.
+          </p>
+        )}
+        {confirm === "discard" ? (
+          <ConfirmBar text="¿Descartar el entreno? Se perderán todas las series." confirmLabel="Descartar" onConfirm={discard} onCancel={() => setConfirm(null)} />
+        ) : (
+          <button onClick={() => setConfirm("discard")} className="t-label mt-3 min-h-11 w-full text-center text-muted">Descartar entreno</button>
+        )}
       </div>
     );
   }
@@ -353,7 +378,7 @@ function SessionInner() {
   return (
     <div className="pt-4 pb-24">
       <div className="flex items-center justify-between">
-        <Link href="/training/gym" className="t-label text-muted">← Gimnasio</Link>
+        <Link href="/training/gym" className="t-label inline-flex min-h-11 items-center text-muted">← Gimnasio</Link>
         <span className="stat text-lg text-neon tabular-nums">{fmtClock(elapsed)}</span>
       </div>
       <div className="mt-1 flex items-center gap-2">
@@ -366,7 +391,7 @@ function SessionInner() {
         <span className="t-label text-muted">Descanso entre series</span>
         <div className="flex gap-1.5">
           {REST_OPTS.map((v) => (
-            <button key={v} type="button" onClick={() => changeRest(v)} className={`badge ${restDur === v ? "badge-neon" : ""}`}>
+            <button key={v} type="button" onClick={() => changeRest(v)} className={`badge min-h-11 min-w-11 justify-center ${restDur === v ? "badge-neon" : ""}`}>
               {v}s
             </button>
           ))}
@@ -387,10 +412,10 @@ function SessionInner() {
                     {stats.prKg !== null ? ` · PR ${stats.prKg} kg` : ""}
                   </p>
                 </div>
-                <button onClick={() => removeExercise(ei)} aria-label="Quitar ejercicio" className="t-label shrink-0 px-1 text-muted hover:text-bad">✕</button>
+                <button onClick={() => removeExercise(ei)} aria-label={`Quitar ${x.name}`} className="t-label flex h-11 w-11 shrink-0 items-center justify-center text-muted hover:text-bad">✕</button>
               </div>
 
-              <div className="mt-3 grid grid-cols-[2rem_1fr_1fr_2.5rem] items-center gap-2 px-1">
+              <div className="mt-3 grid grid-cols-[1.25rem_minmax(0,1fr)_minmax(0,1fr)_2.75rem] items-center gap-2">
                 <span className="t-label text-muted">#</span>
                 <span className="t-label text-muted">kg</span>
                 <span className="t-label text-muted">reps</span>
@@ -406,7 +431,7 @@ function SessionInner() {
                   );
                 })}
               </div>
-              <button onClick={() => addSet(ei)} className="btn btn-tonal btn-sm mt-3 w-full">+ Serie</button>
+              <button onClick={() => addSet(ei)} className="btn btn-tonal btn-sm mt-3 min-h-11 w-full">+ Serie</button>
             </div>
           );
         })}
@@ -418,7 +443,7 @@ function SessionInner() {
           <div className="glass p-4">
             <div className="flex items-center justify-between">
               <p className="t-label text-ink">Añadir ejercicio</p>
-              <button onClick={() => { setAdding(false); setQ(""); }} className="t-label text-muted">Cerrar ✕</button>
+              <button onClick={() => { setAdding(false); setQ(""); }} className="t-label min-h-11 px-2 text-muted">Cerrar ✕</button>
             </div>
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar: press, remo, sentadilla…" autoFocus
               className="field mt-2 w-full px-4 py-3 text-sm" />
@@ -433,15 +458,35 @@ function SessionInner() {
             </div>
           </div>
         ) : (
-          <button onClick={() => setAdding(true)} className="btn btn-tonal w-full">+ Añadir ejercicio</button>
+          <button onClick={() => setAdding(true)} className="btn btn-tonal min-h-11 w-full">+ Añadir ejercicio</button>
         )}
       </div>
 
-      <button onClick={() => setPhase("summary")} className="btn btn-primary mt-4 w-full">Terminar entreno</button>
+      {confirm === "finish" ? (
+        <ConfirmBar
+          text={[
+            incomplete.tickedEmpty > 0 && `${incomplete.tickedEmpty} serie(s) marcadas ✓ sin reps no se guardarán.`,
+            incomplete.unticked > 0 && `${incomplete.unticked} serie(s) con datos sin marcar ✓ no se guardarán.`,
+          ].filter(Boolean).join(" ")}
+          confirmLabel="Terminar igualmente"
+          cancelLabel="Seguir editando"
+          onConfirm={() => { setConfirm(null); setPhase("summary"); }}
+          onCancel={() => setConfirm(null)}
+        />
+      ) : (
+        <button onClick={finish} className="btn btn-primary mt-4 min-h-11 w-full">Terminar entreno</button>
+      )}
+
+      {undo && (
+        <div role="status" className="glass fixed inset-x-4 bottom-24 z-50 flex items-center justify-between gap-3 px-4 py-2">
+          <span className="t-body min-w-0 truncate text-xs text-ink">Quitado: {undo.ex.name}</span>
+          <button onClick={undoRemove} className="t-label min-h-11 shrink-0 px-2 text-neon">Deshacer</button>
+        </div>
+      )}
 
       {/* chip flotante de descanso */}
       {restLeft !== null && restLeft > 0 && (
-        <div className="fixed inset-x-0 bottom-24 z-40 flex justify-center">
+        <div className="fixed inset-x-0 bottom-24 z-40 flex justify-center px-2">
           <div className="glass glow flex items-center gap-3 rounded-full px-4 py-2.5">
             <span className="t-label text-muted">Descanso</span>
             <span className="stat text-xl neon-text tabular-nums">{restLeft}s</span>
@@ -450,11 +495,11 @@ function SessionInner() {
                 restDone.current = false;
                 setRestUntil((u) => (u !== null ? u + 30_000 : Date.now() + 30_000));
               }}
-              className="badge"
+              className="badge min-h-11 min-w-11 justify-center"
             >
               +30s
             </button>
-            <button onClick={() => setRestUntil(null)} className="badge">Saltar</button>
+            <button onClick={() => setRestUntil(null)} className="badge min-h-11 min-w-11 justify-center">Saltar</button>
           </div>
         </div>
       )}
@@ -471,27 +516,47 @@ function SetRow({ index, set, preview, onKg, onReps, onDone, onUsePreview }: {
   onDone: () => void;
   onUsePreview?: () => void;
 }) {
+  const n = index + 1;
+  const inputCls = `field min-h-11 w-full min-w-0 px-2 py-2 text-center text-base ${set.done ? "opacity-60" : ""}`;
   return (
     <>
-      <span className="t-body text-sm text-muted">{index + 1}</span>
+      <span className="t-body text-sm text-muted">{n}</span>
       <input value={set.kg} onChange={(e) => onKg(e.target.value)} inputMode="decimal" placeholder="—"
-        className={`field px-2 py-2 text-center text-sm ${set.done ? "opacity-60" : ""}`} />
+        aria-label={`Peso, serie ${n}`} className={inputCls} />
       <input value={set.reps} onChange={(e) => onReps(e.target.value)} inputMode="numeric" placeholder="—"
-        className={`field px-2 py-2 text-center text-sm ${set.done ? "opacity-60" : ""}`} />
-      <button type="button" onClick={onDone} aria-label="Serie hecha"
-        className="flex h-9 w-9 items-center justify-center rounded-full border text-sm transition-colors"
+        aria-label={`Repeticiones, serie ${n}`} className={inputCls} />
+      <button type="button" onClick={onDone} aria-label={`Serie ${n} hecha`} aria-pressed={set.done}
+        className="flex h-11 w-11 items-center justify-center rounded-full border text-sm transition-colors"
         style={set.done
           ? { background: "#43e8a0", borderColor: "transparent", color: "#03101c" }
           : { borderColor: "rgba(150,190,255,0.25)", color: "var(--color-muted)" }}>
         ✓
       </button>
       {preview && !set.done && (
-        <button type="button" onClick={onUsePreview} className="col-span-4 -mt-1 text-left"
+        <button type="button" onClick={onUsePreview} className="col-span-4 -mt-1 flex min-h-11 items-center text-left"
           aria-label={`Copiar serie anterior: ${preview}`}>
           <span className="t-body text-[11px] text-muted hover:text-neon">anterior: {preview} · toca para copiar</span>
         </button>
       )}
     </>
+  );
+}
+
+function ConfirmBar({ text, confirmLabel, cancelLabel = "Cancelar", onConfirm, onCancel }: {
+  text: string;
+  confirmLabel: string;
+  cancelLabel?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div role="alertdialog" aria-label={text} className="glass mt-4 p-4">
+      <p className="t-body text-sm text-ink">{text}</p>
+      <div className="mt-3 flex gap-3">
+        <button onClick={onCancel} className="btn btn-outline min-h-11 flex-1">{cancelLabel}</button>
+        <button onClick={onConfirm} className="btn btn-primary min-h-11 flex-1">{confirmLabel}</button>
+      </div>
+    </div>
   );
 }
 

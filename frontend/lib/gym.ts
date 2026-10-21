@@ -66,6 +66,20 @@ export function pushGymSession(s: GymSession) {
   localStorage.setItem(GYM_SESS_KEY, JSON.stringify(all));
 }
 
+/** Lee el desglose en formato completo (`exercises`) o compacto (`ex`). */
+function exercisesFromDetail(detail: Record<string, unknown> | null | undefined): GymSession["exercises"] {
+  if (Array.isArray(detail?.exercises)) return detail.exercises as GymSession["exercises"];
+  if (!Array.isArray(detail?.ex)) return [];
+  return (detail.ex as { n?: unknown; s?: unknown }[])
+    .filter((e) => typeof e?.n === "string" && Array.isArray(e.s))
+    .map((e) => ({
+      name: e.n as string,
+      sets: (e.s as unknown[]).flatMap((p) =>
+        Array.isArray(p) && typeof p[0] === "number" && typeof p[1] === "number" ? [{ kg: p[0], reps: p[1] }] : [],
+      ),
+    }));
+}
+
 /** Reconstruye una GymSession a partir de la actividad guardada en el
     servidor o de un item aún en la cola pendiente (misma forma que guarda
     `save()` en gym/session). Si el detail se recortó por tamaño (>8 KB) solo
@@ -79,7 +93,7 @@ function gymSessionFromDetail(
 ): GymSession {
   const focus = typeof detail?.focus === "string" ? detail.focus : null;
   const volume = typeof detail?.volume_kg === "number" ? detail.volume_kg : 0;
-  const exercises = Array.isArray(detail?.exercises) ? (detail.exercises as GymSession["exercises"]) : [];
+  const exercises = exercisesFromDetail(detail);
   return {
     id: clientId ?? `srv-${ts}`,
     client_id: clientId ?? undefined,
@@ -156,4 +170,61 @@ export function previousSet(
 export function formatSetPreview(set: { kg: number; reps: number } | null): string | null {
   if (!set) return null;
   return set.kg > 0 ? `${set.kg} kg × ${set.reps}` : `${set.reps} reps`;
+}
+
+/* ------------------------- Qué se guarda al terminar ------------------------ */
+
+export const MAX_DETAIL_CHARS = 8000; // tope del backend (activities/serializers.py)
+export const DEFAULT_RPE = 7;
+
+const num = (v: string) => parseFloat(v.replace(",", "."));
+
+/** Solo cuentan las series marcadas ✓ con reps > 0. kg en blanco = peso corporal (0). */
+export function savedExercises(exercises: ExerciseEntry[]): GymSession["exercises"] {
+  return exercises
+    .map((x) => ({
+      name: x.name,
+      sets: x.sets
+        .filter((s) => s.done && Number.isFinite(parseInt(s.reps, 10)) && parseInt(s.reps, 10) > 0)
+        .map((s) => ({ kg: Number.isFinite(num(s.kg)) ? num(s.kg) : 0, reps: parseInt(s.reps, 10) })),
+    }))
+    .filter((x) => x.sets.length > 0);
+}
+
+export function sessionTotals(saved: GymSession["exercises"]): { totalSets: number; volume: number } {
+  const totalSets = saved.reduce((a, x) => a + x.sets.length, 0);
+  const volume = Math.round(saved.reduce((a, x) => a + x.sets.reduce((b, s) => b + s.kg * s.reps, 0), 0));
+  return { totalSets, volume };
+}
+
+/** Series que el usuario podría creer guardadas y no lo serán. */
+export function incompleteSets(exercises: ExerciseEntry[]): { tickedEmpty: number; unticked: number } {
+  let tickedEmpty = 0;
+  let unticked = 0;
+  for (const x of exercises) {
+    for (const s of x.sets) {
+      const reps = parseInt(s.reps, 10);
+      const hasReps = Number.isFinite(reps) && reps > 0;
+      if (s.done && !hasReps) tickedEmpty++;
+      else if (!s.done && (s.kg.trim() !== "" || s.reps.trim() !== "")) unticked++;
+    }
+  }
+  return { tickedEmpty, unticked };
+}
+
+/** `detail` para el backend. Si el desglose completo no cabe se compacta
+    (claves cortas, números); si aun así no cabe, `breakdown` es false y el
+    llamante debe avisar al usuario: nunca se descarta en silencio. */
+export function buildActivityDetail(
+  focus: string | null,
+  volume: number,
+  saved: GymSession["exercises"],
+  max = MAX_DETAIL_CHARS,
+): { detail: Record<string, unknown>; breakdown: boolean } {
+  const fits = (d: Record<string, unknown>) => JSON.stringify(d).length <= max;
+  const full = { focus, volume_kg: volume, exercises: saved };
+  if (fits(full)) return { detail: full, breakdown: true };
+  const compact = { focus, volume_kg: volume, ex: saved.map((x) => ({ n: x.name, s: x.sets.map((s) => [s.kg, s.reps]) })) };
+  if (fits(compact)) return { detail: compact, breakdown: true };
+  return { detail: { focus, volume_kg: volume }, breakdown: false };
 }
