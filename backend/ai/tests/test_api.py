@@ -13,6 +13,7 @@ from django.utils import timezone
 from PIL import Image
 from rest_framework.test import APIClient
 
+from ai import quota
 from ai import views as ai_views
 from userstate.models import UserState
 from users.services import email_verify, user_create
@@ -29,8 +30,11 @@ CHAT_PAYLOAD = {
 }
 
 
-def fake_response(text: str):
-    return SimpleNamespace(content=[SimpleNamespace(type="text", text=text)])
+def fake_response(text: str, *, input_tokens: int = 100, output_tokens: int = 20):
+    return SimpleNamespace(
+        content=[SimpleNamespace(type="text", text=text)],
+        usage=SimpleNamespace(input_tokens=input_tokens, output_tokens=output_tokens),
+    )
 
 
 def fake_rate_limit_error() -> anthropic.RateLimitError:
@@ -46,7 +50,7 @@ def fake_connection_error() -> anthropic.APIConnectionError:
 
 @pytest.fixture(autouse=True)
 def _clear_cache():
-    # La cuota diaria y el throttle viven en caché: sin esto, un test contamina al siguiente.
+    # El throttle vive en caché: sin esto, un test contamina al siguiente.
     cache.clear()
     yield
     cache.clear()
@@ -240,8 +244,8 @@ def test_food_devuelve_429_cuando_el_sdk_esta_saturado(auth_client):
 
 
 @pytest.mark.django_db
-def test_chat_respeta_la_cuota_diaria(auth_client, monkeypatch):
-    monkeypatch.setattr(ai_views, "AI_DAILY_QUOTA_CHAT", 1)
+def test_chat_respeta_la_cuota_diaria(auth_client, settings):
+    settings.AI_DAILY_QUOTA_CHAT = 1
     with patch("ai.services.anthropic.Anthropic") as MockClient:
         MockClient.return_value.messages.create.return_value = fake_response("Vale.")
         primera = auth_client.post("/api/v1/ai/coach/chat", CHAT_PAYLOAD, format="json")
@@ -251,8 +255,8 @@ def test_chat_respeta_la_cuota_diaria(auth_client, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_food_respeta_la_cuota_diaria(auth_client, monkeypatch):
-    monkeypatch.setattr(ai_views, "AI_DAILY_QUOTA_FOOD", 1)
+def test_food_respeta_la_cuota_diaria(auth_client, settings):
+    settings.AI_DAILY_QUOTA_FOOD = 1
     with patch("ai.services.anthropic.Anthropic") as MockClient:
         MockClient.return_value.messages.create.return_value = fake_response(
             '{"plato": "x", "items": [], "confianza": "media", "nota": null}'
@@ -267,11 +271,11 @@ def test_food_respeta_la_cuota_diaria(auth_client, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_chat_no_consume_cuota_si_el_sdk_falla(auth_client, monkeypatch):
+def test_chat_no_consume_cuota_si_el_sdk_falla(auth_client, settings):
     # Un fallo del proveedor (no imputable al usuario) no debe gastar cupo:
     # tras una llamada que falla, una segunda dentro del mismo límite tiene que
     # poder tener éxito.
-    monkeypatch.setattr(ai_views, "AI_DAILY_QUOTA_CHAT", 1)
+    settings.AI_DAILY_QUOTA_CHAT = 1
     with patch("ai.services.anthropic.Anthropic") as MockClient:
         MockClient.return_value.messages.create.side_effect = fake_rate_limit_error()
         fallida = auth_client.post("/api/v1/ai/coach/chat", CHAT_PAYLOAD, format="json")
@@ -283,8 +287,8 @@ def test_chat_no_consume_cuota_si_el_sdk_falla(auth_client, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_food_no_consume_cuota_si_el_sdk_falla(auth_client, monkeypatch):
-    monkeypatch.setattr(ai_views, "AI_DAILY_QUOTA_FOOD", 1)
+def test_food_no_consume_cuota_si_el_sdk_falla(auth_client, settings):
+    settings.AI_DAILY_QUOTA_FOOD = 1
     with patch("ai.services.anthropic.Anthropic") as MockClient:
         MockClient.return_value.messages.create.side_effect = fake_rate_limit_error()
         f1 = SimpleUploadedFile("comida1.png", PNG_1X1, content_type="image/png")
@@ -300,12 +304,12 @@ def test_food_no_consume_cuota_si_el_sdk_falla(auth_client, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_food_comprueba_la_cuota_antes_de_decodificar_la_imagen(auth_client, monkeypatch):
+def test_food_comprueba_la_cuota_antes_de_decodificar_la_imagen(auth_client, settings):
     # Con la cuota ya agotada, una imagen inválida debe devolver 429 (cuota) y
     # no 400 (imagen inválida): la comprobación de cuota va antes de Pillow.
-    monkeypatch.setattr(ai_views, "AI_DAILY_QUOTA_FOOD", 1)
+    settings.AI_DAILY_QUOTA_FOOD = 1
     user = get_user_model().objects.get(email="ia@test.com")
-    ai_views._consume_daily_quota(user_id=user.id, kind="food", limit=1)  # agota el único hueco de este usuario
+    assert quota.reserve(user=user, kind="food") is not None  # agota el único hueco de este usuario
     f = SimpleUploadedFile("no-es-una-imagen.png", b"esto no es un PNG", content_type="image/png")
     resp = auth_client.post("/api/v1/ai/food/analyze", {"image": f}, format="multipart")
     assert resp.status_code == 429

@@ -6,7 +6,9 @@ responden 503 para que el frontend degrade a su modo por reglas/simulado.
 """
 import base64
 import json
+import math
 import re
+from collections.abc import Callable
 
 import anthropic
 from django.conf import settings
@@ -20,10 +22,24 @@ class AIBadResponse(Exception):
     """El modelo respondió algo que no se pudo interpretar."""
 
 
+UsageSink = Callable[[int, int], None]
+
+
 def _client(timeout: float) -> anthropic.Anthropic:
     if not settings.ANTHROPIC_API_KEY:
         raise AIUnavailable("ANTHROPIC_API_KEY no configurada")
-    return anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY, timeout=timeout, max_retries=1)
+    return anthropic.Anthropic(
+        api_key=settings.ANTHROPIC_API_KEY, timeout=timeout, max_retries=settings.AI_MAX_RETRIES
+    )
+
+
+def _report_usage(resp, on_usage: UsageSink | None) -> None:
+    """Pasa los tokens facturados a ``on_usage`` antes de interpretar la respuesta:
+    una respuesta inválida también se paga."""
+    usage = getattr(resp, "usage", None)
+    if on_usage is None or usage is None:
+        return
+    on_usage(int(getattr(usage, "input_tokens", 0) or 0), int(getattr(usage, "output_tokens", 0) or 0))
 
 
 COACH_SYSTEM = """Eres el coach de FightLab Pro, un entrenador de alto rendimiento para \
@@ -59,7 +75,9 @@ _FREQUENCY_INSTRUCTIONS = {
 }
 
 
-def coach_chat(*, messages: list[dict], context: dict, memory: dict | None = None) -> str:
+def coach_chat(
+    *, messages: list[dict], context: dict, memory: dict | None = None, on_usage: UsageSink | None = None
+) -> str:
     """Chat del coach con el contexto real del atleta. Devuelve el texto de respuesta.
 
     `memory` es la memoria persistente del atleta (P0.3), ya sanitizada por
@@ -67,7 +85,7 @@ def coach_chat(*, messages: list[dict], context: dict, memory: dict | None = Non
     de peso y preferencias de tono/frecuencia. Se lee en el servidor a partir
     de `UserState` (clave `coach_memory`), no del cuerpo que manda el cliente.
     """
-    client = _client(timeout=30.0)
+    client = _client(timeout=settings.AI_CHAT_TIMEOUT_S)
 
     # La API exige que el primer mensaje sea del usuario: descarta saludos previos del coach
     cleaned = [
@@ -104,6 +122,7 @@ def coach_chat(*, messages: list[dict], context: dict, memory: dict | None = Non
         system=system,
         messages=cleaned,
     )
+    _report_usage(resp, on_usage)
     text = "".join(block.text for block in resp.content if block.type == "text").strip()
     if not text:
         raise AIBadResponse("Respuesta vacía del modelo")
@@ -173,9 +192,9 @@ Responde SOLO con un JSON válido, sin texto adicional ni markdown, con esta for
 "confianza": "baja", "nota": "explica brevemente qué ves"}."""
 
 
-def food_photo_analyze(*, image_bytes: bytes, media_type: str) -> dict:
+def food_photo_analyze(*, image_bytes: bytes, media_type: str, on_usage: UsageSink | None = None) -> dict:
     """Analiza una foto de comida y devuelve {plato, items[], confianza, nota}."""
-    client = _client(timeout=60.0)
+    client = _client(timeout=settings.AI_VISION_TIMEOUT_S)
     resp = client.messages.create(
         model=settings.AI_MODEL_VISION,
         max_tokens=1000,
@@ -197,39 +216,84 @@ def food_photo_analyze(*, image_bytes: bytes, media_type: str) -> dict:
             }
         ],
     )
+    _report_usage(resp, on_usage)
     text = "".join(block.text for block in resp.content if block.type == "text")
     return _parse_food_json(text)
 
 
+# Topes de cordura por alimento: por encima es una alucinación o un valor roto.
+_MAX_ITEM_GRAMS = 5000
+_MAX_ITEM_KCAL = 10000
+_MAX_ITEM_MACRO = 1000
+_LEADING_NUMBER_RE = re.compile(r"^\s*(-?\d+(?:[.,]\d+)?)")
+
+
+def _coerce_number(value, *, field: str, cap: int, nullable: bool = False) -> int | None:
+    """Entero acotado a ``[0, cap]`` a partir de lo que mande el modelo.
+
+    Acepta números y textos que empiezan por número ("240 kcal", "12,5 g").
+    Ausente/``null`` es 0 (o ``None`` si ``nullable``); cualquier otra cosa
+    (booleanos, NaN, texto sin número, listas) es ``AIBadResponse``.
+    """
+    if value is None:
+        return None if nullable else 0
+    if isinstance(value, bool):
+        raise AIBadResponse(f"Valor no numérico en '{field}'")
+    if isinstance(value, (int, float)):
+        number = float(value)
+    elif isinstance(value, str):
+        match = _LEADING_NUMBER_RE.match(value)
+        if match is None:
+            raise AIBadResponse(f"Valor no numérico en '{field}'")
+        number = float(match.group(1).replace(",", "."))
+    else:
+        raise AIBadResponse(f"Valor no numérico en '{field}'")
+    if not math.isfinite(number):
+        raise AIBadResponse(f"Valor no finito en '{field}'")
+    if nullable and number <= 0:
+        return None
+    return min(cap, max(0, round(number)))
+
+
 def _parse_food_json(text: str) -> dict:
-    """Extrae y valida el JSON del modelo (tolera vallas de código y texto alrededor)."""
+    """Extrae y valida el JSON del modelo (tolera vallas de código y texto alrededor).
+
+    Cualquier forma inesperada acaba en ``AIBadResponse`` (502 con mensaje),
+    nunca en una excepción sin capturar (500).
+    """
     start, end = text.find("{"), text.rfind("}")
     if start == -1 or end <= start:
         raise AIBadResponse("La IA no devolvió JSON")
     try:
         data = json.loads(text[start : end + 1])
-    except json.JSONDecodeError as exc:
+    except (json.JSONDecodeError, RecursionError) as exc:
         raise AIBadResponse("JSON inválido de la IA") from exc
+    if not isinstance(data, dict):
+        raise AIBadResponse("La IA no devolvió un objeto JSON")
+    raw_items = data.get("items")
+    if not isinstance(raw_items, list):
+        raise AIBadResponse("Falta la lista 'items'")
 
     items = []
-    for it in data.get("items") or []:
-        if not isinstance(it, dict) or not it.get("nombre"):
+    for it in raw_items:
+        if not isinstance(it, dict) or not isinstance(it.get("nombre"), str) or not it["nombre"].strip():
             continue
-        gramos = it.get("gramos")
         items.append(
             {
-                "nombre": str(it["nombre"])[:80],
-                "gramos": int(gramos) if isinstance(gramos, (int, float)) and gramos > 0 else None,
-                "kcal": max(0, int(it.get("kcal") or 0)),
-                "p": max(0, int(it.get("p") or 0)),
-                "c": max(0, int(it.get("c") or 0)),
-                "f": max(0, int(it.get("f") or 0)),
+                "nombre": it["nombre"].strip()[:80],
+                "gramos": _coerce_number(it.get("gramos"), field="gramos", cap=_MAX_ITEM_GRAMS, nullable=True),
+                "kcal": _coerce_number(it.get("kcal"), field="kcal", cap=_MAX_ITEM_KCAL),
+                "p": _coerce_number(it.get("p"), field="p", cap=_MAX_ITEM_MACRO),
+                "c": _coerce_number(it.get("c"), field="c", cap=_MAX_ITEM_MACRO),
+                "f": _coerce_number(it.get("f"), field="f", cap=_MAX_ITEM_MACRO),
             }
         )
-    confianza = data.get("confianza")
+    if raw_items and not items:
+        raise AIBadResponse("Ningún alimento válido en 'items'")
+    plato, nota, confianza = data.get("plato"), data.get("nota"), data.get("confianza")
     return {
-        "plato": str(data["plato"])[:80] if data.get("plato") else None,
+        "plato": (plato.strip()[:80] or None) if isinstance(plato, str) else None,
         "items": items,
         "confianza": confianza if confianza in ("alta", "media", "baja") else "media",
-        "nota": str(data["nota"])[:200] if data.get("nota") else None,
+        "nota": (nota.strip()[:200] or None) if isinstance(nota, str) else None,
     }
