@@ -5,6 +5,7 @@ import datetime
 import inspect
 import json
 import random
+import struct
 import threading
 from io import BytesIO
 from unittest.mock import patch
@@ -230,6 +231,16 @@ def test_cliente_usa_timeout_y_reintentos_de_settings(user_and_client, settings)
     assert chat_kwargs["timeout"] == settings.AI_CHAT_TIMEOUT_S
     assert food_kwargs["timeout"] == settings.AI_VISION_TIMEOUT_S
     assert chat_kwargs["max_retries"] == food_kwargs["max_retries"] == settings.AI_MAX_RETRIES
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("exc", [struct.error("unpack"), IndexError("x"), TypeError("x"), KeyError("x")])
+def test_errores_raros_de_pillow_dan_400_no_500(user_and_client, exc):
+    _, client = user_and_client
+    with patch("ai.views.load_bounded", side_effect=exc):
+        resp = _post_food(client, PNG_1X1)
+    assert resp.status_code == 400
+    assert resp.data["detail"] == "El archivo no es una imagen válida."
 
 
 @pytest.mark.django_db

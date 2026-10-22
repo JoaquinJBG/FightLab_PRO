@@ -3,7 +3,6 @@ import logging
 from io import BytesIO
 
 import anthropic
-from PIL import Image, UnidentifiedImageError
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -196,7 +195,7 @@ class FoodPhotoView(APIView):
                 {"detail": "La imagen tiene demasiados píxeles: hazle una captura o redúcela."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        except (UnidentifiedImageError, Image.DecompressionBombError, OSError, ValueError, SyntaxError):
+        except Exception:  # los plugins de Pillow lanzan de todo con bytes malformados (struct.error, IndexError...)
             return Response({"detail": "El archivo no es una imagen válida."}, status=status.HTTP_400_BAD_REQUEST)
 
         reservation = quota.reserve(user=user, kind=AIUsage.Kind.FOOD)
