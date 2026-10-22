@@ -217,11 +217,16 @@ SIMPLE_JWT = {
 }
 
 # Caché en la base de datos: LocMem cuenta por separado en cada worker de
-# gunicorn, lo que rompería el throttling.
+# gunicorn, lo que rompería el throttling. Solo guarda contadores de throttle
+# (las cuotas de IA viven en ai.AIUsage). MAX_ENTRIES por defecto es 300: al
+# llenarse, Django borra 1/CULL_FREQUENCY de las filas y con ellas contadores
+# vivos, lo que regalaría peticiones. 10 000 filas cubren varios scopes por
+# usuario activo con margen.
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.db.DatabaseCache",
         "LOCATION": "django_cache_table",
+        "OPTIONS": {"MAX_ENTRIES": 10_000, "CULL_FREQUENCY": 3},
     }
 }
 
@@ -358,3 +363,31 @@ if not DEBUG and not BFF_SHARED_SECRET:
 ANTHROPIC_API_KEY = env("ANTHROPIC_API_KEY", default="")
 AI_MODEL_CHAT = env("AI_MODEL_CHAT", default="claude-sonnet-5")
 AI_MODEL_VISION = env("AI_MODEL_VISION", default="claude-sonnet-5")
+
+# Cada llamada debe acabar antes de que el BFF corte (si no, Anthropic cobra
+# una respuesta que el usuario nunca ve) y el BFF antes que gunicorn (si no,
+# el worker muere a mitad). httpx aplica el timeout POR FASE (conexión, pool,
+# envío, lectura), así que el peor caso es su suma. Orden exigido, comprobado
+# en ai/tests/test_timeouts.py:
+#   suma de fases × (1 + reintentos) < BFF_REQUEST_DEADLINE_S < BFF_MAX_DURATION_S < GUNICORN_TIMEOUT_S
+# La lectura cuenta entre bytes recibidos; la API sin streaming manda la
+# respuesta de golpe al final, así que en la práctica acota toda la espera.
+# Sin reintentos: un reintento duplicaría el peor caso.
+AI_CONNECT_TIMEOUT_S = env.float("AI_CONNECT_TIMEOUT_S", default=5.0)  # también la espera de pool
+AI_WRITE_TIMEOUT_S = env.float("AI_WRITE_TIMEOUT_S", default=10.0)
+AI_CHAT_TIMEOUT_S = env.float("AI_CHAT_TIMEOUT_S", default=30.0)  # lectura
+AI_VISION_TIMEOUT_S = env.float("AI_VISION_TIMEOUT_S", default=25.0)  # lectura
+AI_MAX_RETRIES = env.int("AI_MAX_RETRIES", default=0)
+# Espejos de frontend/app/api/proxy/[...path]/route.ts (DEADLINE_MS, maxDuration)
+# y del --timeout de gunicorn en backend/Dockerfile; el test los compara con
+# los archivos para detectar que se desincronicen.
+BFF_REQUEST_DEADLINE_S = 55
+BFF_MAX_DURATION_S = 60
+GUNICORN_TIMEOUT_S = 90
+
+# Cuota diaria por usuario (tabla ai.AIUsage, nunca la caché). <= 0 la desactiva.
+AI_DAILY_QUOTA_CHAT = env.int("AI_DAILY_QUOTA_CHAT", default=50)
+AI_DAILY_QUOTA_FOOD = env.int("AI_DAILY_QUOTA_FOOD", default=20)
+# Freno global de coste: tokens (entrada + salida) de todos los usuarios en el
+# día local. Al superarlo, los endpoints de IA responden 503 hasta mañana. <= 0 lo desactiva.
+AI_GLOBAL_DAILY_TOKEN_BUDGET = env.int("AI_GLOBAL_DAILY_TOKEN_BUDGET", default=2_000_000)
