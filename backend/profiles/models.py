@@ -2,6 +2,12 @@ from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from . import constants as limits
+
+
+def _range(bounds):
+    return [MinValueValidator(bounds[0]), MaxValueValidator(bounds[1])]
+
 
 class UserProfile(models.Model):
     class Gender(models.TextChoices):
@@ -48,21 +54,49 @@ class BiometricsLog(models.Model):
     profile = models.ForeignKey(
         UserProfile, on_delete=models.CASCADE, related_name="biometrics"
     )
-    weight_kg = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    body_fat_pct = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
-    resting_heart_rate = models.PositiveSmallIntegerField(null=True, blank=True)
+    weight_kg = models.DecimalField(
+        max_digits=5, decimal_places=2, null=True, blank=True,
+        validators=_range(limits.WEIGHT_KG),
+    )
+    body_fat_pct = models.DecimalField(
+        max_digits=4, decimal_places=1, null=True, blank=True,
+        validators=_range(limits.BODY_FAT_PCT),
+    )
+    resting_heart_rate = models.PositiveSmallIntegerField(
+        null=True, blank=True, validators=_range(limits.RESTING_HEART_RATE),
+    )
     sleep_quality_score = models.PositiveSmallIntegerField(
         null=True, blank=True,
         validators=[MinValueValidator(1), MaxValueValidator(10)],
     )
-    hrv_ms = models.PositiveSmallIntegerField(null=True, blank=True)
+    hrv_ms = models.PositiveSmallIntegerField(
+        null=True, blank=True, validators=_range(limits.HRV_MS),
+    )
     # Perímetros con cinta métrica (cm) — opcionales
-    waist_cm = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
-    hip_cm = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
-    chest_cm = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
-    arm_cm = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
-    thigh_cm = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
-    neck_cm = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    waist_cm = models.DecimalField(
+        max_digits=5, decimal_places=1, null=True, blank=True,
+        validators=_range(limits.GIRTH_CM),
+    )
+    hip_cm = models.DecimalField(
+        max_digits=5, decimal_places=1, null=True, blank=True,
+        validators=_range(limits.GIRTH_CM),
+    )
+    chest_cm = models.DecimalField(
+        max_digits=5, decimal_places=1, null=True, blank=True,
+        validators=_range(limits.GIRTH_CM),
+    )
+    arm_cm = models.DecimalField(
+        max_digits=5, decimal_places=1, null=True, blank=True,
+        validators=_range(limits.GIRTH_CM),
+    )
+    thigh_cm = models.DecimalField(
+        max_digits=5, decimal_places=1, null=True, blank=True,
+        validators=_range(limits.GIRTH_CM),
+    )
+    neck_cm = models.DecimalField(
+        max_digits=5, decimal_places=1, null=True, blank=True,
+        validators=_range(limits.GIRTH_CM),
+    )
     timestamp = models.DateTimeField(db_index=True, default=None)
     source = models.CharField(max_length=12, choices=Source.choices, default=Source.MANUAL)
     external_id = models.CharField(max_length=128, null=True, blank=True)

@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from . import selectors, services
+from .constants import MAX_PHOTOS_PER_USER
 from .image_processing import process_progress_photo
 from .models import BiometricsLog, ProgressPhoto
 from .serializers import BiometricsSerializer, ProfileSerializer, ProgressPhotoSerializer
@@ -77,6 +78,11 @@ class PhotoListCreateView(APIView):
         image = request.FILES.get("image")
         if image is None:
             return Response({"detail": "Falta el archivo 'image'."}, status=status.HTTP_400_BAD_REQUEST)
+        if request.user.profile.photos.count() >= MAX_PHOTOS_PER_USER:
+            return Response(
+                {"detail": f"Máximo {MAX_PHOTOS_PER_USER} fotos: borra alguna antes de subir otra."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if image.size > MAX_PHOTO_BYTES:
             return Response({"detail": "La imagen supera los 6 MB."}, status=status.HTTP_400_BAD_REQUEST)
         # process_progress_photo valida el CONTENIDO real (no solo la extensión)
