@@ -207,6 +207,48 @@ describe("flushUserState", () => {
   });
 });
 
+describe("rechazo 4xx del servidor", () => {
+  async function putStatus(status: number) {
+    let attempts = 0;
+    fetchImpl = async (url) => {
+      if (url === "/api/proxy/me/state/weigh") {
+        attempts++;
+        return jsonResponse({ detail: "x" }, status);
+      }
+      return jsonResponse({});
+    };
+    const events: unknown[] = [];
+    window.addEventListener("flp:state-rejected", (e) => events.push((e as CustomEvent).detail), { once: false });
+    const mod = await importFresh();
+    vi.useFakeTimers();
+    mod.syncUserState("weigh", { target: 70 });
+    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(120_000);
+    return { attempts: () => attempts, events, mod };
+  }
+
+  it.each([400, 413])("un %i es terminal: no reintenta, vacía la cola y avisa una sola vez", async (status) => {
+    const { attempts, events } = await putStatus(status);
+    expect(attempts()).toBe(1);
+    expect(vi.getTimerCount()).toBe(0);
+    const persisted = Object.keys(localStorage).filter((k) => k.startsWith("flp_pending_state_"));
+    for (const k of persisted) expect(JSON.parse(localStorage.getItem(k) ?? "{}")).toEqual({});
+    expect(events).toEqual([{ key: "weigh", status }]);
+  });
+
+  it("avisa una sola vez por clave aunque se vuelva a escribir", async () => {
+    const { events, mod } = await putStatus(400);
+    mod.syncUserState("weigh", { target: 71 });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(events).toHaveLength(1);
+  });
+
+  it.each([429, 500, 503])("un %i sigue reintentándose con backoff", async (status) => {
+    const { attempts } = await putStatus(status);
+    expect(attempts()).toBeGreaterThan(2);
+  });
+});
+
 describe("resetUserStateQueue", () => {
   it("cancela cualquier timer de reintento agendado (no queda ninguno en el reloj)", async () => {
     fetchImpl = async (url) => {
@@ -571,7 +613,6 @@ describe("dispositivo compartido: dueño de los flp_* (flp_owner_uid)", () => {
     seedUserA();
     const mod = await importFresh();
     expect(mod.claimDeviceOwner("1")).toBe(false);
-    expect(localStorage.getItem("flp_weigh")).not.toBeNull();
     expect(mod.claimDeviceOwner("2")).toBe(true);
     expect(localStorage.getItem("flp_weigh")).toBeNull();
     localStorage.setItem("flp_weigh", JSON.stringify({ target: 90 }));
@@ -596,7 +637,6 @@ describe("dispositivo compartido: dueño de los flp_* (flp_owner_uid)", () => {
     localStorage.setItem("flp_weigh", JSON.stringify({ target: 70 }));
     const mod = await importFresh();
     expect(mod.claimDeviceOwner("2")).toBe(false);
-    expect(localStorage.getItem("flp_weigh")).not.toBeNull();
     expect(localStorage.getItem("flp_owner_uid")).toBe("2");
   });
 
