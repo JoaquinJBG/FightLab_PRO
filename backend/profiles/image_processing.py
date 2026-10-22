@@ -85,8 +85,7 @@ def webp_size(header: bytes) -> tuple[int, int] | None:
 
 
 def _check_webp_header(file_obj) -> None:
-    # Pillow decodifica el primer fotograma WebP dentro de Image.open: el tope
-    # hay que aplicarlo antes, leyendo la cabecera a mano.
+    # Image.open ya decodifica el primer fotograma WebP: el tope va antes, sobre la cabecera.
     start = file_obj.tell()
     header = file_obj.read(30)
     file_obj.seek(start)

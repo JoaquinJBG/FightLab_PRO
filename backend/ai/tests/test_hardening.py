@@ -32,7 +32,7 @@ from users.services import email_verify, user_create
 from users.tokens import generate_email_verification_token
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
-FOOD_OK ='{"plato": "Pollo", "items": [{"nombre": "pollo", "gramos": 150, "kcal": 240, "p": 45, "c": 0, "f": 5}], "confianza": "alta", "nota": null}'
+FOOD_OK = '{"plato": "Pollo", "items": [{"nombre": "pollo", "gramos": 150, "kcal": 240, "p": 45, "c": 0, "f": 5}], "confianza": "alta", "nota": null}'
 
 
 @pytest.fixture

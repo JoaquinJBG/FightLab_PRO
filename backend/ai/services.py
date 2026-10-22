@@ -29,13 +29,15 @@ UsageSink = Callable[[int, int], None]
 def _client(timeout: float) -> anthropic.Anthropic:
     if not settings.ANTHROPIC_API_KEY:
         raise AIUnavailable("ANTHROPIC_API_KEY no configurada")
-    timeout = httpx.Timeout(
+    phase_timeouts = httpx.Timeout(
         connect=settings.AI_CONNECT_TIMEOUT_S,
         write=settings.AI_WRITE_TIMEOUT_S,
         read=timeout,
         pool=settings.AI_CONNECT_TIMEOUT_S,
     )
-    return anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY, timeout=timeout, max_retries=settings.AI_MAX_RETRIES)
+    return anthropic.Anthropic(
+        api_key=settings.ANTHROPIC_API_KEY, timeout=phase_timeouts, max_retries=settings.AI_MAX_RETRIES
+    )
 
 
 def _clean_text(value: str) -> str:
