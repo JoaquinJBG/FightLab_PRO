@@ -1,20 +1,19 @@
 import json
 import logging
-import os
 from io import BytesIO
 
 import anthropic
-from django.core.cache import cache
-from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
+from profiles.image_processing import UnsupportedImageError, UnsupportedImageFormatError, load_bounded
 from userstate.selectors import state_get_many
 
-from . import services
+from . import quota, services
+from .models import AIUsage
 
 logger = logging.getLogger(__name__)
 
@@ -35,45 +34,51 @@ CONTEXT_KEYS = {
 # Formatos de imagen que acepta la API de Anthropic
 MEDIA_TYPES = {"JPEG": "image/jpeg", "PNG": "image/png", "WEBP": "image/webp", "GIF": "image/gif"}
 FORMATOS_ACEPTADOS_TXT = "JPG, PNG, WebP o GIF"
+_PHOTO_FORMATS = frozenset(MEDIA_TYPES)
 
-# --- Cuota diaria por usuario (protección de coste) ---
-# Configurable por entorno. No viven en settings.py (paquete A) para no tocar
-# archivos fuera de backend/ai/*; ver el informe de la tarea para la nota de
-# coordinación. Un valor <= 0 desactiva el límite para ese uso.
-AI_DAILY_QUOTA_CHAT = int(os.environ.get("AI_DAILY_QUOTA_CHAT", "50"))
-AI_DAILY_QUOTA_FOOD = int(os.environ.get("AI_DAILY_QUOTA_FOOD", "20"))
-_QUOTA_CACHE_TIMEOUT = 60 * 60 * 26  # algo más de un día: no depende de un reinicio a medianoche exacta
+_PROVIDER_ERRORS = (services.AIUnavailable, services.AIBadResponse, anthropic.APIError)
 
 
-def _quota_key(*, user_id: int, kind: str) -> str:
-    return f"ai:quota:{kind}:{user_id}:{timezone.localdate().isoformat()}"
+def _quota_exceeded_response(kind: str) -> Response:
+    limit = quota.limit_for(kind)
+    if kind == AIUsage.Kind.CHAT:
+        detail = f"Has alcanzado tu límite diario de {limit} mensajes al coach. Vuelve a intentarlo mañana."
+    else:
+        detail = f"Has alcanzado tu límite diario de {limit} fotos de comida analizadas. Vuelve a intentarlo mañana."
+    return Response({"detail": detail, "code": "quota_daily"}, status=status.HTTP_429_TOO_MANY_REQUESTS)
 
 
-def _within_daily_quota(*, user_id: int, kind: str, limit: int) -> bool:
-    """Dice si el usuario sigue dentro de su cuota diaria, sin consumirla.
-
-    No incrementa el contador: solo lo consulta. El incremento real ocurre en
-    ``_consume_daily_quota`` una vez la llamada a la IA ha tenido éxito, para
-    no gastar cupo legítimo cuando el fallo es del proveedor (IA no
-    configurada, rate limit transitorio, error del SDK) y no del usuario.
-    """
-    if limit <= 0:
-        return True
-    count = cache.get(_quota_key(user_id=user_id, kind=kind), 0)
-    return count < limit
+def _budget_exceeded_response() -> Response:
+    return Response(
+        {
+            "detail": "Se ha alcanzado el límite diario del servicio de IA. Vuelve a intentarlo mañana.",
+            "code": "budget_daily",
+        },
+        status=status.HTTP_503_SERVICE_UNAVAILABLE,
+    )
 
 
-def _consume_daily_quota(*, user_id: int, kind: str, limit: int) -> None:
-    """Incrementa en caché el contador diario del usuario tras una llamada con éxito.
+def _token_recorder(reservation: quota.Reservation) -> services.UsageSink:
+    def record(input_tokens: int, output_tokens: int) -> None:
+        quota.record_tokens(reservation, input_tokens=input_tokens, output_tokens=output_tokens)
 
-    La clave incluye la fecha, así que cada día es una cuota nueva sin
-    necesidad de un cron de limpieza.
-    """
-    if limit <= 0:
-        return
-    key = _quota_key(user_id=user_id, kind=kind)
-    cache.add(key, 0, timeout=_QUOTA_CACHE_TIMEOUT)
-    cache.incr(key)
+    return record
+
+
+def _provider_error_response(exc: Exception, *, bad_response_detail: str, saturated_detail: str, log_msg: str) -> Response:
+    if isinstance(exc, services.AIUnavailable):
+        return Response({"detail": "IA no configurada."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+    if isinstance(exc, services.AIBadResponse):
+        return Response({"detail": bad_response_detail}, status=status.HTTP_502_BAD_GATEWAY)
+    if isinstance(exc, anthropic.RateLimitError):
+        return Response({"detail": saturated_detail}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+    if isinstance(exc, anthropic.APITimeoutError):
+        return Response(
+            {"detail": "El servicio de IA ha tardado demasiado. Inténtalo de nuevo."},
+            status=status.HTTP_504_GATEWAY_TIMEOUT,
+        )
+    logger.exception("%s: %s", log_msg, exc)
+    return Response({"detail": "Error del servicio de IA."}, status=status.HTTP_502_BAD_GATEWAY)
 
 
 def _coach_memory_for(profile) -> dict:
@@ -98,9 +103,8 @@ class LiveScopedRateThrottle(ScopedRateThrottle):
     no se vería nunca si usáramos la clase base tal cual. Aquí lo leemos en
     caliente (``self.scope`` ya lo rellena ``ScopedRateThrottle.allow_request``
     a partir de ``view.throttle_scope``) y, si el scope todavía no está
-    configurado, no bloqueamos la beta por eso: la cuota diaria
-    (``_within_daily_quota`` / ``_consume_daily_quota``) sigue siendo la
-    protección real de coste mientras tanto.
+    configurado, no bloqueamos la beta por eso: la cuota diaria (``ai.quota``,
+    tabla ``AIUsage``) sigue siendo la protección real de coste mientras tanto.
     """
 
     def get_rate(self):
@@ -134,35 +138,31 @@ class CoachChatView(APIView):
         if len(json.dumps(context)) > MAX_CONTEXT_CHARS:
             return Response({"detail": "Contexto demasiado grande."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not _within_daily_quota(user_id=request.user.id, kind="chat", limit=AI_DAILY_QUOTA_CHAT):
-            return Response(
-                {
-                    "detail": (
-                        f"Has alcanzado tu límite diario de {AI_DAILY_QUOTA_CHAT} mensajes al coach. "
-                        "Vuelve a intentarlo mañana."
-                    )
-                },
-                status=status.HTTP_429_TOO_MANY_REQUESTS,
-            )
+        user = request.user
+        if quota.global_budget_exceeded():
+            return _budget_exceeded_response()
+        memory = _coach_memory_for(user.profile)
 
-        memory = _coach_memory_for(request.user.profile)
-
+        reservation = quota.reserve(user=user, kind=AIUsage.Kind.CHAT)
+        if reservation is None:
+            return _quota_exceeded_response(AIUsage.Kind.CHAT)
+        succeeded = False
         try:
-            reply = services.coach_chat(messages=messages, context=context, memory=memory)
-        except services.AIUnavailable:
-            return Response({"detail": "IA no configurada."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-        except services.AIBadResponse:
-            return Response({"detail": "La IA no devolvió una respuesta válida."}, status=status.HTTP_502_BAD_GATEWAY)
-        except anthropic.RateLimitError:
-            return Response(
-                {"detail": "El coach está saturado ahora mismo. Inténtalo de nuevo en unos minutos."},
-                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            reply = services.coach_chat(
+                messages=messages, context=context, memory=memory, on_usage=_token_recorder(reservation)
             )
-        except anthropic.APIError as exc:
-            logger.exception("Fallo del SDK de Anthropic en el chat del coach: %s", exc)
-            return Response({"detail": "Error del servicio de IA."}, status=status.HTTP_502_BAD_GATEWAY)
-        _consume_daily_quota(user_id=request.user.id, kind="chat", limit=AI_DAILY_QUOTA_CHAT)
-        return Response({"reply": reply})
+            succeeded = True
+            return Response({"reply": reply})
+        except _PROVIDER_ERRORS as exc:
+            return _provider_error_response(
+                exc,
+                bad_response_detail="La IA no devolvió una respuesta válida.",
+                saturated_detail="El coach está saturado ahora mismo. Inténtalo de nuevo en unos minutos.",
+                log_msg="Fallo del SDK de Anthropic en el chat del coach",
+            )
+        finally:
+            if not succeeded:  # cualquier salida sin 2xx, incluida una excepción inesperada
+                quota.refund(reservation)
 
 
 class FoodPhotoView(APIView):
@@ -177,58 +177,63 @@ class FoodPhotoView(APIView):
         if image.size > MAX_PHOTO_BYTES:
             return Response({"detail": "La imagen supera los 4 MB."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Comprueba la cuota ANTES de decodificar/recodificar con Pillow (CPU):
-        # una petición que ya ha agotado su cupo no debe pagar ese coste.
-        if not _within_daily_quota(user_id=request.user.id, kind="food", limit=AI_DAILY_QUOTA_FOOD):
-            return Response(
-                {
-                    "detail": (
-                        f"Has alcanzado tu límite diario de {AI_DAILY_QUOTA_FOOD} fotos de comida analizadas. "
-                        "Vuelve a intentarlo mañana."
-                    )
-                },
-                status=status.HTTP_429_TOO_MANY_REQUESTS,
-            )
+        user = request.user
+        # Sin reservar aún: una petición sin cupo no debe pagar el coste de Pillow.
+        if not quota.has_quota(user=user, kind=AIUsage.Kind.FOOD):
+            return _quota_exceeded_response(AIUsage.Kind.FOOD)
+        if quota.global_budget_exceeded():
+            return _budget_exceeded_response()
 
-        # Valida el CONTENIDO (no solo la extensión), saca el formato real y
-        # redimensiona/recodifica a JPEG con el lado largo acotado antes de
-        # mandarla a la IA: load() decodifica entera (caza imágenes truncadas;
-        # verify() es no-op en algunos formatos) y activa el límite anti
-        # decompression-bomb de Pillow.
         try:
-            from PIL import Image, ImageOps
-
-            with Image.open(image) as img:
-                img.load()
-                fmt = img.format
-                if MEDIA_TYPES.get(fmt or "") is None:
-                    return Response(
-                        {"detail": f"Formato no soportado: usa {FORMATOS_ACEPTADOS_TXT}."},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-                img = ImageOps.exif_transpose(img) or img
-                if img.mode not in ("RGB", "L"):
-                    img = img.convert("RGB")
-                img.thumbnail((MAX_PHOTO_LONG_SIDE, MAX_PHOTO_LONG_SIDE), Image.LANCZOS)
-                buf = BytesIO()
-                img.save(buf, format="JPEG", quality=87)
-                photo_bytes = buf.getvalue()
-        except Exception:
+            img, _ = load_bounded(image, max_side=MAX_PHOTO_LONG_SIDE, formats=_PHOTO_FORMATS)
+            buf = BytesIO()
+            img.save(buf, format="JPEG", quality=87)
+            photo_bytes = buf.getvalue()
+        except UnsupportedImageFormatError:
+            return Response(
+                {"detail": f"Formato no soportado: usa {FORMATOS_ACEPTADOS_TXT}."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except UnsupportedImageError:
+            return Response(
+                {"detail": "La imagen tiene demasiados píxeles: hazle una captura o redúcela."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception:  # los plugins de Pillow lanzan de todo con bytes malformados (struct.error, IndexError...)
             return Response({"detail": "El archivo no es una imagen válida."}, status=status.HTTP_400_BAD_REQUEST)
 
+        reservation = quota.reserve(user=user, kind=AIUsage.Kind.FOOD)
+        if reservation is None:
+            return _quota_exceeded_response(AIUsage.Kind.FOOD)
+        succeeded = False
         try:
-            result = services.food_photo_analyze(image_bytes=photo_bytes, media_type="image/jpeg")
-        except services.AIUnavailable:
-            return Response({"detail": "IA no configurada."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-        except services.AIBadResponse:
-            return Response({"detail": "La IA no devolvió un análisis válido."}, status=status.HTTP_502_BAD_GATEWAY)
-        except anthropic.RateLimitError:
-            return Response(
-                {"detail": "El análisis de fotos está saturado ahora mismo. Inténtalo de nuevo en unos minutos."},
-                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            result = services.food_photo_analyze(
+                image_bytes=photo_bytes, media_type="image/jpeg", on_usage=_token_recorder(reservation)
             )
-        except anthropic.APIError as exc:
-            logger.exception("Fallo del SDK de Anthropic en el análisis de comida: %s", exc)
-            return Response({"detail": "Error del servicio de IA."}, status=status.HTTP_502_BAD_GATEWAY)
-        _consume_daily_quota(user_id=request.user.id, kind="food", limit=AI_DAILY_QUOTA_FOOD)
-        return Response(result)
+            succeeded = True
+            return Response(result)
+        except _PROVIDER_ERRORS as exc:
+            return _provider_error_response(
+                exc,
+                bad_response_detail="La IA no devolvió un análisis válido. Prueba con otra foto.",
+                saturated_detail="El análisis de fotos está saturado ahora mismo. Inténtalo de nuevo en unos minutos.",
+                log_msg="Fallo del SDK de Anthropic en el análisis de comida",
+            )
+        finally:
+            if not succeeded:
+                quota.refund(reservation)
+
+
+class QuotaView(APIView):
+    """Cupo diario restante de cada uso de IA, para que el cliente lo muestre."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(
+            {
+                "date": quota.today().isoformat(),
+                "coach": quota.status_for(user=request.user, kind=AIUsage.Kind.CHAT),
+                "photo": quota.status_for(user=request.user, kind=AIUsage.Kind.FOOD),
+            }
+        )

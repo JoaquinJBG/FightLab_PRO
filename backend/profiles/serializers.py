@@ -29,7 +29,7 @@ class BiometricsSerializer(serializers.ModelSerializer):
             "waist_cm", "hip_cm", "chest_cm", "arm_cm", "thigh_cm", "neck_cm",
             "timestamp", "source", "external_id", "raw_payload",
         )
-        read_only_fields = ("id",)
+        read_only_fields = ("id", "source", "external_id", "raw_payload")
         extra_kwargs = {"timestamp": {"required": False}}
 
 

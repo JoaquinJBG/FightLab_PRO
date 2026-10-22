@@ -57,5 +57,14 @@ services:
         value: claude-sonnet-5
       - key: AI_MODEL_VISION
         value: claude-sonnet-5
+      # Cuota por usuario y freno global de coste (ver backend/core/settings.py).
+      # Los timeouts de la IA no se tocan aquí: su orden frente al BFF y a
+      # gunicorn está fijado en settings y comprobado por test.
+      - key: AI_DAILY_QUOTA_CHAT
+        value: "50"
+      - key: AI_DAILY_QUOTA_FOOD
+        value: "20"
+      - key: AI_GLOBAL_DAILY_TOKEN_BUDGET
+        value: "2000000"
       - key: DJANGO_LOG_LEVEL
         value: INFO
