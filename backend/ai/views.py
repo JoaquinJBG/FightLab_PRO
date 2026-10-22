@@ -59,7 +59,7 @@ def _budget_exceeded_response() -> Response:
     )
 
 
-def _token_recorder(reservation: quota.Reservation):
+def _token_recorder(reservation: quota.Reservation) -> services.UsageSink:
     def record(input_tokens: int, output_tokens: int) -> None:
         quota.record_tokens(reservation, input_tokens=input_tokens, output_tokens=output_tokens)
 
@@ -175,16 +175,12 @@ class FoodPhotoView(APIView):
             return Response({"detail": "La imagen supera los 4 MB."}, status=status.HTTP_400_BAD_REQUEST)
 
         user = request.user
-        # Consulta (sin reservar) ANTES de decodificar con Pillow (CPU): una
-        # petición que ya ha agotado su cupo no debe pagar ese coste.
+        # Sin reservar aún: una petición sin cupo no debe pagar el coste de Pillow.
         if not quota.has_quota(user=user, kind=AIUsage.Kind.FOOD):
             return _quota_exceeded_response(AIUsage.Kind.FOOD)
         if quota.global_budget_exceeded():
             return _budget_exceeded_response()
 
-        # Valida el CONTENIDO (no solo la extensión): load_bounded rechaza el
-        # formato y los píxeles de más leyendo solo la cabecera, y después
-        # decodifica ya reducida al lado largo que recomienda Anthropic.
         try:
             img, _ = load_bounded(image, max_side=MAX_PHOTO_LONG_SIDE, formats=_PHOTO_FORMATS)
             buf = BytesIO()

@@ -1,9 +1,5 @@
 "use client";
 
-// Cupo diario de IA del usuario (GET /ai/quota, tabla AIUsage del backend).
-// Vive fuera de hooks.ts/schemas.ts por las reglas de reparto de archivos del
-// plan de auditoría; la UI del coach que lo muestra llega en WP-18.
-
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { ApiError } from "./hooks";
@@ -34,7 +30,6 @@ export const AI_LIMIT_CODES = {
 
 export type AILimitCode = (typeof AI_LIMIT_CODES)[keyof typeof AI_LIMIT_CODES];
 
-/** Devuelve el código de límite diario de una respuesta de error de IA, si lo trae. */
 export function aiLimitCode(body: unknown): AILimitCode | null {
   if (typeof body !== "object" || body === null) return null;
   const code = (body as { code?: unknown }).code;

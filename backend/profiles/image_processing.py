@@ -11,18 +11,17 @@ dónde persistir archivos entre reinicios. Antes de guardar, cada foto se:
 - comprime bajando la calidad en escalones hasta acercarse a
   ``TARGET_MAX_BYTES`` (o hasta tocar el suelo de calidad).
 
-``load_bounded`` es el helper compartido con ``ai/views.py``. Antes de
-decodificar ningún píxel rechaza las imágenes que superen el tope de píxeles
-de entrada: ``Image.open`` es perezoso (solo lee la cabecera), así que
-comprobar ``opened.size`` es barato, pero decodificar no lo es. Sin este tope,
-un PNG de color liso de pocos KB pero de 13000x13000 píxeles decodifica
-cientos de MB en memoria: en Render free (512 MB) eso tumba el worker con un
-solo POST. Pillow solo corta a partir de ~180 MP, demasiado tarde.
+``load_bounded`` rechaza las imágenes que superen el tope de píxeles antes de
+decodificar: ``Image.open`` solo lee la cabecera, así que comprobar
+``opened.size`` es barato, pero decodificar no lo es. Sin este tope, un PNG de
+color liso de pocos KB pero de 13000x13000 píxeles decodifica cientos de MB:
+en Render free (512 MB) eso tumba el worker con un solo POST. Pillow solo corta
+a partir de ~180 MP, demasiado tarde.
 
-Para JPEG además se usa ``Image.draft`` para que libjpeg decodifique ya a una
-resolución reducida. PNG/WebP/GIF no tienen decodificación escalada, así que
-su tope es menor. El giro EXIF se aplica DESPUÉS de reducir: ``exif_transpose``
-sobre la imagen de entrada copiaba la imagen entera a resolución completa.
+Para JPEG, ``Image.draft`` hace que libjpeg decodifique ya reducida;
+PNG/WebP/GIF no tienen decodificación escalada, así que su tope es menor. El
+giro EXIF va DESPUÉS de reducir: ``exif_transpose`` sobre la entrada copiaría
+la imagen entera a resolución completa.
 """
 from __future__ import annotations
 

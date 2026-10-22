@@ -1,7 +1,8 @@
-"""WP-05: endurecimiento de los endpoints de IA y cuota en la tabla AIUsage."""
+"""Endurecimiento de los endpoints de IA y cuota en la tabla AIUsage."""
 import base64
 import copy
 import datetime
+import inspect
 import json
 import random
 import threading
@@ -11,13 +12,14 @@ from unittest.mock import patch
 import anthropic
 import httpx
 import pytest
+from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection
 from PIL import Image, ImageFile
 from rest_framework.test import APIClient
 
-from ai import quota, services
+from ai import quota, services, views
 from ai.models import AIUsage
 from ai.tests.test_api import CHAT_PAYLOAD, PNG_1X1, fake_response
 from profiles.image_processing import process_progress_photo
@@ -57,7 +59,7 @@ def _timeout_error() -> anthropic.APITimeoutError:
     return anthropic.APITimeoutError(request=httpx.Request("POST", "https://api.anthropic.com/v1/messages"))
 
 
-# --- 1. Bomba de descompresión ---
+# --- Bomba de descompresión ---
 
 
 @pytest.mark.django_db
@@ -115,7 +117,7 @@ def test_foto_de_comida_llega_a_la_ia_reorientada(user_and_client):
         assert img.size == (200, 400)
 
 
-# --- 2. Parser de la foto de comida ---
+# --- Parser de la foto de comida ---
 
 
 @pytest.mark.parametrize(
@@ -203,7 +205,7 @@ def test_respuesta_rara_del_modelo_da_502_devuelve_cuota_y_guarda_tokens(user_an
     assert (usage.input_tokens, usage.output_tokens) == (900, 40)
 
 
-# --- 3/4. Timeouts del proveedor y reserva/devolución ---
+# --- Timeouts del proveedor y reserva/devolución ---
 
 
 @pytest.mark.django_db
@@ -314,15 +316,11 @@ def test_devolucion_va_a_la_fila_reservada_aunque_cambie_el_dia(settings, monkey
 
 
 def test_las_cuotas_no_usan_la_cache():
-    import inspect
-
-    from ai import views
-
     for module in (quota, views, services):
         assert "django.core.cache" not in inspect.getsource(module)
 
 
-# --- 5. Tokens y freno global ---
+# --- Tokens y freno global ---
 
 
 @pytest.mark.django_db
@@ -359,14 +357,12 @@ def test_freno_global_devuelve_503_y_se_reinicia_al_dia_siguiente(user_and_clien
 
 
 def test_admin_muestra_gasto_por_usuario_y_dia():
-    from django.contrib import admin
-
     model_admin = admin.site._registry[AIUsage]
     assert {"date", "user", "input_tokens", "output_tokens"} <= set(model_admin.list_display)
     assert "date" in model_admin.list_filter
 
 
-# --- 6. Cuota visible para el cliente ---
+# --- Cuota visible para el cliente ---
 
 
 @pytest.mark.django_db
