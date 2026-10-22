@@ -4,10 +4,14 @@ import copy
 import datetime
 import inspect
 import json
+import os
 import random
 import struct
+import subprocess
+import sys
 import threading
 from io import BytesIO
+from pathlib import Path
 from unittest.mock import patch
 
 import anthropic
@@ -23,11 +27,12 @@ from rest_framework.test import APIClient
 from ai import quota, services, views
 from ai.models import AIUsage
 from ai.tests.test_api import CHAT_PAYLOAD, PNG_1X1, fake_response
-from profiles.image_processing import process_progress_photo
+from profiles.image_processing import UnsupportedImageError, load_bounded, process_progress_photo, webp_size
 from users.services import email_verify, user_create
 from users.tokens import generate_email_verification_token
 
-FOOD_OK = '{"plato": "Pollo", "items": [{"nombre": "pollo", "gramos": 150, "kcal": 240, "p": 45, "c": 0, "f": 5}], "confianza": "alta", "nota": null}'
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+FOOD_OK ='{"plato": "Pollo", "items": [{"nombre": "pollo", "gramos": 150, "kcal": 240, "p": 45, "c": 0, "f": 5}], "confianza": "alta", "nota": null}'
 
 
 @pytest.fixture
@@ -83,9 +88,128 @@ def test_png_de_169_megapixeles_se_rechaza_sin_decodificar(user_and_client):
 @pytest.mark.django_db
 def test_png_por_encima_del_tope_no_jpeg_se_rechaza(user_and_client):
     _, client = user_and_client
-    resp = _post_food(client, _png((5000, 5000), mode="1"))  # 25 MP > 24 MP (tope sin draft)
+    resp = _post_food(client, _png((3500, 3500), mode="1"))  # 12,25 MP > 12 MP (tope sin draft)
     assert resp.status_code == 400
     assert "demasiados píxeles" in resp.data["detail"]
+
+
+def _webp(size, mode="RGB", **kwargs) -> bytes:
+    buf = BytesIO()
+    Image.new(mode, size).save(buf, format="WEBP", **kwargs)
+    return buf.getvalue()
+
+
+def _vp8x_header(width: int, height: int) -> bytes:
+    payload = b"\x00" * 4 + (width - 1).to_bytes(3, "little") + (height - 1).to_bytes(3, "little")
+    chunk = b"VP8X" + len(payload).to_bytes(4, "little") + payload
+    body = b"WEBP" + chunk + b"\x00" * 64
+    return b"RIFF" + len(body).to_bytes(4, "little") + body
+
+
+@pytest.mark.parametrize(
+    "mode,kwargs",
+    [("RGB", {}), ("RGB", {"lossless": True}), ("RGBA", {}), ("RGBA", {"lossless": True})],
+    ids=["vp8", "vp8l", "vp8x", "vp8l-alpha"],
+)
+@pytest.mark.parametrize("size", [(1, 1), (37, 23), (16383, 2)])
+def test_cabecera_webp_coincide_con_pillow(size, mode, kwargs):
+    data = _webp(size, mode, **kwargs)
+    assert webp_size(data[:30]) == size == Image.open(BytesIO(data)).size
+
+
+def test_webp_gigante_se_rechaza_por_cabecera_sin_abrirlo():
+    with patch("profiles.image_processing.Image.open") as open_spy, pytest.raises(UnsupportedImageError):
+        load_bounded(BytesIO(_vp8x_header(13000, 13000)), max_side=1568)
+    open_spy.assert_not_called()
+
+
+def test_webp_con_cabecera_desconocida_se_rechaza_sin_abrirlo():
+    data = b"RIFF" + (100).to_bytes(4, "little") + b"WEBPVP8 " + b"\x00" * 40
+    with patch("profiles.image_processing.Image.open") as open_spy, pytest.raises(UnsupportedImageError):
+        load_bounded(BytesIO(data), max_side=1568)
+    open_spy.assert_not_called()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("url", ["/api/v1/ai/food/analyze", "/api/v1/me/photos"])
+def test_webp_gigante_da_400_en_los_dos_endpoints(user_and_client, url):
+    user, client = user_and_client
+    f = SimpleUploadedFile("bomba.webp", _vp8x_header(13000, 13000), content_type="image/webp")
+    resp = client.post(url, {"image": f}, format="multipart")
+    assert resp.status_code == 400
+    usage = _usage(user, "food")
+    assert usage is None or usage.count == 0
+
+
+@pytest.mark.django_db
+def test_webp_normal_se_acepta(user_and_client):
+    _, client = user_and_client
+    f = SimpleUploadedFile("c.webp", _webp((800, 600)), content_type="image/webp")
+    with patch("ai.services.anthropic.Anthropic") as MockClient:
+        MockClient.return_value.messages.create.return_value = fake_response(FOOD_OK)
+        resp = client.post("/api/v1/ai/food/analyze", {"image": f}, format="multipart")
+    assert resp.status_code == 200
+
+
+# Pico de memoria medido en un proceso limpio: dentro de pytest el pico ya está inflado.
+_MEMORY_PROBE = r"""
+import ctypes, sys
+
+def peak_mb():
+    if sys.platform == "win32":
+        from ctypes import wintypes
+
+        class PMC(ctypes.Structure):
+            _fields_ = [("cb", wintypes.DWORD), ("PageFaultCount", wintypes.DWORD)] + [
+                (name, ctypes.c_size_t) for name in (
+                    "PeakWorkingSetSize", "WorkingSetSize", "QuotaPeakPagedPoolUsage", "QuotaPagedPoolUsage",
+                    "QuotaPeakNonPagedPoolUsage", "QuotaNonPagedPoolUsage", "PagefileUsage", "PeakPagefileUsage")
+            ]
+
+        pmc = PMC()
+        pmc.cb = ctypes.sizeof(PMC)
+        kernel32 = ctypes.windll.kernel32
+        kernel32.GetCurrentProcess.restype = wintypes.HANDLE
+        psapi = ctypes.windll.psapi
+        psapi.GetProcessMemoryInfo.argtypes = [wintypes.HANDLE, ctypes.POINTER(PMC), wintypes.DWORD]
+        psapi.GetProcessMemoryInfo(kernel32.GetCurrentProcess(), ctypes.byref(pmc), pmc.cb)
+        return pmc.PeakPagefileUsage / 2**20  # memoria comprometida: cuenta también lo no tocado
+    import resource
+    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+
+from profiles.image_processing import UnsupportedImageError, load_bounded
+
+before = peak_mb()
+try:
+    with open(sys.argv[1], "rb") as f:
+        load_bounded(f, max_side=1568)
+    outcome = "accepted"
+except UnsupportedImageError:
+    outcome = "rejected"
+print(outcome, round(peak_mb() - before))
+"""
+
+
+def run_memory_probe(path, pythonpath=BACKEND_DIR) -> tuple[str, int]:
+    env = {**os.environ, "PYTHONPATH": str(pythonpath)}
+    out = subprocess.run(
+        [sys.executable, "-c", _MEMORY_PROBE, str(path)],
+        cwd=pythonpath,  # con -c el directorio actual va antes que PYTHONPATH en sys.path
+        env=env,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.split()
+    return out[0], int(out[1])
+
+
+@pytest.mark.parametrize("kwargs", [{}, {"lossless": True}], ids=["vp8", "vp8l"])
+def test_webp_real_de_25_megapixeles_se_rechaza_sin_reservar_memoria(tmp_path, kwargs):
+    path = tmp_path / "grande.webp"
+    path.write_bytes(_webp((5000, 5000), **kwargs))  # decodificado serían >= 75 MB
+    outcome, growth_mb = run_memory_probe(path)
+    assert outcome == "rejected"
+    assert growth_mb < 32
 
 
 def _jpeg_with_orientation(size, orientation: int) -> bytes:
@@ -136,6 +260,9 @@ def test_foto_de_comida_llega_a_la_ia_reorientada(user_and_client):
         '{"items": [{"nombre": "pollo", "p": Infinity}]}',
         '{"items": [1, "x", null]}',
         "nada de json",
+        '{"items": [{"nombre": "\\ud800", "kcal": 1}]}',  # solo un surrogate: no queda nombre
+        '{"items": [{"nombre": "pollo", "kcal": ' + "9" * 400 + "}]}",
+        '{"items": [{"nombre": "pollo", "kcal": ' + "9" * 5000 + "}]}",
         "{roto",
     ],
 )
@@ -161,7 +288,10 @@ def test_parser_acepta_plato_sin_comida():
     assert out == {"plato": None, "items": [], "confianza": "baja", "nota": "Es un gato"}
 
 
-_FUZZ_ATOMS = [None, True, False, 0, -1, 1.5, 1e308, "", "x", "240 kcal", "-3", "NaN", [], {}, [1], {"a": 1}]
+_FUZZ_ATOMS = [
+    None, True, False, 0, -1, 1.5, 1e308, 10**400, "9" * 400, "", "x", "\ud800", "240 kcal", "-3", "NaN",
+    [], {}, [1], {"a": 1},
+]
 
 
 def _random_value(rng: random.Random, depth: int = 0):
@@ -228,8 +358,11 @@ def test_cliente_usa_timeout_y_reintentos_de_settings(user_and_client, settings)
         MockClient.return_value.messages.create.return_value = fake_response(FOOD_OK)
         _post_food(client, PNG_1X1)
     chat_kwargs, food_kwargs = (c.kwargs for c in MockClient.call_args_list)
-    assert chat_kwargs["timeout"] == settings.AI_CHAT_TIMEOUT_S
-    assert food_kwargs["timeout"] == settings.AI_VISION_TIMEOUT_S
+    assert chat_kwargs["timeout"].read == settings.AI_CHAT_TIMEOUT_S
+    assert food_kwargs["timeout"].read == settings.AI_VISION_TIMEOUT_S
+    for kwargs in (chat_kwargs, food_kwargs):
+        assert kwargs["timeout"].connect == kwargs["timeout"].pool == settings.AI_CONNECT_TIMEOUT_S
+        assert kwargs["timeout"].write == settings.AI_WRITE_TIMEOUT_S
     assert chat_kwargs["max_retries"] == food_kwargs["max_retries"] == settings.AI_MAX_RETRIES
 
 
@@ -241,6 +374,36 @@ def test_errores_raros_de_pillow_dan_400_no_500(user_and_client, exc):
         resp = _post_food(client, PNG_1X1)
     assert resp.status_code == 400
     assert resp.data["detail"] == "El archivo no es una imagen válida."
+
+
+@pytest.mark.django_db
+def test_error_inesperado_tras_reservar_devuelve_la_unidad(user_and_client):
+    user, client = user_and_client
+    client.raise_request_exception = False
+    with patch("ai.services.anthropic.Anthropic") as MockClient:
+        MockClient.return_value.messages.create.side_effect = RuntimeError("boom")
+        chat = client.post("/api/v1/ai/coach/chat", CHAT_PAYLOAD, format="json")
+        food = _post_food(client, PNG_1X1)
+    assert chat.status_code == food.status_code == 500
+    assert _usage(user, "chat").count == 0
+    assert _usage(user, "food").count == 0
+
+
+@pytest.mark.django_db
+def test_surrogate_suelto_del_modelo_no_rompe_la_respuesta(user_and_client):
+    user, client = user_and_client
+    food_text = '{"plato": "Po\\ud800llo", "items": [{"nombre": "a\\ud800b", "kcal": 1}], "nota": "\\udfff"}'
+    with patch("ai.services.anthropic.Anthropic") as MockClient:
+        MockClient.return_value.messages.create.return_value = fake_response("Va\ud800le.")
+        chat = client.post("/api/v1/ai/coach/chat", CHAT_PAYLOAD, format="json")
+        MockClient.return_value.messages.create.return_value = fake_response(food_text)
+        food = _post_food(client, PNG_1X1)
+    assert chat.status_code == 200
+    assert chat.json()["reply"] == "Vale."
+    assert food.status_code == 200
+    body = food.json()
+    assert (body["plato"], body["items"][0]["nombre"], body["nota"]) == ("Pollo", "ab", None)
+    assert _usage(user, "chat").count == _usage(user, "food").count == 1
 
 
 @pytest.mark.django_db

@@ -146,19 +146,23 @@ class CoachChatView(APIView):
         reservation = quota.reserve(user=user, kind=AIUsage.Kind.CHAT)
         if reservation is None:
             return _quota_exceeded_response(AIUsage.Kind.CHAT)
+        succeeded = False
         try:
             reply = services.coach_chat(
                 messages=messages, context=context, memory=memory, on_usage=_token_recorder(reservation)
             )
+            succeeded = True
+            return Response({"reply": reply})
         except _PROVIDER_ERRORS as exc:
-            quota.refund(reservation)
             return _provider_error_response(
                 exc,
                 bad_response_detail="La IA no devolvió una respuesta válida.",
                 saturated_detail="El coach está saturado ahora mismo. Inténtalo de nuevo en unos minutos.",
                 log_msg="Fallo del SDK de Anthropic en el chat del coach",
             )
-        return Response({"reply": reply})
+        finally:
+            if not succeeded:  # cualquier salida sin 2xx, incluida una excepción inesperada
+                quota.refund(reservation)
 
 
 class FoodPhotoView(APIView):
@@ -201,19 +205,23 @@ class FoodPhotoView(APIView):
         reservation = quota.reserve(user=user, kind=AIUsage.Kind.FOOD)
         if reservation is None:
             return _quota_exceeded_response(AIUsage.Kind.FOOD)
+        succeeded = False
         try:
             result = services.food_photo_analyze(
                 image_bytes=photo_bytes, media_type="image/jpeg", on_usage=_token_recorder(reservation)
             )
+            succeeded = True
+            return Response(result)
         except _PROVIDER_ERRORS as exc:
-            quota.refund(reservation)
             return _provider_error_response(
                 exc,
                 bad_response_detail="La IA no devolvió un análisis válido. Prueba con otra foto.",
                 saturated_detail="El análisis de fotos está saturado ahora mismo. Inténtalo de nuevo en unos minutos.",
                 log_msg="Fallo del SDK de Anthropic en el análisis de comida",
             )
-        return Response(result)
+        finally:
+            if not succeeded:
+                quota.refund(reservation)
 
 
 class QuotaView(APIView):

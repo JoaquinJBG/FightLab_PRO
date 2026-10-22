@@ -32,7 +32,8 @@ from PIL import Image
 MAX_SIDE_PX = 1600
 # Tope de píxeles de ENTRADA (ancho x alto) antes de decodificar.
 MAX_INPUT_PIXELS = 40_000_000  # 40 MP, p. ej. ~6500x6150 (JPEG, decodifica escalado)
-MAX_INPUT_PIXELS_NON_JPEG = 24_000_000  # ~96 MB en RGBA a resolución completa
+# Sin decodificación escalada el pico medido es ~10 B/px (24 MP -> 246 MB): 12 MP ≈ 120 MB.
+MAX_INPUT_PIXELS_NON_JPEG = 12_000_000
 TARGET_MAX_BYTES = 500 * 1024
 JPEG_QUALITY_START = 82
 JPEG_QUALITY_FLOOR = 40
@@ -62,6 +63,41 @@ def max_input_pixels(fmt: str | None) -> int:
     return MAX_INPUT_PIXELS if fmt == "JPEG" else MAX_INPUT_PIXELS_NON_JPEG
 
 
+def webp_size(header: bytes) -> tuple[int, int] | None:
+    """Tamaño ``(ancho, alto)`` leído de la cabecera RIFF de un WebP, o ``None`` si no lo es.
+
+    Lanza ``UnsupportedImageError`` si es un WebP cuya cabecera no se entiende.
+    """
+    if len(header) < 12 or header[:4] != b"RIFF" or header[8:12] != b"WEBP":
+        return None
+    chunk = header[12:16]
+    if len(header) >= 30 and chunk == b"VP8X":
+        return 1 + int.from_bytes(header[24:27], "little"), 1 + int.from_bytes(header[27:30], "little")
+    if len(header) >= 30 and chunk == b"VP8 " and header[23:26] == b"\x9d\x01\x2a":
+        return (
+            int.from_bytes(header[26:28], "little") & 0x3FFF,
+            int.from_bytes(header[28:30], "little") & 0x3FFF,
+        )
+    if len(header) >= 25 and chunk == b"VP8L" and header[20] == 0x2F:
+        bits = int.from_bytes(header[21:25], "little")
+        return (bits & 0x3FFF) + 1, ((bits >> 14) & 0x3FFF) + 1
+    raise UnsupportedImageError("Cabecera WebP no reconocida.")
+
+
+def _check_webp_header(file_obj) -> None:
+    # Pillow decodifica el primer fotograma WebP dentro de Image.open: el tope
+    # hay que aplicarlo antes, leyendo la cabecera a mano.
+    start = file_obj.tell()
+    header = file_obj.read(30)
+    file_obj.seek(start)
+    size = webp_size(header)
+    if size is not None and size[0] * size[1] > MAX_INPUT_PIXELS_NON_JPEG:
+        raise UnsupportedImageError(
+            f"Imagen demasiado grande ({size[0]}x{size[1]} px); "
+            f"el máximo son {MAX_INPUT_PIXELS_NON_JPEG} píxeles."
+        )
+
+
 def load_bounded(file_obj, *, max_side: int, formats: frozenset[str] | None = None) -> tuple[Image.Image, str]:
     """Devuelve ``(imagen_rgb_reducida_y_orientada, formato_original)``.
 
@@ -69,6 +105,7 @@ def load_bounded(file_obj, *, max_side: int, formats: frozenset[str] | None = No
     real, ``UnsupportedImageError`` si supera el tope de píxeles (ambas antes
     de decodificar), o la excepción de Pillow si el archivo no es una imagen.
     """
+    _check_webp_header(file_obj)
     with Image.open(file_obj) as opened:
         fmt = opened.format or ""
         if formats is not None and fmt not in formats:

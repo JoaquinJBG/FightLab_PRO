@@ -12,8 +12,10 @@ PROXY_ROUTE = BACKEND_DIR.parent / "frontend" / "app" / "api" / "proxy" / "[...p
 
 def test_timeout_del_proveedor_menor_que_bff_menor_que_gunicorn():
     s = project_settings
-    worst_chat = s.AI_CHAT_TIMEOUT_S * (1 + s.AI_MAX_RETRIES)
-    worst_vision = s.AI_VISION_TIMEOUT_S * (1 + s.AI_MAX_RETRIES)
+    # httpx cuenta cada fase por separado: el peor caso es pool + conexión + envío + lectura.
+    other_phases = 2 * s.AI_CONNECT_TIMEOUT_S + s.AI_WRITE_TIMEOUT_S
+    worst_chat = (other_phases + s.AI_CHAT_TIMEOUT_S) * (1 + s.AI_MAX_RETRIES)
+    worst_vision = (other_phases + s.AI_VISION_TIMEOUT_S) * (1 + s.AI_MAX_RETRIES)
     assert max(worst_chat, worst_vision) < s.BFF_REQUEST_DEADLINE_S < s.BFF_MAX_DURATION_S < s.GUNICORN_TIMEOUT_S
 
 

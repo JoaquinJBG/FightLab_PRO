@@ -11,6 +11,7 @@ import re
 from collections.abc import Callable
 
 import anthropic
+import httpx
 from django.conf import settings
 
 
@@ -28,9 +29,18 @@ UsageSink = Callable[[int, int], None]
 def _client(timeout: float) -> anthropic.Anthropic:
     if not settings.ANTHROPIC_API_KEY:
         raise AIUnavailable("ANTHROPIC_API_KEY no configurada")
-    return anthropic.Anthropic(
-        api_key=settings.ANTHROPIC_API_KEY, timeout=timeout, max_retries=settings.AI_MAX_RETRIES
+    timeout = httpx.Timeout(
+        connect=settings.AI_CONNECT_TIMEOUT_S,
+        write=settings.AI_WRITE_TIMEOUT_S,
+        read=timeout,
+        pool=settings.AI_CONNECT_TIMEOUT_S,
     )
+    return anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY, timeout=timeout, max_retries=settings.AI_MAX_RETRIES)
+
+
+def _clean_text(value: str) -> str:
+    # Un surrogate suelto en la respuesta del modelo rompe el renderer JSON de DRF ya facturado.
+    return value.encode("utf-8", "ignore").decode("utf-8")
 
 
 def _report_usage(resp, on_usage: UsageSink | None) -> None:
@@ -123,7 +133,7 @@ def coach_chat(
         messages=cleaned,
     )
     _report_usage(resp, on_usage)
-    text = "".join(block.text for block in resp.content if block.type == "text").strip()
+    text = _clean_text("".join(block.text for block in resp.content if block.type == "text")).strip()
     if not text:
         raise AIBadResponse("Respuesta vacía del modelo")
     return text
@@ -240,7 +250,10 @@ def _coerce_number(value, *, field: str, cap: int, nullable: bool = False) -> in
     if isinstance(value, bool):
         raise AIBadResponse(f"Valor no numérico en '{field}'")
     if isinstance(value, (int, float)):
-        number = float(value)
+        try:
+            number = float(value)
+        except OverflowError as exc:
+            raise AIBadResponse(f"Valor fuera de rango en '{field}'") from exc
     elif isinstance(value, str):
         match = _LEADING_NUMBER_RE.match(value)
         if match is None:
@@ -266,7 +279,7 @@ def _parse_food_json(text: str) -> dict:
         raise AIBadResponse("La IA no devolvió JSON")
     try:
         data = json.loads(text[start : end + 1])
-    except (json.JSONDecodeError, RecursionError) as exc:
+    except (ValueError, RecursionError) as exc:  # ValueError: también el tope de dígitos de int
         raise AIBadResponse("JSON inválido de la IA") from exc
     if not isinstance(data, dict):
         raise AIBadResponse("La IA no devolvió un objeto JSON")
@@ -276,11 +289,14 @@ def _parse_food_json(text: str) -> dict:
 
     items = []
     for it in raw_items:
-        if not isinstance(it, dict) or not isinstance(it.get("nombre"), str) or not it["nombre"].strip():
+        if not isinstance(it, dict) or not isinstance(it.get("nombre"), str):
+            continue
+        nombre = _clean_text(it["nombre"]).strip()[:80]
+        if not nombre:
             continue
         items.append(
             {
-                "nombre": it["nombre"].strip()[:80],
+                "nombre": nombre,
                 "gramos": _coerce_number(it.get("gramos"), field="gramos", cap=_MAX_ITEM_GRAMS, nullable=True),
                 "kcal": _coerce_number(it.get("kcal"), field="kcal", cap=_MAX_ITEM_KCAL),
                 "p": _coerce_number(it.get("p"), field="p", cap=_MAX_ITEM_MACRO),
@@ -292,8 +308,8 @@ def _parse_food_json(text: str) -> dict:
         raise AIBadResponse("Ningún alimento válido en 'items'")
     plato, nota, confianza = data.get("plato"), data.get("nota"), data.get("confianza")
     return {
-        "plato": (plato.strip()[:80] or None) if isinstance(plato, str) else None,
+        "plato": (_clean_text(plato).strip()[:80] or None) if isinstance(plato, str) else None,
         "items": items,
         "confianza": confianza if confianza in ("alta", "media", "baja") else "media",
-        "nota": (nota.strip()[:200] or None) if isinstance(nota, str) else None,
+        "nota": (_clean_text(nota).strip()[:200] or None) if isinstance(nota, str) else None,
     }
