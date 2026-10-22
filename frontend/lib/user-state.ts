@@ -194,7 +194,28 @@ export async function claimDeviceForCurrentUser(timeoutMs = 5_000): Promise<void
 
 /* --------------------------------- red -------------------------------------- */
 
-async function putState(key: string, value: unknown, updatedAt: string): Promise<{ ok: boolean; server?: ServerEntry }> {
+export const STATE_REJECTED_EVENT = "flp:state-rejected";
+export type StateRejectedDetail = { key: string; status: number };
+
+/** 4xx que el servidor repetiría igual: reintentar solo gastaría throttle.
+ *  401/403/408/429 no cuentan: sesión caducada, timeout o throttle se resuelven solos. */
+function isTerminalRejection(status: number): boolean {
+  return status >= 400 && status < 500 && ![401, 403, 408, 429].includes(status);
+}
+
+const notifiedRejections = new Set<string>();
+
+function notifyRejected(key: string, status: number): void {
+  if (typeof window === "undefined" || notifiedRejections.has(key)) return;
+  notifiedRejections.add(key);
+  window.dispatchEvent(new CustomEvent<StateRejectedDetail>(STATE_REJECTED_EVENT, { detail: { key, status } }));
+}
+
+async function putState(
+  key: string,
+  value: unknown,
+  updatedAt: string,
+): Promise<{ ok: boolean; rejectedStatus?: number; server?: ServerEntry }> {
   try {
     const res = await fetch(`/api/proxy/me/state/${encodeURIComponent(key)}`, {
       method: "PUT",
@@ -202,7 +223,7 @@ async function putState(key: string, value: unknown, updatedAt: string): Promise
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ value, updated_at: updatedAt }),
     });
-    if (!res.ok) return { ok: false };
+    if (!res.ok) return isTerminalRejection(res.status) ? { ok: false, rejectedStatus: res.status } : { ok: false };
     const data = (await res.json().catch(() => null)) as ServerEntry | null;
     return { ok: true, server: data ?? undefined };
   } catch {
@@ -333,6 +354,13 @@ async function runPending(key: string): Promise<void> {
     if (result.server && result.server.accepted === false) {
       adoptServerValue(key, result.server, current.serialize);
     }
+    return;
+  }
+  if (result.rejectedStatus !== undefined) {
+    // El valor local se conserva; solo se deja de sincronizar esta escritura.
+    pending.delete(key);
+    persistPendingForUid(current.uid ?? ANON_UID);
+    notifyRejected(key, result.rejectedStatus);
     return;
   }
   current.attempts += 1;
@@ -540,6 +568,7 @@ export function resetUserStateQueue(): void {
     if (entry.timer) clearTimeout(entry.timer);
   }
   pending.clear();
+  notifiedRejections.clear();
   removeKickListeners();
 }
 

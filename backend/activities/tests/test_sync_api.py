@@ -170,3 +170,25 @@ def test_delete_masivo_por_kind(auth_client):
     resp = auth_client.delete("/api/v1/activities?kind=SPORT")
     assert resp.data["deleted"] == 1
     assert Activity.objects.filter(kind="MMA").count() == 1
+
+
+def test_activities_per_day_cap_is_terminal_invalid(auth_client, monkeypatch):
+    monkeypatch.setattr("activities.services.MAX_ACTIVITIES_PER_DAY", 2)
+    when = (timezone.now() - timedelta(hours=3)).isoformat()
+    items = [item(cid=f"cid-cap-{i:04d}", started_at=when) for i in range(3)]
+    resp = auth_client.post("/api/v1/activities/sync", {"items": items}, format="json")
+    assert resp.status_code == 200
+    assert [r["status"] for r in resp.data["results"]] == ["created", "created", "invalid"]
+    assert "started_at" in resp.data["results"][2]["errors"]
+    # el reintento de un item ya guardado sigue siendo `exists`, no `invalid`
+    again = auth_client.post("/api/v1/activities/sync", {"items": items[:1]}, format="json")
+    assert again.data["results"][0]["status"] == "exists"
+    other_day = item(cid="cid-cap-other0", started_at=(timezone.now() - timedelta(days=3)).isoformat())
+    ok = auth_client.post("/api/v1/activities/sync", {"items": [other_day]}, format="json")
+    assert ok.data["results"][0]["status"] == "created"
+
+
+def test_detail_over_8kb_is_invalid(auth_client):
+    big = item(cid="cid-big-0001", detail={"blob": "x" * 9000})
+    resp = auth_client.post("/api/v1/activities/sync", {"items": [big]}, format="json")
+    assert resp.data["results"][0]["status"] == "invalid"

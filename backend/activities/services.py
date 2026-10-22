@@ -1,5 +1,7 @@
 from django.db import IntegrityError, transaction
+from django.utils import timezone
 
+from .constants import MAX_ACTIVITIES_PER_DAY
 from .models import Activity
 from .serializers import SyncItemSerializer
 
@@ -25,6 +27,21 @@ def activities_sync(*, user, items: list) -> list[dict]:
             continue
         data = dict(ser.validated_data)
         cid = data.pop("client_id")
+        already = Activity.objects.filter(
+            profile=user.profile, source=Activity.Source.MANUAL, external_id=cid
+        ).exists()
+        if not already and (
+            Activity.objects.filter(
+                profile=user.profile, started_at__date=timezone.localtime(data["started_at"]).date()
+            ).count()
+            >= MAX_ACTIVITIES_PER_DAY
+        ):
+            results.append({
+                "client_id": cid,
+                "status": "invalid",
+                "errors": {"started_at": [f"Máximo {MAX_ACTIVITIES_PER_DAY} actividades por día."]},
+            })
+            continue
         try:
             with transaction.atomic():
                 act = Activity.objects.create(
