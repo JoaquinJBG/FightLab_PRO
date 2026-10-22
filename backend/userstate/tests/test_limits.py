@@ -1,3 +1,4 @@
+import importlib
 import threading
 from datetime import timedelta
 from unittest import mock
@@ -95,9 +96,33 @@ def test_legacy_row_with_future_updated_at_does_not_lock_the_key(auth_client):
         profile=UserProfile.objects.get(), key="weigh", value={"kg": 1},
         updated_at=timezone.now().replace(year=9000),
     )
-    resp = put(auth_client, "weigh", {"kg": 2}, (timezone.now() + timedelta(minutes=10)).isoformat())
+    resp = put(auth_client, "weigh", {"kg": 2})
     assert resp.status_code == 200
     assert resp.data["accepted"] is True
+    assert UserState.objects.get(key="weigh").value == {"kg": 2}
+
+
+@pytest.mark.django_db
+def test_migration_clamps_future_rows_and_keeps_others(auth_client):
+    from django.apps import apps as django_apps
+    from profiles.models import UserProfile
+    migration = importlib.import_module("userstate.migrations.0002_clamp_future_updated_at")
+    profile = UserProfile.objects.get()
+    past = timezone.now() - timedelta(days=3)
+    UserState.objects.create(profile=profile, key="weigh", value={"k": 1}, updated_at=timezone.now().replace(year=9000))
+    UserState.objects.create(profile=profile, key="coach_fb", value={"k": 1}, updated_at=past)
+
+    migration.clamp_future(django_apps, None)
+
+    assert UserState.objects.get(key="weigh").updated_at <= timezone.now()
+    assert UserState.objects.get(key="coach_fb").updated_at == past
+
+
+@pytest.mark.django_db
+def test_total_cap_counts_real_bytes_not_characters(auth_client, monkeypatch):
+    monkeypatch.setattr(services, "MAX_USER_BYTES", 1_500)
+    assert put(auth_client, "coach_fb", {"b": "á" * 400}).status_code == 200  # ~800 bytes
+    assert put(auth_client, "coach_memory", {"b": "á" * 400}).status_code == 400
 
 
 @pytest.mark.django_db(transaction=True)

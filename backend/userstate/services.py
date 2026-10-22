@@ -4,8 +4,8 @@ from datetime import date
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
-from django.db.models import Sum, TextField
-from django.db.models.functions import Cast, Length
+from django.db.models import Func, IntegerField, Sum, TextField
+from django.db.models.functions import Cast
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
@@ -84,7 +84,7 @@ def _bytes_used_by_others(profile, key) -> int:
     total = (
         UserState.objects.filter(profile=profile)
         .exclude(key=key)
-        .aggregate(total=Sum(Length(Cast("value", TextField()))))["total"]
+        .aggregate(total=Sum(Func(Cast("value", TextField()), function="octet_length", output_field=IntegerField())))["total"]
     )
     return total or 0
 
@@ -97,8 +97,8 @@ def state_put(*, profile, key, value, client_updated_at=None):
     que el cliente adopte ese valor. En cualquier otro caso, se guarda el valor del
     cliente (accepted=True). Devuelve (UserState, accepted).
 
-    El reloj del cliente se recorta a `ahora + 5 min` (y lo mismo el de una fila
-    ya guardada con fecha futura) para que un reloj adelantado no bloquee la clave.
+    El reloj del cliente se recorta a `ahora + 5 min` (una fila ya guardada con fecha
+    futura pierde contra cualquier escritura en ventana) para que un reloj adelantado no bloquee la clave.
     Dos primeras escrituras concurrentes sobre la misma clave chocan en
     `unique_profile_key`: la perdedora reintenta una vez como actualización.
     """
@@ -116,7 +116,7 @@ def state_put(*, profile, key, value, client_updated_at=None):
                 existing = (
                     UserState.objects.select_for_update().filter(profile=profile, key=key).first()
                 )
-                if existing is not None and min(existing.updated_at, ceiling) > incoming_at:
+                if existing is not None and existing.updated_at <= ceiling and existing.updated_at > incoming_at:
                     return existing, False
                 entry = existing or UserState(profile=profile, key=key)
                 entry.value = value

@@ -613,6 +613,7 @@ describe("dispositivo compartido: dueño de los flp_* (flp_owner_uid)", () => {
     seedUserA();
     const mod = await importFresh();
     expect(mod.claimDeviceOwner("1")).toBe(false);
+    expect(localStorage.getItem("flp_weigh")).not.toBeNull();
     expect(mod.claimDeviceOwner("2")).toBe(true);
     expect(localStorage.getItem("flp_weigh")).toBeNull();
     localStorage.setItem("flp_weigh", JSON.stringify({ target: 90 }));
@@ -637,6 +638,7 @@ describe("dispositivo compartido: dueño de los flp_* (flp_owner_uid)", () => {
     localStorage.setItem("flp_weigh", JSON.stringify({ target: 70 }));
     const mod = await importFresh();
     expect(mod.claimDeviceOwner("2")).toBe(false);
+    expect(localStorage.getItem("flp_weigh")).not.toBeNull();
     expect(localStorage.getItem("flp_owner_uid")).toBe("2");
   });
 
