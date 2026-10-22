@@ -93,8 +93,8 @@ export function buildRecs(ctx: Ctx): Rec[] {
       tone: ctx.weighDays <= 5 ? "warn" : "info",
       title: `${(ctx.weight - ctx.weighTarget).toFixed(1)} kg sobre el objetivo · pesaje en ${ctx.weighDays} d`,
       why: ctx.weighDays > 5
-        ? "Margen razonable: mantén el déficit y no toques agua ni sodio todavía."
-        : "Queda poco: revisa el plan y consulta a tu equipo antes de cualquier corte agresivo.",
+        ? "Margen razonable: mantén un déficit moderado. No recortes agua ni sodio por tu cuenta."
+        : "Queda poco: revisa el plan con tu entrenador o un médico antes de cualquier corte agresivo.",
       action: { label: "Plan de pesaje", href: "/nutrition/weigh-in" },
     });
   }
@@ -148,7 +148,7 @@ export function coachReply(text: string, ctx: Ctx): string {
     if (ctx.weighTarget != null && ctx.weighDays != null) {
       const over = ctx.weight - ctx.weighTarget;
       return over > 0
-        ? `Estás a ${over.toFixed(1)} kg del objetivo con ${ctx.weighDays} días de margen. Ritmo razonable: déficit moderado y nada de cortes de agua hasta las últimas 48-72 h, y con cabeza.`
+        ? `Estás a ${over.toFixed(1)} kg del objetivo con ${ctx.weighDays} días de margen. Ritmo razonable: déficit moderado, sin recortar agua ni sodio por tu cuenta. Si hace falta un corte, que lo supervise tu entrenador o un médico.`
         : `Ya estás en el peso objetivo (${ctx.weighTarget} kg) con ${ctx.weighDays} días de margen. Mantén y llega fresco.`;
     }
     return `Tu último peso es ${ctx.weight.toFixed(1)} kg. Si tienes combate, configura el pesaje en Nutrición y te llevo el plan.`;
