@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, staging]
+    branches: [main, staging, feat/beta-cloud]
   pull_request:
 
 concurrency:
@@ -60,6 +60,14 @@ jobs:
           ADMIN_URL: secret-admin/
           EMAIL_PROVIDER: console
           FRONTEND_URL: https://app.example.test
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: build backend image
+        run: docker build backend
 
   frontend:
     runs-on: ubuntu-latest
