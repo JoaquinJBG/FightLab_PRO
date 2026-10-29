@@ -12,6 +12,7 @@ import anthropic
 from django.conf import settings
 
 from coaching import citations as chat_tools
+from coaching.bridge import reason_texts
 
 
 class AIUnavailable(Exception):
@@ -61,11 +62,22 @@ def _block_to_param(block) -> dict:
     return {"type": "text", "text": block.text}
 
 
-def coach_chat(*, messages: list[dict], context: dict, language: str | None = None) -> CoachReply:
+def with_deferral_line(text: str, language: str | None) -> str:
+    """Termina la respuesta con la línea de derivación de `docs/safety.md`, literal, en el idioma
+    del usuario. La añade el backend, no el modelo (spec §7.4)."""
+    code = (language or "").split("-")[0]
+    line = reason_texts.DEFERRAL_LINE[code if code in reason_texts.LANGUAGES else reason_texts.DEFAULT_LANGUAGE]
+    return text if line in text else f"{text}\n\n{line}"
+
+
+def coach_chat(
+    *, messages: list[dict], context: dict, language: str | None = None, refer_gp: bool = False
+) -> CoachReply:
     """Chat del coach con el contexto real del atleta y herramientas de evidencia.
 
     `language`: el idioma del perfil del usuario (`profile.language`). Las citas `[[regla:clave]]`
-    se validan aquí: las que no existen o no salieron en una herramienta se quitan.
+    se validan aquí: las que no existen o no salieron en una herramienta se quitan. Con `refer_gp`
+    (flag del motor), la respuesta termina con la línea de derivación.
     """
     client = _client(timeout=30.0)
 
@@ -120,6 +132,8 @@ def coach_chat(*, messages: list[dict], context: dict, language: str | None = No
     text, citations = chat_tools.validate_citations(text, retrieved)
     if not text:
         raise AIBadResponse("Respuesta vacía tras quitar las citas inválidas")
+    if refer_gp:
+        text = with_deferral_line(text, language)
     return CoachReply(text=text, citations=citations)
 
 

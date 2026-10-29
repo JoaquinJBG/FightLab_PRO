@@ -23,6 +23,20 @@ CONTEXT_KEYS = {
 MEDIA_TYPES = {"JPEG": "image/jpeg", "PNG": "image/png", "WEBP": "image/webp", "GIF": "image/gif"}
 
 
+def _refer_gp(user) -> bool:
+    """`refer_gp` de los flags del motor. Si el motor no puede evaluar el perfil, no hay línea:
+    el chat no debe caerse por eso."""
+    from coach.profile import ProfileIncomplete
+
+    from coaching.safety_views import _today
+    from coaching.services import safety_for
+
+    try:
+        return safety_for(user, _today(user.profile)).refer_gp
+    except (ProfileIncomplete, ValueError):
+        return False
+
+
 class CoachChatView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -47,7 +61,10 @@ class CoachChatView(APIView):
 
         try:
             reply = services.coach_chat(
-                messages=messages, context=context, language=request.user.profile.language
+                messages=messages,
+                context=context,
+                language=request.user.profile.language,
+                refer_gp=_refer_gp(request.user),
             )
         except services.AIUnavailable:
             return Response({"detail": msg("ai_not_configured")}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
