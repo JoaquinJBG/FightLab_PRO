@@ -9,6 +9,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from coach import profile as coach_profile
 from coach.profile import Profile
 
+from coaching.bridge.energy_athletes import BodyFat
 from coaching.models import Screening
 
 GENDER_TO_SEX = {"MALE": "male", "FEMALE": "female"}
@@ -37,6 +38,29 @@ def latest_weight(user, today: date | None = None) -> tuple[float, date] | None:
         return None
     day, kg = points[-1]
     return kg, day
+
+
+def latest_body_fat(user, today: date | None = None) -> BodyFat | None:
+    """La última medida de grasa corporal (hasta `today`), con cómo se midió (U04)."""
+    profile = user.profile
+    tz = _tz(profile)
+    for log in profile.biometrics.filter(body_fat_pct__isnull=False).order_by("-timestamp"):
+        day = log.timestamp.astimezone(tz).date()
+        if today is None or day <= today:
+            weight = float(log.weight_kg) if log.weight_kg is not None else None
+            return BodyFat(float(log.body_fat_pct), log.body_fat_method or None, day, weight)
+    return None
+
+
+def latest_resting_hr(user, today: date | None = None) -> tuple[int, date] | None:
+    """La última frecuencia cardiaca en reposo registrada (hasta `today`) y su fecha."""
+    profile = user.profile
+    tz = _tz(profile)
+    for log in profile.biometrics.filter(resting_heart_rate__isnull=False).order_by("-timestamp"):
+        day = log.timestamp.astimezone(tz).date()
+        if today is None or day <= today:
+            return log.resting_heart_rate, day
+    return None
 
 
 def _sex(profile) -> str | None:

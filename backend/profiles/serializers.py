@@ -24,7 +24,7 @@ class BiometricsSerializer(serializers.ModelSerializer):
     class Meta:
         model = BiometricsLog
         fields = (
-            "id", "weight_kg", "body_fat_pct", "resting_heart_rate",
+            "id", "weight_kg", "body_fat_pct", "body_fat_method", "resting_heart_rate",
             "sleep_quality_score", "hrv_ms",
             "waist_cm", "hip_cm", "chest_cm", "arm_cm", "thigh_cm", "neck_cm",
             "timestamp", "source", "external_id", "raw_payload",

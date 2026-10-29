@@ -106,22 +106,23 @@ class SourceDetailView(APIView):
         return Response(source_data(source))
 
 
+def engine_info() -> dict:
+    """Versión del motor y fecha de la evidencia: va en cada respuesta con números del motor."""
+    checked = KnowledgeRule.objects.filter(origin="upstream", retired=False).aggregate(d=Max("checked_on"))["d"]
+    if checked is None:  # aún no se ha cargado `load_knowledge`: se lee de los archivos
+        dates = [coach_knowledge.checked_date(coach_knowledge.read(p)) for p in coach_knowledge.rule_files()]
+        checked = max((d for d in dates if d), default=None)
+    return {
+        "sha": ENGINE_SHA[:7],
+        "sha_full": ENGINE_SHA,
+        "knowledge_checked_on": checked.isoformat() if checked else None,
+    }
+
+
 class EngineView(APIView):
     """`GET /coach/engine`: versión del motor y fecha de la evidencia (pantalla de Créditos)."""
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        checked = KnowledgeRule.objects.filter(origin="upstream", retired=False).aggregate(d=Max("checked_on"))["d"]
-        if checked is None:  # aún no se ha cargado `load_knowledge`: se lee de los archivos
-            dates = [
-                coach_knowledge.checked_date(coach_knowledge.read(p)) for p in coach_knowledge.rule_files()
-            ]
-            checked = max((d for d in dates if d), default=None)
-        return Response(
-            {
-                "sha": ENGINE_SHA[:7],
-                "sha_full": ENGINE_SHA,
-                "knowledge_checked_on": checked.isoformat() if checked else None,
-            }
-        )
+        return Response(engine_info())

@@ -12,6 +12,16 @@ EXPERIENCE = [(e, e) for e in coach_profile.EXPERIENCE]
 ACTIVITY_LEVELS = [(a, a) for a in coach_profile.ACTIVITY_LEVELS]
 LANGUAGES = [(lang, lang) for lang in coach_profile.LANGUAGES]
 DEFAULT_LANGUAGE = "es"
+# Cómo se midió la grasa corporal (U04). Solo los cuatro primeros valen para una ecuación con
+# masa magra (`coaching.bridge.energy_athletes.RELIABLE_BODY_FAT_METHODS`).
+BODY_FAT_METHODS = [
+    ("dxa", "DXA"),
+    ("bodpod", "BodPod"),
+    ("bia_lab", "BIA de laboratorio u octopolar"),
+    ("skinfolds", "Pliegues cutáneos"),
+    ("smart_scale", "Báscula doméstica"),
+    ("other", "Otro método"),
+]
 # convention (FightLab): hasta 14 sesiones a la semana (dos al día), solo control de entrada.
 MAX_TRAINING_FREQUENCY = 14
 
@@ -133,6 +143,8 @@ class BiometricsLog(models.Model):
     )
     weight_kg = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     body_fat_pct = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
+    # Vacío: no se sabe cómo se midió. Sin método fiable, la grasa no entra en el RMR (U04).
+    body_fat_method = models.CharField(max_length=12, choices=BODY_FAT_METHODS, blank=True, default="")
     resting_heart_rate = models.PositiveSmallIntegerField(null=True, blank=True)
     sleep_quality_score = models.PositiveSmallIntegerField(
         null=True, blank=True,
