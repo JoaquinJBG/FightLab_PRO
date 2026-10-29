@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -78,3 +80,107 @@ class RuleTranslation(models.Model):
 
     def __str__(self) -> str:
         return f"{self.rule_id}:{self.lang}"
+
+
+# --- Cribado y lesiones (spec §6.3) ---
+# Los mismos resultados que `coach.profile.SCREENING_KEYS`, nulos por defecto: *sin contestar*
+# no es *contestado con NO* (el coach trata la ausencia de `parq_any_yes` como PAR-Q+ sin
+# contestar). Solo se guardan resultados, nunca el texto de las preguntas.
+
+
+class Screening(models.Model):
+    class Menstrual(models.TextChoices):
+        NORMAL = "normal", "normal"
+        IRREGULAR_NEW = "irregular_new", "irregular_new"
+        ABSENT = "absent", "absent"
+        NOT_APPLICABLE = "not_applicable", "not_applicable"
+
+    profile = models.OneToOneField(
+        "profiles.UserProfile", on_delete=models.CASCADE, related_name="screening"
+    )
+    scoff_yes_count = models.PositiveSmallIntegerField(null=True, blank=True)
+    scoff_positive = models.BooleanField(null=True, blank=True)
+    parq_any_yes = models.BooleanField(null=True, blank=True)
+    parq_followup_yes = models.BooleanField(null=True, blank=True)
+    vigorous_reviewed = models.BooleanField(null=True, blank=True)
+    cardiac_symptoms = models.BooleanField(null=True, blank=True)
+    menstrual = models.CharField(max_length=14, choices=Menstrual.choices, null=True, blank=True)
+    bp_systolic = models.PositiveSmallIntegerField(null=True, blank=True)
+    bp_diastolic = models.PositiveSmallIntegerField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"Screening<{self.profile_id}>"
+
+
+class ScreeningEvent(models.Model):
+    """Traza de cada cambio del cribado (solo se añade). Gobernanza ligera, sin auditoría formal."""
+
+    class Origin(models.TextChoices):
+        ONBOARDING = "onboarding", "onboarding"
+        CHECKIN = "checkin", "checkin"
+        REVIEW = "review", "review"
+
+    profile = models.ForeignKey(
+        "profiles.UserProfile", on_delete=models.CASCADE, related_name="screening_events"
+    )
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    key = models.CharField(max_length=40)
+    old_value = models.JSONField(null=True, blank=True)
+    new_value = models.JSONField(null=True, blank=True)
+    origin = models.CharField(max_length=10, choices=Origin.choices)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+
+    def __str__(self) -> str:
+        return f"{self.key}: {self.old_value!r} -> {self.new_value!r}"
+
+
+class Injury(models.Model):
+    """Una lesión por zona, como `coach.profile.INJURY_KEYS`. Mientras está activa, los
+    ejercicios de `exercises` no progresan (`coach.safety`)."""
+
+    class Status(models.TextChoices):
+        ACTIVE = "active", "active"
+        CLEARED = "cleared", "cleared"
+
+    class Origin(models.TextChoices):
+        ONBOARDING = "onboarding", "onboarding"
+        CHECKIN = "checkin", "checkin"
+        MMA_SESSION = "mma_session", "mma_session"
+
+    profile = models.ForeignKey(
+        "profiles.UserProfile", on_delete=models.CASCADE, related_name="injuries"
+    )
+    area = models.CharField(max_length=120)  # en palabras del usuario
+    status = models.CharField(max_length=7, choices=Status.choices, default=Status.ACTIVE)
+    since = models.DateField(null=True, blank=True)
+    professional = models.CharField(max_length=120, null=True, blank=True)
+    cleared_on = models.DateField(null=True, blank=True)
+    exercises = models.JSONField(default=list, blank=True)  # nombres de ejercicio
+    origin = models.CharField(max_length=11, choices=Origin.choices, default=Origin.ONBOARDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+
+    def clean(self) -> None:
+        # Las mismas reglas que `coach.profile._validate_injury`.
+        errors = {}
+        if not (self.area or "").strip():
+            errors["area"] = "each injury needs an area"
+        if self.status == self.Status.CLEARED and self.cleared_on is None:
+            errors["cleared_on"] = "a cleared injury needs cleared_on"
+        if self.since and self.cleared_on and self.cleared_on < self.since:
+            errors["cleared_on"] = "an injury's cleared_on cannot be before its since date"
+        if not isinstance(self.exercises, list) or not all(isinstance(e, str) for e in self.exercises):
+            errors["exercises"] = "injury exercises must be exercise names"
+        if errors:
+            raise ValidationError(errors)
+
+    def __str__(self) -> str:
+        return f"Injury<{self.area} {self.status}>"
