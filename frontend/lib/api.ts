@@ -1,6 +1,18 @@
+import { cookies, headers as reqHeaders } from "next/headers";
+import { LANG_COOKIE, resolveLocale } from "./locale";
+
 const BASE = process.env.DJANGO_API_URL ?? "http://127.0.0.1:8001/api/v1";
 // Origen del backend (sin /api/v1) para servir archivos de /media
 export const DJANGO_ORIGIN = BASE.replace(/\/api\/v1\/?$/, "");
+
+/** Idioma de la petición (cookie `flp_lang`, luego `Accept-Language`) para que
+ * Django devuelva sus mensajes en el mismo idioma que la UI. */
+async function acceptLanguage(): Promise<string> {
+  return resolveLocale(
+    (await cookies()).get(LANG_COOKIE)?.value,
+    (await reqHeaders()).get("accept-language"),
+  );
+}
 
 export type ApiResult = { status: number; data: unknown };
 
@@ -8,7 +20,10 @@ export async function djangoFetch(
   path: string,
   opts: { method?: string; body?: unknown; access?: string | null } = {},
 ): Promise<ApiResult> {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "Accept-Language": await acceptLanguage(),
+  };
   if (opts.access) headers.Authorization = `Bearer ${opts.access}`;
   const res = await fetch(`${BASE}${path}`, {
     method: opts.method ?? "GET",

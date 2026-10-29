@@ -4,6 +4,8 @@ import "./globals.css";
 import { ServiceWorkerRegister } from "./sw-register";
 import { BackgroundFx } from "@/components/background-fx";
 import { QueryProvider } from "@/lib/query-provider";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
 
 // Títulos / banners / números — clon libre de Google Sans
 const display = Plus_Jakarta_Sans({
@@ -39,14 +41,17 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getLocale();
   return (
-    <html lang="es" className={`${display.variable} ${body.variable} h-full antialiased`}>
+    <html lang={locale} className={`${display.variable} ${body.variable} h-full antialiased`}>
       <body className="min-h-full">
         <BackgroundFx />
-        <QueryProvider>{children}</QueryProvider>
+        <NextIntlClientProvider>
+          <QueryProvider>{children}</QueryProvider>
+        </NextIntlClientProvider>
         <ServiceWorkerRegister />
       </body>
     </html>

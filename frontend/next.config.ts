@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 const nextConfig: NextConfig = {
   // Permite servir el dev server a través del túnel HTTPS (cloudflared) para
@@ -6,4 +9,4 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["*.trycloudflare.com"],
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);
