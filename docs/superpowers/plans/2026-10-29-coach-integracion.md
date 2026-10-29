@@ -643,6 +643,15 @@ BY 4.0, como el resto del contenido de FightLab (spec §1, A2). Lo cubre el
 - **Task E.5 (requiere F2 y F4):** Aplicarlo:
   - Textos del ACWR en Carga, la Home y el chat según la regla resultante (sin "zona
     segura" ni "riesgo de lesión" si la evidencia no lo sostiene).
+  - **Decidido (2026-10-29):** con menos de 28 días de historial se muestran las
+    cargas sin el ratio, con "faltan N días". Se quita la comparación "provisional"
+    a partir de 10 días que hay hoy en el código.
+  - **CRT6:** se enlaza el documento oficial y no se reproduce (necesitaría permiso
+    de BMJ; pedirlo es opcional y lo decide el usuario).
+  - Los textos de seguridad de combate (conmoción, señales de alarma en el corte)
+    llevan en la UI el aviso "no sustituye a un profesional" de `docs/safety.md` del
+    coach. Lo mismo en la fase 3. Aún no los ha revisado nadie con formación clínica:
+    pendiente del usuario, no bloquea.
   - Decisión sobre el PMC del plan v1 §8.
   - Corte y pesaje: contenido informativo con sus reglas.
   - Flag `no_contact` por golpe en la cabeza con su regla (sustituye a la
