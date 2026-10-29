@@ -24,6 +24,10 @@ FIELDS = {
 }
 TEXT_FIELDS = ("heading", "rule_text", "evidence", "applies_to", "conflicts")
 SOURCE_HEAD_RE = re.compile(r"^### (\S+)\s*$")
+# `coach.knowledge.CITE_RE` solo lee `[Sxxx]`; el anexo de combate cita `[Fxxx]` (E.4).
+CITE_RE = re.compile(r"\[([SF]\d+)\]")
+# No son archivos de reglas: el cargador del coach ya salta `sources.md` e `index.md`.
+NOT_RULE_FILES = {"dropped-claims.md"}
 DOI_RE = re.compile(r"DOI:\s*(?:\[([^\]]+)\]\([^)]*\)|([^\s·]+))")
 TYPE_RE = re.compile(r"Type:\s*(.*?)\s*(?:·|$)")
 URL_RE = re.compile(r"^URL:\s*<?([^>\s]+)>?")
@@ -94,9 +98,16 @@ def content_hash(values: dict[str, str]) -> str:
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()
 
 
+def source_ids_of(rule: coach_knowledge.Rule) -> list[str]:
+    """Los `[Sxxx]` y `[Fxxx]` que cita una regla, sin repetidos y en orden de aparición."""
+    return list(dict.fromkeys(CITE_RE.findall("\n".join(rule.body))))
+
+
 def _collect_rules(directory: Path, origin: str) -> dict[str, dict]:
     collected: dict[str, dict] = {}
     for path in coach_knowledge.rule_files(directory):
+        if path.name in NOT_RULE_FILES:
+            continue
         text = coach_knowledge.read(path)
         checked = coach_knowledge.checked_date(text)
         for rule in coach_knowledge.iter_rules(text):
@@ -109,7 +120,7 @@ def _collect_rules(directory: Path, origin: str) -> dict[str, dict]:
                 "file": path.stem,
                 "section": rule.section,
                 "grade": grade,
-                "source_ids": rule.source_ids,
+                "source_ids": source_ids_of(rule),
                 "checked_on": checked,
                 "origin": origin,
                 "engine_sha": ENGINE_SHA if origin == KnowledgeRule.Origin.UPSTREAM else "",
