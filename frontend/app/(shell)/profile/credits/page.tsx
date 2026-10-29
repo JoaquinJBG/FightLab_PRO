@@ -3,8 +3,6 @@ import { useTranslations } from "next-intl";
 import {
   COACH_REPO_URL,
   CC_BY_URL,
-  ENGINE_SHA,
-  EVIDENCE_DATE,
   FIGHTLAB_LICENSE_CONTENT_URL,
   FIGHTLAB_LICENSE_URL,
   ODBL_URL,
@@ -12,6 +10,7 @@ import {
   PARQ_URL,
   USDA_URL,
 } from "@/lib/credits";
+import { EngineLine } from "@/components/evidence/EngineLine";
 
 function Ext({ href, children }: { href: string; children: React.ReactNode }) {
   return (
@@ -47,9 +46,7 @@ export default function CreditsPage() {
         <p className="t-body mt-2 text-ink">{t.rich("coach.body", link)}</p>
         <p className="t-body mt-3 text-ink">{t("changes.title")}</p>
         <p className="t-body mt-1 text-muted">{t("changes.body")}</p>
-        <p className="t-label mt-3 text-muted">
-          {t("engine", { sha: ENGINE_SHA, date: EVIDENCE_DATE })}
-        </p>
+        <EngineLine />
       </section>
 
       <section className="glass rise mt-4 p-5">

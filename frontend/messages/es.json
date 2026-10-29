@@ -25,5 +25,26 @@
       "title": "Licencia de FightLab",
       "body": "FightLab Pro, de Joaquín J Beltrán García. Código bajo MIT (<license>LICENSE</license>); contenido bajo CC BY 4.0 (<licenseContent>LICENSE-CONTENT.md</licenseContent>)."
     }
+  },
+  "evidence": {
+    "title": "Evidencia",
+    "close": "Cerrar",
+    "loading": "Cargando…",
+    "error": "No se pudo cargar la regla.",
+    "grade": {
+      "strong": "Evidencia fuerte",
+      "moderate": "Evidencia moderada",
+      "emerging": "Evidencia emergente",
+      "none": "Evidencia"
+    },
+    "convention": "Convención de FightLab, sin revisar",
+    "label": {
+      "machine": "Traducción automática, sin revisar",
+      "untranslated": "Sin traducir (texto original en inglés)"
+    },
+    "appliesTo": "A quién se aplica",
+    "unclear": "Dónde no está claro",
+    "sources": "Fuentes",
+    "link": "Enlace"
   }
 }

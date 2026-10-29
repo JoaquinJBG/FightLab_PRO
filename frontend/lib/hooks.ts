@@ -4,10 +4,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import {
   biometrics,
+  engineInfo,
+  ruleDetail,
   me,
   profile,
   progressPhoto,
   type Biometrics,
+  type EngineInfo,
+  type RuleDetail,
   type Me,
   type Profile,
   type ProgressPhoto,
@@ -137,5 +141,23 @@ export function useLogout() {
       qc.clear();
       resetActivityUid(); // que nada se encole a nombre del usuario saliente
     },
+  });
+}
+
+/** Versión del motor y fecha de la evidencia (pantalla de Créditos). */
+export function useEngine() {
+  return useQuery<EngineInfo>({
+    queryKey: ["coach-engine"],
+    queryFn: async () => engineInfo.parse(await getJson("/api/proxy/coach/engine")),
+  });
+}
+
+/** Regla de la base de evidencia con sus fuentes (hoja de evidencia). */
+export function useRule(key: string | null) {
+  return useQuery<RuleDetail>({
+    queryKey: ["knowledge-rule", key],
+    enabled: !!key,
+    queryFn: async () =>
+      ruleDetail.parse(await getJson(`/api/proxy/knowledge/rules/${key}`)),
   });
 }

@@ -48,3 +48,44 @@ export const me = z.object({
   is_email_verified: z.boolean(),
 });
 export type Me = z.infer<typeof me>;
+
+// --- Evidencia (coach) ---
+export const engineInfo = z.object({
+  sha: z.string(),
+  sha_full: z.string(),
+  knowledge_checked_on: z.string().nullable(),
+});
+export type EngineInfo = z.infer<typeof engineInfo>;
+
+export const evidenceSource = z.object({
+  sid: z.string(),
+  citation: z.string(),
+  type: z.string(),
+  doi: z.string(),
+  url: z.string(),
+});
+export type EvidenceSource = z.infer<typeof evidenceSource>;
+
+export const ruleTranslation = z.object({
+  lang: z.string(),
+  status: z.enum(["machine", "reviewed", "stale"]),
+  heading: z.string(),
+  rule_text: z.string(),
+  evidence: z.string(),
+  applies_to: z.string(),
+  conflicts: z.string(),
+});
+export type RuleTranslation = z.infer<typeof ruleTranslation>;
+
+export const ruleDetail = z.object({
+  key: z.string(),
+  heading: z.string(),
+  section: z.string(),
+  grade: z.string(),
+  rule_text: z.string(),
+  applies_to: z.string(),
+  conflicts: z.string(),
+  translation: ruleTranslation.nullable(),
+  sources: z.array(evidenceSource),
+});
+export type RuleDetail = z.infer<typeof ruleDetail>;

@@ -1,5 +1,5 @@
-// Datos de la pantalla de Créditos. En la fase 2 el SHA y la fecha pasan a leerse
-// de la API (`engine.sha`, `engine.knowledge_checked_on`).
+// Datos de la pantalla de Créditos. El SHA y la fecha salen de la API
+// (`GET /coach/engine`); estos valores solo se muestran mientras carga o si falla.
 export const ENGINE_SHA = "69e5537";
 export const EVIDENCE_DATE = "2026-10-24";
 
