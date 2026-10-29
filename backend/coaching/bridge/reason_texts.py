@@ -5,8 +5,9 @@ Se indexan por el `code` de `bridge/reasons.py`. En inglés reproducen el texto 
 traducción de FightLab de ese mismo texto, sin añadir nada. Un motivo sin plantilla
 (`code="unknown"` o uno nuevo del motor) se muestra con su texto original.
 
-De momento cubre los motivos de `coach.safety` (fase 3). Los de energía, zonas y menús
-llegan con sus fases.
+Cubre los motivos de `coach.safety` (fase 3) y los de energía, macros, zonas y tendencia
+(fase 4). Los de menús llegan con su fase. Los motivos de FightLab que añade el puente
+(ecuación para atletas, `no_training`) llevan también la regla del coach que los respalda.
 
 La línea de derivación se lee literal de `docs/safety.md` del motor, no se copia aquí.
 """
@@ -79,6 +80,53 @@ TEXTS: dict[str, dict[str, str]] = {
         "cardiac_symptoms": (
             "stop exercising and seek medical evaluation; no training until a clinician clears it"
         ),
+        "pregnancy_intensity_rpe": "moderate is RPE 13-14 or talk but not sing; HR is secondary",
+        "pregnancy_vigorous": (
+            "vigorous only if already vigorously active before pregnancy; never RPE 18 or more"
+        ),
+        "beta_blocker_no_vigorous": (
+            "no sustained vigorous work (RPE 14 or more) without medical clearance; start at the "
+            "low end of moderate"
+        ),
+        "older_no_deficit": (
+            "no deficit for adults about {age}+ unless they have obesity with a weight-related "
+            "health problem"
+        ),
+        "recalibrate_start": "starting estimate, recalibrate after 2-4 weeks of weigh-ins",
+        "recalibrate_equation": "starting estimate from an equation",
+        "recalibrate_from_trend": "maintenance from the weight trend; re-check in 2-4 weeks",
+        "recalibrate_step": (
+            "one step of {step_kcal} kcal down from the current {current_kcal} kcal; the full "
+            "target is {target_kcal_fmt} kcal"
+        ),
+        "floor_raised": "raised to the {floor_kcal_fmt} kcal floor; going lower needs clinical supervision",
+        "glp1_low_intake": (
+            "below {kcal_fmt} kcal, favour nutrient-dense foods and discuss supplements and "
+            "monitoring with the prescriber"
+        ),
+        "intake_unknown_holding": "current intake unknown: holding at maintenance",
+        "protein_per_kg": "{per_kg_g} g/kg/day",
+        "protein_reference_weight": (
+            "convention: protein from {weight_kg_0f} kg, the weight at BMI 25 for this height, "
+            "instead of body weight"
+        ),
+        "carbs_zero": "protein and fat minimums already exceed the calorie target; carbs set to 0",
+        "pal_too_low": (
+            "PAL {pal_g} is too low: never 1.2 for ambulatory adults, use at least 1.4 "
+            '(nutrition.md: "Activity multipliers (PAL)")'
+        ),
+        "pal_too_high": (
+            "PAL {pal_g} is too high: not above about 2.0 for recreational gym-goers "
+            '(nutrition.md: "Activity multipliers (PAL)")'
+        ),
+        "bands_approx": "zones are approximate; check them against RPE and the talk test",
+        "bands_cardiac_team": "with known heart disease, use the zones the cardiac team sets",
+        "hrmax_tanaka": (
+            "HRmax from Tanaka is a rough start and can be off by 20+ bpm; use an observed "
+            "all-out peak when you have one"
+        ),
+        "no_weigh_ins": "no weigh-ins",
+        "trend_insufficient": "need at least {min_points} weigh-ins covering {min_days} days",
     },
     "es": {
         "under_18": (
@@ -146,6 +194,69 @@ TEXTS: dict[str, dict[str, str]] = {
             "deja de hacer ejercicio y busca valoración médica; sin entrenar hasta que un clínico "
             "te dé el alta"
         ),
+        "pregnancy_intensity_rpe": (
+            "moderado es un esfuerzo percibido (RPE) de 13-14, o poder hablar pero no cantar; la "
+            "frecuencia cardiaca es secundaria"
+        ),
+        "pregnancy_vigorous": (
+            "esfuerzo vigoroso solo si ya eras vigorosamente activa antes del embarazo; nunca un "
+            "RPE de 18 o más"
+        ),
+        "beta_blocker_no_vigorous": (
+            "nada de trabajo vigoroso sostenido (RPE 14 o más) sin permiso médico; empieza por la "
+            "parte baja de lo moderado"
+        ),
+        "older_no_deficit": (
+            "sin déficit a partir de unos {age} años, salvo obesidad con algún problema de salud "
+            "relacionado con el peso"
+        ),
+        "recalibrate_start": (
+            "estimación de partida: recalibra tras 2-4 semanas de pesajes"
+        ),
+        "recalibrate_equation": "estimación de partida a partir de una ecuación",
+        "recalibrate_from_trend": (
+            "mantenimiento calculado con la tendencia de peso; vuelve a comprobarlo en 2-4 semanas"
+        ),
+        "recalibrate_step": (
+            "un paso de {step_kcal} kcal hacia abajo desde las {current_kcal} kcal actuales; el "
+            "objetivo completo es de {target_kcal} kcal"
+        ),
+        "floor_raised": (
+            "subido al suelo de {floor_kcal} kcal; bajar más exige supervisión clínica"
+        ),
+        "glp1_low_intake": (
+            "por debajo de {kcal} kcal, prioriza alimentos con mucha densidad de nutrientes y "
+            "habla con quien te receta el medicamento sobre suplementos y seguimiento"
+        ),
+        "intake_unknown_holding": "ingesta actual desconocida: se mantiene en el mantenimiento",
+        "protein_per_kg": "{per_kg_g} g/kg/día",
+        "protein_reference_weight": (
+            "convención: la proteína se calcula sobre {weight_kg_0f} kg, el peso con IMC 25 para "
+            "tu altura, en lugar del peso corporal"
+        ),
+        "carbs_zero": (
+            "el mínimo de proteína y de grasa ya supera el objetivo de calorías; carbohidratos a 0"
+        ),
+        "pal_too_low": (
+            "un PAL de {pal_g} es demasiado bajo: nunca 1,2 para adultos que caminan, usa al menos "
+            '1,4 (nutrition.md: "Activity multipliers (PAL)")'
+        ),
+        "pal_too_high": (
+            "un PAL de {pal_g} es demasiado alto: no más de 2,0 para quien entrena en el gimnasio "
+            'por afición (nutrition.md: "Activity multipliers (PAL)")'
+        ),
+        "bands_approx": (
+            "las zonas son aproximadas; compruébalas con el esfuerzo percibido (RPE) y la prueba del habla"
+        ),
+        "bands_cardiac_team": (
+            "con cardiopatía conocida, usa las zonas que marque tu equipo de cardiología"
+        ),
+        "hrmax_tanaka": (
+            "la frecuencia máxima de Tanaka es una estimación de partida y puede fallar en más de "
+            "20 lpm; usa un pico real medido a tope cuando lo tengas"
+        ),
+        "no_weigh_ins": "sin pesajes",
+        "trend_insufficient": "hacen falta al menos {min_points} pesajes repartidos en {min_days} días",
     },
 }
 
@@ -184,6 +295,10 @@ PROFESSIONAL: dict[str, dict[str, str] | None] = {
     "bp_gp_review": GP,
     "bp_moderate": GP,
     "cardiac_symptoms": {"en": "clinician", "es": "clínico"},
+    # Energía, macros, zonas y tendencia: informan o limitan, solo derivan quien receta o el equipo
+    # de cardiología.
+    "glp1_low_intake": {"en": "prescriber", "es": "quien te receta el medicamento"},
+    "bands_cardiac_team": {"en": "cardiac team", "es": "equipo de cardiología"},
 }
 
 # Gravedad, según los flags que pone cada motivo en `coach/safety.py`: `stop` si pone
@@ -212,6 +327,29 @@ SEVERITY: dict[str, str] = {
     "bp_gp_review": "refer",
     "bp_moderate": "refer",
     "cardiac_symptoms": "stop",
+    # Motivos de energía, macros, zonas y tendencia (fase 4). `info`: explica de dónde sale un
+    # número sin limitar nada. `limit`: ha limitado lo que calcula el motor.
+    "pregnancy_intensity_rpe": "limit",
+    "pregnancy_vigorous": "limit",
+    "beta_blocker_no_vigorous": "limit",
+    "older_no_deficit": "limit",
+    "recalibrate_start": "info",
+    "recalibrate_equation": "info",
+    "recalibrate_from_trend": "info",
+    "recalibrate_step": "info",
+    "floor_raised": "limit",
+    "glp1_low_intake": "limit",
+    "intake_unknown_holding": "info",
+    "protein_per_kg": "info",
+    "protein_reference_weight": "info",
+    "carbs_zero": "limit",
+    "pal_too_low": "limit",
+    "pal_too_high": "limit",
+    "bands_approx": "info",
+    "bands_cardiac_team": "limit",
+    "hrmax_tanaka": "info",
+    "no_weigh_ins": "info",
+    "trend_insufficient": "info",
 }
 DEFAULT_SEVERITY = "limit"
 
@@ -226,8 +364,24 @@ def _original_body(reason: Reason) -> str:
     return text.split('": ', 1)[1] if '": ' in text else text
 
 
+def _decimal(value: float, lang: str) -> str:
+    """`1.6` → `1.6` (en) o `1,6` (es), como `:g` (sin ceros de más)."""
+    text = f"{value:g}"
+    return text.replace(".", ",") if lang == "es" else text
+
+
 def _values(reason: Reason, lang: str) -> dict:
     params = dict(reason.params)
+    # Formatos que reproducen los del motor en inglés (`1,200 kcal`, `2 g/kg/day`) y los de
+    # una persona que escribe en español: sin separador de miles en las kcal y con coma decimal.
+    for name in [n for n in params if n == "kcal" or n.endswith("_kcal")]:
+        params[f"{name}_fmt"] = f"{params[name]:,}" if lang == "en" else str(params[name])
+    if "per_kg" in params:
+        params["per_kg_g"] = _decimal(params["per_kg"], lang)
+    if "pal" in params:
+        params["pal_g"] = _decimal(params["pal"], lang)
+    if "weight_kg" in params:
+        params["weight_kg_0f"] = f"{params['weight_kg']:.0f}"
     if "why" in params:
         params["why"] = WHY[lang][params["why"]].format(**params)
     if "systolic" in params or "diastolic" in params:
