@@ -1,6 +1,7 @@
 # E2E (Playwright)
 
-Prueban el onboarding con cribado de punta a punta: Next (BFF) + Django + motor del coach.
+Prueban el onboarding con cribado (`onboarding.spec.ts`) y los objetivos, el pesaje y los bloqueos
+de la fase 4 (`nutrition.spec.ts`) de punta a punta: Next (BFF) + Django + motor del coach.
 Usan el Chrome instalado (`channel: "chrome"`), así que no hace falta `playwright install`.
 
 1. Backend con su base de datos migrada, en el puerto que lee el BFF (por defecto 8001):
@@ -9,6 +10,7 @@ Usan el Chrome instalado (`channel: "chrome"`), así que no hace falta `playwrig
    cd backend
    python manage.py migrate
    python manage.py load_knowledge   # opcional: grados de evidencia en los chips
+   python manage.py load_knowledge --dir knowledge_fightlab --origin fightlab   # anexo de combate
    python manage.py runserver 127.0.0.1:8001
    ```
 

@@ -143,7 +143,9 @@ export default function NutritionPage() {
   const deficitBlocked = tg ? tg.deficit_blocked : !!safety && (safety.flags.no_deficit || safety.flags.hold_deficit || safety.flags.prescriber_owns_weight);
   const surplusBlocked = !!safety && (safety.flags.no_weight_targets || safety.flags.prescriber_owns_weight);
   const goal: Goal = (deficitBlocked && chosen === "perder") || (surplusBlocked && chosen === "ganar") ? "mantener" : chosen;
-  const limits = tg ? tg.reasons.filter(isLimit) : [];
+  // Sin objetivos (falta un dato), los motivos que bloquean el déficit salen igual de los flags.
+  const limits: SafetyReason[] =
+    tg ? tg.reasons.filter(isLimit) : (safety?.reasons ?? []).filter((r) => LIMIT_CODES.has(r.code));
 
   const sum = items.reduce((a, i) => ({ kcal: a.kcal + i.kcal, p: a.p + i.p, c: a.c + i.c, f: a.f + i.f }), { kcal: 0, p: 0, c: 0, f: 0 });
   const remaining = kcalTarget != null ? kcalTarget - sum.kcal : null;

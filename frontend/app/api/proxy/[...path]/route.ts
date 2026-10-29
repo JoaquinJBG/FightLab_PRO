@@ -74,6 +74,9 @@ export async function POST(req: Request, ctx: Ctx) {
 export async function PATCH(req: Request, ctx: Ctx) {
   return handle(req, (await ctx.params).path);
 }
+export async function PUT(req: Request, ctx: Ctx) {
+  return handle(req, (await ctx.params).path);
+}
 export async function DELETE(req: Request, ctx: Ctx) {
   return handle(req, (await ctx.params).path);
 }
