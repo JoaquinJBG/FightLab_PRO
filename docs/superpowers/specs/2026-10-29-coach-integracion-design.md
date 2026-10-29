@@ -1,9 +1,11 @@
 # Integración del coach `ai-personal-coach` en FightLab Pro
 
-> Fecha: 2026-10-29 · Estado: propuesta (Fase 0, solo diseño) · Tipo: spec transversal
+> Fecha: 2026-10-29 · Estado: aprobada con las respuestas del usuario a P1-P7 (§12) ·
+> Fase 0, solo diseño · Tipo: spec transversal
 > Depende de: [`2026-06-01-fightlab-pro-vision-design.md`](2026-06-01-fightlab-pro-vision-design.md),
 > [`2026-06-11-v1-plan-mejora-por-vista.md`](2026-06-11-v1-plan-mejora-por-vista.md)
-> Plan: [`../plans/2026-10-29-coach-integracion.md`](../plans/2026-10-29-coach-integracion.md)
+> Plan: [`../plans/2026-10-29-coach-integracion.md`](../plans/2026-10-29-coach-integracion.md) ·
+> Lista para el autor: [`../../coach-upstream-sugerencias.md`](../../coach-upstream-sugerencias.md)
 
 FightLab tiene que hacer, como mínimo, todo lo que hace el Entrenador IA
 (`ai-personal-coach`, de matgarfer499, con permiso del autor): nutrición, plan de
@@ -48,8 +50,9 @@ que cambian el diseño:
    y puede ser nulo. Hace falta un campo aparte (§6.2).
 5. **Los textos salen en inglés.** Los motivos de `safety.flags`, las notas de
    `energy` y los nombres de las reglas están en inglés y llevan el formato
-   `nutrition.md: "Heading": texto`. FightLab está en español. Hace falta una capa
-   de traducción con clave de regla (§7.3).
+   `nutrition.md: "Heading": texto`. FightLab va a tener español e inglés (P2). Para el
+   inglés el texto ya existe; para el español hace falta una capa de traducción con
+   clave de regla (§7.3).
 6. **Varias protecciones son texto de skill, no código.** `docs/safety.md` ("What
    protects what") lo dice: hacer las preguntas del cribado, detectar señales de
    alarma en la conversación y dejar fuera del plan el trabajo vigoroso (HIIT,
@@ -78,7 +81,18 @@ que cambian el diseño:
 - Alimentos: USDA FoodData Central, dominio público, con cita a USDA. Productos de
   Open Food Facts: ODbL, cada fila guarda su URL.
 - **PAR-Q+:** el coach no redistribuye el formulario (`forms/README.md`) y prohíbe
-  reformularlo, abreviarlo o traducirlo. Ver la pregunta abierta P3.
+  reformularlo, abreviarlo o traducirlo. El PDF oficial en español dice "Copyright ©
+  PAR-Q+ Collaboration", lleva el crédito del traductor (Dr. Martín Rubio) y solo
+  concede esto: *"Le animamos a fotocopiar el PAR-Q+"*, con la condición de usar el
+  cuestionario entero y sin cambios. Eso permite fotocopiarlo en papel, pero
+  no da licencia para reproducir el texto dentro de una app. Decisión en §8.1.
+- **Contenido propio de FightLab** (el anexo de combate de §9, las traducciones al
+  español de reglas y mensajes, y los textos de la app): sigue la licencia del repo
+  de FightLab. Hoy el repo no tiene `LICENSE`, así que es "todos los derechos
+  reservados" del propietario. El anexo no se manda al repo del autor (P4). Las
+  traducciones de reglas del coach son obra derivada de contenido CC BY 4.0, así
+  que conservan la atribución y la nota de cambios aunque estén en un repo cerrado
+  (CC BY lo permite). Si un día FightLab elige licencia, el anexo pasa a tenerla.
 
 ---
 
@@ -145,7 +159,7 @@ existe en FightLab. **Fuera** = no entra.
 | 25 | Categoría de peso, pesaje, corte | No existe (sí hay reglas de pérdida rápida y REDs) | Pesaje en localStorage (`flp_weigh`) | Propio, con bloqueos del coach | `no_weight_targets` oculta el pesaje y el corte (§8.3) |
 | 26 | Foto→kcal | No existe | `ai/services.food_photo_analyze` | Propio | Sin cambios |
 | 27 | Chat del coach | La conversación es Claude Code | `ai/services.coach_chat` con un contexto pequeño | Adaptar | Con herramientas que llaman al puente y citas validadas (§7.4) |
-| 28 | Idiomas | es y en | Solo es | Adaptar | Traducción con clave de regla (§7.3) |
+| 28 | Idiomas | es y en | Solo es, con los textos escritos en el código | Adaptar | ES y EN desde la fase 1 (§7.5); traducción con clave de regla (§7.3) |
 
 ---
 
@@ -160,7 +174,17 @@ existe en FightLab. **Fuera** = no entra.
 | **C. Dependencia de git** (`coach @ git+https://…@SHA`) | Lo más limpio en `requirements.txt` | **No funciona tal cual:** el wheel no incluye `knowledge/`, `foods/` ni `regions/` (§1, punto 3). Además necesita que el repo sea alcanzable en cada build y cualquier parche obliga a un fork |
 | D. Submódulo | Historia separada | Complica Docker, los clones y OneDrive. Descartada sin más |
 
-### Decisión: B (subtree con squash), con una regla
+### Decisión cerrada: B (subtree con squash), con una regla
+
+El usuario dejó la elección a criterio técnico (P1). Se elige B por tres motivos:
+
+1. Es la única opción que conserva la estructura del repo sin trabajo extra. La C no
+   funciona y la A obliga a recrear esa estructura a mano.
+2. Las mejoras del autor llegan con un comando, y el SHA de origen queda escrito en
+   el historial.
+3. Las mejoras propias se hacen en la capa adaptadora y no en el prefijo (ver más
+   abajo), así que los pulls no deberían tener conflictos. La única ventaja real de A
+   era su sencillez, y no compensa tener que traer las mejoras a mano.
 
 - Prefijo: `backend/vendor/ai-personal-coach/`, desde
   `https://github.com/matgarfer499/ai-personal-coach`, rama `main`, fijado a un SHA.
@@ -169,12 +193,36 @@ existe en FightLab. **Fuera** = no entra.
   `entrenador IA/ai-personal-coach`. En esa carpeta, `data/` tiene datos personales
   (git los ignora, pero la carpeta los tiene). Tras el `subtree add` se comprueba que
   `git ls-files backend/vendor/ai-personal-coach/data` solo lista `.gitkeep`.
-- **Regla: no se edita nada dentro del prefijo.** Toda la adaptación vive en
-  `backend/coaching/`. Si hace falta un cambio en el motor, se propone como PR al
-  repo del autor y luego se hace `subtree pull`. Si no queda otra, se permite un
-  parche local, apuntado en `backend/vendor/UPSTREAM.md` con su motivo.
+- **Regla: no se edita nada dentro del prefijo.** Toda la adaptación y toda mejora
+  del motor viven en `backend/coaching/` (sobre todo en `coaching/bridge/`). No se
+  mandan PRs al autor (P5): las mejoras se hacen en FightLab y se apuntan en una lista
+  para comentárselas más adelante (§4.1).
 - `backend/vendor/UPSTREAM.md` (fuera del prefijo): URL, SHA actual, fecha, licencias,
   parches locales y el procedimiento de actualización.
+
+### 4.1 Mejoras propias al motor y la lista para el autor
+
+**Dónde se hace cada mejora:**
+
+| Dónde | Cuándo | Qué pasa al traer actualizaciones |
+|---|---|---|
+| **Capa adaptadora** (`coaching/bridge/`): envolver, completar o sustituir una función del motor sin tocarla. Por ejemplo, ecuaciones de RMR para atletas en `bridge/energy_athletes.py`, motivos estructurados en `bridge/reasons.py` o la tabla de modalidades en `coaching/rules.py` | **Siempre que se pueda**, que es casi siempre: el motor son funciones puras y se pueden envolver | `subtree pull` sin conflictos. Si el autor adopta la mejora, el test de contrato o el de paridad lo detecta, se borra nuestro código y se usa el suyo |
+| **Parche dentro del prefijo** | Solo para un fallo de seguridad o de cálculo que no se pueda envolver (por ejemplo, una constante equivocada dentro de una función que el puente necesita) | Cada `subtree pull` puede dar conflicto en esas líneas y hay que volver a aplicarlo a mano. Por eso cada parche va en `UPSTREAM.md` (archivo, motivo, commit) y tiene un test en `coaching/tests/` que falla si se pierde |
+
+**La lista para el autor** vive en
+[`docs/coach-upstream-sugerencias.md`](../../coach-upstream-sugerencias.md). Cada
+entrada lleva:
+
+- ID (`U01`, `U02`…), módulo del motor y problema.
+- Cómo lo resuelve FightLab: archivo y si es adaptador o parche.
+- Qué se le propondría al autor.
+- Estado: `abierta`, `comunicada` o `adoptada en <sha>`.
+
+La lista se actualiza en el mismo PR que introduce la mejora. Al hacer
+`subtree pull`, se revisa: las entradas adoptadas se cierran y se borra el código
+equivalente de FightLab. `UPSTREAM.md` guarda el detalle técnico (SHA y parches);
+la lista guarda lo que hay que contarle al autor. La lista ya tiene las mejoras
+detectadas al escribir esta spec (U01-U08).
 - **Importación:** `PYTHONPATH=/app/vendor/ai-personal-coach` en el Dockerfile, y
   `pythonpath = [".", "vendor/ai-personal-coach"]` en `backend/pyproject.toml`
   (pytest). Para el venv local, la misma variable en `.env.example`. No se hace
@@ -195,7 +243,10 @@ existe en FightLab. **Fuera** = no entra.
 4. `python manage.py load_knowledge`: informa de reglas nuevas, cambiadas o
    eliminadas y marca como "pendiente de revisar" las traducciones de las reglas que
    han cambiado.
-5. Actualizar `UPSTREAM.md` (SHA y fecha). PR a `staging` y luego promoción a `main`.
+5. Si hay parches locales, volver a aplicarlos y pasar sus tests.
+6. Revisar `docs/coach-upstream-sugerencias.md`: cerrar lo adoptado y quitar nuestro
+   código equivalente.
+7. Actualizar `UPSTREAM.md` (SHA y fecha). PR a `staging` y luego promoción a `main`.
 
 Cadencia: cuando el autor avise o una vez al mes. Si un pull rompe el contrato del
 puente, se arregla en el puente y nunca en el prefijo.
@@ -238,11 +289,11 @@ Campos nuevos:
 
 | Campo | Tipo | Origen |
 |---|---|---|
-| `equation_sex` | `female`/`male`/null | Se pregunta solo si `gender` es `OTHER` o nulo, explicando para qué sirve (las ecuaciones solo existen para esos dos). Si queda nulo, no hay objetivos calóricos (igual que el coach) |
+| `equation_sex` | `female`/`male`/null | Se pregunta solo si `gender` es `OTHER` o nulo, explicando para qué sirve (las ecuaciones solo existen para esos dos). **Decidido (P7):** si queda nulo, no hay objetivos calóricos ni de macros, igual que en el coach. La UI lo explica y ofrece elegirlo más tarde; zonas, plan y check-in funcionan igual |
 | `goal` | `fat_loss`/`maintenance`/`muscle_gain`/`recomposition` | `profile.GOALS`. Sustituye a `flp_nutri_goal` (`perder`/`mantener`/`ganar`) |
 | `experience` | `novice`/`intermediate`/`advanced` | `profile.EXPERIENCE`, con la convención de los 12 meses |
 | `activity_level` | `desk`/`desk_training`/`active` | `profile.ACTIVITY_LEVELS` |
-| `language` | `es`/`en`, por defecto `es` | |
+| `language` | `es`/`en` | Al registrarse se toma del navegador (`Accept-Language`) y, si no encaja, `es`. Se puede cambiar en el perfil. Decide el idioma de la UI, de la API y del chat (§7.5) |
 | `region` | `es`/null | Solo regiones con carpeta en el motor |
 | `emergency_number` | 2 a 6 dígitos | Si es nulo, el de la región |
 | `medications`, `conditions` | lista JSON de tokens más lista de texto libre sin clasificar | Tabla de tokens de `docs/safety.md` |
@@ -325,8 +376,8 @@ Campos nuevos:
   avisar si es antiguo). `screening` ← solo las claves no nulas de `Screening`.
   `injuries` ← filas de `Injury`. El resto de campos, uno a uno. Valida con las mismas
   reglas que `save_profile`. Hoy esa validación es `coach.profile._validate`, que es
-  privada: el puente la usa y un test de contrato avisa si cambia. Se propondrá al
-  autor una función pública `profile_from_dict` (pregunta P5).
+  privada: el puente la usa y un test de contrato avisa si cambia. Queda apuntado como
+  `U01` en la lista de sugerencias (§4.1).
 - `weigh_ins(user) -> list[tuple[date, float]]`: desde `BiometricsLog`, con la fecha
   en la zona horaria del perfil.
 - `set_records(user, since)`: objetos con los atributos que lee `strength`
@@ -367,30 +418,84 @@ usuarios autenticados y no tienen datos personales.
 
 - Chip de evidencia junto a cada número o recomendación: "Evidencia fuerte",
   "moderada" o "emergente", con colores fijos en toda la app.
-- Al tocarlo se abre una hoja inferior con la regla en español (o el original en
-  inglés con la etiqueta "sin traducir"), "A quién se aplica", "Dónde no está claro"
-  y las fuentes con enlace al DOI.
+- Al tocarlo se abre una hoja inferior con la regla en el idioma del usuario. En
+  inglés es el original; en español es la traducción, o el original con la etiqueta
+  "sin traducir" si aún no hay. Debajo, "A quién se aplica", "Dónde no está claro" y
+  las fuentes con enlace al DOI.
 - Lo que no tenga regla se etiqueta "Convención de FightLab, sin revisar". Nunca se
   disfraza de evidencia.
 - **Créditos** (`/profile/credits`): "Motor de cálculo y base de evidencia: *AI
   personal coach* de matgarfer499 (enlace). Código bajo MIT; contenido bajo CC BY 4.0.
-  Cambios de FightLab: traducción al español de reglas y mensajes, adaptación a app
-  web, almacenamiento en base de datos y anexo propio de deportes de combate". Debajo,
-  el SHA del motor, la fecha de la evidencia y las demás atribuciones: USDA
-  FoodData Central, Open Food Facts (ODbL), PAR-Q+ (PAR-Q+ Collaboration). El mismo
-  texto va en el `README.md` y en `UPSTREAM.md`.
+  Cambios de FightLab: traducción al español de reglas y mensajes, motivos
+  estructurados, adaptación a app web, almacenamiento en base de datos y mejoras
+  propias del cálculo (lista en `docs/coach-upstream-sugerencias.md`)". Debajo, el SHA
+  del motor, la fecha de la evidencia y las demás atribuciones: USDA FoodData Central,
+  Open Food Facts (ODbL) y PAR-Q+ (© PAR-Q+ Collaboration; versión española de Dr.
+  Martín Rubio), con enlace al formulario oficial. El anexo de combate es contenido de
+  FightLab y no lleva atribución al coach. El mismo texto va en el `README.md` y en
+  `UPSTREAM.md`.
 
 ### 7.3 Traducción
 
 - Los motivos del motor empiezan por `archivo.md: "Encabezado"`. El puente separa la
-  referencia (de ahí sale `rule_key`) del texto, y lo traduce con un catálogo de
-  plantillas en `coaching/bridge/i18n_es.py` que admite valores interpolados (lectura
-  de tensión, zona de la lesión, kcal).
+  referencia (de ahí sale `rule_key`) del texto y lo convierte en un motivo
+  estructurado: `{code, rule_key, params}`. Por ejemplo, `params` lleva la lectura de
+  tensión, la zona de la lesión o las kcal.
+- El texto final sale del catálogo `coaching/bridge/reason_texts.py`, con una
+  plantilla por `code` y por idioma (`es`, `en`). La plantilla `en` reproduce el texto
+  original del motor, así que el inglés no cuesta traducción. Pedir motivos
+  estructurados al motor es la sugerencia `U03`.
 - Un test pasa los perfiles de la tabla de flags de `docs/safety.md` y falla si
-  aparece un motivo sin plantilla. Si en producción llega uno desconocido, se muestra
-  en inglés con su regla y se registra en el log.
-- Las reglas se traducen una vez con el LLM (`status=machine`) y se revisan a mano
-  (`reviewed`). La UI muestra qué traducciones no están revisadas.
+  aparece un motivo sin plantilla en alguno de los dos idiomas. Si en producción llega
+  uno desconocido, se muestra el texto original del motor con su regla y se registra
+  en el log.
+- Las reglas se traducen al español una vez con el LLM (`status=machine`) y se
+  revisan a mano (`reviewed`). La UI muestra qué traducciones no están revisadas. En
+  inglés se muestra el original.
+
+### 7.5 Español e inglés (P2)
+
+El usuario quiere los dos idiomas desde el principio si no es difícil. **Para todo
+lo que viene del coach no lo es**: el motor, las reglas, la línea de derivación de
+`docs/safety.md` y el PAR-Q+ oficial ya existen en inglés, y en español había que
+traducir de todos modos. **Lo que sí cuesta es la UI que ya existe**, porque hoy
+tiene el español escrito directamente en el código: unos 34 archivos `.tsx` y
+~7.500 líneas de TS/TSX, con unos 300 nodos de texto en JSX y unos 530 literales
+de texto. Calculo entre 600 y 800 cadenas. En el backend hay unas 20 cadenas propias
+para el usuario más los prompts de IA.
+
+Diseño:
+
+- **Frontend:** `next-intl` sin rutas por idioma, para que las URLs no cambien y no
+  se rompa la PWA instalada. El idioma sale de `profile.language`, guardado en una
+  cookie que lee el BFF, o del navegador antes del login. Catálogos `messages/es.json`
+  y `messages/en.json`. Fechas y números con `Intl` (64,59 frente a 64.59). Las
+  unidades siguen siendo métricas (el coach no tiene imperiales).
+- **Backend:** `LocaleMiddleware` de Django para que los mensajes de validación de DRF
+  lleguen traducidos sin hacer nada. El idioma de la petición lo marca
+  `Accept-Language`, que el BFF fija según `profile.language`. Los mensajes propios
+  (unas 20 cadenas) van a un catálogo pequeño en Python y los motivos del coach a
+  `reason_texts.py`. No hace falta `gettext` ni `compilemessages` en la imagen.
+- **IA:** el prompt del chat recibe el idioma del usuario y responde en él. Las
+  herramientas devuelven motivos ya traducidos. La foto→kcal no cambia (sus claves
+  JSON son internas), salvo el nombre del plato, que se pide en el idioma del
+  usuario.
+- **Regla desde la fase 1:** toda pantalla o cadena nueva entra en los dos catálogos.
+  Hay un test que compara las claves de `es.json` y `en.json` y falla si no son
+  iguales.
+
+**Coste y cuándo:**
+
+- **Infraestructura** (librería, cookie, middleware, test de claves): pequeña. Entra
+  en la fase 1.
+- **Pantallas nuevas del coach** (fases 2-8): un ~10-15 % más por pantalla, solo por
+  escribir dos catálogos. El contenido en inglés ya existe.
+- **UI existente:** es el coste grande. Es mecánico, sin cambiar la lógica, y va en
+  una **fase I** propia, de 3 o 4 PRs por zonas: auth y onboarding; Home y
+  Biometría; Entrenamiento (deportes, MMA, gimnasio, carga); Nutrición y Coach. Se
+  puede hacer en paralelo con las fases 2-5 si cada PR toca solo las vistas de su
+  zona. El inglés se activa para los usuarios cuando acabe la fase I. Hasta
+  entonces, el selector de idioma no se muestra, para que nadie vea la app mezclada.
 
 ### 7.4 Chat del coach
 
@@ -405,8 +510,9 @@ usuarios autenticados y no tienen datos personales.
 - Al modelo le llegan los **flags y sus motivos, nunca las respuestas del cribado**.
 - Se reescribe el prompt actual: se quitan "ACWR: zona segura 0.8–1.3; por encima,
   riesgo de lesión" y cualquier otra afirmación sin regla (§9).
-- Si hay `refer_gp`, la respuesta termina con la línea de derivación en español,
-  copiada literal, y esto lo añade el backend, no el modelo.
+- Si hay `refer_gp`, la respuesta termina con la línea de derivación en el idioma del
+  usuario, copiada literal de `docs/safety.md` (existe en es y en). La añade el
+  backend, no el modelo.
 
 ---
 
@@ -425,10 +531,39 @@ usuarios autenticados y no tienen datos personales.
   - Menor de 18: sin objetivos calóricos, déficit, pesajes, categoría de peso ni
     corte. En deportes de combate esto importa especialmente.
 - Onboarding con cribado, siguiendo `setup/SKILL.md`: el SCOFF antes de preguntar el
-  peso; el PAR-Q+ tal como se publica (P3); síntomas cardiacos; medicación y
-  condiciones mapeadas a tokens con un selector (sin texto libre que interpretar);
-  tensión si hay hipertensión; ciclo. Si aparece un síntoma ahora o en reposo, se
-  para el flujo y se muestra el número de emergencia.
+  peso; el PAR-Q+ (abajo); síntomas cardiacos; medicación y condiciones mapeadas a
+  tokens con un selector (sin texto libre que interpretar); tensión si hay
+  hipertensión; ciclo. Si aparece un síntoma ahora o en reposo, se para el flujo y se
+  muestra el número de emergencia.
+
+#### PAR-Q+ (P3: lo mejor para el usuario, dentro de la ley)
+
+| Opción | Usuario | Legal |
+|---|---|---|
+| Copiar las preguntas oficiales dentro de la app | La mejor: todo en un sitio | **No, sin permiso.** La única licencia del formulario es para fotocopiarlo entero (§1) |
+| Reescribir las preguntas con nuestras palabras | Buena | No: el propio formulario prohíbe cambios, y además dejaría de ser el PAR-Q+ validado |
+| **Formulario oficial desde su web + 2 preguntas en la app** | Buena si el paso está bien guiado | Sí: no se copia ni se cambia nada |
+
+**Decisión: la tercera, con el paso guiado**, y con la primera preparada por si llega
+un permiso:
+
+1. Un paso del onboarding explica en una frase para qué sirve y abre el formulario
+   oficial en el idioma del usuario (español o inglés) desde eparmedx.com, en una
+   pestaña o el visor del sistema. No se incrusta: el sitio puede bloquearlo y
+   copiarlo sería redistribuirlo. La URL va en configuración, no en el código.
+2. Al volver, dos preguntas grandes de sí o no, con la misma redacción que el coach:
+   "¿Algún SÍ en las 7 preguntas generales?" y, si es sí, "¿Algún SÍ en las preguntas
+   de seguimiento?". Hay una tercera respuesta, "No lo sé o no lo he rellenado", que
+   deja el campo nulo. Así se aplica la regla conservadora del motor (PAR-Q+ sin
+   contestar → solo trabajo ligero o moderado), sin bloquear el resto del
+   onboarding, y la app lo vuelve a pedir más tarde.
+3. Con algún SÍ, o 45 años o más, se pregunta si un profesional cualificado ha revisado
+   el trabajo vigoroso (`vigorous_reviewed`), como en `setup/SKILL.md`.
+4. **Opción mejor si llega el permiso:** si el usuario consigue permiso escrito de la
+   PAR-Q+ Collaboration para reproducir el formulario dentro de la app, se activa un
+   formulario nativo con el texto exacto en es y en (preguntas, seguimiento con sus
+   saltos, crédito del traductor) detrás de un flag de configuración. Los modelos no
+   cambian: se siguen guardando solo `parq_any_yes` y `parq_followup_yes`.
 
 ### 8.2 Lo que en el coach era texto de skill y aquí pasa a código
 
@@ -474,7 +609,7 @@ puede decir que *todo* tiene evidencia. Este es el inventario:
 | Rehidratación entre pesaje y combate | Nada | "Sodium in long sessions and rehydration" (no es lo mismo) | Por revisar | Nada |
 | Conmoción y golpes en la cabeza en sparring | Nada | Nada | Hueco de seguridad | Flag `no_contact` conservador (§8.3) |
 | Gasto energético de las sesiones de combate (factores de kcal del tracker) | Factores fijos por intensidad | "Exercise calories do not add linearly" | Por revisar (Compendio de Actividades Físicas) | Etiqueta de convención |
-| RMR de atletas (masa magra alta) | — | Reglas de ten Haaf y Cunningham, pero el código solo usa MSJ | La regla existe y falta código | Propuesta al autor (P5) o en el puente, con la advertencia de "Body-fat measurement error carries into RMR" |
+| RMR de atletas (masa magra alta) | — | Reglas de ten Haaf y Cunningham, pero el código solo usa MSJ | La regla existe y falta código | Se implementa en el puente (`bridge/energy_athletes.py`, fase 4) citando esas reglas y con la advertencia de "Body-fat measurement error carries into RMR"; queda apuntado como `U04` |
 | PAL con doble sesión diaria (por encima de 2,0) | — | PAL tope 2,0 "recreational" | Por revisar | Usar el tope del coach |
 | Readiness y bienestar | Plan v1 §8 | "Simple readiness monitoring", "HRV is optional" | **Cubierto** | Reutilizar esas reglas |
 | Carbohidratos según la carga del día | Plan v1 §7 | "Carbohydrate by training load" | **Cubierto** | Reutilizar |
@@ -491,12 +626,21 @@ puede decir que *todo* tiene evidencia. Este es el inventario:
   formato (`### regla`, un `**Grade:**`, IDs `[Fxxx]` para no chocar con `[Sxxx]`, la
   línea "Evidence checked on" y sin rayas largas), cargado por el mismo
   `load_knowledge` con `origin=fightlab`, más `dropped-claims.md` propio.
-- Las comprobaciones de formato reutilizan `scripts/check_knowledge.py` del prefijo
-  si admite otra carpeta. Si no, un test propio que aplique las mismas reglas.
-- El trabajo de investigación puede hacerse con el workflow `/research` del coach,
-  en el repo del autor o en una copia, ya que es un proceso offline y no código de
-  FightLab. Si al autor le interesa, el anexo puede volver a su repo como módulo
-  (P4).
+- Las comprobaciones de formato reutilizan `scripts/check_knowledge.py` del prefijo,
+  que ya admite `--knowledge-dir`. Si sus comprobaciones del índice o del README no
+  encajan con el anexo, se envuelve en un test propio que aplique las mismas reglas.
+- **El anexo se queda en FightLab (P4).** No se le propone al autor. Licencia: la
+  del repo de FightLab (§1); hoy, todos los derechos reservados. Las fuentes `[Fxxx]`
+  guardan solo la referencia bibliográfica, igual que las del coach.
+- La investigación puede usar como herramienta el workflow `/research` del coach,
+  sobre una copia limpia del repo (nunca la carpeta con `data/`). El resultado se
+  escribe en `backend/knowledge_fightlab/` y no vuelve al repo del autor.
+- **Cuándo (P6, decisión técnica que el usuario delegó):** la investigación (E.1-E.3) **arranca a la vez que la
+  fase 1**. Motivos: no depende de código; el texto del ACWR ya está en producción; y
+  sus resultados se necesitan en la fase 4 (contenido de corte y pesaje) y en la
+  fase 6 (si el sparring cuenta como vigoroso en `MODALITY_INTENSITY`). Fecha límite
+  blanda: antes de empezar la fase 4. Si no llega, la fase 4 sale igual con la
+  etiqueta "Convención de FightLab, sin revisar" y no se bloquea.
 - Las fuentes candidatas (las revisiones del ACWR de Impellizzeri y otros, las de
   pérdida rápida de peso en combate, la declaración de consenso sobre conmoción en el
   deporte, el Compendio de Actividades Físicas) **se dejan a propósito sin cifras en
@@ -517,19 +661,24 @@ detallado.
 | Fase | Entrega | Depende de | Qué ve el usuario |
 |---|---|---|---|
 | **0** | Esta spec y el plan | — | Nada |
-| **1. Plataforma** | Python 3.12 y versiones fijadas; subtree en `backend/vendor/`; `UPSTREAM.md`; `PYTHONPATH`; `pyyaml`; tests del autor dentro de la suite; pantalla de Créditos | — | Créditos |
+| **1. Plataforma** | Python 3.12 y versiones fijadas; subtree en `backend/vendor/`; `UPSTREAM.md`; `docs/coach-upstream-sugerencias.md`; `PYTHONPATH`; `pyyaml`; tests del autor dentro de la suite; **infraestructura i18n** (`next-intl`, cookie de idioma, `LocaleMiddleware`, test de claves es/en); pantalla de Créditos en los dos idiomas | — | Créditos |
+| **I. UI existente en dos idiomas** | Pasar a catálogos las ~600-800 cadenas actuales en 3-4 PRs por zonas (§7.5) y activar el selector de idioma al terminar | 1. **En paralelo con 2-5** | La app entera en inglés |
 | **2. Evidencia** | Modelos `KnowledgeRule`/`Source`/`RuleTranslation`; `load_knowledge`; API de lectura; componente de chip y hoja de evidencia; prompt del chat sin afirmaciones sin fuente | 1 | Ver las reglas y sus fuentes; el chat ya no afirma lo que no puede citar |
-| **3. Perfil y cribado** | Perfil ampliado, `Screening`, `ScreeningEvent`, `Injury`, adaptador, `GET /coach/safety`, onboarding con cribado, línea de derivación, puerta 409, catálogo i18n de motivos | 1, 2 | Onboarding con cribado y banner de seguridad con su regla |
+| **3. Perfil y cribado** | Perfil ampliado (incl. `language`), `Screening`, `ScreeningEvent`, `Injury`, adaptador, `GET /coach/safety`, onboarding con cribado y PAR-Q+ guiado (§8.1), línea de derivación es/en, puerta 409, catálogo de motivos `reason_texts.py` (es/en) | 1, 2 | Onboarding con cribado y banner de seguridad con su regla |
 | **4. Objetivos** | `energy`, `macros` y `zones` vía API con citas; Nutrición usa estos objetivos (se retira `targets()` del frontend); bloqueos de §8.3 sobre pesaje y corte; pesaje a BD | 3 | Kcal, macros y zonas con suelos y bloqueos |
 | **5. Check-in** | `DailyCheckin`, señales de alarma estructuradas, preguntas semanales, `trend` en Biometría y en la Home; se une con el check-in de bienestar del plan v1 | 3, 4 | Check-in diario y ritmo semanal del motor |
 | **6. Fuerza y plan semanal** | `SetLog` (o el del plan v1), `strength` (progresión, series, pausas, descarga), `MODALITY_INTENSITY`, generador de `WeeklyPlan` con sesiones de combate en el calendario y el LLM solo para redactar | 3, 4 | Plan semanal con cargas y reglas |
 | **7. Revisión semanal** | `WeeklyReview`, recalibración del TDEE, señales de descarga, aceptar propuestas genera un plan nuevo | 5, 6 | Revisión semanal |
 | **8. Menús y compra** | `Tastes`, `Recipe`, `CatalogueProduct`, proxy de OFF (compartido con el escáner de v1), comprobación de menús del motor, lista de la compra; el LLM propone platos y el motor los valida; PDF opcional | 4 | Menús y lista de la compra |
 | **9. Importadores** (opcional) | Hevy, Lyfta y CSV → `SetLog` | 6 | Importar el histórico |
-| **E. Anexo de combate** | Investigación (§9) → `knowledge_fightlab/`; después, aplicarlo: rehacer textos del ACWR, gating del corte, regla de conmoción | Investigación: ninguna, **en paralelo desde ya**. Aplicación: 2 y 4 | Carga y corte con evidencia o etiquetados con honestidad |
+| **E. Anexo de combate** | Investigación (§9) → `knowledge_fightlab/`; después, aplicarlo: rehacer textos del ACWR, gating del corte, regla de conmoción | Investigación: ninguna; **arranca con la fase 1** y conviene que acabe antes de la 4. Aplicación: 2 y 4 | Carga y corte con evidencia o etiquetados con honestidad |
 
 El chat va ganando herramientas en cada fase: citas en la 2, seguridad en la 3,
 objetivos en la 4 y así sucesivamente. No es una fase aparte.
+
+Impacto de P2 en las fases: la 1 crece un poco (infraestructura); las 2-8 añaden un
+~10-15 % por pantalla (dos catálogos; el contenido en inglés ya existe); aparece la
+fase I, mecánica, que va en paralelo y no retrasa la ruta crítica 1→2→3→4.
 
 ---
 
@@ -538,10 +687,13 @@ objetivos en la 4 y así sucesivamente. No es una fase aparte.
 | Riesgo | Mitigación |
 |---|---|
 | Un cambio del autor rompe el puente | Tests de contrato; regla de no editar el prefijo; la actualización es un PR propio |
-| El puente usa `_validate`, que es privada | Test de contrato y propuesta de API pública al autor |
-| Motivos en inglés sin traducción | Catálogo con test que falla si falta una plantilla; si llega uno desconocido, se muestra en inglés |
-| Traducción de 459 reglas | Traducción por LLM marcada como tal más revisión progresiva, empezando por las que salen en la UI |
-| El PAR-Q+ no se puede reformular | P3 |
+| El puente usa `_validate`, que es privada | Test de contrato; apuntado como `U01` |
+| Motivos sin plantilla en algún idioma | Catálogo es/en con test que falla si falta una plantilla; si llega uno desconocido, se muestra el texto original del motor |
+| Traducción de 459 reglas al español | Traducción por LLM marcada como tal más revisión progresiva, empezando por las que salen en la UI; en inglés, el original |
+| App a medio traducir durante la fase I | El selector de idioma no aparece hasta que acaba la fase I; test de claves es/en desde la fase 1 |
+| El PAR-Q+ no se puede reproducir | Formulario oficial desde su web más 2 preguntas (§8.1); formulario nativo solo con permiso escrito |
+| Un parche dentro de `vendor/` se pierde en un `subtree pull` | Parches solo como último recurso, apuntados en `UPSTREAM.md` y con un test que falla si desaparecen |
+| Las mejoras propias se separan del motor del autor | Lista `docs/coach-upstream-sugerencias.md`, que se revisa en cada `subtree pull` |
 | Datos de salud | Solo el dueño accede; al LLM llegan flags y no respuestas; nada de salud en logs |
 | Coste del LLM | Las cuentas son deterministas; el LLM solo redacta, una vez por plan o revisión y en caché |
 | Prometer evidencia que FightLab no tiene | Etiqueta "Convención de FightLab, sin revisar" y fase E |
@@ -549,23 +701,23 @@ objetivos en la 4 y así sucesivamente. No es una fase aparte.
 
 ---
 
-## 12. Preguntas abiertas para el usuario
+## 12. Decisiones del usuario (P1-P7) y lo que queda abierto
 
-- **P1.** ¿Se confirma **mezcla con subtree** (§2 y §4)? La alternativa más simple es
-  la copia (A), a cambio de traer las mejoras a mano.
-- **P2.** ¿Hay que admitir el inglés en FightLab, o solo español? Si es solo español,
-  el catálogo de traducción tiene un único idioma y las reglas en inglés solo se ven
-  como "original".
-- **P3.** **PAR-Q+ en la web:** ¿se pide permiso o se confirma la licencia para
-  mostrar el texto oficial en español tal cual dentro de la app? Si no, se hace como
-  el coach: enlace a eparmedx.com y la app pregunta solo "¿algún SÍ en las 7
-  preguntas?" y "¿algún SÍ en las de seguimiento?".
-- **P4.** ¿Se le propone al autor llevar el anexo de combate a su repo? A los dos les
-  beneficia y reparte el mantenimiento. Y en ese caso, ¿con qué licencia sale el
-  anexo de FightLab? Se sugiere CC BY 4.0, para que encaje con el resto.
-- **P5.** ¿Se le pueden proponer PRs al autor? Por ejemplo, una función pública
-  `profile_from_dict`, ecuaciones de atletas en `energy` y carpetas de evidencia y
-  alimentos configurables.
-- **P6.** ¿La fase E (investigación) empieza ya en paralelo, o después de la fase 4?
-- **P7.** Si un usuario tiene `gender = OTHER` y no quiere elegir `equation_sex`, ¿se
-  acepta que no tenga objetivos calóricos, como hace el coach?
+| # | Pregunta | Respuesta | Dónde se aplica |
+|---|---|---|---|
+| P1 | ¿Subtree o copia? | "Como mejor se haga" → **subtree con squash**, decisión cerrada | §4 |
+| P2 | ¿Solo español o también inglés? | Los dos desde el principio si no es difícil → **es y en**. Fácil para el contenido del coach; la UI existente va en la fase I | §7.5, §10 |
+| P3 | PAR-Q+ | "Lo mejor para el que lo use", sin incumplir la licencia → **formulario oficial desde su web + 2 preguntas**, y formulario nativo si hay permiso | §1, §8.1 |
+| P4 | ¿Anexo de combate al repo del autor? | No, **se queda en FightLab** con la licencia del repo | §1, §9 |
+| P5 | ¿PRs al autor? | No. **Mejoras en FightLab** (capa adaptadora) y lista para comunicárselas | §4.1, `docs/coach-upstream-sugerencias.md` |
+| P6 | ¿Cuándo empieza la fase E? | A mi criterio → **a la vez que la fase 1** | §9, §10 |
+| P7 | `gender=OTHER` sin `equation_sex` | Sí: **sin objetivos calóricos**, como el coach | §6.2 |
+
+**Queda abierto (no bloquea ninguna fase):**
+
+- **A1.** ¿Pide el usuario permiso escrito a la PAR-Q+ Collaboration para mostrar el
+  formulario dentro de la app? Es la única forma de tener la opción ideal (§8.1). Es
+  un mensaje que tendría que mandar el usuario.
+- **A2.** ¿Quiere el usuario poner una licencia al repo de FightLab? Hoy no tiene
+  ninguna, así que el anexo y las traducciones quedan con todos los derechos
+  reservados. Esto no afecta al cumplimiento de MIT y CC BY del coach.
