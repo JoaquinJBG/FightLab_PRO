@@ -6,6 +6,7 @@ import {
   setAuthCookies,
   setAccessCookie,
   clearAuthCookies,
+  setLangCookie,
 } from "@/lib/cookies";
 
 async function handle(req: Request, path: string[]) {
@@ -53,6 +54,11 @@ async function handle(req: Request, path: string[]) {
       await clearAuthCookies();
       return NextResponse.json({ detail: "Sesión expirada" }, { status: 401 });
     }
+  }
+
+  // El idioma guardado en el perfil manda: se copia a la cookie `flp_lang` (spec §6.2).
+  if (r.status === 200 && path.join("/") === "me/profile" && r.data && typeof r.data === "object") {
+    await setLangCookie((r.data as { language?: unknown }).language);
   }
 
   return NextResponse.json(r.data ?? {}, { status: r.status });

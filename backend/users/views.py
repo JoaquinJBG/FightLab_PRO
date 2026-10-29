@@ -1,3 +1,4 @@
+from django.utils.translation import get_language
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -19,7 +20,7 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            services.user_create(**serializer.validated_data)
+            services.user_create(**serializer.validated_data, language=get_language())
         except ValueError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_201_CREATED)

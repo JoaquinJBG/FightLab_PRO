@@ -1,7 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 
-from .models import BiometricsLog, ProgressPhoto, UserProfile
+from .models import PROFILE_COACH_FIELDS, BiometricsLog, ProgressPhoto, UserProfile
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -10,6 +10,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = (
             "date_of_birth", "gender", "height_cm",
             "dominant_stance", "preferred_units", "timezone",
+            *PROFILE_COACH_FIELDS,
         )
 
 

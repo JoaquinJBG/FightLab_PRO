@@ -38,6 +38,24 @@ export const profile = z.object({
   dominant_stance: z.string().nullable(),
   preferred_units: z.string(),
   timezone: z.string(),
+  // Perfil ampliado (spec §6.2)
+  equation_sex: z.string().nullable(),
+  goal: z.string().nullable(),
+  experience: z.string().nullable(),
+  activity_level: z.string().nullable(),
+  language: z.enum(["es", "en"]),
+  region: z.string().nullable(),
+  emergency_number: z.string().nullable(),
+  medications: z.array(z.string()),
+  medications_other: z.array(z.string()),
+  conditions: z.array(z.string()),
+  conditions_other: z.array(z.string()),
+  disciplines: z.array(z.string()),
+  training_frequency: z.number().nullable(),
+  goal_weight_kg: z.string().nullable(),
+  goal_date: z.string().nullable(),
+  weight_class: z.string().nullable(),
+  weigh_in_at: z.string().nullable(),
 });
 export type Profile = z.infer<typeof profile>;
 

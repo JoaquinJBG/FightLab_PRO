@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useProfile } from "@/lib/hooks";
+import { useProfile, useUpdateProfile } from "@/lib/hooks";
+import { LEGACY_GOAL_KEY, goalToMigrate } from "@/lib/goal";
 
 /**
  * Si el perfil del usuario está incompleto (sin fecha de nacimiento o altura),
@@ -17,6 +18,23 @@ export function OnboardingGate({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (incomplete) router.replace("/onboarding");
   }, [incomplete, router]);
+
+  // Primera carga tras la fase 3: el objetivo de localStorage pasa al perfil (spec §6.2).
+  const update = useUpdateProfile();
+  const migrated = useRef(false);
+  useEffect(() => {
+    if (!profile || migrated.current) return;
+    migrated.current = true;
+    let legacy: string | null = null;
+    try {
+      legacy = localStorage.getItem(LEGACY_GOAL_KEY);
+    } catch {
+      return;
+    }
+    const goal = goalToMigrate(profile.goal, legacy);
+    if (goal) update.mutate({ goal }, { onSuccess: () => localStorage.removeItem(LEGACY_GOAL_KEY) });
+    else if (legacy && profile.goal) localStorage.removeItem(LEGACY_GOAL_KEY);
+  }, [profile, update]);
 
   if (isLoading || incomplete) {
     return (

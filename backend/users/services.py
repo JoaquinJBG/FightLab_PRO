@@ -29,8 +29,11 @@ def _send_verification_email(user) -> None:
 
 
 @transaction.atomic
-def user_create(*, email: str, password: str):
+def user_create(*, email: str, password: str, language: str | None = None):
     """Create an inactive user and send the verification email.
+
+    `language` es el de la petición de registro (`Accept-Language`); queda en el perfil
+    y, si no es uno de los idiomas de la app, se usa el español (spec §6.2).
 
     Si ya existe una cuenta con ese email pero SIN verificar, no es un error:
     se actualiza la contraseña y se reenvía el enlace de verificación (así el
@@ -43,12 +46,26 @@ def user_create(*, email: str, password: str):
             raise ValueError("A user with this email already exists")
         existing.set_password(password)
         existing.save(update_fields=["password", "updated_at"])
+        _profile_language_set(existing, language)
         _send_verification_email(existing)
         return existing
 
     user = User.objects.create_user(email=email, password=password, is_active=False)
+    _profile_language_set(user, language)
     _send_verification_email(user)
     return user
+
+
+def _profile_language_set(user, language: str | None) -> None:
+    from profiles.models import DEFAULT_LANGUAGE, LANGUAGES, UserProfile
+
+    code = (language or "").split("-")[0].lower()
+    if code not in dict(LANGUAGES):
+        code = DEFAULT_LANGUAGE
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+    if profile.language != code:
+        profile.language = code
+        profile.save(update_fields=["language"])
 
 
 @transaction.atomic
