@@ -562,6 +562,24 @@
     "cta": {
       "update": "Update biometrics",
       "register": "Log biometrics"
+    },
+    "zones": {
+      "title": "Your effort zones",
+      "names": {
+        "light": "Light",
+        "moderate": "Moderate",
+        "vigorous": "Vigorous"
+      },
+      "bpm": "{low}–{high} bpm",
+      "rpe": "RPE {low}-{high}",
+      "talk": {
+        "light": "you can talk and sing",
+        "moderate": "you can talk, but not sing",
+        "vigorous": "only a few words without pausing for breath"
+      },
+      "hrMaxEstimated": "Estimated max HR: {bpm} bpm",
+      "hrMaxMeasured": "Measured max HR: {bpm} bpm",
+      "hrRest": "Resting HR: {bpm} bpm"
     }
   }
 }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useFormatter, useTranslations } from "next-intl";
 import { useBiometrics, useMe, useSafety, useWeighIn } from "@/lib/hooks";
 import { SafetyBanner } from "@/components/safety/SafetyBanner";
+import { ZonesCard } from "@/components/zones/ZonesCard";
 import type { Biometrics } from "@/lib/schemas";
 import { computeRecovery } from "@/lib/recovery";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
@@ -516,6 +517,9 @@ export default function DashboardPage() {
       {local.metrics?.acwr != null && local.metrics.provisional && (
         <p className="t-body mt-1.5 text-[10px] text-muted">{t("load.provisional")}</p>
       )}
+
+      {/* ---------- Zonas de esfuerzo (motor del coach, calculadas en el servidor) ---------- */}
+      <ZonesCard />
 
       {/* ---------- CTA ---------- */}
       <Link href="/biometrics/new" className="btn btn-primary rise mt-5 w-full" style={{ animationDelay: "390ms" }}>

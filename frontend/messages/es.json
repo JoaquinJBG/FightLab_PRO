@@ -562,6 +562,24 @@
     "cta": {
       "update": "Actualizar biometría",
       "register": "Registrar biometría"
+    },
+    "zones": {
+      "title": "Tus zonas de esfuerzo",
+      "names": {
+        "light": "Ligera",
+        "moderate": "Moderada",
+        "vigorous": "Vigorosa"
+      },
+      "bpm": "{low}–{high} bpm",
+      "rpe": "RPE {low}-{high}",
+      "talk": {
+        "light": "puedes hablar y cantar",
+        "moderate": "puedes hablar, pero no cantar",
+        "vigorous": "solo unas pocas palabras sin parar a respirar"
+      },
+      "hrMaxEstimated": "FC máxima estimada: {bpm} bpm",
+      "hrMaxMeasured": "FC máxima medida: {bpm} bpm",
+      "hrRest": "FC en reposo: {bpm} bpm"
     }
   }
 }
