@@ -303,5 +303,61 @@
       "intro": "This is what FightLab will keep in mind from what you told us.",
       "start": "Start"
     }
+  },
+  "meta": {
+    "description": "High-performance platform for combat athletes: training load, nutrition and AI coach.",
+    "manifestDescription": "Training load, nutrition and AI coach for combat athletes."
+  },
+  "nav": {
+    "home": "Home",
+    "training": "Training",
+    "nutrition": "Nutrition",
+    "coach": "Coach",
+    "profile": "Profile",
+    "comingSoon": "Coming soon"
+  },
+  "auth": {
+    "common": {
+      "email": "Email",
+      "emailPlaceholder": "you@email.com",
+      "password": "Password",
+      "emailInvalid": "Invalid email",
+      "passwordMin": "At least 8 characters"
+    },
+    "login": {
+      "tagline": "Combat performance, measured and trained.",
+      "badCredentials": "Wrong credentials or unverified account",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "noAccount": "Don't have an account?",
+      "createAccount": "Create account"
+    },
+    "register": {
+      "title": "Create <neon>account</neon>",
+      "checkLength": "At least 8 characters",
+      "checkNotNumeric": "Not only numbers",
+      "checkNotEmail": "Different from your email",
+      "checkRequirements": "Check the password requirements.",
+      "failed": "Could not sign up",
+      "checkEmailTitle": "Check your email",
+      "checkEmailBody": "We sent a verification link to <strong>{email}</strong>. Check your inbox (and your spam folder). The link expires in 24 hours.",
+      "goToLogin": "Go to sign in",
+      "passwordPlaceholder": "at least 8 characters",
+      "show": "Show",
+      "hide": "Hide",
+      "submit": "Create account",
+      "submitting": "Creating…",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "verifyEmail": {
+      "title": "Verification",
+      "loading": "Loading…",
+      "verifying": "Verifying…",
+      "verified": "Email verified! ✅",
+      "signIn": "Sign in",
+      "invalidLink": "Invalid or expired link",
+      "backToRegister": "Back to sign up"
+    }
   }
 }

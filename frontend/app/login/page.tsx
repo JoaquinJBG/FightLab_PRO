@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { ArrowUpRight } from "@/components/icons";
 import { credentials } from "@/lib/schemas";
 
 export default function LoginPage() {
+  const t = useTranslations("auth");
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,7 +20,7 @@ export default function LoginPage() {
     setError(null);
     const parsed = credentials.safeParse({ email, password });
     if (!parsed.success) {
-      setError(parsed.error.issues[0].message);
+      setError(parsed.error.issues[0].path[0] === "email" ? t("common.emailInvalid") : t("common.passwordMin"));
       return;
     }
     setLoading(true);
@@ -29,7 +31,7 @@ export default function LoginPage() {
     });
     setLoading(false);
     if (res.ok) router.push("/dashboard");
-    else setError("Credenciales incorrectas o cuenta sin verificar");
+    else setError(t("login.badCredentials"));
   }
 
   return (
@@ -42,23 +44,23 @@ export default function LoginPage() {
           <h1 className="t-display text-3xl text-ink">
             FIGHTLAB <span className="neon-text">PRO</span>
           </h1>
-          <p className="t-body mt-2 text-muted">Rendimiento de combate, medido y entrenado.</p>
+          <p className="t-body mt-2 text-muted">{t("login.tagline")}</p>
         </div>
         <form className="flex flex-col gap-3" onSubmit={onSubmit}>
           <label className="flex flex-col gap-1.5">
-            <span className="t-label text-muted">Email</span>
+            <span className="t-label text-muted">{t("common.email")}</span>
             <input
               type="email"
               inputMode="email"
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
+              placeholder={t("common.emailPlaceholder")}
               className="field px-4 py-3.5 text-sm"
             />
           </label>
           <label className="flex flex-col gap-1.5">
-            <span className="t-label text-muted">Contraseña</span>
+            <span className="t-label text-muted">{t("common.password")}</span>
             <input
               type="password"
               autoComplete="current-password"
@@ -70,14 +72,14 @@ export default function LoginPage() {
           </label>
           {error && <p className="text-xs text-bad">{error}</p>}
           <button type="submit" disabled={loading} className="btn btn-primary mt-2 disabled:opacity-60">
-            {loading ? "Entrando…" : "Entrar"}
+            {loading ? t("login.submitting") : t("login.submit")}
             <ArrowUpRight className="h-4 w-4" />
           </button>
         </form>
         <p className="t-body mt-6 text-center text-xs text-muted">
-          ¿No tienes cuenta?{" "}
+          {t("login.noAccount")}{" "}
           <Link href="/register" className="text-neon">
-            Crear cuenta
+            {t("login.createAccount")}
           </Link>
         </p>
       </div>

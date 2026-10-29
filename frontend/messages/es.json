@@ -303,5 +303,61 @@
       "intro": "Esto es lo que FightLab tendrá en cuenta con lo que nos has contado.",
       "start": "Empezar"
     }
+  },
+  "meta": {
+    "description": "Plataforma de alto rendimiento para atletas de combate: carga de entrenamiento, nutrición y coach IA.",
+    "manifestDescription": "Carga de entrenamiento, nutrición y coach IA para atletas de combate."
+  },
+  "nav": {
+    "home": "Inicio",
+    "training": "Entreno",
+    "nutrition": "Nutrición",
+    "coach": "Coach",
+    "profile": "Perfil",
+    "comingSoon": "Próximamente"
+  },
+  "auth": {
+    "common": {
+      "email": "Email",
+      "emailPlaceholder": "tu@email.com",
+      "password": "Contraseña",
+      "emailInvalid": "Email no válido",
+      "passwordMin": "Mínimo 8 caracteres"
+    },
+    "login": {
+      "tagline": "Rendimiento de combate, medido y entrenado.",
+      "badCredentials": "Credenciales incorrectas o cuenta sin verificar",
+      "submit": "Entrar",
+      "submitting": "Entrando…",
+      "noAccount": "¿No tienes cuenta?",
+      "createAccount": "Crear cuenta"
+    },
+    "register": {
+      "title": "Crear <neon>cuenta</neon>",
+      "checkLength": "Al menos 8 caracteres",
+      "checkNotNumeric": "No solo números",
+      "checkNotEmail": "Distinta de tu email",
+      "checkRequirements": "Revisa los requisitos de la contraseña.",
+      "failed": "No se pudo registrar",
+      "checkEmailTitle": "Revisa tu email",
+      "checkEmailBody": "Te enviamos un enlace de verificación a <strong>{email}</strong>. Revisa tu bandeja de entrada (y la carpeta de spam). El enlace vence en 24 horas.",
+      "goToLogin": "Ir a iniciar sesión",
+      "passwordPlaceholder": "mínimo 8 caracteres",
+      "show": "Mostrar",
+      "hide": "Ocultar",
+      "submit": "Crear cuenta",
+      "submitting": "Creando…",
+      "haveAccount": "¿Ya tienes cuenta?",
+      "signIn": "Entrar"
+    },
+    "verifyEmail": {
+      "title": "Verificación",
+      "loading": "Cargando…",
+      "verifying": "Verificando…",
+      "verified": "¡Email verificado! ✅",
+      "signIn": "Iniciar sesión",
+      "invalidLink": "Enlace no válido o caducado",
+      "backToRegister": "Volver a registrarme"
+    }
   }
 }
