@@ -81,7 +81,9 @@ frontend/
 ├── lib/nutrition.ts                        # MODIFY (F4) — se retira targets()
 └── app/**, components/**                   # MODIFY (I) — cadenas a catálogos
 docs/coach-upstream-sugerencias.md          # EXISTE (F0) — se mantiene en cada fase
-README.md                                   # MODIFY (F1) — créditos
+LICENSE                                     # CREATE (F1) — MIT, código de FightLab
+LICENSE-CONTENT.md                          # CREATE (F1) — CC BY 4.0, contenido de FightLab
+README.md                                   # MODIFY (F1) — licencia y créditos
 ```
 
 `*` `SetLog` va en `coaching` solo si el trabajo de gimnasio del plan v1 (fase 3) no lo
@@ -274,9 +276,43 @@ git commit -m "build(coach): motor importable desde Django y su suite pasa en 3.
 - [ ] **Step 3:** Sección "Créditos" en `README.md` con el mismo texto.
 - [ ] **Step 4: Commit** `feat(coach): pantalla de créditos y licencias del motor`.
 
+### Task 1.6: Licencia de FightLab (MIT + CC BY 4.0)
+
+**Files:**
+- Create: `LICENSE` (raíz)
+- Create: `LICENSE-CONTENT.md` (raíz)
+- Modify: `README.md` (sección "Licencia y créditos")
+
+- [ ] **Step 1: Confirmar el titular.** En `git log`, todos los commits son del mismo
+  correo, con dos nombres: `JoaquinJBG` y `Joaquín J Beltrán García`. Se usa
+  `Joaquín J Beltrán García` salvo que el usuario prefiera otra forma. **Hueco:**
+  confirmarlo con el usuario antes del commit. Si no contesta, se usa esa forma.
+- [ ] **Step 2: `LICENSE`.** Texto MIT estándar: `Copyright (c) 2026 <titular>`.
+  Cubre el código de FightLab (`backend/` salvo `backend/vendor/ai-personal-coach/`,
+  `frontend/`, incluidos los catálogos `messages/*.json`, y `docker-compose.yml`).
+- [ ] **Step 3: `LICENSE-CONTENT.md`.** Sigue la estructura del `LICENSE-CONTENT.md`
+  del coach, con estas partes:
+  - **CC BY 4.0** (enlaces a la licencia y al texto legal) para `docs/`,
+    `backend/knowledge_fightlab/`, las traducciones al español de reglas y mensajes
+    del coach y las imágenes propias.
+  - Atribución pedida: *"FightLab Pro by <titular>, CC BY 4.0"*, con nota de cambios.
+  - **Excluido:** `backend/vendor/ai-personal-coach/`, que conserva su `LICENSE`
+    (MIT, matgarfer499) y su `LICENSE-CONTENT.md` (CC BY 4.0). Las traducciones de
+    reglas del coach llevan las dos atribuciones (spec §1).
+  - **No cubierto:** citas textuales de las editoriales (no se publican), datos de
+    USDA FoodData Central (dominio público), productos de Open Food Facts (ODbL) y
+    PAR-Q+ (© PAR-Q+ Collaboration; no se redistribuye).
+- [ ] **Step 4: README.** Sección "Licencia y créditos": código MIT y contenido CC BY
+  4.0 con enlaces a los dos archivos, y debajo la atribución al coach de la Task 1.5.
+- [ ] **Step 5:** La pantalla de Créditos (Task 1.5) añade al final la licencia de
+  FightLab con enlace a los dos archivos. El test de Vitest comprueba que aparece.
+- [ ] **Step 6: Commit** `docs: licencia de FightLab (MIT para el código, CC BY 4.0 para el contenido)`.
+
 **Aceptación de la fase 1:** imagen en 3.12; `import coach` funciona en Django; las
 dos suites en verde; infraestructura es/en con su test de claves; Créditos visible en
-los dos idiomas; `UPSTREAM.md` completo; ningún archivo de `data/` en el repo.
+los dos idiomas con las licencias del coach y de FightLab; `LICENSE` y
+`LICENSE-CONTENT.md` en la raíz y el prefijo `vendor/` con sus licencias intactas;
+`UPSTREAM.md` completo; ningún archivo de `data/` en el repo.
 
 ---
 
@@ -583,8 +619,9 @@ rama (`docs/coach-anexo-combate`), porque no dependen de código. **Fecha límit
 blanda:** antes de empezar la fase 4. Si no se llega, F4 y F6 salen con la etiqueta
 "Convención de FightLab, sin revisar" y se actualizan cuando llegue E.5.
 
-**Dónde se queda (P4):** solo en FightLab. No se le propone al autor. Licencia: la
-del repo de FightLab (hoy sin `LICENSE`, todos los derechos reservados; spec §12, A2).
+**Dónde se queda (P4):** solo en FightLab. No se le propone al autor. Licencia: CC
+BY 4.0, como el resto del contenido de FightLab (spec §1, A2). Lo cubre el
+`LICENSE-CONTENT.md` de la Task 1.6.
 
 - **Task E.1:** Lista de temas de la spec §9 y preguntas concretas por tema. Prioridad:
   1) ACWR (el texto ya está en producción), 2) corte y pesaje, 3) conmoción en
@@ -646,6 +683,6 @@ del repo de FightLab (hoy sin `LICENSE`, todos los derechos reservados; spec §1
   extracción de esa vista se hace dentro de esa fase y no en I.
 - La fase E arranca con F1, en su propia rama. Sus resultados entran en F4 (corte y
   pesaje), F6 (sparring) y E.5.
-- P1-P7 están respondidas (spec §12). Quedan abiertas A1 (permiso del PAR-Q+) y A2
-  (licencia del repo), y ninguna bloquea una fase.
+- P1-P7 y A2 están respondidas (spec §12). Solo queda abierta A1 (permiso del
+  PAR-Q+), que es cosa del usuario y no bloquea ninguna fase.
 - Cada PR que toque una mejora `Uxx` actualiza `docs/coach-upstream-sugerencias.md`.

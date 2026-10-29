@@ -86,13 +86,31 @@ que cambian el diseño:
   concede esto: *"Le animamos a fotocopiar el PAR-Q+"*, con la condición de usar el
   cuestionario entero y sin cambios. Eso permite fotocopiarlo en papel, pero
   no da licencia para reproducir el texto dentro de una app. Decisión en §8.1.
-- **Contenido propio de FightLab** (el anexo de combate de §9, las traducciones al
-  español de reglas y mensajes, y los textos de la app): sigue la licencia del repo
-  de FightLab. Hoy el repo no tiene `LICENSE`, así que es "todos los derechos
-  reservados" del propietario. El anexo no se manda al repo del autor (P4). Las
-  traducciones de reglas del coach son obra derivada de contenido CC BY 4.0, así
-  que conservan la atribución y la nota de cambios aunque estén en un repo cerrado
-  (CC BY lo permite). Si un día FightLab elige licencia, el anexo pasa a tenerla.
+- **Licencia de FightLab (A2, cerrada):** el mismo esquema que el coach.
+  - **Código: MIT**, en un `LICENSE` en la raíz. Titular: Joaquín J Beltrán García,
+    el autor de todos los commits del repo (`git log`, con los nombres
+    `JoaquinJBG` y `Joaquín J Beltrán García` y el mismo correo). En la fase 1 se
+    confirma qué forma del nombre se usa. Los catálogos de la UI
+    (`messages/*.json`) cuentan como código.
+  - **Contenido: CC BY 4.0**, en un `LICENSE-CONTENT.md` en la raíz, que sigue la
+    estructura del del coach. Cubre: el anexo de evidencia de combate
+    (`backend/knowledge_fightlab/`), las traducciones al español de las reglas y los
+    mensajes del coach, `docs/` (specs, planes, guía de usuario y la lista de
+    sugerencias) y las imágenes propias. Atribución pedida: *"FightLab Pro by
+    Joaquín J Beltrán García, CC BY 4.0"*.
+  - **Cómo convive con el coach:**
+    - `LICENSE-CONTENT.md` excluye de forma explícita `backend/vendor/ai-personal-coach/`,
+      que conserva sin tocar su propio `LICENSE` (MIT, matgarfer499) y su
+      `LICENSE-CONTENT.md` (CC BY 4.0).
+    - Las traducciones de reglas son adaptaciones de contenido CC BY 4.0 del coach.
+      Por eso llevan dos atribuciones: la del coach, con la nota de cambios, y la de
+      FightLab por la traducción. Las dos son CC BY 4.0, así que no hay conflicto.
+    - Siguen fuera de cualquier licencia de FightLab: las citas `Supports:` de las
+      editoriales (no se publican), los datos de USDA (dominio público, con cita),
+      los productos de Open Food Facts (ODbL) y el PAR-Q+ (no se redistribuye).
+  - Los archivos de licencia se crean en la fase 1 (Task 1.6), no ahora.
+- **Contenido propio de FightLab y el autor:** el anexo de combate no se manda al
+  repo del autor (P4). Sale con el contenido de FightLab, bajo CC BY 4.0.
 
 ---
 
@@ -432,8 +450,10 @@ usuarios autenticados y no tienen datos personales.
   del motor, la fecha de la evidencia y las demás atribuciones: USDA FoodData Central,
   Open Food Facts (ODbL) y PAR-Q+ (© PAR-Q+ Collaboration; versión española de Dr.
   Martín Rubio), con enlace al formulario oficial. El anexo de combate es contenido de
-  FightLab y no lleva atribución al coach. El mismo texto va en el `README.md` y en
-  `UPSTREAM.md`.
+  FightLab y no lleva atribución al coach. Al final, la licencia de FightLab: código
+  MIT y contenido CC BY 4.0 (§1), con enlaces a `LICENSE` y `LICENSE-CONTENT.md`. El
+  mismo texto va en el `README.md` (sección "Licencia y créditos") y, la parte del
+  coach, en `UPSTREAM.md`.
 
 ### 7.3 Traducción
 
@@ -629,9 +649,10 @@ puede decir que *todo* tiene evidencia. Este es el inventario:
 - Las comprobaciones de formato reutilizan `scripts/check_knowledge.py` del prefijo,
   que ya admite `--knowledge-dir`. Si sus comprobaciones del índice o del README no
   encajan con el anexo, se envuelve en un test propio que aplique las mismas reglas.
-- **El anexo se queda en FightLab (P4).** No se le propone al autor. Licencia: la
-  del repo de FightLab (§1); hoy, todos los derechos reservados. Las fuentes `[Fxxx]`
-  guardan solo la referencia bibliográfica, igual que las del coach.
+- **El anexo se queda en FightLab (P4).** No se le propone al autor. Licencia: **CC
+  BY 4.0**, como el resto del contenido de FightLab (§1). Las fuentes `[Fxxx]`
+  guardan solo la referencia bibliográfica, igual que las del coach: las citas
+  textuales de las editoriales no entran en el anexo.
 - La investigación puede usar como herramienta el workflow `/research` del coach,
   sobre una copia limpia del repo (nunca la carpeta con `data/`). El resultado se
   escribe en `backend/knowledge_fightlab/` y no vuelve al repo del autor.
@@ -661,7 +682,7 @@ detallado.
 | Fase | Entrega | Depende de | Qué ve el usuario |
 |---|---|---|---|
 | **0** | Esta spec y el plan | — | Nada |
-| **1. Plataforma** | Python 3.12 y versiones fijadas; subtree en `backend/vendor/`; `UPSTREAM.md`; `docs/coach-upstream-sugerencias.md`; `PYTHONPATH`; `pyyaml`; tests del autor dentro de la suite; **infraestructura i18n** (`next-intl`, cookie de idioma, `LocaleMiddleware`, test de claves es/en); pantalla de Créditos en los dos idiomas | — | Créditos |
+| **1. Plataforma** | Python 3.12 y versiones fijadas; subtree en `backend/vendor/`; `UPSTREAM.md`; `docs/coach-upstream-sugerencias.md`; `PYTHONPATH`; `pyyaml`; tests del autor dentro de la suite; **infraestructura i18n** (`next-intl`, cookie de idioma, `LocaleMiddleware`, test de claves es/en); pantalla de Créditos en los dos idiomas; `LICENSE` (MIT) y `LICENSE-CONTENT.md` (CC BY 4.0) de FightLab | — | Créditos y licencias |
 | **I. UI existente en dos idiomas** | Pasar a catálogos las ~600-800 cadenas actuales en 3-4 PRs por zonas (§7.5) y activar el selector de idioma al terminar | 1. **En paralelo con 2-5** | La app entera en inglés |
 | **2. Evidencia** | Modelos `KnowledgeRule`/`Source`/`RuleTranslation`; `load_knowledge`; API de lectura; componente de chip y hoja de evidencia; prompt del chat sin afirmaciones sin fuente | 1 | Ver las reglas y sus fuentes; el chat ya no afirma lo que no puede citar |
 | **3. Perfil y cribado** | Perfil ampliado (incl. `language`), `Screening`, `ScreeningEvent`, `Injury`, adaptador, `GET /coach/safety`, onboarding con cribado y PAR-Q+ guiado (§8.1), línea de derivación es/en, puerta 409, catálogo de motivos `reason_texts.py` (es/en) | 1, 2 | Onboarding con cribado y banner de seguridad con su regla |
@@ -708,16 +729,14 @@ fase I, mecánica, que va en paralelo y no retrasa la ruta crítica 1→2→3→
 | P1 | ¿Subtree o copia? | "Como mejor se haga" → **subtree con squash**, decisión cerrada | §4 |
 | P2 | ¿Solo español o también inglés? | Los dos desde el principio si no es difícil → **es y en**. Fácil para el contenido del coach; la UI existente va en la fase I | §7.5, §10 |
 | P3 | PAR-Q+ | "Lo mejor para el que lo use", sin incumplir la licencia → **formulario oficial desde su web + 2 preguntas**, y formulario nativo si hay permiso | §1, §8.1 |
-| P4 | ¿Anexo de combate al repo del autor? | No, **se queda en FightLab** con la licencia del repo | §1, §9 |
+| P4 | ¿Anexo de combate al repo del autor? | No, **se queda en FightLab**, bajo CC BY 4.0 | §1, §9 |
 | P5 | ¿PRs al autor? | No. **Mejoras en FightLab** (capa adaptadora) y lista para comunicárselas | §4.1, `docs/coach-upstream-sugerencias.md` |
 | P6 | ¿Cuándo empieza la fase E? | A mi criterio → **a la vez que la fase 1** | §9, §10 |
 | P7 | `gender=OTHER` sin `equation_sex` | Sí: **sin objetivos calóricos**, como el coach | §6.2 |
+| A2 | Licencia de FightLab | "La que veas mejor" → **MIT para el código y CC BY 4.0 para el contenido**, como el coach | §1, §7.2; fase 1 (Task 1.6) |
 
 **Queda abierto (no bloquea ninguna fase):**
 
 - **A1.** ¿Pide el usuario permiso escrito a la PAR-Q+ Collaboration para mostrar el
   formulario dentro de la app? Es la única forma de tener la opción ideal (§8.1). Es
   un mensaje que tendría que mandar el usuario.
-- **A2.** ¿Quiere el usuario poner una licencia al repo de FightLab? Hoy no tiene
-  ninguna, así que el anexo y las traducciones quedan con todos los derechos
-  reservados. Esto no afecta al cumplimiento de MIT y CC BY del coach.
