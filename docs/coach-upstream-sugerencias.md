@@ -16,7 +16,7 @@ Reglas (spec [`2026-10-29-coach-integracion-design.md`](superpowers/specs/2026-1
   (resuelta en FightLab, sin comunicar), `comunicada`, `adoptada en <sha>` o
   `descartada` (con motivo).
 
-Leído en el commit `7c2f508` del motor.
+Leído en el commit `7c2f508` del motor (copia local del usuario). El código vendorizado es `69e5537`, el último publicado; la diferencia es el importador de Lyfta, que no afecta a ninguna entrada.
 
 | ID | Módulo | Problema | Cómo lo resuelve FightLab | Qué se propondría al autor | Estado |
 |---|---|---|---|---|---|
@@ -27,4 +27,4 @@ Leído en el commit `7c2f508` del motor.
 | U05 | `.claude/skills/plan`, `docs/safety.md` | Excluir el trabajo vigoroso (HIIT, sprints, comba, pliometría, 1RM) mientras `review_before_vigorous` o `no_all_out_sprints` depende del texto de la skill, no del código | Tabla `MODALITY_INTENSITY` en `coaching/rules.py` con su regla por modalidad y tests (fase 6) | Una tabla de modalidades por intensidad en el paquete, para que el código pueda comprobar un plan | detectada |
 | U06 | `coach/energy.py` | Fallo conocido (en su README): con `no_training`, la estimación de energía sigue usando el `activity_level` del perfil | Mientras `no_training`, el puente calcula con el nivel `desk`, etiquetado como convención de FightLab (fase 4) | Que `tdee` y `calorie_target` tengan en cuenta `no_training` | detectada |
 | U07 | `coach/mealplan.py`, `coach/cli.py` | Parte de la comprobación de menús parece mezclar lógica y lectura o escritura de archivos (`data/menu-draft.yaml`, `data/menus/`), y `menu_check` vive en `cli.py` | A confirmar en la fase 8. El puente usará solo las partes puras y, si hace falta, reimplementará el resto de envoltorio sin tocar el cálculo | Separar el cálculo puro de la E/S y sacar `menu_check` de la CLI | detectada, a confirmar |
-| U08 | `tests/`, CI | La CI instala el locale `es_ES.UTF-8`, que no existe en `python:3.12-slim`. Algunos tests podrían depender de él | A confirmar en la fase 1 (Task 1.3): o se instala el locale en la imagen de test o se apuntan los tests saltados en `UPSTREAM.md` | Que esos tests se salten limpiamente si falta el locale | detectada, a confirmar |
+| U08 | `tests/`, CI | La CI instala el locale `es_ES.UTF-8`, que no existe en `python:3.12-slim`. Algunos tests podrían depender de él | Comprobado en la fase 1: el único test que lo usa se salta solo si falta el locale (`pytest.skip`), así que no hace falta instalarlo | — | descartada (el test ya se salta limpiamente) |

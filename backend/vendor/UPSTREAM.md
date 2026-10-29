@@ -71,6 +71,24 @@ el prefijo no se edita (spec §4).
 Cadencia: cuando el autor avise o una vez al mes. Si un pull rompe el contrato del
 puente, se arregla en el puente y nunca en el prefijo.
 
+## Suite del autor
+
+Se pasa desde `backend/` con `pytest vendor/ai-personal-coach/tests -p no:django`
+(Python 3.12). Resultado en `69e5537`: **630 passed**, con estas condiciones:
+
+- **`reportlab`** (extra `pdf` del motor): sin él, 5 tests de `tests/coach/test_export.py`
+  se saltan. FightLab no lo instala hasta que llegue el PDF; con él, pasan.
+- **`ruff`**: algunos tests ejecutan `python -m ruff`; hay que tenerlo instalado en el
+  entorno de test (grupo `dev` del autor).
+- **Locale `es_ES.UTF-8`** (U08): `test_month_names_do_not_follow_a_spanish_locale` se
+  salta solo cuando falta el locale (`except locale.Error: pytest.skip`), así que en
+  `python:3.12-slim` no falla. No hace falta instalar el locale en la imagen.
+- **Windows:** con `core.autocrlf=true` el checkout convierte los CSV de
+  `tests/fixtures` a CRLF y `test_hevy_basic` falla (un salto de línea dentro de un
+  campo). En el índice y en Linux/Docker están en LF y pasa. Además hace falta
+  `PYTHONUTF8=1` (los tests escriben y leen texto con tildes con la codificación por
+  defecto). Ninguna de las dos cosas pide tocar el prefijo.
+
 ## Parches locales
 
 Ninguno.

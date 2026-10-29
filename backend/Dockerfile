@@ -2,6 +2,8 @@ FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+# Motor de cálculo vendorizado (paquete `coach`); no se instala con pip
+ENV PYTHONPATH=/app/vendor/ai-personal-coach
 
 WORKDIR /app
 

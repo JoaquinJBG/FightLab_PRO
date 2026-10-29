@@ -8,3 +8,4 @@ pytest
 pytest-django
 Pillow
 anthropic
+pyyaml>=6.0
