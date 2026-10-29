@@ -2,22 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useProfile, useUpdateProfile } from "@/lib/hooks";
-import { DobInput, validateDob, dobToIso, type Dob } from "./dob-input";
+import { useTranslations } from "next-intl";
+import { DobInput, dobErrorCode, dobToIso, type Dob, type DobLabels } from "./dob-input";
 
-const genders: [string, string][] = [
-  ["MALE", "Hombre"],
-  ["FEMALE", "Mujer"],
-  ["OTHER", "Otro"],
-];
-const stances: [string, string][] = [
-  ["ORTHODOX", "Ortodoxo"],
-  ["SOUTHPAW", "Zurdo"],
-  ["SWITCH", "Switch"],
-];
-const unitOpts: [string, string][] = [
-  ["METRIC", "Métrico (kg · cm)"],
-  ["IMPERIAL", "Imperial (lb · in)"],
-];
+const GENDERS = ["MALE", "FEMALE", "OTHER"] as const;
+const STANCES = ["ORTHODOX", "SOUTHPAW", "SWITCH"] as const;
+const UNITS = ["METRIC", "IMPERIAL"] as const;
 
 export function ProfileForm({
   submitLabel,
@@ -26,6 +16,7 @@ export function ProfileForm({
   submitLabel: string;
   onSaved: () => void;
 }) {
+  const t = useTranslations("profile");
   const { data: profile } = useProfile();
   const update = useUpdateProfile();
   const [loaded, setLoaded] = useState(false);
@@ -55,9 +46,9 @@ export function ProfileForm({
 
     const dobEmpty = !dob.day && !dob.month && !dob.year;
     if (!dobEmpty) {
-      const err = validateDob(dob);
-      if (err) {
-        setFormError(err);
+      const code = dobErrorCode(dob);
+      if (code) {
+        setFormError(t(`form.dobErrors.${code}`));
         return;
       }
     }
@@ -78,24 +69,28 @@ export function ProfileForm({
   }
 
   const selectCls = "field appearance-none px-3 py-3 text-sm";
+  const dobLabels: DobLabels = {
+    day: t("form.day"), month: t("form.month"), year: t("form.year"),
+    dd: t("form.dd"), mm: t("form.mm"), yyyy: t("form.yyyy"),
+  };
 
   return (
     <form className="flex flex-col gap-3" onSubmit={onSubmit}>
       <div className="flex flex-col gap-1.5">
-        <span className="t-label text-muted">Fecha de nacimiento</span>
-        <DobInput value={dob} onChange={setDob} />
+        <span className="t-label text-muted">{t("form.dob")}</span>
+        <DobInput value={dob} onChange={setDob} labels={dobLabels} />
       </div>
 
       <label className="flex flex-col gap-1.5">
-        <span className="t-label text-muted">Sexo</span>
+        <span className="t-label text-muted">{t("form.gender")}</span>
         <select value={gender} onChange={(e) => setGender(e.target.value)} className={selectCls}>
-          <option value="">Selecciona…</option>
-          {genders.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          <option value="">{t("form.select")}</option>
+          {GENDERS.map((v) => <option key={v} value={v}>{t(`options.gender.${v}`)}</option>)}
         </select>
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className="t-label text-muted">Altura (cm)</span>
+        <span className="t-label text-muted">{t("form.height")}</span>
         <input
           type="number"
           inputMode="numeric"
@@ -108,25 +103,25 @@ export function ProfileForm({
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className="t-label text-muted">Guardia (stance)</span>
+        <span className="t-label text-muted">{t("form.stance")}</span>
         <select value={stance} onChange={(e) => setStance(e.target.value)} className={selectCls}>
-          <option value="">Selecciona…</option>
-          {stances.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          <option value="">{t("form.select")}</option>
+          {STANCES.map((v) => <option key={v} value={v}>{t(`options.stance.${v}`)}</option>)}
         </select>
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className="t-label text-muted">Unidades</span>
+        <span className="t-label text-muted">{t("form.units")}</span>
         <select value={units} onChange={(e) => setUnits(e.target.value)} className={selectCls}>
-          {unitOpts.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          {UNITS.map((v) => <option key={v} value={v}>{v === "METRIC" ? t("form.unitsMetric") : t("form.unitsImperial")}</option>)}
         </select>
       </label>
 
       {formError && <p className="text-xs text-bad">{formError}</p>}
       {update.isError && !formError && <p className="text-xs text-bad">{(update.error as Error).message}</p>}
-      {update.isSuccess && <p className="text-xs text-good">Guardado ✓</p>}
+      {update.isSuccess && <p className="text-xs text-good">{t("form.saved")}</p>}
       <button type="submit" disabled={update.isPending} className="btn btn-primary mt-2 disabled:opacity-60">
-        {update.isPending ? "Guardando…" : submitLabel}
+        {update.isPending ? t("form.saving") : submitLabel}
       </button>
     </form>
   );

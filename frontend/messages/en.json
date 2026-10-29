@@ -961,5 +961,189 @@
         "strain": "Strain = weekly load × monotony. It measures your total accumulated stress for the week."
       }
     }
+  },
+  "coach": {
+    "title": "Coach",
+    "badges": {
+      "acwrNone": "ACWR —",
+      "week": "Week {au} AU",
+      "weighIn": "Weigh-in in {days} d"
+    },
+    "recovery": {
+      "cuidado": {
+        "label": "Take it easy",
+        "phrase": "Your recovery signals are below your average. Today: light technique or active rest."
+      },
+      "listo": {
+        "label": "Ready to train",
+        "phrase": "Recovery above your average. A good day for hard work."
+      },
+      "normal": {
+        "label": "Normal day",
+        "phrase": "Signals around your average. Train according to your plan."
+      },
+      "chipRhr": "Resting HR {delta} vs your average",
+      "chipHrv": "HRV {delta}% vs your average"
+    },
+    "briefing": {
+      "eyebrow": "Today's briefing",
+      "withData": "from your data",
+      "care": "Your recovery signals are low: today, easy technique or active rest comes first.",
+      "acwrHigh": "Your load is rising too fast (ACWR {acwr}): cut the volume for a few days.",
+      "ready": "Recovery above your average: a good day for a demanding session.",
+      "week": "Week under way: {au} AU so far. Keep the pace and log every session.",
+      "unknown": "I don't know you well yet: log your workouts (with RPE) and your measurements, and this briefing will become truly yours.",
+      "weigh": "Weigh-in in {days} days and you're {over} kg over: gentle deficit, no aggressive cuts yet.",
+      "train": "Go train",
+      "nutrition": "View nutrition"
+    },
+    "recs": {
+      "heading": "Recommendations",
+      "byRules": "rule-based · real AI coming soon",
+      "dismiss": "Dismiss",
+      "useful": "Helpful",
+      "notUseful": "Not helpful",
+      "thanks": "Thanks! 👍",
+      "noted": "Noted 👎",
+      "acwrHigh": {
+        "title": "Load rising fast (ACWR {acwr})",
+        "why": "Your week is well above your average. Add a technique or rest day to get back to the safe zone (0.8–1.3).",
+        "action": "View load"
+      },
+      "acwrLow": {
+        "title": "You have room (ACWR {acwr})",
+        "why": "You're below your chronic average: you can push harder this week with no added risk.",
+        "action": "Go train"
+      },
+      "recovery": {
+        "title": "Low recovery signals",
+        "why": "{chips}. Prioritise 8 h of sleep; if tomorrow is the same, cut the volume."
+      },
+      "weigh": {
+        "title": "{over} kg over target · weigh-in in {days} d",
+        "whyFar": "Reasonable margin: keep the deficit and don't touch water or sodium yet.",
+        "whyNear": "Not much time left: review the plan and check with your team before any aggressive cut.",
+        "action": "Weigh-in plan"
+      },
+      "oldWeight": {
+        "title": "No weigh-in for {days, plural, one {# day} other {# days}}",
+        "why": "Weighing in every 1-2 weeks keeps your trend and your macros reliable.",
+        "action": "Log weight"
+      },
+      "start": {
+        "title": "Log your first session of the week",
+        "why": "With your workouts (duration + RPE) I calculate your load and your ACWR, and warn you before you overdo it or fall short.",
+        "action": "Go train"
+      },
+      "ok": {
+        "title": "No alerts: all good 👊",
+        "whyData": "Load in the safe zone and recovery on track. Stick to your plan and see you tomorrow.",
+        "whyNoData": "No alerts for now. The more workouts and measurements you log, the sharper I get."
+      }
+    },
+    "chat": {
+      "heading": "Talk to your coach",
+      "modeAi": "Real AI",
+      "modeRules": "rule-based",
+      "modeDefault": "AI",
+      "greeting": "Hi. Ask me about your training, load, weight or recovery: I'll answer with your numbers.",
+      "typing": "The coach is typing…",
+      "voice": "Speak",
+      "listening": "Listening…",
+      "placeholder": "Ask your coach…",
+      "send": "Send",
+      "voiceQuestion": "Should I train hard today or take it easy?",
+      "quick": {
+        "how": "How am I doing?",
+        "hard": "Train hard today?",
+        "weight": "How's my weight?"
+      },
+      "rulesNotice": "AI isn't available right now: I'm answering by rules with your data.",
+      "moreData": "The more data you log, the better I can advise you.",
+      "disclaimer": "The coach is for guidance only and is not medical advice.",
+      "provisionalNote": "*ACWR is provisional until you have 4 weeks of history."
+    },
+    "reply": {
+      "acwr": "ACWR {value}",
+      "acwrProvisional": "ACWR {value} (provisional)",
+      "acwrPaused": "ACWR on hold (no sessions in the last 7 days)",
+      "acwrPending": "ACWR not calculated yet (I need ~10 days of sessions)",
+      "weightNone": "I don't have your weight yet. Log it under Biometrics and I'll track the trend.",
+      "weightOver": "You're {over} kg from target with {days} days to go. Reasonable pace: moderate deficit and no water cuts until the last 48-72 h, and sensibly.",
+      "weightAt": "You're already at your target weight ({target} kg) with {days} days to go. Maintain and arrive fresh.",
+      "weightLast": "Your latest weight is {weight} kg. If you have a fight, set up the weigh-in under Nutrition and I'll handle the plan.",
+      "hardCare": "Today is not the day to kill yourself: {chips}. Quality technique (RPE 5-6) and get some sleep.",
+      "hardHigh": "Your {acwr} says you've had a sharp rise. My call: a technical session today and the hard one in 2 days.",
+      "hardReady": "Recovery above your average and {acwr}: go hard today, you have room. Warm up well.",
+      "hardNormal": "From what I see ({acwr}), a normal plan day. Log the session when you finish and I'll adjust the advice.",
+      "fatigue": "Your signals: {chips}. {phrase}",
+      "fatigueNone": "I don't have your recovery signals yet: log resting HR and HRV for a few days and I'll read them to you every morning.",
+      "load": "Week: {au} AU. {acwr}. Monotony {mono}. Safe zone: 0.8–1.3; avoid two spikes in a row.",
+      "loadNone": "No sessions this week yet. Log your workouts with RPE and I'll calculate load, ACWR and alerts.",
+      "summaryWeek": "week {au} AU, {acwr}",
+      "summaryRecovery": "recovery: {label}",
+      "summaryWeight": "weight {weight} kg",
+      "summaryWeightTarget": "weight {weight} kg (target {target})",
+      "summary": "Your snapshot today: {parts}. Want today's plan?",
+      "summaryNone": "I don't have any data on you yet. Start by logging a workout or your weight and we'll talk.",
+      "thanks": "Get to work. Log the session when you finish and I'll add it to your load. 🥊",
+      "default": "I'm listening. Ask me about today's training, your load, your weight or your recovery — I'll answer with your real numbers."
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "dob": "Date of birth",
+    "gender": "Sex",
+    "height": "Height",
+    "stance": "Stance",
+    "units": "Units",
+    "edit": {
+      "link": "Edit profile",
+      "back": "← Profile",
+      "title": "Edit <neon>profile</neon>",
+      "save": "Save changes"
+    },
+    "logout": "Log out",
+    "heightValue": "{cm} cm",
+    "options": {
+      "gender": {
+        "MALE": "Male",
+        "FEMALE": "Female",
+        "OTHER": "Other"
+      },
+      "stance": {
+        "ORTHODOX": "Orthodox",
+        "SOUTHPAW": "Southpaw",
+        "SWITCH": "Switch"
+      },
+      "units": {
+        "METRIC": "Metric",
+        "IMPERIAL": "Imperial"
+      }
+    },
+    "form": {
+      "dob": "Date of birth",
+      "day": "Day",
+      "month": "Month",
+      "year": "Year",
+      "dd": "DD",
+      "mm": "MM",
+      "yyyy": "YYYY",
+      "dobErrors": {
+        "incomplete": "Complete the date (day, month and 4-digit year).",
+        "invalid": "That date doesn't exist. Check the day and month.",
+        "year": "Check the year.",
+        "future": "The date of birth can't be in the future."
+      },
+      "gender": "Sex",
+      "select": "Select…",
+      "height": "Height (cm)",
+      "stance": "Stance",
+      "units": "Units",
+      "unitsMetric": "Metric (kg · cm)",
+      "unitsImperial": "Imperial (lb · in)",
+      "saved": "Saved ✓",
+      "saving": "Saving…"
+    }
   }
 }

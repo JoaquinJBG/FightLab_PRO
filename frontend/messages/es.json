@@ -961,5 +961,189 @@
         "strain": "Tensión = carga semanal × monotonía. Mide el estrés acumulado total de la semana."
       }
     }
+  },
+  "coach": {
+    "title": "Coach",
+    "badges": {
+      "acwrNone": "ACWR —",
+      "week": "Semana {au} AU",
+      "weighIn": "Pesaje en {days} d"
+    },
+    "recovery": {
+      "cuidado": {
+        "label": "Tómatelo suave",
+        "phrase": "Tus señales de recuperación están por debajo de tu media. Hoy: técnica ligera o descanso activo."
+      },
+      "listo": {
+        "label": "Listo para entrenar",
+        "phrase": "Recuperación por encima de tu media. Buen día para trabajo exigente."
+      },
+      "normal": {
+        "label": "Día normal",
+        "phrase": "Señales en torno a tu media. Entrena según tu plan."
+      },
+      "chipRhr": "FC reposo {delta} vs tu media",
+      "chipHrv": "HRV {delta}% vs tu media"
+    },
+    "briefing": {
+      "eyebrow": "Briefing de hoy",
+      "withData": "con tus datos",
+      "care": "Tus señales de recuperación están bajas: hoy manda la técnica suave o el descanso activo.",
+      "acwrHigh": "Tu carga sube demasiado rápido (ACWR {acwr}): baja el volumen unos días.",
+      "ready": "Recuperación por encima de tu media: buen día para una sesión exigente.",
+      "week": "Semana en marcha: {au} AU acumuladas. Mantén el ritmo y registra cada sesión.",
+      "unknown": "Aún no te conozco del todo: registra tus entrenos (con RPE) y tus mediciones, y este briefing se volverá tuyo de verdad.",
+      "weigh": "Pesaje en {days} días y vas {over} kg por encima: déficit suave, sin recortes agresivos todavía.",
+      "train": "Ir a entrenar",
+      "nutrition": "Ver nutrición"
+    },
+    "recs": {
+      "heading": "Recomendaciones",
+      "byRules": "por reglas · IA real próximamente",
+      "dismiss": "Descartar",
+      "useful": "Útil",
+      "notUseful": "No útil",
+      "thanks": "¡Gracias! 👍",
+      "noted": "Anotado 👎",
+      "acwrHigh": {
+        "title": "Carga subiendo rápido (ACWR {acwr})",
+        "why": "Tu semana va muy por encima de tu media. Mete un día de técnica o descanso para volver a zona segura (0.8–1.3).",
+        "action": "Ver carga"
+      },
+      "acwrLow": {
+        "title": "Tienes margen (ACWR {acwr})",
+        "why": "Vas por debajo de tu media crónica: puedes apretar esta semana sin riesgo añadido.",
+        "action": "Ir a entrenar"
+      },
+      "recovery": {
+        "title": "Señales de recuperación bajas",
+        "why": "{chips}. Prioriza dormir 8 h; si mañana sigue igual, recorta el volumen."
+      },
+      "weigh": {
+        "title": "{over} kg sobre el objetivo · pesaje en {days} d",
+        "whyFar": "Margen razonable: mantén el déficit y no toques agua ni sodio todavía.",
+        "whyNear": "Queda poco: revisa el plan y consulta a tu equipo antes de cualquier corte agresivo.",
+        "action": "Plan de pesaje"
+      },
+      "oldWeight": {
+        "title": "Sin pesarte desde hace {days, plural, one {# día} other {# días}}",
+        "why": "Con un pesaje cada 1-2 semanas tu tendencia y tus macros se mantienen fiables.",
+        "action": "Apuntar peso"
+      },
+      "start": {
+        "title": "Registra tu primera sesión de la semana",
+        "why": "Con tus entrenos (duración + RPE) calculo tu carga, tu ACWR y te aviso antes de que te pases o te quedes corto.",
+        "action": "Ir a entrenar"
+      },
+      "ok": {
+        "title": "Sin avisos: todo en orden 👊",
+        "whyData": "Carga en zona segura y recuperación correcta. Sigue tu plan y nos vemos mañana.",
+        "whyNoData": "Sin avisos por ahora. Cuantos más entrenos y mediciones registres, más fino seré."
+      }
+    },
+    "chat": {
+      "heading": "Habla con tu coach",
+      "modeAi": "IA real",
+      "modeRules": "por reglas",
+      "modeDefault": "IA",
+      "greeting": "Buenas. Pregúntame por tu entreno, tu carga, tu peso o tu recuperación: te contesto con tus números.",
+      "typing": "El coach está escribiendo…",
+      "voice": "Hablar",
+      "listening": "Escuchando…",
+      "placeholder": "Pregunta a tu coach…",
+      "send": "Enviar",
+      "voiceQuestion": "¿Entreno fuerte hoy o me lo tomo suave?",
+      "quick": {
+        "how": "¿Cómo voy?",
+        "hard": "¿Entreno fuerte hoy?",
+        "weight": "¿Cómo va mi peso?"
+      },
+      "rulesNotice": "IA no disponible ahora: te respondo por reglas con tus datos.",
+      "moreData": "Cuantos más datos registres, mejor te aconsejo.",
+      "disclaimer": "El coach es orientativo, no es consejo médico.",
+      "provisionalNote": "*ACWR provisional hasta 4 semanas de historial."
+    },
+    "reply": {
+      "acwr": "ACWR {value}",
+      "acwrProvisional": "ACWR {value} (provisional)",
+      "acwrPaused": "ACWR en pausa (sin sesiones en los últimos 7 días)",
+      "acwrPending": "ACWR aún sin calcular (necesito ~10 días de sesiones)",
+      "weightNone": "Aún no tengo tu peso. Regístralo en Biometría y te sigo la tendencia.",
+      "weightOver": "Estás a {over} kg del objetivo con {days} días de margen. Ritmo razonable: déficit moderado y nada de cortes de agua hasta las últimas 48-72 h, y con cabeza.",
+      "weightAt": "Ya estás en el peso objetivo ({target} kg) con {days} días de margen. Mantén y llega fresco.",
+      "weightLast": "Tu último peso es {weight} kg. Si tienes combate, configura el pesaje en Nutrición y te llevo el plan.",
+      "hardCare": "Hoy no es el día de matarte: {chips}. Técnica de calidad (RPE 5-6) y a dormir.",
+      "hardHigh": "Tu {acwr} dice que llevas una subida fuerte. Mi llamada: sesión técnica hoy y la dura dentro de 2 días.",
+      "hardReady": "Recuperación por encima de tu media y {acwr}: dale duro hoy, tienes margen. Calienta bien.",
+      "hardNormal": "Con lo que veo ({acwr}), un día normal de plan. Registra la sesión al acabar y ajusto el consejo.",
+      "fatigue": "Tus señales: {chips}. {phrase}",
+      "fatigueNone": "No tengo tus señales de recuperación aún: registra FC en reposo y HRV unos días y te las leo cada mañana.",
+      "load": "Semana: {au} AU. {acwr}. Monotonía {mono}. Zona segura: 0.8–1.3; evita dos picos seguidos.",
+      "loadNone": "Aún no hay sesiones esta semana. Registra tus entrenos con RPE y te calculo carga, ACWR y avisos.",
+      "summaryWeek": "semana {au} AU, {acwr}",
+      "summaryRecovery": "recuperación: {label}",
+      "summaryWeight": "peso {weight} kg",
+      "summaryWeightTarget": "peso {weight} kg (objetivo {target})",
+      "summary": "Tu foto de hoy: {parts}. ¿Quieres el plan del día?",
+      "summaryNone": "Aún no tengo datos tuyos. Empieza registrando un entreno o tu peso y hablamos.",
+      "thanks": "A trabajar. Registra la sesión cuando acabes y la cuento en tu carga. 🥊",
+      "default": "Te leo. Pregúntame por el entreno de hoy, tu carga, tu peso o tu recuperación — te contesto con tus números reales."
+    }
+  },
+  "profile": {
+    "title": "Perfil",
+    "dob": "Fecha de nacimiento",
+    "gender": "Sexo",
+    "height": "Altura",
+    "stance": "Guardia",
+    "units": "Unidades",
+    "edit": {
+      "link": "Editar perfil",
+      "back": "← Perfil",
+      "title": "Editar <neon>perfil</neon>",
+      "save": "Guardar cambios"
+    },
+    "logout": "Cerrar sesión",
+    "heightValue": "{cm} cm",
+    "options": {
+      "gender": {
+        "MALE": "Hombre",
+        "FEMALE": "Mujer",
+        "OTHER": "Otro"
+      },
+      "stance": {
+        "ORTHODOX": "Ortodoxo",
+        "SOUTHPAW": "Zurdo",
+        "SWITCH": "Switch"
+      },
+      "units": {
+        "METRIC": "Métrico",
+        "IMPERIAL": "Imperial"
+      }
+    },
+    "form": {
+      "dob": "Fecha de nacimiento",
+      "day": "Día",
+      "month": "Mes",
+      "year": "Año",
+      "dd": "DD",
+      "mm": "MM",
+      "yyyy": "AAAA",
+      "dobErrors": {
+        "incomplete": "Completa la fecha (día, mes y año de 4 cifras).",
+        "invalid": "Esa fecha no existe. Comprueba el día y el mes.",
+        "year": "Revisa el año.",
+        "future": "La fecha de nacimiento no puede ser futura."
+      },
+      "gender": "Sexo",
+      "select": "Selecciona…",
+      "height": "Altura (cm)",
+      "stance": "Guardia (stance)",
+      "units": "Unidades",
+      "unitsMetric": "Métrico (kg · cm)",
+      "unitsImperial": "Imperial (lb · in)",
+      "saved": "Guardado ✓",
+      "saving": "Guardando…"
+    }
   }
 }
