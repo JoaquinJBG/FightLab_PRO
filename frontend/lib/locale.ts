@@ -22,3 +22,17 @@ export function resolveLocale(
   }
   return DEFAULT_LOCALE;
 }
+
+/** Selector de idioma (spec §7.5): apagado hasta que acabe la fase I, para que nadie vea
+ * la app a medias en inglés. Se activa con `NEXT_PUBLIC_LANGUAGE_SELECTOR_ENABLED=true`
+ * (en el build) y, en el backend, `LANGUAGE_SELECTOR_ENABLED=True`. */
+export const LANGUAGE_SELECTOR_ENABLED = process.env.NEXT_PUBLIC_LANGUAGE_SELECTOR_ENABLED === "true";
+
+/** El idioma de la app: con el selector apagado, siempre español. */
+export function appLocale(
+  cookie: string | null | undefined,
+  acceptLanguage: string | null | undefined,
+  selectorEnabled: boolean = LANGUAGE_SELECTOR_ENABLED,
+): Locale {
+  return selectorEnabled ? resolveLocale(cookie, acceptLanguage) : DEFAULT_LOCALE;
+}

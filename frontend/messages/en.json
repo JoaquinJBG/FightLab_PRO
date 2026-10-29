@@ -88,6 +88,7 @@
     },
     "language": {
       "title": "Language and <neon>region</neon>",
+      "titleRegion": "Your <neon>region</neon>",
       "intro": "The app, the coach and the safety notes will speak to you in this language.",
       "languageLabel": "Language",
       "where": "Where do you live?",

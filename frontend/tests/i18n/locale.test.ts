@@ -14,3 +14,16 @@ describe("resolveLocale", () => {
     expect(resolveLocale("fr", "de")).toBe("es");
   });
 });
+
+describe("selector de idioma (apagado hasta la fase I)", () => {
+  it("está apagado por defecto", async () => {
+    const { LANGUAGE_SELECTOR_ENABLED } = await import("@/lib/locale");
+    expect(LANGUAGE_SELECTOR_ENABLED).toBe(false);
+  });
+  it("apagado, la app va en español aunque el navegador o la cookie digan inglés", async () => {
+    const { appLocale } = await import("@/lib/locale");
+    expect(appLocale("en", "en-GB,en;q=0.9", false)).toBe("es");
+    expect(appLocale(undefined, "en-GB,en;q=0.9", false)).toBe("es");
+    expect(appLocale("en", "es-ES", true)).toBe("en");
+  });
+});

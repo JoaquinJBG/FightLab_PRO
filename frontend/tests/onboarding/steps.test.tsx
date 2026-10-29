@@ -118,7 +118,8 @@ function wrap(ui: React.ReactNode, locale: "es" | "en" = "es") {
 
 const noop = () => {};
 const STEPS: [string, () => React.ReactNode][] = [
-  ["language", () => <LanguageStep profile={PROFILE} onNext={noop} />],
+  ["language", () => <LanguageStep profile={PROFILE} onNext={noop} selectorEnabled />],
+  ["region", () => <LanguageStep profile={PROFILE} onNext={noop} />],
   ["scoff", () => <ScoffStep onNext={noop} />],
   ["basics", () => <BasicsStep profile={{ ...PROFILE, gender: "OTHER" }} onNext={noop} />],
   ["parq", () => <ParqStep screening={SCREENING} age={50} onNext={noop} />],
@@ -138,6 +139,22 @@ describe("onboarding en los dos idiomas", () => {
       });
     }
   }
+
+  it("sin el flag de la fase I no hay selector de idioma ni se envía language", async () => {
+    wrap(<LanguageStep profile={PROFILE} onNext={noop} />);
+    expect(screen.queryByTestId("language-selector")).toBeNull();
+    expect(screen.getByText("Tu", { exact: false })).toBeTruthy();
+    fireEvent.click(screen.getByTestId("region-es"));
+    fireEvent.click(screen.getByTestId("onboarding-next"));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    const [, init] = fetchMock.mock.calls.find(([u]) => String(u).includes("me/profile"))!;
+    expect(JSON.parse(init.body)).toEqual({ region: "es", emergency_number: null });
+  });
+
+  it("con el flag, el selector aparece", () => {
+    wrap(<LanguageStep profile={PROFILE} onNext={noop} selectorEnabled />);
+    expect(screen.getByTestId("language-selector")).toBeTruthy();
+  });
 
   it("las preguntas del SCOFF cambian de idioma", () => {
     wrap(<ScoffStep onNext={noop} />, "en");

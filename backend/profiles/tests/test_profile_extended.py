@@ -43,7 +43,8 @@ def test_new_fields_are_empty_by_default():
     ("header", "expected"),
     [("en-GB,en;q=0.9", "en"), ("es-ES,es;q=0.9", "es"), ("fr-FR,fr;q=0.9", "es"), ("", "es")],
 )
-def test_language_comes_from_accept_language_at_registration(header, expected):
+def test_language_comes_from_accept_language_at_registration(header, expected, settings):
+    settings.LANGUAGE_SELECTOR_ENABLED = True
     client = APIClient()
     resp = client.post(
         "/api/v1/auth/register",
@@ -126,3 +127,19 @@ def test_screening_answers_are_not_profile_fields():
     """El cribado vive en `coaching.Screening`, no en el perfil."""
     names = {f.name for f in UserProfile._meta.get_fields()}
     assert "scoff_yes_count" not in names and "parq_any_yes" not in names
+
+
+@pytest.mark.django_db
+def test_language_is_spanish_while_the_selector_is_off(settings):
+    """Hasta la fase I: español aunque el navegador esté en inglés."""
+    settings.LANGUAGE_SELECTOR_ENABLED = False
+    resp = APIClient().post(
+        "/api/v1/auth/register",
+        {"email": "off@b.com", "password": "pw-strong-123"},
+        format="json",
+        HTTP_ACCEPT_LANGUAGE="en-GB,en;q=0.9",
+    )
+    assert resp.status_code == 201
+    user = get_user_model().objects.get(email="off@b.com")
+    assert user.profile.language == "es"
+

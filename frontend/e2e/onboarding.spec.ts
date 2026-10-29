@@ -1,6 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
 import es from "../messages/es.json";
-import en from "../messages/en.json";
 import { PASSWORD, USERS } from "./users";
 
 // Onboarding con cribado de punta a punta (Task 3.6): BFF de Next + Django + motor.
@@ -38,7 +37,6 @@ test("SCOFF positivo: ve el bloqueo del déficit y la línea de derivación (es)
   await page.getByTestId("onboarding-start").click();
 
   // 1 · idioma y región
-  await page.getByTestId("lang-es").click();
   await page.getByTestId("region-es").click();
   await next(page);
 
@@ -93,58 +91,65 @@ test("SCOFF positivo: ve el bloqueo del déficit y la línea de derivación (es)
   await expect(blocked.getByTestId("safety-footer")).toHaveText(es.safety.deferralLine);
 });
 
-test("onboarding completo en inglés, con el PAR-Q+ sin contestar (en)", async ({ page }) => {
-  await login(page, USERS.english);
-  await page.getByTestId("onboarding-start").click();
+test.describe("navegador en inglés con el selector apagado (hasta la fase I)", () => {
+  test.use({ locale: "en-GB", extraHTTPHeaders: { "Accept-Language": "en-GB,en;q=0.9" } });
 
-  await page.getByTestId("lang-en").click();
-  await page.getByTestId("region-other").click();
-  await page.getByRole("button", { name: "911" }).click();
-  await next(page);
+  test("onboarding completo en español, con el PAR-Q+ sin contestar", async ({ page }) => {
+    await login(page, USERS.english);
+    await page.getByTestId("onboarding-start").click();
 
-  // La UI pasa al inglés (cookie flp_lang que fija el BFF al guardar el perfil)
-  await expect(page.getByText(en.onboarding.scoff.question)).toBeVisible();
-  await answerScoff(page, []);
-  await next(page);
-  await expect(page.getByTestId("scoff-outcome")).toContainText(en.onboarding.scoff.clear);
-  await expect(page.getByTestId("safety-disclaimer")).toHaveText(en.safety.disclaimer);
-  await next(page);
+    // Solo la región: sin selector de idioma, y la UI en español
+    await expect(page.getByTestId("language-selector")).toHaveCount(0);
+    await expect(page.getByTestId("lang-en")).toHaveCount(0);
+    await page.getByTestId("region-other").click();
+    await page.getByRole("button", { name: "911" }).click();
+    await next(page);
 
-  await basics(page, "MALE");
-  await expect(page.getByText(en.onboarding.basics.weightHint)).toBeVisible();
-  await page.getByTestId("weight-input").fill("80");
-  await next(page);
+    await expect(page.getByText(es.onboarding.scoff.question)).toBeVisible();
+    await answerScoff(page, []);
+    await next(page);
+    await expect(page.getByTestId("scoff-outcome")).toContainText(es.onboarding.scoff.clear);
+    await expect(page.getByTestId("safety-disclaimer")).toHaveText(es.safety.disclaimer);
+    await next(page);
 
-  await expect(page.getByText(en.onboarding.parq.anyYes)).toBeVisible();
-  await page.getByTestId("parq-any-yes").getByTestId("unsure").click();
-  await expect(page.getByText(en.onboarding.parq.unsureNote)).toBeVisible();
-  await next(page);
+    await basics(page, "MALE");
+    await expect(page.getByText(es.onboarding.basics.weightHint)).toBeVisible();
+    await page.getByTestId("weight-input").fill("80");
+    await next(page);
 
-  await page.getByTestId("cardiac-unsure").click();
-  await expect(page.getByText(en.onboarding.cardiac.unsureAgain)).toBeVisible();
-  await page.getByTestId("cardiac-none").click();
+    await expect(page.getByText(es.onboarding.parq.anyYes)).toBeVisible();
+    await page.getByTestId("parq-any-yes").getByTestId("unsure").click();
+    await expect(page.getByText(es.onboarding.parq.unsureNote)).toBeVisible();
+    await next(page);
 
-  await page.getByTestId("token-beta_blocker").click();
-  await next(page);
+    await page.getByTestId("cardiac-unsure").click();
+    await expect(page.getByText(es.onboarding.cardiac.unsureAgain)).toBeVisible();
+    await page.getByTestId("cardiac-none").click();
 
-  await page.getByTestId("goals-muscle_gain").click();
-  await page.getByTestId("experiences-novice").click();
-  await page.getByTestId("activities-desk_training").click();
-  await next(page);
+    await page.getByTestId("token-beta_blocker").click();
+    await next(page);
 
-  const banner = page.getByTestId("safety-banner");
-  await expect(banner.locator('[data-code="beta_blocker_rpe"]')).toContainText("prescribe by RPE and the talk test");
-  await expect(banner).toContainText(en.safety.parqPending);
-  await expect(banner.getByTestId("safety-footer")).toHaveText(en.safety.disclaimer);
-  await page.getByTestId("onboarding-finish").click();
-  await page.waitForURL("**/dashboard");
-  await expect(page.getByTestId("safety-banner")).toContainText(en.safety.parqPending);
+    await page.getByTestId("goals-muscle_gain").click();
+    await page.getByTestId("experiences-novice").click();
+    await page.getByTestId("activities-desk_training").click();
+    await next(page);
+
+    // Los motivos del motor llegan en español, como la UI
+    const banner = page.getByTestId("safety-banner");
+    await expect(banner.locator('[data-code="beta_blocker_rpe"]')).toContainText(
+      "la intensidad se pauta por esfuerzo percibido (RPE) y la prueba del habla",
+    );
+    await expect(banner).toContainText(es.safety.parqPending);
+    await expect(banner.getByTestId("safety-footer")).toHaveText(es.safety.disclaimer);
+    await page.getByTestId("onboarding-finish").click();
+    await page.waitForURL("**/dashboard");
+    await expect(page.getByTestId("safety-banner")).toContainText(es.safety.parqPending);
+  });
 });
 
 test("síntoma cardiaco ahora: pantalla de parada con el número de emergencias", async ({ page }) => {
   await login(page, USERS.cardiac);
   await page.getByTestId("onboarding-start").click();
-  await page.getByTestId("lang-es").click();
   await page.getByTestId("region-es").click();
   await next(page);
   await answerScoff(page, []);

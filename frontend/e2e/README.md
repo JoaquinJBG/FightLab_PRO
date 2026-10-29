@@ -27,5 +27,9 @@ Usan el Chrome instalado (`channel: "chrome"`), así que no hace falta `playwrig
    E2E_PYTHON=../backend/.venv/Scripts/python.exe pnpm e2e
    ```
 
+El selector de idioma está apagado hasta la fase I (`LANGUAGE_SELECTOR_ENABLED` en el backend
+y `NEXT_PUBLIC_LANGUAGE_SELECTOR_ENABLED` en el build del frontend), así que las pruebas
+comprueban que con un navegador en inglés todo va en español.
+
 Variables: `E2E_BASE_URL` (por defecto `http://localhost:3000`) y `E2E_CHANNEL`
 (`chrome`; `msedge` también vale).

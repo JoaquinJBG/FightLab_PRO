@@ -1,5 +1,5 @@
 import { cookies, headers as reqHeaders } from "next/headers";
-import { LANG_COOKIE, resolveLocale } from "./locale";
+import { LANG_COOKIE, appLocale } from "./locale";
 
 const BASE = process.env.DJANGO_API_URL ?? "http://127.0.0.1:8001/api/v1";
 // Origen del backend (sin /api/v1) para servir archivos de /media
@@ -8,7 +8,7 @@ export const DJANGO_ORIGIN = BASE.replace(/\/api\/v1\/?$/, "");
 /** Idioma de la petición (cookie `flp_lang`, luego `Accept-Language`) para que
  * Django devuelva sus mensajes en el mismo idioma que la UI. */
 async function acceptLanguage(): Promise<string> {
-  return resolveLocale(
+  return appLocale(
     (await cookies()).get(LANG_COOKIE)?.value,
     (await reqHeaders()).get("accept-language"),
   );

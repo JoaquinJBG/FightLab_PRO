@@ -88,6 +88,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = "es"
+# Selector de idioma (spec §7.5): apagado hasta que acabe la fase I, para que nadie vea la
+# app mezclada. Apagado, el perfil empieza en español aunque el navegador esté en inglés.
+LANGUAGE_SELECTOR_ENABLED = env.bool("LANGUAGE_SELECTOR_ENABLED", default=False)
 LANGUAGES = [("es", "Español"), ("en", "English")]
 TIME_ZONE = "UTC"
 USE_I18N = True
