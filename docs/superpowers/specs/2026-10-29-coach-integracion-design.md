@@ -17,8 +17,9 @@ fases. No incluye código de producto.
 
 ## 1. Qué es `ai-personal-coach`, medido
 
-Leído en el commit `7c2f5083e3e9eef21245a23029986adb1f6907ba` (2026-10-26). No se ha
-abierto `data/`.
+Leído en el commit `7c2f508` (2026-10-26) de la copia local del usuario, que lleva un
+commit más que GitHub (el importador de Lyfta). El motor vendorizado es el publicado,
+`69e5537` (2026-10-25); la diferencia no afecta a este diseño. No se ha abierto `data/`.
 
 | Pieza | Qué hay | Dato |
 |---|---|---|
@@ -206,7 +207,7 @@ El usuario dejó la elección a criterio técnico (P1). Se elige B por tres moti
 
 - Prefijo: `backend/vendor/ai-personal-coach/`, desde
   `https://github.com/matgarfer499/ai-personal-coach`, rama `main`, fijado a un SHA.
-  Primer SHA: `7c2f508`.
+  Primer SHA: `69e5537`.
 - **Se trae siempre del remoto y nunca de la carpeta local**
   `entrenador IA/ai-personal-coach`. En esa carpeta, `data/` tiene datos personales
   (git los ignora, pero la carpeta los tiene). Tras el `subtree add` se comprueba que
@@ -424,7 +425,7 @@ Toda respuesta con un número o una recomendación del motor lleva sus reglas:
              "title": "Ecuación de RMR por defecto: Mifflin-St Jeor"}],
   "reasons": [{"code": "floor_raised", "rule_key": "nutrition/…", "text": "…",
                "refer": "gp"}],
-  "engine": {"sha": "7c2f508", "knowledge_checked_on": "2026-10-24"}
+  "engine": {"sha": "69e5537", "knowledge_checked_on": "2026-10-24"}
 }
 ```
 

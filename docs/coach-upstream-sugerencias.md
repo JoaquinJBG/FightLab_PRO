@@ -16,7 +16,7 @@ Reglas (spec [`2026-10-29-coach-integracion-design.md`](superpowers/specs/2026-1
   (resuelta en FightLab, sin comunicar), `comunicada`, `adoptada en <sha>` o
   `descartada` (con motivo).
 
-Leído en el commit `7c2f508` del motor (copia local del usuario). El código vendorizado es `69e5537`, el último publicado; la diferencia es el importador de Lyfta, que no afecta a ninguna entrada.
+Leído en el commit `7c2f508` de la copia local del usuario; el código vendorizado es `69e5537`, el publicado en GitHub. La diferencia es el importador de Lyfta y no afecta a ninguna entrada.
 
 | ID | Módulo | Problema | Cómo lo resuelve FightLab | Qué se propondría al autor | Estado |
 |---|---|---|---|---|---|

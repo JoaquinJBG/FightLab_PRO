@@ -14,10 +14,10 @@ el prefijo no se edita (spec §4).
 | Traído el | 2026-10-29, con `git subtree add --squash` |
 | Prefijo | `backend/vendor/ai-personal-coach/` |
 
-> **Nota sobre el SHA.** La spec y el plan citan `7c2f508`, que es un commit de la
-> copia local del usuario (importador de CSV de Lyfta) y **no está publicado** en
-> GitHub: el remoto solo tiene `69e5537`. Se ha traído `69e5537`, como prevé el plan
-> (fallback a `main`). La diferencia es solo ese importador, que FightLab no usa.
+> **Nota sobre el SHA.** El diseño se escribió leyendo `7c2f508`, un commit de la copia
+> local del usuario (importador de CSV de Lyfta) que **no está publicado**. GitHub solo
+> tiene `69e5537`, que es el que se vendoriza (decisión del usuario). La diferencia es
+> solo ese importador, que FightLab no usa.
 
 ## Licencias
 

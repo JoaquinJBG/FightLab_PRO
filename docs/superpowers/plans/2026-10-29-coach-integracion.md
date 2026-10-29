@@ -139,11 +139,11 @@ git commit -m "build: Python 3.12 y Django 5.2 LTS fijado"
 
 ```bash
 git subtree add --prefix backend/vendor/ai-personal-coach \
-  https://github.com/matgarfer499/ai-personal-coach 7c2f5083e3e9eef21245a23029986adb1f6907ba --squash
+  https://github.com/matgarfer499/ai-personal-coach main --squash
 ```
 
-Si el remoto no acepta un SHA como ref, usar `main` y comprobar que el
-`git-subtree-split` del commit de squash es `7c2f508…`.
+El remoto no acepta un SHA como ref: se usa `main` y se comprueba que el
+`git-subtree-split` del commit de squash es `69e5537…` (el único commit publicado).
 
 - [ ] **Step 2: Comprobar que no ha entrado nada personal**
 
