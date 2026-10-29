@@ -83,6 +83,9 @@ Se pasa desde `backend/` con `pytest vendor/ai-personal-coach/tests -p no:django
 - **Locale `es_ES.UTF-8`** (U08): `test_month_names_do_not_follow_a_spanish_locale` se
   salta solo cuando falta el locale (`except locale.Error: pytest.skip`), así que en
   `python:3.12-slim` no falla. No hace falta instalar el locale en la imagen.
+- **`PYTHONPATH`:** `tests/coach/test_cli.py::test_module_entry_point` lanza `python -m coach`
+  en un subproceso, así que desde `backend/` necesita `PYTHONPATH=vendor/ai-personal-coach`
+  (lo fija el Dockerfile; en un venv local, `.env.example`).
 - **Windows:** con `core.autocrlf=true` el checkout convierte los CSV de
   `tests/fixtures` a CRLF y `test_hevy_basic` falla (un salto de línea dentro de un
   campo). En el índice y en Linux/Docker están en LF y pasa. Además hace falta
