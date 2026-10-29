@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useBiometrics, useMe } from "@/lib/hooks";
+import { SafetyBanner } from "@/components/safety/SafetyBanner";
 import type { Biometrics } from "@/lib/schemas";
 import { computeRecovery } from "@/lib/recovery";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
@@ -223,6 +224,9 @@ export default function DashboardPage() {
   return (
     <div className="pt-3">
       {Header}
+
+      {/* Avisos de seguridad del motor (flags calculados en el servidor) */}
+      <SafetyBanner />
 
       {/* ---------- Estado de hoy (readiness-first, sin datos inventados) ---------- */}
       {recovery ? (

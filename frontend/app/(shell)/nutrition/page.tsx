@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useProfile, useBiometrics } from "@/lib/hooks";
+import { useProfile, useBiometrics, useSafety, useUpdateProfile } from "@/lib/hooks";
+import { coachToLegacyGoal, legacyToCoachGoal } from "@/lib/goal";
+import { SafetyPanel } from "@/components/safety/SafetyBanner";
 import {
   MEALS,
   GOAL_LABEL,
   loadToday,
-  loadGoal,
-  saveGoal,
   targets,
   removeItem,
   loadWater,
@@ -17,6 +17,12 @@ import {
   type Item,
 } from "@/lib/nutrition";
 import { NutritionIcon, ScaleIcon, ChevronRight } from "@/components/icons";
+
+// Motivos de coach.safety que ponen no_deficit, hold_deficit o prescriber_owns_weight.
+const DEFICIT_REASONS = new Set([
+  "under_18", "eating_disorder_screen", "glp1_prescriber", "pregnancy_no_deficit",
+  "menstrual_irregular", "menstrual_absent",
+]);
 
 function ageFrom(dob: string | null): number {
   if (!dob) return 30;
@@ -45,14 +51,14 @@ function Bar({ label, val, target, color }: { label: string; val: number; target
 export default function NutritionPage() {
   const { data: profile } = useProfile();
   const { data: logs = [] } = useBiometrics();
-  const [goal, setGoal] = useState<Goal>("mantener");
+  const { data: safety } = useSafety();
+  const updateProfile = useUpdateProfile();
   const [items, setItems] = useState<Item[]>([]);
   const [weigh, setWeigh] = useState<{ target: number; date: string } | null>(null);
   const [water, setWater] = useState(0);
   const [confirmItem, setConfirmItem] = useState<string | null>(null);
 
   useEffect(() => {
-    setGoal(loadGoal());
     setItems(loadToday());
     setWater(loadWater());
     try { const w = localStorage.getItem("flp_weigh"); if (w) setWeigh(JSON.parse(w)); } catch { /* noop */ }
@@ -96,13 +102,22 @@ export default function NutritionPage() {
   }
 
   const weight = (() => { for (const l of logs) { const w = l.weight_kg ? parseFloat(l.weight_kg) : null; if (w) return w; } return 75; })();
+  // El objetivo vive en el perfil (spec §6.2). Hasta la fase 4 el cálculo sigue siendo el de
+  // targets(), pero ningún flag que bloquee el déficit deja pasar "perder" (spec §8.3).
+  const chosen = coachToLegacyGoal(profile?.goal);
+  const deficitBlocked = !!safety && (safety.flags.no_deficit || safety.flags.hold_deficit || safety.flags.prescriber_owns_weight);
+  const goal: Goal = deficitBlocked && chosen === "perder" ? "mantener" : chosen;
+  const blockReasons = safety ? safety.reasons.filter((r) => DEFICIT_REASONS.has(r.code)) : [];
   const t = targets(weight, profile?.height_cm ?? 175, ageFrom(profile?.date_of_birth ?? null), profile?.gender ?? null, goal);
 
   const sum = items.reduce((a, i) => ({ kcal: a.kcal + i.kcal, p: a.p + i.p, c: a.c + i.c, f: a.f + i.f }), { kcal: 0, p: 0, c: 0, f: 0 });
   const remaining = t.kcal - sum.kcal;
   const kcalPct = t.kcal > 0 ? Math.min(100, (sum.kcal / t.kcal) * 100) : 0;
 
-  function changeGoal(g: Goal) { setGoal(g); saveGoal(g); }
+  function changeGoal(g: Goal) {
+    if (g === "perder" && deficitBlocked) return;
+    updateProfile.mutate({ goal: legacyToCoachGoal(g) });
+  }
 
   return (
     <div className="pt-4">
@@ -136,13 +151,19 @@ export default function NutritionPage() {
       {/* Objetivo */}
       <div className="glass mt-4 grid grid-cols-3 gap-1 rounded-2xl p-1">
         {(["perder", "mantener", "ganar"] as Goal[]).map((g) => (
-          <button key={g} onClick={() => changeGoal(g)} className="rounded-xl py-2.5 text-sm font-medium transition-colors"
+          <button key={g} onClick={() => changeGoal(g)} disabled={g === "perder" && deficitBlocked} data-testid={`goal-${g}`}
+            className="rounded-xl py-2.5 text-sm font-medium transition-colors disabled:opacity-40"
             style={goal === g ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)", color: "#03101c" } : { background: "transparent", color: "var(--color-muted)" }}>
             {GOAL_LABEL[g]}
           </button>
         ))}
       </div>
       <p className="t-body mt-2 text-xs text-muted">Objetivos calculados de tu perfil (peso, altura, edad). Edítalos a futuro.</p>
+      {deficitBlocked && safety && (
+        <div data-testid="deficit-blocked">
+          <SafetyPanel data={{ ...safety, reasons: blockReasons, parq_pending: false }} />
+        </div>
+      )}
 
       {/* Agua del día */}
       <div className="glass mt-4 flex items-center justify-between p-4">

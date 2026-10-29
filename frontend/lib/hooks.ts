@@ -15,6 +15,13 @@ import {
   type Me,
   type Profile,
   type ProgressPhoto,
+  safety,
+  screening,
+  injury,
+  type Safety,
+  type Screening,
+  type ScreeningValues,
+  type Injury,
 } from "./schemas";
 import { resetActivityUid } from "./activities";
 
@@ -64,7 +71,10 @@ export function useCreateBiometrics() {
   return useMutation({
     mutationFn: (payload: Record<string, unknown>) =>
       sendJson("/api/proxy/me/biometrics", "POST", payload),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["biometrics"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["biometrics"] });
+      qc.invalidateQueries({ queryKey: ["safety"] });
+    },
   });
 }
 
@@ -129,7 +139,10 @@ export function useUpdateProfile() {
   return useMutation({
     mutationFn: (payload: Record<string, unknown>) =>
       sendJson("/api/proxy/me/profile", "PATCH", payload),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["profile"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["profile"] });
+      qc.invalidateQueries({ queryKey: ["safety"] });
+    },
   });
 }
 
@@ -159,5 +172,66 @@ export function useRule(key: string | null) {
     enabled: !!key,
     queryFn: async () =>
       ruleDetail.parse(await getJson(`/api/proxy/knowledge/rules/${key}`)),
+  });
+}
+
+/* --- Seguridad y cribado (coach, fase 3). Los flags los calcula el servidor. --- */
+
+export function useSafety(enabled = true) {
+  return useQuery<Safety>({
+    queryKey: ["safety"],
+    queryFn: async () => safety.parse(await getJson("/api/proxy/coach/safety")),
+    enabled,
+  });
+}
+
+export function useScreening() {
+  return useQuery<Screening>({
+    queryKey: ["screening"],
+    queryFn: async () => screening.parse(await getJson("/api/proxy/coach/screening")),
+  });
+}
+
+export function useUpdateScreening() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (values: Partial<ScreeningValues>) =>
+      screening.parse(await sendJson("/api/proxy/coach/screening", "PATCH", { values, origin: "onboarding" })),
+    onSuccess: (data) => {
+      qc.setQueryData(["screening"], data);
+      qc.invalidateQueries({ queryKey: ["safety"] });
+    },
+  });
+}
+
+export function useInjuries() {
+  return useQuery<Injury[]>({
+    queryKey: ["injuries"],
+    queryFn: async () => z.array(injury).parse(await getJson("/api/proxy/coach/injuries")),
+  });
+}
+
+export function useAddInjury() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: Record<string, unknown>) => sendJson("/api/proxy/coach/injuries", "POST", payload),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["injuries"] });
+      qc.invalidateQueries({ queryKey: ["safety"] });
+    },
+  });
+}
+
+export function useDeleteInjury() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/proxy/coach/injuries/${id}`, { method: "DELETE", credentials: "include" });
+      if (!res.ok && res.status !== 204) throw new Error(String(res.status));
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["injuries"] });
+      qc.invalidateQueries({ queryKey: ["safety"] });
+    },
   });
 }

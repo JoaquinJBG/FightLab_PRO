@@ -46,5 +46,261 @@
     "unclear": "Where it is unclear",
     "sources": "Sources",
     "link": "Link"
+  },
+  "safety": {
+    "title": "Safety",
+    "disclaimer": "This is general guidance from an automated coach, not medical advice.",
+    "deferralLine": "This is general guidance from an automated coach, not medical advice. Because of what you told me, talk to your doctor (or the professional named above) before acting on it.",
+    "professional": "Professional: {name}",
+    "emergency": "Emergency: {number}",
+    "severity": {
+      "stop": "Stop",
+      "refer": "Refer",
+      "limit": "Limit"
+    },
+    "parqPending": "Your PAR-Q+ is missing: until you answer it, light-to-moderate work only.",
+    "parqComplete": "Complete the PAR-Q+",
+    "redo": "Redo the screening",
+    "loading": "Working out your safety notes…",
+    "error": "Your safety notes could not be loaded.",
+    "none": "No safety notes from what you told us."
+  },
+  "onboarding": {
+    "step": "Step {n} of {total}",
+    "back": "← Back",
+    "continue": "Continue",
+    "skip": "Skip",
+    "saving": "Saving…",
+    "saveError": "Could not save. Check your connection and try again.",
+    "yes": "Yes",
+    "no": "No",
+    "welcome": {
+      "title": "Welcome to <neon>FightLab</neon>",
+      "subtitle": "Your corner, in and out of the gym.",
+      "f1Title": "Know how to show up to train",
+      "f1Body": " — your daily status from your own recovery metrics.",
+      "f2Title": "Real combat training",
+      "f2Body": " — MMA, gym and sports with training load and a round timer.",
+      "f3Title": "Nutrition and weight under control",
+      "f3Body": " — macros that fit you and the weigh-in always in sight.",
+      "start": "Set up your profile",
+      "resume": "Pick up where you left off"
+    },
+    "language": {
+      "title": "Language and <neon>region</neon>",
+      "intro": "The app, the coach and the safety notes will speak to you in this language.",
+      "languageLabel": "Language",
+      "where": "Where do you live?",
+      "spain": "Spain",
+      "other": "Another country",
+      "otherNote": "There is no region for your country yet: menus use the general food table and Open Food Facts products.",
+      "emergencyLabel": "Which number do you call in an emergency where you live?",
+      "emergencyHint": "112 across the EU, 911 in the US, Canada and Mexico, 999 in the UK, 000 in Australia. If you are not sure, keep 112 and check it.",
+      "emergencyInvalid": "Enter a number of 2 to 6 digits.",
+      "spainEmergency": "Emergency number in Spain: 112."
+    },
+    "scoff": {
+      "title": "You and <neon>food</neon>",
+      "intro": "Before we talk about weight, five short questions. It is not a diagnosis: it tells us whether to avoid deficits and weigh-ins.",
+      "question": "Does any of this happen to you?",
+      "items": {
+        "sick": "Making yourself sick when uncomfortably full",
+        "control": "Worry about losing control over how much you eat",
+        "fat": "Feeling fat when others say you are thin",
+        "dominate": "Food or weight dominating your thoughts or life",
+        "weightLoss": "A recent large weight loss that worried you or others"
+      },
+      "partial": "Sometimes",
+      "followUp": "Does it happen often, or does it bother you a fair amount?",
+      "followUpControl": "Do you have episodes of eating a lot while feeling unable to stop?",
+      "incomplete": "Answer all five questions to continue.",
+      "single": "Noted. A single yes is not a positive screen; we will keep an eye on it.",
+      "clear": "Noted. Thanks for answering.",
+      "positive": "From your answers, FightLab will not suggest deficits, weight targets or weigh-ins.",
+      "redoNote": "If things change or a professional reviews you, you can redo it from your profile."
+    },
+    "basics": {
+      "title": "The basics <neon>about you</neon>",
+      "intro": "We use this for your zones, your energy needs and your targets. Only you can see it.",
+      "dob": "Date of birth",
+      "dobHint": "Your age sets your heart-rate zones.",
+      "height": "Height (cm)",
+      "heightHint": "With your weight, it sets your calories and macros.",
+      "heightInvalid": "Enter a valid height in cm (100–230).",
+      "gender": "Sex",
+      "optional": "(optional)",
+      "genderHint": "It refines your resting metabolic rate.",
+      "genders": {
+        "MALE": "Male",
+        "FEMALE": "Female",
+        "OTHER": "Other"
+      },
+      "equationSex": "The energy equations exist only for female and male. Which one should we use?",
+      "equationSexHint": "If you do not choose, there are no calorie or macro targets. Zones, plan and check-in work the same, and you can choose later in your profile.",
+      "equationSexes": {
+        "female": "Female",
+        "male": "Male",
+        "none": "Not now"
+      },
+      "weightTitle": "Your <neon>weight</neon>",
+      "weight": "Weight (kg)",
+      "weightHint": "It is the starting point for your targets. You can skip it.",
+      "weightGentle": "Are you happy to share an approximate weight for the estimates? It is optional, and you do not need to weigh yourself.",
+      "weightInvalid": "Enter a valid weight in kg (30–250).",
+      "under18": "For under-18s, FightLab gives no calorie targets and no weigh-ins.",
+      "dobLabels": {
+        "day": "Day",
+        "month": "Month",
+        "year": "Year",
+        "dd": "DD",
+        "mm": "MM",
+        "yyyy": "YYYY"
+      },
+      "dobErrors": {
+        "incomplete": "Complete the date (day, month and a 4-digit year).",
+        "invalid": "That date does not exist. Check the day and month.",
+        "year": "Check the year.",
+        "future": "Your date of birth cannot be in the future."
+      }
+    },
+    "parq": {
+      "title": "PAR-Q+, <neon>ready for exercise</neon>",
+      "intro": "The PAR-Q+ is the official questionnaire that tells you whether to check with a professional before becoming more physically active.",
+      "open": "Open the official PAR-Q+",
+      "openNote": "It opens on eparmedx.com in a new tab. We do not copy it into the app: the official form must not be modified. Fill it in and come back here.",
+      "anyYes": "Any YES on the 7 general questions?",
+      "followupYes": "Any YES on the follow-up questions?",
+      "unsure": "I don't know or haven't filled it in",
+      "unsureNote": "Without the PAR-Q+, light-to-moderate work only. We will remind you.",
+      "vigorous": "Has a qualified exercise professional or clinician reviewed vigorous or maximal work for you (HIIT, 1RM tests, all-out sprints)?",
+      "incomplete": "Answer the question to continue."
+    },
+    "cardiac": {
+      "title": "Warning <neon>signs</neon>",
+      "question": "Do you have any of these symptoms?",
+      "symptoms": [
+        "Chest, neck, jaw or arm pain or pressure",
+        "Breathlessness at rest or with mild effort",
+        "Dizziness or fainting",
+        "Palpitations",
+        "Ankle swelling",
+        "Calf pain on walking"
+      ],
+      "none": "None",
+      "some": "Yes, some",
+      "unsure": "I'm not sure",
+      "unsureAgain": "Look at the list once more: have you noticed any of these symptoms lately?",
+      "stillUnsure": "Still not sure",
+      "unsureStored": "OK. If any of them appears, stop training and see a doctor.",
+      "now": "Is it happening now or at rest?",
+      "stopTitle": "Stop here and seek medical care",
+      "stopBody": "Do not exercise. For chest pain at rest, fainting, or chest pain with breathlessness and sweating, call emergency services now.",
+      "call": "Call {number}",
+      "exit": "Exit",
+      "incomplete": "Answer the question to continue."
+    },
+    "medical": {
+      "title": "Medication and <neon>health</neon>",
+      "intro": "Only some of these change what the coach works out. Tick the ones you have.",
+      "medications": "Medication",
+      "conditions": "Diagnoses",
+      "tokens": {
+        "beta_blocker": "Beta-blocker (bisoprolol, atenolol, metoprolol, propranolol, nebivolol, carvedilol)",
+        "glp1": "GLP-1 or tirzepatide (Ozempic, Wegovy, Rybelsus, Saxenda, Victoza, Trulicity, Mounjaro)",
+        "hypertension": "Hypertension (high blood pressure or BP medication)",
+        "heart_disease": "Diagnosed heart condition",
+        "weight_related_condition": "A condition your doctor links to weight (type 2 diabetes, sleep apnoea, fatty liver…)",
+        "pregnant": "I am pregnant",
+        "planning_pregnancy": "I am trying to conceive"
+      },
+      "pregnancy": "Pregnancy",
+      "otherMedications": "Other medication",
+      "otherConditions": "Other diagnoses",
+      "otherHint": "Comma-separated. The coach cannot classify them: they are stored as given.",
+      "knowBp": "I know my blood pressure"
+    },
+    "bp": {
+      "title": "Your <neon>blood pressure</neon>",
+      "intro": "Your latest seated reading, after 5 minutes of rest.",
+      "systolic": "Systolic (top number)",
+      "diastolic": "Diastolic (bottom number)",
+      "unknown": "If you don't know it, leave it empty and take one before your next check-in.",
+      "invalid": "Enter both numbers in mmHg."
+    },
+    "cycle": {
+      "title": "Your <neon>cycle</neon>",
+      "question": "How are your periods?",
+      "states": {
+        "normal": "Regular",
+        "irregular_new": "Newly irregular",
+        "absent": "Absent 3 months or more (or fewer than 6 a year)",
+        "not_applicable": "Not applicable"
+      },
+      "contraception": "Do you use hormonal contraception?",
+      "contraceptionNote": "It masks the cycle: report low energy, low libido or stress fractures at your check-in.",
+      "incomplete": "Choose an option to continue."
+    },
+    "goals": {
+      "title": "Your <neon>goal</neon> and training",
+      "goal": "What are you after right now?",
+      "goals": {
+        "fat_loss": "Lose fat",
+        "maintenance": "Maintain",
+        "muscle_gain": "Build muscle",
+        "recomposition": "Recomposition"
+      },
+      "recompositionHint": "Recomposition: eat around maintenance while you train. For beginners, returning lifters and higher body fat.",
+      "experience": "Your experience",
+      "experiences": {
+        "novice": "Under 12 months of consistent training (about 2 or more sessions a week)",
+        "intermediate": "12 months or more, and still adding load or reps most months",
+        "advanced": "12 months or more, and progress has slowed to a plateau"
+      },
+      "activity": "Your day-to-day",
+      "activities": {
+        "desk": "Desk job with little exercise, or a few sessions a week",
+        "desk_training": "Desk job and about 1 h of training on 4 or more days a week",
+        "active": "Physical job, or daily moderate-to-vigorous exercise plus lots of daily movement"
+      },
+      "disciplines": "What do you train?",
+      "disciplinesHint": "(pick any)",
+      "frequency": "How many days a week do you train?",
+      "days": "{n} days",
+      "daysPlus": "{n}+ days",
+      "stance": "Stance",
+      "stances": {
+        "ORTHODOX": "Orthodox",
+        "SOUTHPAW": "Southpaw",
+        "SWITCH": "Switch"
+      },
+      "units": "Units",
+      "unitsOptions": {
+        "METRIC": "Metric (kg · cm)",
+        "IMPERIAL": "Imperial (lb · in)"
+      },
+      "injuries": "Any current injury or pain?",
+      "injuryArea": "Area (for example, right shoulder)",
+      "injurySince": "Since",
+      "injuryProfessional": "Who assessed it (if anyone)",
+      "injuryExercises": "Exercises it affects (comma-separated)",
+      "injuryAdd": "Add injury",
+      "injuryRemove": "Remove",
+      "injuryAreaMissing": "Enter the injured area.",
+      "disciplineNames": {
+        "Boxeo": "Boxing",
+        "Kickboxing": "Kickboxing",
+        "Muay Thai": "Muay Thai",
+        "BJJ": "BJJ",
+        "Lucha": "Wrestling",
+        "Taekwondo": "Taekwondo",
+        "Karate": "Karate",
+        "MMA": "MMA"
+      }
+    },
+    "done": {
+      "title": "Your starting <neon>point</neon>",
+      "intro": "This is what FightLab will keep in mind from what you told us.",
+      "start": "Start"
+    }
   }
 }

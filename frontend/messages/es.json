@@ -46,5 +46,261 @@
     "unclear": "Dónde no está claro",
     "sources": "Fuentes",
     "link": "Enlace"
+  },
+  "safety": {
+    "title": "Seguridad",
+    "disclaimer": "Esto es orientación general de un entrenador automatizado, no consejo médico.",
+    "deferralLine": "Esto es orientación general de un entrenador automatizado, no consejo médico. Por lo que me has contado, habla con tu médico (o con el profesional que te indico arriba) antes de ponerlo en práctica.",
+    "professional": "Profesional: {name}",
+    "emergency": "Emergencias: {number}",
+    "severity": {
+      "stop": "Para",
+      "refer": "Consulta",
+      "limit": "Límite"
+    },
+    "parqPending": "Te falta el PAR-Q+: hasta que lo contestes, solo trabajo ligero o moderado.",
+    "parqComplete": "Completar el PAR-Q+",
+    "redo": "Repetir el cribado",
+    "loading": "Calculando tus avisos…",
+    "error": "No se pudieron cargar tus avisos de seguridad.",
+    "none": "Sin avisos de seguridad con lo que nos has contado."
+  },
+  "onboarding": {
+    "step": "Paso {n} de {total}",
+    "back": "← Atrás",
+    "continue": "Continuar",
+    "skip": "Saltar",
+    "saving": "Guardando…",
+    "saveError": "No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.",
+    "yes": "Sí",
+    "no": "No",
+    "welcome": {
+      "title": "Bienvenido a <neon>FightLab</neon>",
+      "subtitle": "Tu esquina, dentro y fuera del gym.",
+      "f1Title": "Sabrás cómo venir a entrenar",
+      "f1Body": " — tu estado diario con tus propias métricas de recuperación.",
+      "f2Title": "Entreno de combate de verdad",
+      "f2Body": " — MMA, gym y deportes con carga de entrenamiento y timer de rounds.",
+      "f3Title": "Nutrición y peso bajo control",
+      "f3Body": " — macros a tu medida y el pesaje siempre a la vista.",
+      "start": "Configura tu perfil",
+      "resume": "Continuar donde lo dejaste"
+    },
+    "language": {
+      "title": "Idioma y <neon>región</neon>",
+      "intro": "La app, el coach y los avisos te hablarán en este idioma.",
+      "languageLabel": "Idioma",
+      "where": "¿Dónde vives?",
+      "spain": "España",
+      "other": "Otro país",
+      "otherNote": "Para tu país aún no hay región: los menús usarán la tabla general de alimentos y productos de Open Food Facts.",
+      "emergencyLabel": "¿Qué número llamas en una emergencia donde vives?",
+      "emergencyHint": "112 en toda la UE, 911 en EE. UU., Canadá y México, 999 en Reino Unido, 000 en Australia. Si no lo sabes, deja 112 y compruébalo.",
+      "emergencyInvalid": "Escribe un número de 2 a 6 cifras.",
+      "spainEmergency": "Número de emergencias en España: 112."
+    },
+    "scoff": {
+      "title": "Tu relación con <neon>la comida</neon>",
+      "intro": "Antes de hablar de peso, cinco preguntas breves. No es un diagnóstico: nos ayuda a saber si hay que evitar déficits y pesajes.",
+      "question": "¿Te pasa algo de esto?",
+      "items": {
+        "sick": "Provocarte el vómito cuando te sientes incómodamente lleno o llena",
+        "control": "Preocuparte por perder el control sobre cuánto comes",
+        "fat": "Sentirte gordo o gorda cuando otras personas dicen que estás delgado o delgada",
+        "dominate": "Que la comida o el peso dominen tus pensamientos o tu vida",
+        "weightLoss": "Una pérdida de peso grande y reciente que te preocupó a ti o a otras personas"
+      },
+      "partial": "A veces",
+      "followUp": "¿Te pasa a menudo o te preocupa bastante?",
+      "followUpControl": "¿Tienes episodios en los que comes mucho sintiendo que no puedes parar?",
+      "incomplete": "Contesta las cinco preguntas para seguir.",
+      "single": "Anotado. Con una sola respuesta afirmativa no es un cribado positivo; lo tendremos en cuenta.",
+      "clear": "Anotado. Gracias por contestar.",
+      "positive": "Con tus respuestas, FightLab no te propondrá déficits, objetivos de peso ni pesajes.",
+      "redoNote": "Si las cosas cambian o te revisa un profesional, puedes repetirlo desde tu perfil."
+    },
+    "basics": {
+      "title": "Lo básico <neon>sobre ti</neon>",
+      "intro": "Con esto calculamos tus zonas, tu gasto calórico y tus objetivos. Solo lo ves tú.",
+      "dob": "Fecha de nacimiento",
+      "dobHint": "Tu edad ajusta las zonas de frecuencia cardíaca.",
+      "height": "Altura (cm)",
+      "heightHint": "Con tu peso, calcula tus calorías y macros.",
+      "heightInvalid": "Introduce una altura válida en cm (100–230).",
+      "gender": "Sexo",
+      "optional": "(opcional)",
+      "genderHint": "Afina el cálculo de tu metabolismo basal.",
+      "genders": {
+        "MALE": "Hombre",
+        "FEMALE": "Mujer",
+        "OTHER": "Otro"
+      },
+      "equationSex": "Las ecuaciones de gasto calórico solo existen para mujer y hombre. ¿Con cuál calculamos?",
+      "equationSexHint": "Si no eliges, no habrá objetivos de calorías ni de macros. Zonas, plan y check-in funcionan igual, y puedes elegirlo más tarde en tu perfil.",
+      "equationSexes": {
+        "female": "Mujer",
+        "male": "Hombre",
+        "none": "Ahora no"
+      },
+      "weightTitle": "Tu <neon>peso</neon>",
+      "weight": "Peso (kg)",
+      "weightHint": "Es el punto de partida de tus objetivos. Puedes saltarlo.",
+      "weightGentle": "¿Te parece bien darnos un peso aproximado para las estimaciones? Es opcional y no hace falta que te peses.",
+      "weightInvalid": "Introduce un peso válido en kg (30–250).",
+      "under18": "Para menores de 18 años, FightLab no calcula objetivos de calorías ni pesajes.",
+      "dobLabels": {
+        "day": "Día",
+        "month": "Mes",
+        "year": "Año",
+        "dd": "DD",
+        "mm": "MM",
+        "yyyy": "AAAA"
+      },
+      "dobErrors": {
+        "incomplete": "Completa la fecha (día, mes y año de 4 cifras).",
+        "invalid": "Esa fecha no existe. Comprueba el día y el mes.",
+        "year": "Revisa el año.",
+        "future": "La fecha de nacimiento no puede ser futura."
+      }
+    },
+    "parq": {
+      "title": "PAR-Q+, <neon>apto para el ejercicio</neon>",
+      "intro": "El PAR-Q+ es el cuestionario oficial que indica si conviene consultar con un profesional antes de hacer más actividad física.",
+      "open": "Abrir el PAR-Q+ oficial",
+      "openNote": "Se abre en eparmedx.com en una pestaña nueva. No lo copiamos en la app: el formulario oficial no se puede modificar. Contéstalo y vuelve aquí.",
+      "anyYes": "¿Algún SÍ en las 7 preguntas generales?",
+      "followupYes": "¿Algún SÍ en las preguntas de seguimiento?",
+      "unsure": "No lo sé o no lo he rellenado",
+      "unsureNote": "Sin el PAR-Q+, solo trabajo ligero o moderado. Te lo recordaremos.",
+      "vigorous": "¿Un profesional del ejercicio cualificado o un clínico ha revisado que puedas hacer trabajo vigoroso o máximo (HIIT, test de 1RM, esprints a tope)?",
+      "incomplete": "Contesta la pregunta para seguir."
+    },
+    "cardiac": {
+      "title": "Señales de <neon>alarma</neon>",
+      "question": "¿Tienes alguno de estos síntomas?",
+      "symptoms": [
+        "Dolor o presión en el pecho, el cuello, la mandíbula o el brazo",
+        "Falta de aire en reposo o con poco esfuerzo",
+        "Mareo o desmayos",
+        "Palpitaciones",
+        "Tobillos hinchados",
+        "Dolor en la pantorrilla al caminar"
+      ],
+      "none": "Ninguno",
+      "some": "Sí, alguno",
+      "unsure": "No lo tengo claro",
+      "unsureAgain": "Fíjate en la lista otra vez: ¿has notado alguno de estos síntomas últimamente?",
+      "stillUnsure": "Sigo sin tenerlo claro",
+      "unsureStored": "De acuerdo. Si aparece alguno, deja de entrenar y ve al médico.",
+      "now": "¿Te está pasando ahora o en reposo?",
+      "stopTitle": "Para aquí y busca atención médica",
+      "stopBody": "No hagas ejercicio. Si tienes dolor en el pecho en reposo, te desmayas, o tienes dolor en el pecho con falta de aire y sudor, llama ya a emergencias.",
+      "call": "Llamar al {number}",
+      "exit": "Salir",
+      "incomplete": "Contesta la pregunta para seguir."
+    },
+    "medical": {
+      "title": "Medicación y <neon>salud</neon>",
+      "intro": "Solo algunas cambian lo que calcula el coach. Marca las que tengas.",
+      "medications": "Medicación",
+      "conditions": "Diagnósticos",
+      "tokens": {
+        "beta_blocker": "Betabloqueante (bisoprolol, atenolol, metoprolol, propranolol, nebivolol, carvedilol)",
+        "glp1": "GLP-1 o tirzepatida (Ozempic, Wegovy, Rybelsus, Saxenda, Victoza, Trulicity, Mounjaro)",
+        "hypertension": "Hipertensión (tensión alta o medicación para la tensión)",
+        "heart_disease": "Cardiopatía diagnosticada",
+        "weight_related_condition": "Una enfermedad que tu médico relaciona con el peso (diabetes tipo 2, apnea del sueño, hígado graso…)",
+        "pregnant": "Estoy embarazada",
+        "planning_pregnancy": "Busco el embarazo"
+      },
+      "pregnancy": "Embarazo",
+      "otherMedications": "Otra medicación",
+      "otherConditions": "Otros diagnósticos",
+      "otherHint": "Separadas por comas. El coach no puede clasificarlas: se guardan tal cual.",
+      "knowBp": "Sé mi tensión"
+    },
+    "bp": {
+      "title": "Tu <neon>tensión</neon>",
+      "intro": "La última lectura sentado, tras 5 minutos de reposo.",
+      "systolic": "Sistólica (máxima)",
+      "diastolic": "Diastólica (mínima)",
+      "unknown": "Si no la sabes, déjalo vacío y mídetela para el próximo check-in.",
+      "invalid": "Escribe las dos cifras en mmHg."
+    },
+    "cycle": {
+      "title": "Tu <neon>ciclo</neon>",
+      "question": "¿Cómo es tu regla?",
+      "states": {
+        "normal": "Regular",
+        "irregular_new": "Irregular desde hace poco",
+        "absent": "Ausente 3 meses o más (o menos de 6 al año)",
+        "not_applicable": "No aplica"
+      },
+      "contraception": "¿Usas anticonceptivos hormonales?",
+      "contraceptionNote": "Enmascaran el ciclo: avisa en el check-in si notas poca energía, poca libido o fracturas por estrés.",
+      "incomplete": "Elige una opción para seguir."
+    },
+    "goals": {
+      "title": "Tu <neon>objetivo</neon> y tu entreno",
+      "goal": "¿Qué buscas ahora mismo?",
+      "goals": {
+        "fat_loss": "Perder grasa",
+        "maintenance": "Mantener",
+        "muscle_gain": "Ganar músculo",
+        "recomposition": "Recomposición"
+      },
+      "recompositionHint": "Recomposición: comer en mantenimiento mientras entrenas. Para quien empieza, vuelve a entrenar o tiene más grasa corporal.",
+      "experience": "Tu experiencia",
+      "experiences": {
+        "novice": "Menos de 12 meses entrenando con constancia (unas 2 sesiones o más por semana)",
+        "intermediate": "12 meses o más, y aún subes peso o repeticiones casi cada mes",
+        "advanced": "12 meses o más, y el progreso se ha estancado"
+      },
+      "activity": "Tu día a día",
+      "activities": {
+        "desk": "Trabajo sentado, con poco ejercicio o unas pocas sesiones a la semana",
+        "desk_training": "Trabajo sentado y alrededor de 1 h de entreno 4 o más días a la semana",
+        "active": "Trabajo físico, o ejercicio diario moderado o vigoroso y mucho movimiento"
+      },
+      "disciplines": "¿Qué practicas?",
+      "disciplinesHint": "(elige las que quieras)",
+      "frequency": "¿Cuántos días entrenas por semana?",
+      "days": "{n} días",
+      "daysPlus": "{n}+ días",
+      "stance": "Guardia",
+      "stances": {
+        "ORTHODOX": "Ortodoxo",
+        "SOUTHPAW": "Zurdo",
+        "SWITCH": "Switch"
+      },
+      "units": "Unidades",
+      "unitsOptions": {
+        "METRIC": "Métrico (kg · cm)",
+        "IMPERIAL": "Imperial (lb · in)"
+      },
+      "injuries": "¿Alguna lesión o dolor ahora?",
+      "injuryArea": "Zona (por ejemplo, hombro derecho)",
+      "injurySince": "Desde",
+      "injuryProfessional": "Quién la ha valorado (si alguien)",
+      "injuryExercises": "Ejercicios que afecta (separados por comas)",
+      "injuryAdd": "Añadir lesión",
+      "injuryRemove": "Quitar",
+      "injuryAreaMissing": "Escribe la zona de la lesión.",
+      "disciplineNames": {
+        "Boxeo": "Boxeo",
+        "Kickboxing": "Kickboxing",
+        "Muay Thai": "Muay Thai",
+        "BJJ": "BJJ",
+        "Lucha": "Lucha",
+        "Taekwondo": "Taekwondo",
+        "Karate": "Kárate",
+        "MMA": "MMA"
+      }
+    },
+    "done": {
+      "title": "Tu punto de <neon>partida</neon>",
+      "intro": "Esto es lo que FightLab tendrá en cuenta con lo que nos has contado.",
+      "start": "Empezar"
+    }
   }
 }

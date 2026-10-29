@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMe, useProfile, useLogout } from "@/lib/hooks";
+import { SafetyBanner } from "@/components/safety/SafetyBanner";
 
 const GENDER: Record<string, string> = { MALE: "Hombre", FEMALE: "Mujer", OTHER: "Otro" };
 const STANCE: Record<string, string> = { ORTHODOX: "Ortodoxo", SOUTHPAW: "Zurdo", SWITCH: "Switch" };
@@ -24,6 +25,7 @@ export default function ProfilePage() {
   const { data: profile } = useProfile();
   const logout = useLogout();
   const tc = useTranslations("common");
+  const ts = useTranslations("safety");
 
   async function onLogout() {
     await logout.mutateAsync();
@@ -55,6 +57,11 @@ export default function ProfilePage() {
         <Row label="Guardia" value={dash(profile?.dominant_stance ? STANCE[profile.dominant_stance] : null)} />
         <Row label="Unidades" value={dash(profile?.preferred_units ? UNITS[profile.preferred_units] : null)} />
       </section>
+
+      <SafetyBanner showEmpty />
+      <Link href="/onboarding?redo=1" data-testid="redo-screening" className="btn btn-outline mt-3 w-full">
+        {ts("redo")}
+      </Link>
 
       <Link href="/profile/edit" className="btn btn-tonal mt-4 w-full">
         Editar perfil

@@ -107,3 +107,64 @@ export const ruleDetail = z.object({
   sources: z.array(evidenceSource),
 });
 export type RuleDetail = z.infer<typeof ruleDetail>;
+
+// --- Seguridad y cribado (coach, fase 3) ---
+export const safetyReason = z.object({
+  code: z.string(),
+  rule_key: z.string().nullable(),
+  grade: z.string().nullable(),
+  params: z.record(z.string(), z.unknown()),
+  text: z.string(),
+  professional: z.string().nullable(),
+  severity: z.enum(["stop", "refer", "limit"]),
+});
+export type SafetyReason = z.infer<typeof safetyReason>;
+
+export const safety = z.object({
+  screened: z.boolean(),
+  flags: z.record(z.string(), z.boolean()),
+  reasons: z.array(safetyReason),
+  paused_exercises: z.record(
+    z.string(),
+    z.object({ assessed: z.boolean(), reasons: z.array(safetyReason) }),
+  ),
+  refer_gp: z.boolean(),
+  deferral_line: z.string().nullable(),
+  disclaimer: z.string(),
+  emergency_number: z.string().nullable(),
+  parq_pending: z.boolean(),
+  weight: z.object({ kg: z.number(), date: z.string() }).nullable(),
+});
+export type Safety = z.infer<typeof safety>;
+
+export const screeningValues = z.object({
+  scoff_yes_count: z.number().nullable(),
+  scoff_positive: z.boolean().nullable(),
+  parq_any_yes: z.boolean().nullable(),
+  parq_followup_yes: z.boolean().nullable(),
+  vigorous_reviewed: z.boolean().nullable(),
+  cardiac_symptoms: z.boolean().nullable(),
+  menstrual: z.string().nullable(),
+  bp_systolic: z.number().nullable(),
+  bp_diastolic: z.number().nullable(),
+});
+export type ScreeningValues = z.infer<typeof screeningValues>;
+
+export const screening = z.object({
+  values: screeningValues,
+  parq_url: z.string(),
+  parq_native_form: z.boolean(),
+});
+export type Screening = z.infer<typeof screening>;
+
+export const injury = z.object({
+  id: z.number(),
+  area: z.string(),
+  status: z.enum(["active", "cleared"]),
+  since: z.string().nullable(),
+  professional: z.string().nullable(),
+  cleared_on: z.string().nullable(),
+  exercises: z.array(z.string()),
+  origin: z.string(),
+});
+export type Injury = z.infer<typeof injury>;

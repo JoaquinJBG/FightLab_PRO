@@ -2,18 +2,22 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useProfile, useUpdateProfile } from "@/lib/hooks";
+import { useProfile, useScreening, useUpdateProfile } from "@/lib/hooks";
+import { isOnboardingComplete } from "@/lib/onboarding";
 import { LEGACY_GOAL_KEY, goalToMigrate } from "@/lib/goal";
 
 /**
- * Si el perfil del usuario está incompleto (sin fecha de nacimiento o altura),
- * lo manda a /onboarding antes de dejarle ver el shell. Así, tras verificar el
- * email e iniciar sesión, lo primero que ve es "info personal".
+ * Si el perfil o el cribado están incompletos, manda a /onboarding antes de dejarle
+ * ver el shell. Así, tras verificar el email e iniciar sesión, lo primero que ve es
+ * el onboarding, que se reanuda en el paso que falta.
  */
 export function OnboardingGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { data: profile, isLoading, isError } = useProfile();
-  const incomplete = !!profile && (!profile.date_of_birth || profile.height_cm == null);
+  const { data: screening, isLoading: screeningLoading } = useScreening();
+  // Sin datos básicos, sin SCOFF o sin la pregunta de síntomas cardiacos, se vuelve al paso
+  // del onboarding que falta (spec §8.1). El PAR-Q+ no bloquea: la Home lo recuerda.
+  const incomplete = !!profile && !!screening && !isOnboardingComplete(profile, screening.values);
 
   useEffect(() => {
     if (incomplete) router.replace("/onboarding");
@@ -36,7 +40,7 @@ export function OnboardingGate({ children }: { children: React.ReactNode }) {
     else if (legacy && profile.goal) localStorage.removeItem(LEGACY_GOAL_KEY);
   }, [profile, update]);
 
-  if (isLoading || incomplete) {
+  if (isLoading || screeningLoading || incomplete) {
     return (
       <div className="flex min-h-[60dvh] items-center justify-center">
         <p className="t-body pulse text-muted">Cargando…</p>

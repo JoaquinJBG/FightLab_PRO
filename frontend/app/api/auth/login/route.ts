@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { djangoFetch } from "@/lib/api";
-import { setAuthCookies } from "@/lib/cookies";
+import { setAuthCookies, setLangCookie } from "@/lib/cookies";
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -8,6 +8,11 @@ export async function POST(req: Request) {
   if (r.status === 200 && r.data && typeof r.data === "object") {
     const { access, refresh } = r.data as { access: string; refresh: string };
     await setAuthCookies(access, refresh);
+    // La UI pasa al idioma del perfil desde la primera pantalla (spec §7.5).
+    const me = await djangoFetch("/me/profile", { access });
+    if (me.status === 200 && me.data && typeof me.data === "object") {
+      await setLangCookie((me.data as { language?: unknown }).language);
+    }
     return NextResponse.json({ ok: true });
   }
   return NextResponse.json(r.data ?? { detail: "Login fallido" }, { status: r.status || 401 });

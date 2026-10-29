@@ -4,11 +4,23 @@ import { useRef } from "react";
 
 export type Dob = { day: string; month: string; year: string };
 
+/** Etiquetas y marcadores (por defecto en español; el onboarding pasa las de su idioma). */
+export type DobLabels = { day: string; month: string; year: string; dd: string; mm: string; yyyy: string };
+const DEFAULT_LABELS: DobLabels = { day: "Día", month: "Mes", year: "Año", dd: "DD", mm: "MM", yyyy: "AAAA" };
+
 /**
  * Fecha de nacimiento como cajas DD / MM / AAAA con teclado numérico y
  * auto-avance (patrón fintech). Sin calendario nativo ni desplegables.
  */
-export function DobInput({ value, onChange }: { value: Dob; onChange: (v: Dob) => void }) {
+export function DobInput({
+  value,
+  onChange,
+  labels = DEFAULT_LABELS,
+}: {
+  value: Dob;
+  onChange: (v: Dob) => void;
+  labels?: DobLabels;
+}) {
   const dayRef = useRef<HTMLInputElement>(null);
   const monthRef = useRef<HTMLInputElement>(null);
   const yearRef = useRef<HTMLInputElement>(null);
@@ -42,8 +54,8 @@ export function DobInput({ value, onChange }: { value: Dob; onChange: (v: Dob) =
           onKeyDown={(e) => onKeyDown("day", e)}
           inputMode="numeric"
           autoComplete="bday-day"
-          placeholder="DD"
-          aria-label="Día"
+          placeholder={labels.dd}
+          aria-label={labels.day}
           className={cls}
         />
       </div>
@@ -56,8 +68,8 @@ export function DobInput({ value, onChange }: { value: Dob; onChange: (v: Dob) =
           onKeyDown={(e) => onKeyDown("month", e)}
           inputMode="numeric"
           autoComplete="bday-month"
-          placeholder="MM"
-          aria-label="Mes"
+          placeholder={labels.mm}
+          aria-label={labels.month}
           className={cls}
         />
       </div>
@@ -70,8 +82,8 @@ export function DobInput({ value, onChange }: { value: Dob; onChange: (v: Dob) =
           onKeyDown={(e) => onKeyDown("year", e)}
           inputMode="numeric"
           autoComplete="bday-year"
-          placeholder="AAAA"
-          aria-label="Año"
+          placeholder={labels.yyyy}
+          aria-label={labels.year}
           className={cls}
         />
       </div>
@@ -79,20 +91,33 @@ export function DobInput({ value, onChange }: { value: Dob; onChange: (v: Dob) =
   );
 }
 
-/** Valida la fecha; devuelve mensaje de error o null si es válida. */
-export function validateDob(v: Dob): string | null {
-  if (!v.day || !v.month || v.year.length !== 4) {
-    return "Completa la fecha (día, mes y año de 4 cifras).";
-  }
+export type DobError = "incomplete" | "invalid" | "year" | "future";
+
+/** Valida la fecha; devuelve el código del error o null si es válida. */
+export function dobErrorCode(v: Dob): DobError | null {
+  if (!v.day || !v.month || v.year.length !== 4) return "incomplete";
   const y = Number(v.year);
   const m = Number(v.month);
   const dd = Number(v.day);
   const d = new Date(y, m - 1, dd);
   const exists = d.getFullYear() === y && d.getMonth() + 1 === m && d.getDate() === dd;
-  if (!exists) return "Esa fecha no existe. Comprueba el día y el mes.";
-  if (y < 1900) return "Revisa el año.";
-  if (d >= new Date()) return "La fecha de nacimiento no puede ser futura.";
+  if (!exists) return "invalid";
+  if (y < 1900) return "year";
+  if (d >= new Date()) return "future";
   return null;
+}
+
+const DOB_ERRORS_ES: Record<DobError, string> = {
+  incomplete: "Completa la fecha (día, mes y año de 4 cifras).",
+  invalid: "Esa fecha no existe. Comprueba el día y el mes.",
+  year: "Revisa el año.",
+  future: "La fecha de nacimiento no puede ser futura.",
+};
+
+/** Valida la fecha; devuelve mensaje de error (en español) o null si es válida. */
+export function validateDob(v: Dob): string | null {
+  const code = dobErrorCode(v);
+  return code ? DOB_ERRORS_ES[code] : null;
 }
 
 /** Convierte a YYYY-MM-DD (formato de la API). Asume fecha ya validada. */
