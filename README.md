@@ -119,6 +119,24 @@ Base: `/api/v1`
 | GET/POST | `/me/biometrics` | Lista/registra biometría |
 | DELETE | `/me/biometrics/{id}` | Elimina una entrada |
 
+## 📜 Licencia y créditos
+
+- **Código: MIT** ([`LICENSE`](LICENSE)). **Contenido: CC BY 4.0** ([`LICENSE-CONTENT.md`](LICENSE-CONTENT.md)).
+  Titular: Joaquín J Beltrán García. Atribución pedida para el contenido:
+  *"FightLab Pro by Joaquín J Beltrán García, CC BY 4.0"*.
+- **Motor de cálculo y base de evidencia:** [*AI personal coach*](https://github.com/matgarfer499/ai-personal-coach)
+  de matgarfer499, en `backend/vendor/ai-personal-coach/` (versión `69e5537`, evidencia
+  revisada el 2026-10-24). Código bajo MIT; contenido bajo
+  [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+- **Cambios de FightLab:** traducción al español de reglas y mensajes, motivos estructurados,
+  adaptación a app web, almacenamiento en base de datos y mejoras propias del cálculo (lista en
+  [`docs/coach-upstream-sugerencias.md`](docs/coach-upstream-sugerencias.md)). Origen, SHA y
+  parches en [`backend/vendor/UPSTREAM.md`](backend/vendor/UPSTREAM.md).
+- **Datos de terceros:** alimentos de [USDA FoodData Central](https://fdc.nal.usda.gov/)
+  (dominio público); productos de Open Food Facts (ODbL); PAR-Q+ © PAR-Q+ Collaboration
+  (versión española del Dr. Martín Rubio), que no se redistribuye.
+- La app muestra lo mismo en `/profile/credits`.
+
 ## 📖 Documentación
 
 - **Visión y arquitectura:** [`docs/superpowers/specs/2026-06-01-fightlab-pro-vision-design.md`](docs/superpowers/specs/2026-06-01-fightlab-pro-vision-design.md)

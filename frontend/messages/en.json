@@ -1,6 +1,29 @@
 {
   "common": {
     "loading": "Loading…",
-    "back": "Back"
+    "back": "Back",
+    "creditsLink": "Credits and licences"
+  },
+  "credits": {
+    "title": "Credits and licences",
+    "coach": {
+      "title": "Calculation engine and evidence base",
+      "body": "<coach>AI personal coach</coach> by matgarfer499. Code under MIT; content under <ccby>CC BY 4.0</ccby>."
+    },
+    "changes": {
+      "title": "Changes made by FightLab",
+      "body": "Spanish translation of rules and messages, structured reasons, adaptation to a web app, database storage and our own improvements to the calculations."
+    },
+    "engine": "Engine: version {sha} · Evidence checked on {date}",
+    "data": {
+      "title": "Third-party data and forms",
+      "usda": "Foods: <usda>USDA FoodData Central</usda> (public domain).",
+      "off": "Products: <off>Open Food Facts</off>, under the <odbl>ODbL</odbl> licence.",
+      "parq": "PAR-Q+: © PAR-Q+ Collaboration; Spanish version by Dr. Martín Rubio. Official form at <parq>eparmedx.com</parq>."
+    },
+    "fightlab": {
+      "title": "FightLab licence",
+      "body": "FightLab Pro, by Joaquín J Beltrán García. Code under MIT (<license>LICENSE</license>); content under CC BY 4.0 (<licenseContent>LICENSE-CONTENT.md</licenseContent>)."
+    }
   }
 }

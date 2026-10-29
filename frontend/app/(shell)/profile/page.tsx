@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useMe, useProfile, useLogout } from "@/lib/hooks";
 
 const GENDER: Record<string, string> = { MALE: "Hombre", FEMALE: "Mujer", OTHER: "Otro" };
@@ -22,6 +23,7 @@ export default function ProfilePage() {
   const { data: me } = useMe();
   const { data: profile } = useProfile();
   const logout = useLogout();
+  const tc = useTranslations("common");
 
   async function onLogout() {
     await logout.mutateAsync();
@@ -56,6 +58,9 @@ export default function ProfilePage() {
 
       <Link href="/profile/edit" className="btn btn-tonal mt-4 w-full">
         Editar perfil
+      </Link>
+      <Link href="/profile/credits" className="btn btn-outline mt-3 w-full">
+        {tc("creditsLink")}
       </Link>
       <button onClick={onLogout} className="btn btn-outline mt-3 w-full">
         Cerrar sesión
