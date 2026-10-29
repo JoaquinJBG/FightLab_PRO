@@ -61,6 +61,14 @@ def test_language_comes_from_accept_language_at_registration(header, expected, s
 
 @pytest.mark.django_db
 def test_patch_extended_profile(auth_client):
+    # El pesaje solo se guarda con el cribado de TCA contestado (spec §8.1 y §8.3).
+    from coaching.services import screening_update
+
+    screening_update(
+        UserProfile.objects.get(user__email="a@b.com"),
+        {"scoff_yes_count": 0, "scoff_positive": False},
+        origin="onboarding",
+    )
     resp = auth_client.patch(
         "/api/v1/me/profile",
         {

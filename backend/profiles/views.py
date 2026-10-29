@@ -15,15 +15,28 @@ from .serializers import BiometricsSerializer, ProfileSerializer, ProgressPhotoS
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def _payload(self, request, profile):
+        # Los datos de pesaje no salen si `no_weight_targets` lo bloquea (spec §8.3).
+        from coaching import weigh_in
+        from coaching.safety_views import _today
+
+        return weigh_in.hide_if_blocked(request.user, _today(profile), ProfileSerializer(profile).data)
+
     def get(self, request):
         profile = selectors.profile_get(user=request.user)
-        return Response(ProfileSerializer(profile).data)
+        return Response(self._payload(request, profile))
 
     def patch(self, request):
+        from coaching import weigh_in
+        from coaching.safety_views import _today
+
         serializer = ProfileSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
+        refused = weigh_in.check_write(request.user, _today(request.user.profile), serializer.validated_data)
+        if refused:
+            return Response(refused[1], status=refused[0])
         profile = services.profile_update(user=request.user, **serializer.validated_data)
-        return Response(ProfileSerializer(profile).data)
+        return Response(self._payload(request, profile))
 
 
 class BiometricsListCreateView(APIView):
