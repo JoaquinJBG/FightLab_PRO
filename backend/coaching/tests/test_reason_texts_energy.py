@@ -15,7 +15,12 @@ def _body(text: str) -> str:
 
 
 def _codes() -> set[str]:
-    return {code for _, _, code in reasons.RULE_PATTERNS} | {c for _, c in reasons.FREE_PATTERNS} | {"protein_per_kg"}
+    return (
+        {code for _, _, code in reasons.RULE_PATTERNS}
+        | {c for _, c in reasons.FREE_PATTERNS}
+        | {"protein_per_kg"}
+        | reasons.BRIDGE_CODES
+    )
 
 
 def test_every_code_but_menus_has_both_languages():
@@ -65,3 +70,24 @@ def test_describe_has_text_severity_and_professional_key(code):
     info = reason_texts.describe(parse_reason(text), "es")
     assert set(info) == {"text", "professional", "severity"}
     assert "2600" in info["text"] or "1800" in info["text"]
+
+
+def test_bridge_reasons_render_in_both_languages_with_method_names():
+    from coaching.bridge import energy_athletes as ea
+
+    text = f"{ea.TRAINED_RULE}: Cunningham equation from 59.5 kg of fat-free mass (15% body fat by dxa)"
+    reason = parse_reason(text)
+    assert reason.code == "rmr_cunningham"
+    assert reason.params == {"ffm_kg": 59.5, "body_fat_pct": 15.0, "method": "dxa"}
+    assert "59.5 kg of fat-free mass (15% body fat by DXA)" in reason_texts.render(reason, "en")
+    assert "59,5 kg de masa libre de grasa (15 % de grasa corporal, medida con DXA)" in reason_texts.render(reason, "es")
+    unreliable = parse_reason(
+        f"{ea.BODY_FAT_RULE}: body fat from smart_scale is not accurate enough for an FFM equation, "
+        "so Mifflin-St Jeor is used"
+    )
+    assert "una báscula doméstica" in reason_texts.render(unreliable, "es")
+    convention = parse_reason(
+        "FightLab convention: no training until a clinician clears it, so the energy estimate uses "
+        "the desk activity level"
+    )
+    assert convention.code == "no_training_desk_pal" and convention.rule_key is None

@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 
 from coach import energy, mealplan, safety, zones
 
+from coaching.bridge import energy_athletes
 from coaching.keys import rule_key
 
 logger = logging.getLogger(__name__)
@@ -96,6 +97,25 @@ RULE_PATTERNS: list[tuple[str, str, str]] = [
     (mealplan.FREE_MEAL_RULE, r"^no free meal", "free_meal_blocked"),
 ]
 
+# Motivos que añade el puente de FightLab (no los produce el motor): la ecuación de RMR para
+# atletas (U04). Llevan la regla del coach que los respalda.
+BRIDGE_PATTERNS: list[tuple[str, str, str]] = [
+    (energy_athletes.TRAINED_RULE, r"^ten Haaf weight-based equation", "rmr_ten_haaf"),
+    (
+        energy_athletes.TRAINED_RULE,
+        r"^Cunningham equation from (?P<ffm_kg>[\d.]+) kg of fat-free mass "
+        r"\((?P<body_fat_pct>[\d.]+)% body fat by (?P<method>\w+)\)",
+        "rmr_cunningham",
+    ),
+    (energy_athletes.BODY_FAT_RULE, r"^body fat from (?P<method>\w+) is not accurate", "body_fat_unreliable"),
+    (energy_athletes.BODY_FAT_RULE, r"^the body-fat measurement error carries", "body_fat_error_carries"),
+]
+# Motivos propios sin regla: una convención de FightLab (U06).
+BRIDGE_FREE_PATTERNS: list[tuple[str, str]] = [
+    (r"^FightLab convention: no training", "no_training_desk_pal"),
+]
+BRIDGE_CODES = {code for _, _, code in BRIDGE_PATTERNS} | {code for _, code in BRIDGE_FREE_PATTERNS}
+
 # Motivos sin regla (el motor los marca como convención o los deja sin prefijo).
 # `^PAL ... ` va aquí porque el motor cita la regla entre paréntesis, no al principio.
 FREE_PATTERNS: list[tuple[str, str]] = [
@@ -113,8 +133,8 @@ INLINE_RULE_HEADINGS = {heading_of(energy.PAL_RULE)}
 
 PROTEIN_RE = re.compile(r"^(?P<per_kg>[\d.]+) g/kg/day$")
 
-_COMPILED = [(heading_of(rule), re.compile(pat), code) for rule, pat, code in RULE_PATTERNS]
-_FREE = [(re.compile(pat), code) for pat, code in FREE_PATTERNS]
+_COMPILED = [(heading_of(rule), re.compile(pat), code) for rule, pat, code in RULE_PATTERNS + BRIDGE_PATTERNS]
+_FREE = [(re.compile(pat), code) for pat, code in FREE_PATTERNS + BRIDGE_FREE_PATTERNS]
 
 
 def _convert(params: dict) -> dict:
@@ -124,11 +144,11 @@ def _convert(params: dict) -> dict:
             continue
         if name == "why":
             out[name] = "age" if value.startswith("aged") else "yes" if value.endswith("YES") else "unanswered"
-        elif name in ("pal", "per_kg", "weight_kg"):
+        elif name in ("pal", "per_kg", "weight_kg", "ffm_kg", "body_fat_pct"):
             out[name] = float(value)
         elif name in ("systolic", "diastolic"):
             out[name] = None if value == "?" else int(value)
-        elif name in ("area", "professional"):
+        elif name in ("area", "professional", "method"):
             out[name] = value
         else:
             out[name] = int(value.replace(",", ""))

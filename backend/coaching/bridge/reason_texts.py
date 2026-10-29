@@ -127,6 +127,23 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "no_weigh_ins": "no weigh-ins",
         "trend_insufficient": "need at least {min_points} weigh-ins covering {min_days} days",
+        # Motivos del puente de FightLab (no los produce el motor).
+        "rmr_ten_haaf": "ten Haaf weight-based equation, as there is no recent body composition",
+        "rmr_cunningham": (
+            "Cunningham equation from {ffm_kg_1f} kg of fat-free mass ({body_fat_pct_g}% body fat "
+            "by {method})"
+        ),
+        "body_fat_unreliable": (
+            "body fat from {method} is not accurate enough for an FFM equation, so Mifflin-St Jeor "
+            "is used"
+        ),
+        "body_fat_error_carries": (
+            "the body-fat measurement error carries into the RMR; use the same method each time"
+        ),
+        "no_training_desk_pal": (
+            "FightLab convention: no training until a clinician clears it, so the energy estimate "
+            "uses the desk activity level"
+        ),
     },
     "es": {
         "under_18": (
@@ -257,6 +274,22 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "no_weigh_ins": "sin pesajes",
         "trend_insufficient": "hacen falta al menos {min_points} pesajes repartidos en {min_days} días",
+        "rmr_ten_haaf": "ecuación de ten Haaf por peso, porque no hay una composición corporal reciente",
+        "rmr_cunningham": (
+            "ecuación de Cunningham con {ffm_kg_1f} kg de masa libre de grasa ({body_fat_pct_g} % de "
+            "grasa corporal, medida con {method})"
+        ),
+        "body_fat_unreliable": (
+            "la grasa corporal medida con {method} no es lo bastante precisa para una ecuación con "
+            "masa magra, así que se usa Mifflin-St Jeor"
+        ),
+        "body_fat_error_carries": (
+            "el error de la medida de grasa corporal pasa al RMR; usa siempre el mismo método"
+        ),
+        "no_training_desk_pal": (
+            "convención de FightLab: sin entrenar hasta que un clínico te dé el alta, así que la "
+            "estimación de energía usa el nivel de actividad sedentario (desk)"
+        ),
     },
 }
 
@@ -350,6 +383,11 @@ SEVERITY: dict[str, str] = {
     "hrmax_tanaka": "info",
     "no_weigh_ins": "info",
     "trend_insufficient": "info",
+    "rmr_ten_haaf": "info",
+    "rmr_cunningham": "info",
+    "body_fat_unreliable": "info",
+    "body_fat_error_carries": "info",
+    "no_training_desk_pal": "info",
 }
 DEFAULT_SEVERITY = "limit"
 
@@ -362,6 +400,15 @@ def _lang(lang: str | None) -> str:
 def _original_body(reason: Reason) -> str:
     text = reason.original_text
     return text.split('": ', 1)[1] if '": ' in text else text
+
+
+# Cómo se nombra el método de medida de la grasa corporal (`energy_athletes.BODY_FAT_METHODS`).
+METHODS = {
+    "en": {"dxa": "DXA", "bodpod": "BodPod", "bia_lab": "lab-grade BIA", "skinfolds": "skinfolds",
+           "smart_scale": "a smart scale", "other": "another method", "unknown": "an unknown method"},
+    "es": {"dxa": "DXA", "bodpod": "BodPod", "bia_lab": "BIA de laboratorio", "skinfolds": "pliegues cutáneos",
+           "smart_scale": "una báscula doméstica", "other": "otro método", "unknown": "un método desconocido"},
+}
 
 
 def _decimal(value: float, lang: str) -> str:
@@ -382,6 +429,13 @@ def _values(reason: Reason, lang: str) -> dict:
         params["pal_g"] = _decimal(params["pal"], lang)
     if "weight_kg" in params:
         params["weight_kg_0f"] = f"{params['weight_kg']:.0f}"
+    if "ffm_kg" in params:
+        ffm = f"{params['ffm_kg']:.1f}"
+        params["ffm_kg_1f"] = ffm.replace(".", ",") if lang == "es" else ffm
+    if "body_fat_pct" in params:
+        params["body_fat_pct_g"] = _decimal(params["body_fat_pct"], lang)
+    if "method" in params:
+        params["method"] = METHODS[lang].get(params["method"], params["method"])
     if "why" in params:
         params["why"] = WHY[lang][params["why"]].format(**params)
     if "systolic" in params or "diastolic" in params:

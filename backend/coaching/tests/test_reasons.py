@@ -241,3 +241,6 @@ def test_every_code_is_reachable_from_the_engine():
     expected = {code for _, _, code in reasons.RULE_PATTERNS} | {c for _, c in reasons.FREE_PATTERNS}
     expected.add("protein_per_kg")
     assert expected - seen == set()
+    # Los motivos del puente (U04, U06) no salen del motor: no pueden ser letra muerta, pero se
+    # comprueban en `test_energy_athletes.py` y `test_targets_api.py`.
+    assert not (reasons.BRIDGE_CODES & seen)
