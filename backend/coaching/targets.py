@@ -118,7 +118,7 @@ def targets_data(user, today: date, lang: str) -> dict:
             **base,
             "blocked": {"code": "no_calorie_targets", "reason_code": block.code},
             "goal": profile.goal, "kcal": None, "maintenance_kcal": None, "deficit_kcal": None, "in_deficit": False,
-            "clamped": False, "macros": None, "equation": None, "rules": {},
+            "deficit_blocked": True, "clamped": False, "macros": None, "equation": None, "rules": {},
             "reasons": reasons_data([block], lang),
         }
 
@@ -131,6 +131,8 @@ def targets_data(user, today: date, lang: str) -> dict:
     pal = energy.pal(calc)
     target = energy.calorie_target(calc, flags, today=today, tdee_kcal=choice.rmr_kcal * pal)
     in_deficit = target.deficit > 0
+    # Lo que decide si la UI ofrece "Perder": los mismos bloqueos que usa el motor para el déficit.
+    deficit_blocked = bool(energy.deficit_blockers(calc, flags, today)) or flags.hold_deficit
     m = macros.macro_targets(calc, target.kcal, in_deficit=in_deficit, today=today)
 
     reasons = _reasons(notes + choice.notes + target.notes + m.notes)
@@ -155,6 +157,7 @@ def targets_data(user, today: date, lang: str) -> dict:
         "maintenance_kcal": round(target.maintenance),
         "deficit_kcal": target.deficit,
         "in_deficit": in_deficit,
+        "deficit_blocked": deficit_blocked,
         "clamped": target.clamped,
         "macros": {
             "protein_g": round(m.protein_g, 2),

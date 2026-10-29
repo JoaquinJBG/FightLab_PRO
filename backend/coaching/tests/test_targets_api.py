@@ -117,8 +117,13 @@ def test_a_blocked_deficit_never_goes_below_maintenance(case):
     assert body["kcal"] >= body["maintenance_kcal"]
     assert body["deficit_kcal"] <= 0
     assert body["in_deficit"] is False
+    assert body["deficit_blocked"] is True
     # el motivo que lo bloquea sale con su regla y su texto
     assert any(r["severity"] in ("refer", "limit") and r["text"] for r in body["reasons"])
+
+
+def test_deficit_blocked_is_false_when_nothing_blocks_it():
+    assert get(make_user(profile={"goal": "fat_loss"})).data["deficit_blocked"] is False
 
 
 def test_blocked_deficit_reasons_come_with_rule_text_and_severity():
