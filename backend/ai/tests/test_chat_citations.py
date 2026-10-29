@@ -38,7 +38,14 @@ def auth_client(db, settings):
     client = APIClient()
     login = client.post("/api/v1/auth/login", {"email": "c@test.com", "password": "pw-strong-123"}, format="json")
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
+    client.user = user
     return client
+
+
+def set_language(client, lang):
+    profile = client.user.profile
+    profile.language = lang
+    profile.save()
 
 
 @pytest.fixture
@@ -70,22 +77,25 @@ def test_system_prompt_has_no_acwr_safe_zone_nor_unsourced_thresholds():
 
 @pytest.mark.django_db
 def test_prompt_is_in_english_and_carries_the_language_instruction(auth_client, create):
+    """El idioma del chat es el del perfil (`profile.language`), no el de la petición."""
+    set_language(auth_client, "en")
     create.return_value = reply(text_block("Ok."))
-    assert chat(auth_client, lang="en").status_code == 200
+    assert chat(auth_client, lang="es").status_code == 200
     system = create.call_args.kwargs["system"]
     assert "Reply in English" in system
     assert "Reply in Spanish" not in system
     create.reset_mock()
+    set_language(auth_client, "es")
     create.return_value = reply(text_block("Vale."))
-    chat(auth_client, lang="es")
+    chat(auth_client, lang="en")
     assert "Reply in Spanish" in create.call_args.kwargs["system"]
 
 
 @pytest.mark.django_db
-def test_unknown_language_falls_back_to_spanish(auth_client, create):
+def test_request_language_does_not_change_the_chat_language(auth_client, create):
     create.return_value = reply(text_block("Ok."))
     chat(auth_client, lang="fr")
-    assert "Reply in Spanish" in create.call_args.kwargs["system"]
+    assert "Reply in Spanish" in create.call_args.kwargs["system"]  # el del perfil, por defecto es
 
 
 @pytest.mark.django_db

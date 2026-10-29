@@ -1,7 +1,6 @@
 import json
 
 import anthropic
-from django.utils.translation import get_language
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -47,7 +46,9 @@ class CoachChatView(APIView):
             return Response({"detail": msg("chat_context_too_large")}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            reply = services.coach_chat(messages=messages, context=context, language=get_language())
+            reply = services.coach_chat(
+                messages=messages, context=context, language=request.user.profile.language
+            )
         except services.AIUnavailable:
             return Response({"detail": msg("ai_not_configured")}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         except services.AIBadResponse:

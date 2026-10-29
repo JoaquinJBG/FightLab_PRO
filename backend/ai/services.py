@@ -64,8 +64,7 @@ def _block_to_param(block) -> dict:
 def coach_chat(*, messages: list[dict], context: dict, language: str | None = None) -> CoachReply:
     """Chat del coach con el contexto real del atleta y herramientas de evidencia.
 
-    `language`: el idioma del usuario (hoy el de la petición, que fija `LocaleMiddleware`;
-    pasará a ser `profile.language` cuando llegue en la fase 3). Las citas `[[regla:clave]]`
+    `language`: el idioma del perfil del usuario (`profile.language`). Las citas `[[regla:clave]]`
     se validan aquí: las que no existen o no salieron en una herramienta se quitan.
     """
     client = _client(timeout=30.0)
