@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.messages import msg
+
 from . import selectors, services
 from .models import BiometricsLog, ProgressPhoto
 from .serializers import BiometricsSerializer, ProfileSerializer, ProgressPhotoSerializer
@@ -66,16 +68,16 @@ class PhotoListCreateView(APIView):
     def post(self, request):
         image = request.FILES.get("image")
         if image is None:
-            return Response({"detail": "Falta el archivo 'image'."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("image_missing")}, status=status.HTTP_400_BAD_REQUEST)
         if image.size > MAX_PHOTO_BYTES:
-            return Response({"detail": "La imagen supera los 8 MB."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("image_too_large")}, status=status.HTTP_400_BAD_REQUEST)
         # Valida el CONTENIDO (no solo la extensión): nada de archivos disfrazados
         try:
             from PIL import Image
 
             Image.open(image).verify()
         except Exception:
-            return Response({"detail": "El archivo no es una imagen válida."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("image_invalid")}, status=status.HTTP_400_BAD_REQUEST)
         image.seek(0)  # verify() consume el stream
         from django.utils import timezone
 

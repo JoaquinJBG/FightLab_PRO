@@ -6,6 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.messages import msg
+
 from . import services
 
 MAX_PHOTO_BYTES = 8 * 1024 * 1024  # 8 MB
@@ -28,7 +30,7 @@ class CoachChatView(APIView):
         messages = request.data.get("messages")
         context = request.data.get("context") or {}
         if not isinstance(messages, list) or not messages or len(messages) > MAX_MESSAGES:
-            return Response({"detail": "Formato de mensajes inválido."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("chat_bad_messages")}, status=status.HTTP_400_BAD_REQUEST)
         for m in messages:
             if (
                 not isinstance(m, dict)
@@ -36,21 +38,21 @@ class CoachChatView(APIView):
                 or not isinstance(m.get("content"), str)
                 or len(m["content"]) > MAX_MESSAGE_CHARS
             ):
-                return Response({"detail": "Formato de mensajes inválido."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"detail": msg("chat_bad_messages")}, status=status.HTTP_400_BAD_REQUEST)
         if not isinstance(context, dict):
-            return Response({"detail": "Contexto inválido."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("chat_bad_context")}, status=status.HTTP_400_BAD_REQUEST)
         context = {k: v for k, v in context.items() if k in CONTEXT_KEYS}
         if len(json.dumps(context)) > MAX_CONTEXT_CHARS:
-            return Response({"detail": "Contexto demasiado grande."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("chat_context_too_large")}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             reply = services.coach_chat(messages=messages, context=context)
         except services.AIUnavailable:
-            return Response({"detail": "IA no configurada."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            return Response({"detail": msg("ai_not_configured")}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         except services.AIBadResponse:
-            return Response({"detail": "La IA no devolvió una respuesta válida."}, status=status.HTTP_502_BAD_GATEWAY)
+            return Response({"detail": msg("ai_bad_chat_reply")}, status=status.HTTP_502_BAD_GATEWAY)
         except anthropic.APIError:
-            return Response({"detail": "Error del servicio de IA."}, status=status.HTTP_502_BAD_GATEWAY)
+            return Response({"detail": msg("ai_service_error")}, status=status.HTTP_502_BAD_GATEWAY)
         return Response({"reply": reply})
 
 
@@ -60,9 +62,9 @@ class FoodPhotoView(APIView):
     def post(self, request):
         image = request.FILES.get("image")
         if image is None:
-            return Response({"detail": "Falta el archivo 'image'."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("image_missing")}, status=status.HTTP_400_BAD_REQUEST)
         if image.size > MAX_PHOTO_BYTES:
-            return Response({"detail": "La imagen supera los 8 MB."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("image_too_large")}, status=status.HTTP_400_BAD_REQUEST)
         # Valida el CONTENIDO (no solo la extensión) y saca el formato real.
         # load() decodifica entera: caza imágenes truncadas (verify() es no-op en
         # algunos formatos) y activa el límite anti decompression-bomb de Pillow.
@@ -73,18 +75,18 @@ class FoodPhotoView(APIView):
                 img.load()
                 fmt = img.format
         except Exception:
-            return Response({"detail": "El archivo no es una imagen válida."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("image_invalid")}, status=status.HTTP_400_BAD_REQUEST)
         media_type = MEDIA_TYPES.get(fmt or "")
         if media_type is None:
-            return Response({"detail": "Formato no soportado: usa JPG, PNG o WebP."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("image_unsupported")}, status=status.HTTP_400_BAD_REQUEST)
         image.seek(0)  # verify() consume el stream
 
         try:
             result = services.food_photo_analyze(image_bytes=image.read(), media_type=media_type)
         except services.AIUnavailable:
-            return Response({"detail": "IA no configurada."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            return Response({"detail": msg("ai_not_configured")}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         except services.AIBadResponse:
-            return Response({"detail": "La IA no devolvió un análisis válido."}, status=status.HTTP_502_BAD_GATEWAY)
+            return Response({"detail": msg("ai_bad_analysis")}, status=status.HTTP_502_BAD_GATEWAY)
         except anthropic.APIError:
-            return Response({"detail": "Error del servicio de IA."}, status=status.HTTP_502_BAD_GATEWAY)
+            return Response({"detail": msg("ai_service_error")}, status=status.HTTP_502_BAD_GATEWAY)
         return Response(result)

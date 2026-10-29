@@ -4,6 +4,8 @@ from datetime import datetime, timedelta, timezone as dt_timezone
 from django.utils import timezone
 from rest_framework import serializers
 
+from core.messages import msg
+
 from .models import Activity
 
 MAX_DETAIL_CHARS = 8_192
@@ -40,9 +42,9 @@ class SyncItemSerializer(serializers.Serializer):
 
     def validate_started_at(self, value):
         if value < STARTED_AT_FLOOR:
-            raise serializers.ValidationError("Fecha demasiado antigua.")
+            raise serializers.ValidationError(msg("date_too_old"))
         if value > timezone.now() + FUTURE_SKEW:
-            raise serializers.ValidationError("Fecha en el futuro.")
+            raise serializers.ValidationError(msg("date_in_future"))
         return value
 
     def validate_detail(self, value):
@@ -50,5 +52,5 @@ class SyncItemSerializer(serializers.Serializer):
         # acentos): si no, un detail que pasa el pre-check del cliente puede
         # rechazarse aquí y perderse la sesión en silencio
         if value is not None and len(json.dumps(value, separators=(",", ":"), ensure_ascii=False)) > MAX_DETAIL_CHARS:
-            raise serializers.ValidationError("detail demasiado grande (máx 8 KB).")
+            raise serializers.ValidationError(msg("detail_too_large"))
         return value
