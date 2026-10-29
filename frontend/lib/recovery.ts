@@ -9,6 +9,8 @@ export type Recovery = {
   phrase: string;
   color: string;
   chips: string[];
+  // Los números detrás de los chips, para quien los muestre en otro idioma (Home).
+  signals: { rhrDelta: number | null; hrvPct: number | null };
 };
 
 const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
@@ -19,6 +21,8 @@ export function computeRecovery(logs: Biometrics[]): Recovery | null {
   const hrvs = logs.map((l) => l.hrv_ms).filter((v): v is number => v != null);
 
   const chips: string[] = [];
+  let rhrDelta: number | null = null;
+  let hrvPct: number | null = null;
   let good = 0;
   let bad = 0;
   let signals = 0;
@@ -26,6 +30,7 @@ export function computeRecovery(logs: Biometrics[]): Recovery | null {
   if (rhrs.length >= 4) {
     const base = mean(rhrs.slice(1, 31));
     const delta = Math.round((rhrs[0] - base) * 10) / 10;
+    rhrDelta = delta;
     signals++;
     chips.push(`FC reposo ${delta > 0 ? "+" : ""}${delta} vs tu media`);
     if (delta >= 5) bad++;
@@ -35,6 +40,7 @@ export function computeRecovery(logs: Biometrics[]): Recovery | null {
     const base = mean(hrvs.slice(1, 31));
     if (base > 0) {
       const pct = Math.round(((hrvs[0] - base) / base) * 100);
+      hrvPct = pct;
       signals++;
       chips.push(`HRV ${pct > 0 ? "+" : ""}${pct}% vs tu media`);
       if (pct <= -10) bad++;
@@ -50,6 +56,7 @@ export function computeRecovery(logs: Biometrics[]): Recovery | null {
       phrase: "Tus señales de recuperación están por debajo de tu media. Hoy: técnica ligera o descanso activo.",
       color: "#ffd25a",
       chips,
+      signals: { rhrDelta, hrvPct },
     };
   }
   if (good === signals) {
@@ -59,6 +66,7 @@ export function computeRecovery(logs: Biometrics[]): Recovery | null {
       phrase: "Recuperación por encima de tu media. Buen día para trabajo exigente.",
       color: "#43e8a0",
       chips,
+      signals: { rhrDelta, hrvPct },
     };
   }
   return {
@@ -67,5 +75,6 @@ export function computeRecovery(logs: Biometrics[]): Recovery | null {
     phrase: "Señales en torno a tu media. Entrena según tu plan.",
     color: "#45e9ff",
     chips,
+    signals: { rhrDelta, hrvPct },
   };
 }

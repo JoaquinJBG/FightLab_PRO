@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   FOODS,
   MEALS,
@@ -65,6 +66,8 @@ const PHOTO_PLATES: { name: string; items: Detected[] }[] = [
 type Mode = "recientes" | "buscar" | "rapido";
 
 function AddInner() {
+  const t = useTranslations("nutrition.add");
+  const tm = useTranslations("nutrition.meals");
   const router = useRouter();
   const qpMeal = useSearchParams().get("meal");
   const meal = MEALS.includes(qpMeal ?? "") ? (qpMeal as string) : "Comida";
@@ -116,7 +119,7 @@ function AddInner() {
     const kcal = toInt(qKcal);
     if (kcal <= 0 || saving) return;
     setSaving(true);
-    addItem({ meal, name: qName.trim() || "Comida rápida", grams: null, kcal, p: toInt(qP), c: toInt(qC), f: toInt(qF) });
+    addItem({ meal, name: qName.trim() || t("quick.defaultName"), grams: null, kcal, p: toInt(qP), c: toInt(qC), f: toInt(qF) });
     router.push("/nutrition");
   }
 
@@ -167,13 +170,13 @@ function AddInner() {
         return { ...d, base: d };
       });
       if (items.length === 0) {
-        setPhotoError(data.nota || "No he reconocido comida en la foto. Prueba con otra toma.");
+        setPhotoError(data.nota || t("photo.noFood"));
         return;
       }
-      setDetected({ name: data.plato || "Plato detectado", real: true, nota: data.nota ?? null, items });
+      setDetected({ name: data.plato || t("photo.detected"), real: true, nota: data.nota ?? null, items });
     } catch {
       if (ctrl.signal.aborted) return; // se salió de la vista: no tocar el estado
-      setPhotoError("No se pudo analizar la foto. Revisa la conexión e inténtalo de nuevo.");
+      setPhotoError(t("photo.failed"));
     } finally {
       if (!ctrl.signal.aborted) setAnalyzing(false);
     }
@@ -230,26 +233,26 @@ function AddInner() {
 
   return (
     <div className="pt-4">
-      <Link href="/nutrition" className="t-label text-muted">← Nutrición</Link>
-      <h1 className="t-display mt-2 text-2xl text-ink">Añadir a <span className="neon-text">{meal}</span></h1>
+      <Link href="/nutrition" className="t-label text-muted">{t("back")}</Link>
+      <h1 className="t-display mt-2 text-2xl text-ink">{t.rich("title", { meal: tm(meal), neon: (c) => <span className="neon-text">{c}</span> })}</h1>
 
       {/* Foto -> kcal */}
       <div className="glass neon-edge mt-4 p-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="t-label text-ink">Foto → kcal</p>
-            <p className="t-body text-xs text-muted">La IA detecta los alimentos del plato. Revisa y ajusta antes de añadir.</p>
+            <p className="t-label text-ink">{t("photo.title")}</p>
+            <p className="t-body text-xs text-muted">{t("photo.intro")}</p>
           </div>
-          <button onClick={takePhoto} disabled={analyzing} className="btn btn-tonal btn-sm shrink-0">📷 Hacer foto</button>
+          <button onClick={takePhoto} disabled={analyzing} className="btn btn-tonal btn-sm shrink-0">{t("photo.take")}</button>
           <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onPhoto} />
         </div>
-        {analyzing && <p className="pulse t-body mt-3 text-sm text-muted">Analizando la foto…</p>}
+        {analyzing && <p className="pulse t-body mt-3 text-sm text-muted">{t("photo.analyzing")}</p>}
         {photoError && !analyzing && <p className="t-body mt-3 text-sm text-warn">{photoError}</p>}
         {detected && !analyzing && (
           <div className="mt-3 border-t border-[rgba(150,190,255,0.1)] pt-3">
             <div className="flex items-center justify-between">
               <p className="t-title text-ink">{detected.name}</p>
-              <span className="badge badge-neon">{detected.real ? "IA real" : "IA simulada"}</span>
+              <span className="badge badge-neon">{detected.real ? t("photo.real") : t("photo.simulated")}</span>
             </div>
             {detected.nota && <p className="t-body mt-1 text-[11px] text-muted">{detected.nota}</p>}
             <div className="mt-2 flex flex-col gap-2">
@@ -257,27 +260,27 @@ function AddInner() {
                 <div key={`${it.name}-${i}`} className="flex items-center gap-2">
                   <div className="min-w-0 flex-1">
                     <p className="t-body text-sm text-ink">{it.name}</p>
-                    <p className="t-body text-[11px] text-muted">{it.kcal} kcal · P {it.p} · C {it.c} · G {it.f}</p>
+                    <p className="t-body text-[11px] text-muted">{t("macros", { kcal: it.kcal, p: it.p, c: it.c, f: it.f })}</p>
                   </div>
                   {it.grams !== null && (
                     <span className="flex items-center gap-1.5">
-                      <button onClick={() => setDetGrams(i, Math.max(10, (it.grams ?? 0) - 10))} aria-label={`Quitar 10 g de ${it.name}`}
+                      <button onClick={() => setDetGrams(i, Math.max(10, (it.grams ?? 0) - 10))} aria-label={t("photo.removeGrams", { name: it.name })}
                         className="flex h-7 w-7 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-ink active:scale-95">−</button>
                       <span className="t-body w-12 text-center text-xs text-ink">{it.grams} g</span>
-                      <button onClick={() => setDetGrams(i, Math.min(1000, (it.grams ?? 0) + 10))} aria-label={`Añadir 10 g de ${it.name}`}
+                      <button onClick={() => setDetGrams(i, Math.min(1000, (it.grams ?? 0) + 10))} aria-label={t("photo.addGrams", { name: it.name })}
                         className="flex h-7 w-7 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-ink active:scale-95">+</button>
                     </span>
                   )}
-                  <button onClick={() => removeDetected(i)} aria-label="Quitar" className="t-label shrink-0 px-1 text-muted hover:text-bad">✕</button>
+                  <button onClick={() => removeDetected(i)} aria-label={t("photo.remove")} className="t-label shrink-0 px-1 text-muted hover:text-bad">✕</button>
                 </div>
               ))}
             </div>
             {detected.items.length > 0 ? (
               <button onClick={addAllDetected} disabled={saving} className="btn btn-primary mt-3 w-full disabled:opacity-60">
-                Añadir todo · {detTotal} kcal
+                {t("photo.addAll", { kcal: detTotal })}
               </button>
             ) : (
-              <p className="t-body mt-3 text-center text-xs text-muted">Has quitado todos los alimentos. Haz otra foto.</p>
+              <p className="t-body mt-3 text-center text-xs text-muted">{t("photo.empty")}</p>
             )}
           </div>
         )}
@@ -287,7 +290,7 @@ function AddInner() {
       {yesterday.length > 0 && (
         <button onClick={copyYesterday} disabled={saving} className="glass mt-3 flex w-full items-center justify-between p-3.5 text-left disabled:opacity-60">
           <span>
-            <span className="t-label block text-ink">Copiar {meal.toLowerCase()} de ayer</span>
+            <span className="t-label block text-ink">{t("copyYesterday", { meal: tm(meal).toLowerCase() })}</span>
             <span className="t-body text-[11px] text-muted">
               {yesterday.map((i) => i.name).slice(0, 3).join(", ")}{yesterday.length > 3 ? "…" : ""} · {yesterday.reduce((a, i) => a + i.kcal, 0)} kcal
             </span>
@@ -298,9 +301,9 @@ function AddInner() {
 
       {/* selector de modo */}
       <div className="glass mt-4 grid grid-cols-3 gap-1 rounded-2xl p-1">
-        {segBtn("recientes", "Recientes")}
-        {segBtn("buscar", "Buscar")}
-        {segBtn("rapido", "Rápido")}
+        {segBtn("recientes", t("modes.recientes"))}
+        {segBtn("buscar", t("modes.buscar"))}
+        {segBtn("rapido", t("modes.rapido"))}
       </div>
 
       {/* ---- recientes ---- */}
@@ -308,7 +311,7 @@ function AddInner() {
         <div className="mt-3 flex flex-col gap-2">
           {recents.length === 0 ? (
             <div className="glass p-4">
-              <p className="t-body text-xs text-muted">Aún no hay recientes. Cuando añadas alimentos aparecerán aquí para repetirlos en un toque.</p>
+              <p className="t-body text-xs text-muted">{t("recent.empty")}</p>
             </div>
           ) : (
             recents.map((r) => (
@@ -316,7 +319,7 @@ function AddInner() {
                 className="glass flex items-center justify-between p-3.5 text-left">
                 <span className="min-w-0">
                   <span className="t-body block text-sm text-ink">{r.name}{r.grams ? ` · ${r.grams} g` : ""}</span>
-                  <span className="t-body text-[11px] text-muted">{r.kcal} kcal · P {r.p} · C {r.c} · G {r.f}</span>
+                  <span className="t-body text-[11px] text-muted">{t("macros", { kcal: r.kcal, p: r.p, c: r.c, f: r.f })}</span>
                 </span>
                 <span className={`shrink-0 text-lg ${addedFlash === r.name ? "text-good" : "text-neon"}`}>
                   {addedFlash === r.name ? "✓" : "+"}
@@ -325,7 +328,7 @@ function AddInner() {
             ))
           )}
           {recents.length > 0 && (
-            <Link href="/nutrition" className="btn btn-tonal mt-1 w-full">Hecho</Link>
+            <Link href="/nutrition" className="btn btn-tonal mt-1 w-full">{t("recent.done")}</Link>
           )}
         </div>
       )}
@@ -333,32 +336,32 @@ function AddInner() {
       {/* ---- buscar ---- */}
       {mode === "buscar" && (
         <div className="mt-3">
-          <input value={q} onChange={(e) => { setQ(e.target.value); setSel(null); }} placeholder="Pollo, arroz, avena…" className="field w-full px-4 py-3 text-sm" />
+          <input value={q} onChange={(e) => { setQ(e.target.value); setSel(null); }} placeholder={t("search.placeholder")} className="field w-full px-4 py-3 text-sm" />
           {!sel ? (
             <div className="mt-3 flex flex-col gap-2">
               {results.map((f) => (
                 <button key={f.name} onClick={() => { setSel(f); setGrams(100); }} className="glass flex items-center justify-between p-3.5 text-left">
                   <span className="t-body text-ink">{f.name}</span>
-                  <span className="t-body text-xs text-muted">{f.kcal} kcal/100g</span>
+                  <span className="t-body text-xs text-muted">{t("search.perHundred", { kcal: f.kcal })}</span>
                 </button>
               ))}
-              {results.length === 0 && <p className="t-body mt-2 text-xs text-muted">Sin resultados. Prueba otra búsqueda, el modo Rápido o la foto.</p>}
+              {results.length === 0 && <p className="t-body mt-2 text-xs text-muted">{t("search.none")}</p>}
             </div>
           ) : (
             <div className="glass mt-3 p-4">
               <p className="t-title text-ink">{sel.name}</p>
               <div className="mt-3 flex items-center justify-between">
-                <span className="t-label text-muted">Cantidad</span>
+                <span className="t-label text-muted">{t("search.amount")}</span>
                 <div className="flex items-center gap-3">
-                  <button onClick={() => setGrams((g) => Math.max(10, g - 10))} aria-label="Quitar 10 g" className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">−</button>
+                  <button onClick={() => setGrams((g) => Math.max(10, g - 10))} aria-label={t("search.less")} className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">−</button>
                   <span className="stat w-20 text-center text-lg text-ink">{grams} g</span>
-                  <button onClick={() => setGrams((g) => Math.min(1000, g + 10))} aria-label="Añadir 10 g" className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">+</button>
+                  <button onClick={() => setGrams((g) => Math.min(1000, g + 10))} aria-label={t("search.more")} className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">+</button>
                 </div>
               </div>
-              <p className="t-body mt-3 text-center text-sm text-neon">{scaled?.kcal} kcal · P {scaled?.p} · C {scaled?.c} · G {scaled?.f}</p>
+              <p className="t-body mt-3 text-center text-sm text-neon">{scaled && t("macros", { kcal: scaled.kcal, p: scaled.p, c: scaled.c, f: scaled.f })}</p>
               <div className="mt-3 flex gap-2">
-                <button onClick={() => setSel(null)} className="btn btn-outline btn-sm flex-1">Volver</button>
-                <button onClick={addFood} disabled={saving} className="btn btn-primary btn-sm flex-1 disabled:opacity-60">Añadir a {meal}</button>
+                <button onClick={() => setSel(null)} className="btn btn-outline btn-sm flex-1">{t("search.back")}</button>
+                <button onClick={addFood} disabled={saving} className="btn btn-primary btn-sm flex-1 disabled:opacity-60">{t("addTo", { meal: tm(meal) })}</button>
               </div>
             </div>
           )}
@@ -368,14 +371,14 @@ function AddInner() {
       {/* ---- rápido ---- */}
       {mode === "rapido" && (
         <div className="glass mt-3 flex flex-col gap-3 p-4">
-          <p className="t-body text-xs text-muted">¿Sabes las kcal pero no quieres buscar? Apúntalas directas.</p>
-          <input value={qName} onChange={(e) => setQName(e.target.value)} placeholder="Nombre (opcional)" className="field px-4 py-3 text-sm" />
+          <p className="t-body text-xs text-muted">{t("quick.intro")}</p>
+          <input value={qName} onChange={(e) => setQName(e.target.value)} placeholder={t("quick.name")} className="field px-4 py-3 text-sm" />
           <label className="flex items-center justify-between gap-3">
-            <span className="t-label text-ink">Kcal *</span>
+            <span className="t-label text-ink">{t("quick.kcal")}</span>
             <input value={qKcal} onChange={(e) => setQKcal(e.target.value.replace(/\D/g, "").slice(0, 5))} inputMode="numeric" placeholder="0" className="field w-28 px-3 py-2.5 text-right text-sm" />
           </label>
           <div className="grid grid-cols-3 gap-2">
-            {([["P (g)", qP, setQP], ["C (g)", qC, setQC], ["G (g)", qF, setQF]] as const).map(([label, val, set]) => (
+            {([[t("quick.p"), qP, setQP], [t("quick.c"), qC, setQC], [t("quick.f"), qF, setQF]] as const).map(([label, val, set]) => (
               <label key={label} className="flex flex-col gap-1">
                 <span className="t-label text-muted">{label}</span>
                 <input value={val} onChange={(e) => set(e.target.value.replace(/\D/g, "").slice(0, 4))} inputMode="numeric" placeholder="—" className="field px-3 py-2 text-center text-sm" />
@@ -383,7 +386,7 @@ function AddInner() {
             ))}
           </div>
           <button onClick={addQuick} disabled={toInt(qKcal) <= 0 || saving} className="btn btn-primary mt-1 disabled:opacity-60">
-            Añadir a {meal}
+            {t("addTo", { meal: tm(meal) })}
           </button>
         </div>
       )}
@@ -391,9 +394,14 @@ function AddInner() {
   );
 }
 
+function AddFallback() {
+  const t = useTranslations("common");
+  return <div className="pt-6 text-center"><p className="t-body text-muted">{t("loading")}</p></div>;
+}
+
 export default function AddFoodPage() {
   return (
-    <Suspense fallback={<div className="pt-6 text-center"><p className="t-body text-muted">Cargando…</p></div>}>
+    <Suspense fallback={<AddFallback />}>
       <AddInner />
     </Suspense>
   );

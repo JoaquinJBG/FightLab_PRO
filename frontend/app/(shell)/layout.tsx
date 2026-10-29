@@ -1,5 +1,6 @@
 import { TabBar } from "@/components/tab-bar";
 import { OnboardingGate } from "@/components/onboarding-gate";
+import { WeighSync } from "@/components/weigh-sync";
 
 export default function ShellLayout({
   children,
@@ -11,6 +12,7 @@ export default function ShellLayout({
       <main className="safe-top flex-1 px-4 pb-28">
         <OnboardingGate>{children}</OnboardingGate>
       </main>
+      <WeighSync />
       <TabBar />
     </div>
   );

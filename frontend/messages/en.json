@@ -303,5 +303,265 @@
       "intro": "This is what FightLab will keep in mind from what you told us.",
       "start": "Start"
     }
+  },
+  "nutrition": {
+    "title": "Nutrition",
+    "today": "Today",
+    "ofTarget": "/ {target} kcal",
+    "kcalUnit": "kcal",
+    "remaining": "left",
+    "protein": "Protein",
+    "carbs": "Carbs",
+    "fat": "Fat",
+    "gramsOf": "{value}/{target} g",
+    "gramsOnly": "{value} g",
+    "fibreLine": "Fibre: at least {grams} g a day",
+    "goal": {
+      "perder": "Lose",
+      "mantener": "Maintain",
+      "ganar": "Gain"
+    },
+    "goalNote": "Targets calculated by the coach engine from your profile: weight, height, age, the sex used for the equations and activity level.",
+    "meals": {
+      "Desayuno": "Breakfast",
+      "Comida": "Lunch",
+      "Cena": "Dinner",
+      "Snack": "Snack"
+    },
+    "addTo": "Add to {meal}",
+    "delete": "Delete {name}",
+    "confirmDelete": "Delete?",
+    "water": {
+      "title": "Water 💧",
+      "line": "{liters} L · goal ~2 L",
+      "remove": "Remove a glass",
+      "add": "Add a glass"
+    },
+    "staleWeight": "Your last weight is {days} days old. Update it to refine your targets.",
+    "staleWeightCta": "Log weight",
+    "weigh": {
+      "title": "Weigh-in",
+      "setup": "Set your goal weight and date",
+      "goalLine": "Goal {target} kg · {current} kg now",
+      "goalOnly": "Goal {target} kg",
+      "countdown": "{days, plural, =0 {Weigh-in today} one {Weigh-in in # day} other {Weigh-in in # days}}"
+    },
+    "targets": {
+      "loading": "Calculating your targets…",
+      "error": "Your targets could not be calculated. Try again later.",
+      "missingWeight": "We need your weight to calculate your targets.",
+      "missingWeightCta": "Log weight",
+      "missingProfile": "Some of your profile data is missing to calculate your targets.",
+      "missingProfileCta": "Complete your profile"
+    },
+    "noSex": {
+      "title": "No calorie targets for now",
+      "body": "Energy-expenditure equations only exist for two sexes, female and male. Until you choose which ones to use we cannot give you calorie or macro targets; the rest of the app works the same and you can choose whenever you like.",
+      "female": "Female equations",
+      "male": "Male equations",
+      "error": "Could not save. Try again."
+    },
+    "details": {
+      "title": "How they are calculated",
+      "maintenance": "Estimated maintenance: {kcal} kcal",
+      "deficit": "Deficit of {kcal} kcal below maintenance",
+      "surplus": "Surplus of {kcal} kcal above maintenance",
+      "atMaintenance": "Target at maintenance",
+      "equation": "Resting energy equation: {name}",
+      "equations": {
+        "mifflin_st_jeor": "Mifflin-St Jeor",
+        "cunningham": "Cunningham (fat-free mass)",
+        "ten_haaf": "ten Haaf (athletes)"
+      },
+      "ffm": "{kg} kg of fat-free mass",
+      "pal": "Activity level (PAL): {pal}",
+      "protein": "Protein: {perKg} g per kg of body weight",
+      "fatMin": "Minimum fat: {g} g",
+      "rules": "Rules they rest on",
+      "engine": "Coach engine {sha}",
+      "checked": "evidence checked on {date}"
+    },
+    "weighIn": {
+      "back": "← Nutrition",
+      "title": "Weigh-in",
+      "loading": "Loading…",
+      "loadError": "Your weigh-in could not be loaded.",
+      "blocked": {
+        "title": "No weigh-in for now",
+        "body": "With the safety notices you have, FightLab shows no weigh-in, countdown or weight class. It is there to look after you: what matters now is what your professional tells you."
+      },
+      "daysLeft": "days to weigh-in",
+      "current": "current (kg)",
+      "goal": "goal (kg)",
+      "toGo": "to lose",
+      "needWeight": "Log your weight in Biometrics to see your progress.",
+      "deficitNote": "With your safety notices we do not show the distance to your goal weight and a goal below your current weight cannot be set.",
+      "updateTitle": "Update weigh-in",
+      "configureTitle": "Set up weigh-in",
+      "goalWeight": "Goal weight",
+      "lessGoal": "Lower the goal weight by 0.5 kg",
+      "moreGoal": "Raise the goal weight by 0.5 kg",
+      "kg": "{kg} kg",
+      "daysUntil": "Days to weigh-in",
+      "days": "{days} d",
+      "lessDays": "One day less",
+      "moreDays": "One day more",
+      "save": "Save weigh-in",
+      "update": "Update",
+      "clear": "Remove weigh-in",
+      "errors": {
+        "deficit_blocked": "With your safety notices a goal weight below your current weight cannot be set.",
+        "weight_targets_blocked": "With your safety notices no weigh-in data is saved.",
+        "generic": "The weigh-in could not be saved. Try again."
+      },
+      "footer": "Basic weight cut (goal + countdown). No aggressive fluid protocols."
+    },
+    "add": {
+      "back": "← Nutrition",
+      "title": "Add to <neon>{meal}</neon>",
+      "addTo": "Add to {meal}",
+      "macros": "{kcal} kcal · P {p} · C {c} · F {f}",
+      "copyYesterday": "Copy yesterday's {meal}",
+      "photo": {
+        "title": "Photo → kcal",
+        "intro": "The AI detects the foods on the plate. Review and adjust before adding.",
+        "take": "📷 Take photo",
+        "analyzing": "Analysing the photo…",
+        "real": "Real AI",
+        "simulated": "Simulated AI",
+        "removeGrams": "Remove 10 g of {name}",
+        "addGrams": "Add 10 g of {name}",
+        "remove": "Remove",
+        "addAll": "Add all · {kcal} kcal",
+        "empty": "You removed every food. Take another photo.",
+        "noFood": "I did not recognise any food in the photo. Try another shot.",
+        "failed": "The photo could not be analysed. Check your connection and try again.",
+        "detected": "Detected dish"
+      },
+      "modes": {
+        "recientes": "Recent",
+        "buscar": "Search",
+        "rapido": "Quick"
+      },
+      "recent": {
+        "empty": "No recent foods yet. Once you add foods they will show up here so you can repeat them in one tap.",
+        "done": "Done"
+      },
+      "search": {
+        "placeholder": "Chicken, rice, oats…",
+        "perHundred": "{kcal} kcal/100g",
+        "none": "No results. Try another search, Quick mode or the photo.",
+        "amount": "Amount",
+        "less": "Remove 10 g",
+        "more": "Add 10 g",
+        "back": "Back"
+      },
+      "quick": {
+        "intro": "Know the kcal but do not want to search? Enter them directly.",
+        "name": "Name (optional)",
+        "kcal": "Kcal *",
+        "p": "P (g)",
+        "c": "C (g)",
+        "f": "F (g)",
+        "defaultName": "Quick food"
+      }
+    }
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening",
+      "hello": "Hello"
+    },
+    "athlete": "athlete",
+    "profileAria": "Profile",
+    "state": {
+      "eyebrowRecovery": "Today's status · based on your recovery",
+      "eyebrow": "Today's status",
+      "noTraining": "No training until a medical review",
+      "noTrainingBody": "From what you have told us, today is not a training day. You can keep logging what you do: nothing is deleted.",
+      "activate": "Turn on your readiness",
+      "activateBody": "Log your resting HR and HRV for a few days and every morning I will tell you how to come in to train.",
+      "addMeasures": "Add measurements"
+    },
+    "recovery": {
+      "cuidado": {
+        "label": "Take it easy",
+        "phrase": "Your recovery signals are below your average. Today: light technique or active rest."
+      },
+      "listo": {
+        "label": "Ready to train",
+        "phrase": "Recovery above your average. A good day for demanding work."
+      },
+      "normal": {
+        "label": "Normal day",
+        "phrase": "Signals around your average. Train according to your plan."
+      },
+      "chipRhr": "Resting HR {value} vs your average",
+      "chipHrv": "HRV {value}% vs your average"
+    },
+    "today": {
+      "done": "Today's training done ✓",
+      "sessions": "{count, plural, one {# session logged} other {# sessions logged}} · good work",
+      "focus": "Today: <neon>{focus}</neon>",
+      "fromCalendar": "From your gym calendar",
+      "restDay": "Today: scheduled rest",
+      "restBody": "Gentle mobility and recover",
+      "nothing": "Nothing planned for today",
+      "nothingBody": "Log a session or plan your week",
+      "logOnly": "You can keep logging your training",
+      "logOnlyBody": "No plan or load suggestions until a doctor reviews it"
+    },
+    "weightReminder": {
+      "title": "Shall we log your weight?",
+      "body": "It has been {days} days since your last weight · reminder every 2 weeks."
+    },
+    "weight": {
+      "label": "Weight · {when}",
+      "today": "today",
+      "yesterday": "yesterday",
+      "daysAgo": "{days} days ago",
+      "kg": "kg",
+      "toGoal": "<neon>{kg} kg</neon> from your goal ({target} kg)",
+      "reached": "Weight goal reached ✓ ({target} kg)",
+      "history": "See history and trend →",
+      "emptyTitle": "No measurements yet",
+      "emptyBody": "Log your first measurement to start seeing your progress.",
+      "emptyCta": "Log measurement"
+    },
+    "metrics": {
+      "rhr": "Resting HR",
+      "bpm": "bpm",
+      "hrv": "HRV",
+      "ms": "ms",
+      "fat": "% Fat",
+      "vsAvg": "{delta} vs your average",
+      "activateTitle": "Turn on your recovery metrics",
+      "activateBody": "Add resting HR and HRV to see your daily status and trends."
+    },
+    "week": {
+      "title": "Your week",
+      "sub": "measurement or training",
+      "mon": "M",
+      "tue": "T",
+      "wed": "W",
+      "thu": "T",
+      "fri": "F",
+      "sat": "S",
+      "sun": "S"
+    },
+    "load": {
+      "title": "Training load (ACWR)",
+      "soon": "It will turn on once you log sessions with RPE",
+      "week": "Week",
+      "au": "AU",
+      "acwr": "ACWR",
+      "provisional": "*Provisional ACWR until 4 weeks of history build up"
+    },
+    "cta": {
+      "update": "Update biometrics",
+      "register": "Log biometrics"
+    }
   }
 }

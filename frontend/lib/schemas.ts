@@ -168,3 +168,94 @@ export const injury = z.object({
   origin: z.string(),
 });
 export type Injury = z.infer<typeof injury>;
+
+// --- Objetivos de energía, macros, zonas y pesaje (coach, fase 4) ---
+export const ruleRef = z.object({
+  key: z.string(),
+  grade: z.string().nullable(),
+  title: z.string(),
+});
+export type RuleRef = z.infer<typeof ruleRef>;
+
+// Como `safetyReason`, más `info`: un motivo que solo explica de dónde sale un número.
+export const coachReason = z.object({
+  code: z.string(),
+  rule_key: z.string().nullable(),
+  grade: z.string().nullable(),
+  params: z.record(z.string(), z.unknown()),
+  text: z.string(),
+  professional: z.string().nullable(),
+  severity: z.enum(["stop", "refer", "limit", "info"]),
+});
+export type CoachReason = z.infer<typeof coachReason>;
+
+export const EQUATIONS = ["mifflin_st_jeor", "cunningham", "ten_haaf"] as const;
+
+export const targets = z.object({
+  blocked: z.object({ code: z.string(), reason_code: z.string() }).nullable(),
+  goal: z.string().nullable(),
+  kcal: z.number().nullable(),
+  maintenance_kcal: z.number().nullable(),
+  deficit_kcal: z.number().nullable(),
+  in_deficit: z.boolean(),
+  deficit_blocked: z.boolean(),
+  clamped: z.boolean(),
+  macros: z
+    .object({
+      protein_g: z.number(),
+      fat_g: z.number(),
+      fat_min_g: z.number(),
+      carbs_g: z.number(),
+      fibre_g: z.number(),
+      protein_g_per_kg: z.number(),
+    })
+    .nullable(),
+  equation: z
+    .object({
+      code: z.enum(EQUATIONS),
+      rmr_kcal: z.number(),
+      ffm_kg: z.number().nullable(),
+      pal: z.number(),
+      activity_level: z.string().nullable(),
+      rule_key: z.string(),
+    })
+    .nullable(),
+  rules: z.record(z.string(), z.array(ruleRef)),
+  reasons: z.array(coachReason),
+  weight: z.object({ kg: z.number(), date: z.string(), stale_days: z.number() }).nullable(),
+  engine: z.object({ sha: z.string(), knowledge_checked_on: z.string().nullable() }),
+});
+export type Targets = z.infer<typeof targets>;
+
+export const zones = z.object({
+  method: z.string(),
+  zones: z.array(
+    z.object({
+      name: z.enum(["light", "moderate", "vigorous"]),
+      rpe: z.tuple([z.number(), z.number()]),
+      talk_test: z.string(),
+      bpm: z.tuple([z.number(), z.number()]).nullable(),
+    }),
+  ),
+  hr_max: z.number().nullable(),
+  hr_max_source: z.string().nullable(),
+  hr_rest: z.number().nullable(),
+  hr_rest_date: z.string().nullable(),
+  rules: z.array(ruleRef),
+  reasons: z.array(coachReason),
+});
+export type Zones = z.infer<typeof zones>;
+
+export const weighIn = z.object({
+  blocked: z.boolean(),
+  deficit_blocked: z.boolean(),
+  reasons: z.array(coachReason),
+  goal_weight_kg: z.number().nullable(),
+  goal_date: z.string().nullable(),
+  weigh_in_at: z.string().nullable(),
+  weight_class: z.string().nullable(),
+  days_left: z.number().nullable(),
+  current_kg: z.number().nullable(),
+  to_go_kg: z.number().nullable(),
+});
+export type WeighIn = z.infer<typeof weighIn>;

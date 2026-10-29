@@ -13,10 +13,9 @@ export type Item = {
 
 export const MEALS = ["Desayuno", "Comida", "Cena", "Snack"];
 
+// Los valores de siempre del selector de la pantalla de Nutrición. Los objetivos ya no se
+// calculan aquí: salen de `GET /coach/targets` (fase 4).
 export type Goal = "perder" | "mantener" | "ganar";
-export const GOAL_LABEL: Record<Goal, string> = { perder: "Perder", mantener: "Mantener", ganar: "Ganar" };
-
-export type Macros = { kcal: number; p: number; c: number; f: number };
 
 // Alimentos de ejemplo, valores por 100 g
 export const FOODS: { name: string; kcal: number; p: number; c: number; f: number }[] = [
@@ -45,16 +44,6 @@ export function scale(food: { kcal: number; p: number; c: number; f: number }, g
     c: Math.round(food.c * k),
     f: Math.round(food.f * k),
   };
-}
-
-export function targets(weightKg: number, heightCm: number, age: number, gender: string | null, goal: Goal): Macros {
-  const bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + (gender === "FEMALE" ? -161 : 5);
-  const tdee = bmr * 1.55;
-  const kcal = Math.round(goal === "perder" ? tdee - 500 : goal === "ganar" ? tdee + 300 : tdee);
-  const p = Math.round(weightKg * 2);
-  const f = Math.round((kcal * 0.25) / 9);
-  const c = Math.max(0, Math.round((kcal - p * 4 - f * 9) / 4));
-  return { kcal, p, c, f };
 }
 
 function dayKeyFor(d: Date) {

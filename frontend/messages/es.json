@@ -303,5 +303,265 @@
       "intro": "Esto es lo que FightLab tendrá en cuenta con lo que nos has contado.",
       "start": "Empezar"
     }
+  },
+  "nutrition": {
+    "title": "Nutrición",
+    "today": "Hoy",
+    "ofTarget": "/ {target} kcal",
+    "kcalUnit": "kcal",
+    "remaining": "restantes",
+    "protein": "Proteína",
+    "carbs": "Carbos",
+    "fat": "Grasa",
+    "gramsOf": "{value}/{target} g",
+    "gramsOnly": "{value} g",
+    "fibreLine": "Fibra: al menos {grams} g al día",
+    "goal": {
+      "perder": "Perder",
+      "mantener": "Mantener",
+      "ganar": "Ganar"
+    },
+    "goalNote": "Objetivos calculados por el motor del coach con tu perfil: peso, altura, edad, sexo para las ecuaciones y nivel de actividad.",
+    "meals": {
+      "Desayuno": "Desayuno",
+      "Comida": "Comida",
+      "Cena": "Cena",
+      "Snack": "Snack"
+    },
+    "addTo": "Añadir a {meal}",
+    "delete": "Borrar {name}",
+    "confirmDelete": "¿Borrar?",
+    "water": {
+      "title": "Agua 💧",
+      "line": "{liters} L · objetivo ~2 L",
+      "remove": "Quitar un vaso",
+      "add": "Añadir un vaso"
+    },
+    "staleWeight": "Tu último peso es de hace {days} días. Actualízalo para afinar los objetivos.",
+    "staleWeightCta": "Registrar peso",
+    "weigh": {
+      "title": "Pesaje",
+      "setup": "Configura tu peso objetivo y fecha",
+      "goalLine": "Objetivo {target} kg · {current} kg ahora",
+      "goalOnly": "Objetivo {target} kg",
+      "countdown": "{days, plural, =0 {Pesaje hoy} one {Pesaje en # día} other {Pesaje en # días}}"
+    },
+    "targets": {
+      "loading": "Calculando tus objetivos…",
+      "error": "No se pudieron calcular tus objetivos. Inténtalo de nuevo más tarde.",
+      "missingWeight": "Para calcular tus objetivos necesitamos tu peso.",
+      "missingWeightCta": "Registrar peso",
+      "missingProfile": "Falta algún dato de tu perfil para calcular tus objetivos.",
+      "missingProfileCta": "Completar el perfil"
+    },
+    "noSex": {
+      "title": "Sin objetivos de calorías por ahora",
+      "body": "Las ecuaciones de gasto energético solo existen para dos sexos, femenino y masculino. Hasta que elijas cuáles usar no podemos darte objetivos de calorías ni de macros; el resto de la app funciona igual y puedes elegirlo cuando quieras.",
+      "female": "Ecuaciones femeninas",
+      "male": "Ecuaciones masculinas",
+      "error": "No se pudo guardar. Inténtalo de nuevo."
+    },
+    "details": {
+      "title": "Cómo se calculan",
+      "maintenance": "Mantenimiento estimado: {kcal} kcal",
+      "deficit": "Déficit de {kcal} kcal sobre el mantenimiento",
+      "surplus": "Superávit de {kcal} kcal sobre el mantenimiento",
+      "atMaintenance": "Objetivo en el mantenimiento",
+      "equation": "Ecuación de energía en reposo: {name}",
+      "equations": {
+        "mifflin_st_jeor": "Mifflin-St Jeor",
+        "cunningham": "Cunningham (masa libre de grasa)",
+        "ten_haaf": "ten Haaf (atletas)"
+      },
+      "ffm": "{kg} kg de masa libre de grasa",
+      "pal": "Nivel de actividad (PAL): {pal}",
+      "protein": "Proteína: {perKg} g por kg de peso",
+      "fatMin": "Grasa mínima: {g} g",
+      "rules": "Reglas en las que se apoya",
+      "engine": "Motor del coach {sha}",
+      "checked": "evidencia revisada el {date}"
+    },
+    "weighIn": {
+      "back": "← Nutrición",
+      "title": "Pesaje",
+      "loading": "Cargando…",
+      "loadError": "No se pudo cargar tu pesaje.",
+      "blocked": {
+        "title": "Sin pesaje por ahora",
+        "body": "Con los avisos de seguridad que tienes, FightLab no muestra pesaje, cuenta atrás ni categoría de peso. Es para cuidarte: lo importante ahora es lo que te indique tu profesional."
+      },
+      "daysLeft": "días al pesaje",
+      "current": "actual (kg)",
+      "goal": "objetivo (kg)",
+      "toGo": "por bajar",
+      "needWeight": "Registra tu peso en Biometría para ver el progreso.",
+      "deficitNote": "Con tus avisos de seguridad no mostramos la distancia a tu peso objetivo y no se puede fijar uno por debajo de tu peso actual.",
+      "updateTitle": "Actualizar pesaje",
+      "configureTitle": "Configurar pesaje",
+      "goalWeight": "Peso objetivo",
+      "lessGoal": "Bajar el peso objetivo 0,5 kg",
+      "moreGoal": "Subir el peso objetivo 0,5 kg",
+      "kg": "{kg} kg",
+      "daysUntil": "Días hasta el pesaje",
+      "days": "{days} d",
+      "lessDays": "Un día menos",
+      "moreDays": "Un día más",
+      "save": "Guardar pesaje",
+      "update": "Actualizar",
+      "clear": "Quitar pesaje",
+      "errors": {
+        "deficit_blocked": "Con tus avisos de seguridad no se puede fijar un peso objetivo por debajo de tu peso actual.",
+        "weight_targets_blocked": "Con tus avisos de seguridad no se guardan datos de pesaje.",
+        "generic": "No se pudo guardar el pesaje. Inténtalo de nuevo."
+      },
+      "footer": "Corte de peso básico (objetivo + countdown). Sin protocolos agresivos de fluidos."
+    },
+    "add": {
+      "back": "← Nutrición",
+      "title": "Añadir a <neon>{meal}</neon>",
+      "addTo": "Añadir a {meal}",
+      "macros": "{kcal} kcal · P {p} · C {c} · G {f}",
+      "copyYesterday": "Copiar {meal} de ayer",
+      "photo": {
+        "title": "Foto → kcal",
+        "intro": "La IA detecta los alimentos del plato. Revisa y ajusta antes de añadir.",
+        "take": "📷 Hacer foto",
+        "analyzing": "Analizando la foto…",
+        "real": "IA real",
+        "simulated": "IA simulada",
+        "removeGrams": "Quitar 10 g de {name}",
+        "addGrams": "Añadir 10 g de {name}",
+        "remove": "Quitar",
+        "addAll": "Añadir todo · {kcal} kcal",
+        "empty": "Has quitado todos los alimentos. Haz otra foto.",
+        "noFood": "No he reconocido comida en la foto. Prueba con otra toma.",
+        "failed": "No se pudo analizar la foto. Revisa la conexión e inténtalo de nuevo.",
+        "detected": "Plato detectado"
+      },
+      "modes": {
+        "recientes": "Recientes",
+        "buscar": "Buscar",
+        "rapido": "Rápido"
+      },
+      "recent": {
+        "empty": "Aún no hay recientes. Cuando añadas alimentos aparecerán aquí para repetirlos en un toque.",
+        "done": "Hecho"
+      },
+      "search": {
+        "placeholder": "Pollo, arroz, avena…",
+        "perHundred": "{kcal} kcal/100g",
+        "none": "Sin resultados. Prueba otra búsqueda, el modo Rápido o la foto.",
+        "amount": "Cantidad",
+        "less": "Quitar 10 g",
+        "more": "Añadir 10 g",
+        "back": "Volver"
+      },
+      "quick": {
+        "intro": "¿Sabes las kcal pero no quieres buscar? Apúntalas directas.",
+        "name": "Nombre (opcional)",
+        "kcal": "Kcal *",
+        "p": "P (g)",
+        "c": "C (g)",
+        "f": "G (g)",
+        "defaultName": "Comida rápida"
+      }
+    }
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Buenos días",
+      "afternoon": "Buenas tardes",
+      "evening": "Buenas noches",
+      "hello": "Hola"
+    },
+    "athlete": "atleta",
+    "profileAria": "Perfil",
+    "state": {
+      "eyebrowRecovery": "Estado de hoy · según tu recuperación",
+      "eyebrow": "Estado de hoy",
+      "noTraining": "Sin entrenar hasta revisión médica",
+      "noTrainingBody": "Con lo que nos has contado, hoy no toca entrenar. Puedes seguir registrando lo que hagas: no se borra nada.",
+      "activate": "Activa tu readiness",
+      "activateBody": "Registra FC en reposo y HRV durante unos días y te diré cada mañana cómo venir a entrenar.",
+      "addMeasures": "Añadir medidas"
+    },
+    "recovery": {
+      "cuidado": {
+        "label": "Tómatelo suave",
+        "phrase": "Tus señales de recuperación están por debajo de tu media. Hoy: técnica ligera o descanso activo."
+      },
+      "listo": {
+        "label": "Listo para entrenar",
+        "phrase": "Recuperación por encima de tu media. Buen día para trabajo exigente."
+      },
+      "normal": {
+        "label": "Día normal",
+        "phrase": "Señales en torno a tu media. Entrena según tu plan."
+      },
+      "chipRhr": "FC reposo {value} vs tu media",
+      "chipHrv": "HRV {value}% vs tu media"
+    },
+    "today": {
+      "done": "Entreno de hoy hecho ✓",
+      "sessions": "{count, plural, one {# sesión registrada} other {# sesiones registradas}} · buen trabajo",
+      "focus": "Hoy toca: <neon>{focus}</neon>",
+      "fromCalendar": "De tu calendario de gimnasio",
+      "restDay": "Hoy: descanso programado",
+      "restBody": "Movilidad suave y a recuperar",
+      "nothing": "Nada planificado para hoy",
+      "nothingBody": "Registra un entreno o planifica tu semana",
+      "logOnly": "Puedes seguir registrando tus entrenos",
+      "logOnlyBody": "Sin plan ni sugerencias de carga hasta que lo revise un médico"
+    },
+    "weightReminder": {
+      "title": "¿Apuntamos tu peso?",
+      "body": "Hace {days} días de tu último peso · recordatorio cada 2 semanas."
+    },
+    "weight": {
+      "label": "Peso · {when}",
+      "today": "hoy",
+      "yesterday": "ayer",
+      "daysAgo": "hace {days} días",
+      "kg": "kg",
+      "toGoal": "A <neon>{kg} kg</neon> de tu objetivo ({target} kg)",
+      "reached": "Objetivo de peso alcanzado ✓ ({target} kg)",
+      "history": "Ver historial y tendencia →",
+      "emptyTitle": "Aún no hay mediciones",
+      "emptyBody": "Registra tu primera medición para empezar a ver tu evolución.",
+      "emptyCta": "Registrar medición"
+    },
+    "metrics": {
+      "rhr": "FC reposo",
+      "bpm": "bpm",
+      "hrv": "HRV",
+      "ms": "ms",
+      "fat": "% Grasa",
+      "vsAvg": "{delta} vs tu media",
+      "activateTitle": "Activa tus métricas de recuperación",
+      "activateBody": "Añade FC en reposo y HRV para ver tu estado diario y tendencias."
+    },
+    "week": {
+      "title": "Tu semana",
+      "sub": "medición o entreno",
+      "mon": "L",
+      "tue": "M",
+      "wed": "X",
+      "thu": "J",
+      "fri": "V",
+      "sat": "S",
+      "sun": "D"
+    },
+    "load": {
+      "title": "Carga de entreno (ACWR)",
+      "soon": "Se activará cuando registres sesiones con RPE",
+      "week": "Semana",
+      "au": "AU",
+      "acwr": "ACWR",
+      "provisional": "*ACWR provisional hasta acumular 4 semanas de historial"
+    },
+    "cta": {
+      "update": "Actualizar biometría",
+      "register": "Registrar biometría"
+    }
   }
 }
