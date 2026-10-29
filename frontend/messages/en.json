@@ -359,5 +359,95 @@
       "invalidLink": "Invalid or expired link",
       "backToRegister": "Back to sign up"
     }
+  },
+  "biometrics": {
+    "back": "← Home",
+    "title": "Biometrics",
+    "addMeasurement": "+ Measurement",
+    "confirmDelete": "Delete?",
+    "ranges": {
+      "all": "All"
+    },
+    "empty": {
+      "titleRange": "No weight data in this range",
+      "titleNone": "No weight data yet",
+      "bodyRange": "Try a wider range or log a measurement.",
+      "bodyNone": "Log your first measurement and your trend will show up here.",
+      "cta": "Log measurement"
+    },
+    "trend": {
+      "title": "Trend weight",
+      "infoAria": "What is the trend",
+      "info": "The trend is a smoothed average of your weigh-ins: it ignores daily water and glycogen swings and shows where your weight is really heading. Trust the line, not the dot from today.",
+      "rate": "{n} kg/week",
+      "toGoal": "Trend is <hl>{n} kg</hl> from your goal ({goal} kg)",
+      "atGoal": "Trend is at your goal ✓ ({goal} kg)"
+    },
+    "bmi": {
+      "label": "BMI <hl>{n}</hl>",
+      "infoAria": "What is BMI",
+      "info": "BMI = weight / height². General reference: 18.5–24.9 is considered \"normal\". Note: in athletes with muscle mass it overestimates body fat — use it only as a guide."
+    },
+    "chart": {
+      "aria": "Weight and trend chart",
+      "range": "{max}–{min} kg",
+      "needDistinctDays": "Log measurements on different days to see the chart.",
+      "needMore": "Your chart will appear after a couple more measurements.",
+      "legend": "Dots = weigh-ins · line = trend"
+    },
+    "history": {
+      "title": "History",
+      "rhr": "{n} bpm",
+      "hrv": "HRV {n}",
+      "fat": "{n}% fat",
+      "waist": "waist {n} cm",
+      "weight": "{n} kg",
+      "recovery": "Recovery",
+      "unknownDate": "Unknown date",
+      "deleteAria": "Delete entry"
+    },
+    "photos": {
+      "title": "Progress photos",
+      "add": "+ Photo",
+      "uploading": "Uploading…",
+      "empty": "Take a photo every now and then (same light, same pose) and you will see progress the scale does not show. Later on, AI will also be able to analyze them.",
+      "alt": "Progress photo {date}",
+      "deleteAria": "Delete photo"
+    },
+    "new": {
+      "title": "New <hl>measurement</hl>",
+      "subtitle": "Weight is enough. The rest is optional.",
+      "typical": "Typical measurement",
+      "weight": "Weight",
+      "advancedToggle": "Advanced measurements · optional",
+      "girthsToggle": "Girths (tape measure) · optional",
+      "girthsHint": "Waist is the most useful one for seeing progress the scale does not show.",
+      "whatIs": "What is {name}",
+      "errorEmpty": "Enter at least one measurement.",
+      "save": "Save",
+      "saving": "Saving…",
+      "advanced": {
+        "body_fat_pct": {
+          "label": "Body fat %",
+          "info": "The percentage of your weight that is fat. If you do not know it, leave it blank. It is measured with bioimpedance scales or skinfold calipers."
+        },
+        "resting_heart_rate": {
+          "label": "Resting HR",
+          "info": "Beats per minute at complete rest, ideally on waking and lying down. The lower it is, the better your cardiovascular fitness usually is."
+        },
+        "hrv_ms": {
+          "label": "HRV",
+          "info": "Heart rate variability: how much the time between heartbeats varies. Higher = better recovery and less stress. Measured by watches and bands (Garmin, Whoop, Oura)."
+        }
+      },
+      "girths": {
+        "waist_cm": "Waist",
+        "hip_cm": "Hips",
+        "chest_cm": "Chest",
+        "arm_cm": "Arm",
+        "thigh_cm": "Thigh",
+        "neck_cm": "Neck"
+      }
+    }
   }
 }

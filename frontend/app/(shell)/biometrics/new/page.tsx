@@ -2,47 +2,44 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useCreateBiometrics } from "@/lib/hooks";
 import { InfoIcon, ChevronDown } from "@/components/icons";
 
+// label/info: claves advanced.<key>.label|info
 const advanced = [
   {
     key: "body_fat_pct",
-    label: "% Grasa corporal",
     step: "0.1",
     unit: "%",
     decimal: true,
-    info: "Porcentaje de tu peso que es grasa. Si no lo sabes, déjalo en blanco. Se mide con básculas de bioimpedancia o un plicómetro.",
   },
   {
     key: "resting_heart_rate",
-    label: "FC en reposo",
     step: "1",
     unit: "bpm",
     decimal: false,
-    info: "Pulsaciones por minuto en reposo total, mejor al despertar y tumbado. Cuanto más baja, normalmente mejor forma cardiovascular.",
   },
   {
     key: "hrv_ms",
-    label: "HRV",
     step: "1",
     unit: "ms",
     decimal: false,
-    info: "Variabilidad de la frecuencia cardíaca: cuánto varía el tiempo entre latidos. Más alta = mejor recuperación y menos estrés. La miden relojes y bandas (Garmin, Whoop, Oura).",
   },
 ] as const;
 
 // Perímetros con cinta métrica (decimales en cm)
 const girths = [
-  { key: "waist_cm", label: "Cintura" },
-  { key: "hip_cm", label: "Cadera" },
-  { key: "chest_cm", label: "Pecho" },
-  { key: "arm_cm", label: "Brazo" },
-  { key: "thigh_cm", label: "Muslo" },
-  { key: "neck_cm", label: "Cuello" },
+  { key: "waist_cm" },
+  { key: "hip_cm" },
+  { key: "chest_cm" },
+  { key: "arm_cm" },
+  { key: "thigh_cm" },
+  { key: "neck_cm" },
 ] as const;
 
 export default function NewBiometricsPage() {
+  const t = useTranslations("biometrics.new");
   const router = useRouter();
   const create = useCreateBiometrics();
   const [vals, setVals] = useState<Record<string, string>>({});
@@ -67,7 +64,7 @@ export default function NewBiometricsPage() {
       if (v !== undefined && v !== "") payload[g.key] = v; // decimal -> string
     }
     if (Object.keys(payload).length === 0) {
-      setFormError("Introduce al menos una medida.");
+      setFormError(t("errorEmpty"));
       return;
     }
     try {
@@ -83,16 +80,16 @@ export default function NewBiometricsPage() {
   return (
     <div className="pt-4">
       <h1 className="t-display text-2xl text-ink">
-        Nueva <span className="neon-text">medición</span>
+        {t.rich("title", { hl: (chunks) => <span className="neon-text">{chunks}</span> })}
       </h1>
-      <p className="t-body mt-1 text-muted">Con el peso basta. El resto es opcional.</p>
+      <p className="t-body mt-1 text-muted">{t("subtitle")}</p>
 
       <form className="mt-5 flex flex-col gap-4" onSubmit={onSubmit}>
         {/* Típica */}
         <div className="flex flex-col gap-2">
-          <span className="t-eyebrow text-muted">Medida típica</span>
+          <span className="t-eyebrow text-muted">{t("typical")}</span>
           <label className="glass neon-edge flex items-center justify-between gap-3 p-4">
-            <span className="t-label text-ink">Peso</span>
+            <span className="t-label text-ink">{t("weight")}</span>
             <span className="flex items-center gap-2">
               <input
                 type="number"
@@ -116,7 +113,7 @@ export default function NewBiometricsPage() {
             onClick={() => setShowAdv((v) => !v)}
             className="flex items-center justify-between rounded-xl px-1 py-1 text-left"
           >
-            <span className="t-eyebrow text-muted">Medidas avanzadas · opcional</span>
+            <span className="t-eyebrow text-muted">{t("advancedToggle")}</span>
             <ChevronDown
               className={`h-4 w-4 text-muted transition-transform ${showAdv ? "rotate-180" : ""}`}
             />
@@ -127,10 +124,10 @@ export default function NewBiometricsPage() {
               <div key={f.key} className="glass p-3.5">
                 <div className="flex items-center justify-between gap-3">
                   <span className="t-label flex items-center gap-1.5 text-ink">
-                    {f.label}
+                    {t(`advanced.${f.key}.label`)}
                     <button
                       type="button"
-                      aria-label={`Qué es ${f.label}`}
+                      aria-label={t("whatIs", { name: t(`advanced.${f.key}.label`) })}
                       onClick={() => setOpenInfo((k) => (k === f.key ? null : f.key))}
                       className={`transition-colors ${openInfo === f.key ? "text-neon" : "text-muted hover:text-neon"}`}
                     >
@@ -152,7 +149,7 @@ export default function NewBiometricsPage() {
                 </div>
                 {openInfo === f.key && (
                   <p className="t-body mt-2.5 border-t border-[rgba(150,190,255,0.12)] pt-2.5 text-xs text-[#cdd9ef]">
-                    {f.info}
+                    {t(`advanced.${f.key}.info`)}
                   </p>
                 )}
               </div>
@@ -166,7 +163,7 @@ export default function NewBiometricsPage() {
             onClick={() => setShowGirths((v) => !v)}
             className="flex items-center justify-between rounded-xl px-1 py-1 text-left"
           >
-            <span className="t-eyebrow text-muted">Perímetros (cinta métrica) · opcional</span>
+            <span className="t-eyebrow text-muted">{t("girthsToggle")}</span>
             <ChevronDown
               className={`h-4 w-4 text-muted transition-transform ${showGirths ? "rotate-180" : ""}`}
             />
@@ -176,7 +173,7 @@ export default function NewBiometricsPage() {
             <div className="grid grid-cols-2 gap-2">
               {girths.map((g) => (
                 <label key={g.key} className="glass flex items-center justify-between gap-2 p-3">
-                  <span className="t-label text-ink">{g.label}</span>
+                  <span className="t-label text-ink">{t(`girths.${g.key}`)}</span>
                   <span className="flex items-center gap-1.5">
                     <input
                       type="number"
@@ -195,14 +192,14 @@ export default function NewBiometricsPage() {
           )}
           {showGirths && (
             <p className="t-body text-[11px] text-muted">
-              La cintura es el más útil para ver progreso que la báscula no enseña.
+              {t("girthsHint")}
             </p>
           )}
         </div>
 
         {err && <p className="text-xs text-bad">{err}</p>}
         <button type="submit" disabled={create.isPending} className="btn btn-primary mt-1 disabled:opacity-60">
-          {create.isPending ? "Guardando…" : "Guardar"}
+          {create.isPending ? t("saving") : t("save")}
         </button>
       </form>
     </div>

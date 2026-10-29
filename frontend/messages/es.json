@@ -359,5 +359,95 @@
       "invalidLink": "Enlace no válido o caducado",
       "backToRegister": "Volver a registrarme"
     }
+  },
+  "biometrics": {
+    "back": "← Inicio",
+    "title": "Biometría",
+    "addMeasurement": "+ Medición",
+    "confirmDelete": "¿Borrar?",
+    "ranges": {
+      "all": "Todo"
+    },
+    "empty": {
+      "titleRange": "Sin datos de peso en este rango",
+      "titleNone": "Sin datos de peso todavía",
+      "bodyRange": "Prueba con un rango más amplio o registra una medición.",
+      "bodyNone": "Registra tu primera medición y aquí verás tu tendencia.",
+      "cta": "Registrar medición"
+    },
+    "trend": {
+      "title": "Peso de tendencia",
+      "infoAria": "Qué es la tendencia",
+      "info": "La tendencia es una media suavizada de tus pesajes: ignora las fluctuaciones diarias de agua y glucógeno y muestra hacia dónde va tu peso de verdad. Fíate de la línea, no del punto de hoy.",
+      "rate": "{n} kg/semana",
+      "toGoal": "Tendencia a <hl>{n} kg</hl> de tu objetivo ({goal} kg)",
+      "atGoal": "Tendencia en tu objetivo ✓ ({goal} kg)"
+    },
+    "bmi": {
+      "label": "IMC <hl>{n}</hl>",
+      "infoAria": "Qué es el IMC",
+      "info": "IMC = peso / altura². Referencia general: 18.5–24.9 se considera \"normal\". Ojo: en atletas con masa muscular sobreestima la grasa — úsalo solo como orientación."
+    },
+    "chart": {
+      "aria": "Gráfica de peso y tendencia",
+      "range": "{max}–{min} kg",
+      "needDistinctDays": "Registra mediciones en días distintos para ver la gráfica.",
+      "needMore": "Con un par de mediciones más aparecerá tu gráfica.",
+      "legend": "Puntos = pesajes · línea = tendencia"
+    },
+    "history": {
+      "title": "Historial",
+      "rhr": "{n} bpm",
+      "hrv": "HRV {n}",
+      "fat": "{n}% grasa",
+      "waist": "cintura {n} cm",
+      "weight": "{n} kg",
+      "recovery": "Recuperación",
+      "unknownDate": "Fecha desconocida",
+      "deleteAria": "Borrar entrada"
+    },
+    "photos": {
+      "title": "Fotos de progreso",
+      "add": "+ Foto",
+      "uploading": "Subiendo…",
+      "empty": "Hazte una foto de vez en cuando (misma luz, misma pose) y verás el progreso que la báscula no enseña. Más adelante la IA también podrá analizarlas.",
+      "alt": "Foto de progreso {date}",
+      "deleteAria": "Borrar foto"
+    },
+    "new": {
+      "title": "Nueva <hl>medición</hl>",
+      "subtitle": "Con el peso basta. El resto es opcional.",
+      "typical": "Medida típica",
+      "weight": "Peso",
+      "advancedToggle": "Medidas avanzadas · opcional",
+      "girthsToggle": "Perímetros (cinta métrica) · opcional",
+      "girthsHint": "La cintura es el más útil para ver progreso que la báscula no enseña.",
+      "whatIs": "Qué es {name}",
+      "errorEmpty": "Introduce al menos una medida.",
+      "save": "Guardar",
+      "saving": "Guardando…",
+      "advanced": {
+        "body_fat_pct": {
+          "label": "% Grasa corporal",
+          "info": "Porcentaje de tu peso que es grasa. Si no lo sabes, déjalo en blanco. Se mide con básculas de bioimpedancia o un plicómetro."
+        },
+        "resting_heart_rate": {
+          "label": "FC en reposo",
+          "info": "Pulsaciones por minuto en reposo total, mejor al despertar y tumbado. Cuanto más baja, normalmente mejor forma cardiovascular."
+        },
+        "hrv_ms": {
+          "label": "HRV",
+          "info": "Variabilidad de la frecuencia cardíaca: cuánto varía el tiempo entre latidos. Más alta = mejor recuperación y menos estrés. La miden relojes y bandas (Garmin, Whoop, Oura)."
+        }
+      },
+      "girths": {
+        "waist_cm": "Cintura",
+        "hip_cm": "Cadera",
+        "chest_cm": "Pecho",
+        "arm_cm": "Brazo",
+        "thigh_cm": "Muslo",
+        "neck_cm": "Cuello"
+      }
+    }
   }
 }
