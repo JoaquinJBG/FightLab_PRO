@@ -1,5 +1,6 @@
 from django.urls import path
 
+from .safety_views import InjuryDetailView, InjuryListView, SafetyView, ScreeningView
 from .views import EngineView, RuleDetailView, RuleSearchView, SourceDetailView
 
 urlpatterns = [
@@ -7,4 +8,8 @@ urlpatterns = [
     path("knowledge/rules/<path:key>", RuleDetailView.as_view(), name="knowledge-rule"),
     path("knowledge/sources/<str:sid>", SourceDetailView.as_view(), name="knowledge-source"),
     path("coach/engine", EngineView.as_view(), name="coach-engine"),
+    path("coach/safety", SafetyView.as_view(), name="coach-safety"),
+    path("coach/screening", ScreeningView.as_view(), name="coach-screening"),
+    path("coach/injuries", InjuryListView.as_view(), name="coach-injuries"),
+    path("coach/injuries/<int:pk>", InjuryDetailView.as_view(), name="coach-injury"),
 ]

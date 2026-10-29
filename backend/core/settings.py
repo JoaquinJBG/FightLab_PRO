@@ -109,6 +109,8 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "activities-sync": "30/min",
     },
+    # ProfileIncomplete del motor -> 409 profile_incomplete (spec §8.1)
+    "EXCEPTION_HANDLER": "core.exceptions.api_exception_handler",
 }
 
 from datetime import timedelta  # noqa: E402
@@ -150,3 +152,13 @@ AI_MODEL_CHAT = env("AI_MODEL_CHAT", default="claude-sonnet-4-6")
 AI_MODEL_VISION = env("AI_MODEL_VISION", default="claude-sonnet-4-6")
 # Traducción de las reglas de evidencia (`manage.py translate_rules`)
 AI_MODEL_TRANSLATE = env("AI_MODEL_TRANSLATE", default=AI_MODEL_CHAT)
+
+# --- PAR-Q+ (spec §8.1) ---
+# El formulario oficial se abre desde eparmedx.com; nunca se copia ni se incrusta en la app.
+PARQ_URL_ES = env("PARQ_URL_ES", default="https://eparmedx.com/wp-content/uploads/2023/12/Spanish.pdf")
+PARQ_URL_EN = env(
+    "PARQ_URL_EN", default="https://eparmedx.com/wp-content/uploads/2025/01/PARQPlus2025Fillable.pdf"
+)
+# Formulario nativo: solo con permiso escrito de la PAR-Q+ Collaboration (spec §12, A1).
+# No se lee del entorno a propósito: activarlo exige un cambio de código revisado.
+PARQ_NATIVE_FORM = False

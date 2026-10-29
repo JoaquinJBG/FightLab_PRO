@@ -1,5 +1,8 @@
-"""Servicios de la app `coaching`: cribado y lesiones (spec §6.3)."""
+"""Servicios de la app `coaching`: cribado, lesiones y flags de seguridad (spec §6.3, §8.1)."""
+from datetime import date
+
 from coach import profile as coach_profile
+from coach import safety
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
@@ -57,8 +60,33 @@ def screening_set(profile, key: str, value, origin: str, actor=None) -> Screenin
     return screening
 
 
+@transaction.atomic
+def screening_update(profile, values: dict, origin: str, actor=None) -> Screening:
+    """Varias respuestas a la vez. Las del PAR-Q+ van primero: si no, cambiarlas después
+    borraría la revisión del trabajo vigoroso que llega en la misma petición."""
+    ordered = sorted(values.items(), key=lambda kv: kv[0] not in coach_profile.PARQ_ANSWERS)
+    for key, value in ordered:
+        screening_set(profile, key, value, origin=origin, actor=actor)
+    return screening_get(profile)
+
+
+def safety_for(user, today: date):
+    """`coach.safety.flags(to_coach_profile(user))`: la única fuente de los flags (spec §8.1)."""
+    from .bridge.adapters import to_coach_profile
+
+    return safety.flags(to_coach_profile(user, today), today)
+
+
 def injury_add(profile, **fields) -> Injury:
     injury = Injury(profile=profile, **fields)
+    injury.full_clean()
+    injury.save()
+    return injury
+
+
+def injury_update(injury: Injury, **fields) -> Injury:
+    for name, value in fields.items():
+        setattr(injury, name, value)
     injury.full_clean()
     injury.save()
     return injury
