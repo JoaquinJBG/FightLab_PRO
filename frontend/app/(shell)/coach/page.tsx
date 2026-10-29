@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useBiometrics } from "@/lib/hooks";
+import { CitedText, type Citation } from "@/components/evidence/CitedText";
 import { computeRecovery, type Recovery } from "@/lib/recovery";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
 import { fetchServerMetrics } from "@/lib/activities";
@@ -154,7 +155,7 @@ const dismissKey = () => {
 
 /* --------------------------------- chat ----------------------------------- */
 
-type Msg = { role: "coach" | "user"; text: string };
+type Msg = { role: "coach" | "user"; text: string; citations?: Citation[] };
 const QUICK = ["¿Cómo voy?", "¿Entreno fuerte hoy?", "¿Cómo va mi peso?"];
 
 function coachReply(text: string, ctx: Ctx): string {
@@ -312,9 +313,9 @@ export default function CoachPage() {
         }),
       });
       if (!res.ok) throw new Error(String(res.status));
-      const data = (await res.json()) as { reply?: unknown };
+      const data = (await res.json()) as { reply?: unknown; citations?: Citation[] };
       if (typeof data.reply !== "string" || !data.reply) throw new Error("sin respuesta");
-      setChatMsgs((m) => [...m, { role: "coach", text: data.reply as string }]);
+      setChatMsgs((m) => [...m, { role: "coach", text: data.reply as string, citations: data.citations }]);
       setAiMode("ia");
     } catch {
       if (ctrl.signal.aborted) return; // se salió de la vista: no tocar el estado
@@ -419,7 +420,7 @@ export default function CoachPage() {
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${m.role === "user" ? "text-[#03101c]" : "text-ink"}`}
                   style={m.role === "user" ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)" } : { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(150,190,255,0.14)" }}>
-                  {m.text}
+                  <CitedText text={m.text} citations={m.citations} />
                 </div>
               </div>
             ))}

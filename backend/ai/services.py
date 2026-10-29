@@ -6,9 +6,12 @@ responden 503 para que el frontend degrade a su modo por reglas/simulado.
 """
 import base64
 import json
+from dataclasses import dataclass, field
 
 import anthropic
 from django.conf import settings
+
+from coaching import citations as chat_tools
 
 
 class AIUnavailable(Exception):
@@ -25,25 +28,46 @@ def _client(timeout: float) -> anthropic.Anthropic:
     return anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY, timeout=timeout, max_retries=1)
 
 
-COACH_SYSTEM = """Eres el coach de FightLab Pro, un entrenador de alto rendimiento para \
-atletas de MMA y deportes de combate. Hablas en español, de tú, directo y cercano, \
-como un coach de esquina: frases cortas, sin relleno, máximo ~120 palabras.
+# El prompt base se escribe una vez, en inglés, y lleva la instrucción de idioma.
+COACH_SYSTEM = """You are the coach of FightLab Pro, a high-performance coach for MMA and combat-sport athletes. Talk like a corner coach: direct, close, short sentences, no filler, about 120 words at most. {language_instruction}
 
-Reglas estrictas:
-- Usa SOLO los datos del "Contexto del atleta". Si un dato no está, dilo y sugiere \
-registrarlo en la app. NUNCA inventes números ni tendencias.
-- ACWR: zona segura 0.8–1.3; por encima, riesgo de lesión (recomienda bajar volumen); \
-por debajo con semana activa, hay margen para apretar.
-- Si la recuperación está en "cuidado", prioriza técnica suave o descanso aunque la \
-carga dé margen.
-- Cortes de peso: prudencia siempre; nada de cortes agresivos de agua/sodio sin equipo \
-profesional. No eres médico y no das consejo médico: ante dolor o síntomas, recomienda \
-profesional sanitario.
-- No uses markdown ni listas: responde en texto corrido, 1–3 frases por idea."""
+Strict rules:
+- Use ONLY the data in the "Athlete context" and what the tools return. If a piece of data is missing, say so and suggest logging it in the app. NEVER invent numbers or trends, and never do your own arithmetic: quote numbers only from the context or from a tool result.
+- Every claim or recommendation about training, nutrition, recovery or health must rest on a rule of the evidence base. Look for it with search_rules, read it with get_rule, and cite it in the text as [[regla:key]], using exactly the key a tool returned this turn. Never cite a key the tools did not return, and never write a threshold, dose or "safe range" from memory. If no rule covers the question, say so plainly instead of improvising.
+- The training-load figures in the context (weekly load, ACWR, monotony...) are descriptive FightLab data. Report them as this week's load against the athlete's own average. Do not call a value safe or risky, do not give thresholds and do not claim they predict injury.
+- You are not a doctor and you give no medical advice: with pain or symptoms, recommend a health professional. For weight cuts before a weigh-in give only general information, never a prescription, and point to a professional team.
+- No markdown and no lists: plain prose, one to three sentences per idea."""
+
+LANGUAGE_NAMES = {"es": "Spanish", "en": "English"}
+DEFAULT_LANGUAGE = "es"
+# Vueltas máximas de herramientas por respuesta (cada una es una llamada más al modelo)
+MAX_TOOL_ROUNDS = 4
 
 
-def coach_chat(*, messages: list[dict], context: dict) -> str:
-    """Chat del coach con el contexto real del atleta. Devuelve el texto de respuesta."""
+def language_instruction(language: str | None) -> str:
+    name = LANGUAGE_NAMES.get((language or "").split("-")[0], LANGUAGE_NAMES[DEFAULT_LANGUAGE])
+    return f"Reply in {name}, whatever language the athlete writes in."
+
+
+@dataclass
+class CoachReply:
+    text: str
+    citations: list[dict] = field(default_factory=list)
+
+
+def _block_to_param(block) -> dict:
+    if block.type == "tool_use":
+        return {"type": "tool_use", "id": block.id, "name": block.name, "input": block.input}
+    return {"type": "text", "text": block.text}
+
+
+def coach_chat(*, messages: list[dict], context: dict, language: str | None = None) -> CoachReply:
+    """Chat del coach con el contexto real del atleta y herramientas de evidencia.
+
+    `language`: el idioma del usuario (hoy el de la petición, que fija `LocaleMiddleware`;
+    pasará a ser `profile.language` cuando llegue en la fase 3). Las citas `[[regla:clave]]`
+    se validan aquí: las que no existen o no salieron en una herramienta se quitan.
+    """
     client = _client(timeout=30.0)
 
     # La API exige que el primer mensaje sea del usuario: descarta saludos previos del coach
@@ -58,20 +82,46 @@ def coach_chat(*, messages: list[dict], context: dict) -> str:
         raise AIBadResponse("Sin mensajes de usuario")
 
     system = (
-        COACH_SYSTEM
-        + "\n\nContexto del atleta (datos reales de la app, hoy):\n"
+        COACH_SYSTEM.format(language_instruction=language_instruction(language))
+        + "\n\nAthlete context (real app data, today):\n"
         + json.dumps(context, ensure_ascii=False)
     )
-    resp = client.messages.create(
-        model=settings.AI_MODEL_CHAT,
-        max_tokens=500,
-        system=system,
-        messages=cleaned,
-    )
+    retrieved: set[str] = set()
+    convo = list(cleaned)
+    for round_ in range(MAX_TOOL_ROUNDS + 1):
+        resp = client.messages.create(
+            model=settings.AI_MODEL_CHAT,
+            max_tokens=500,
+            system=system,
+            messages=list(convo),
+            tools=chat_tools.TOOLS,
+        )
+        if getattr(resp, "stop_reason", None) != "tool_use":
+            break
+        if round_ == MAX_TOOL_ROUNDS:
+            raise AIBadResponse("Demasiadas vueltas de herramientas")
+        convo.append({"role": "assistant", "content": [_block_to_param(b) for b in resp.content]})
+        convo.append(
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "tool_result",
+                        "tool_use_id": b.id,
+                        "content": chat_tools.run_tool(b.name, b.input, retrieved),
+                    }
+                    for b in resp.content
+                    if b.type == "tool_use"
+                ],
+            }
+        )
     text = "".join(block.text for block in resp.content if block.type == "text").strip()
     if not text:
         raise AIBadResponse("Respuesta vacía del modelo")
-    return text
+    text, citations = chat_tools.validate_citations(text, retrieved)
+    if not text:
+        raise AIBadResponse("Respuesta vacía tras quitar las citas inválidas")
+    return CoachReply(text=text, citations=citations)
 
 
 FOOD_SYSTEM = """Eres un nutricionista deportivo experto en estimar comidas a partir de fotos. \

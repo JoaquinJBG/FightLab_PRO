@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import es from "@/messages/es.json";
 import en from "@/messages/en.json";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
+import { CitedText } from "@/components/evidence/CitedText";
 import { pickRuleText, splitCitations } from "@/lib/evidence";
 import type { RuleDetail } from "@/lib/schemas";
 
@@ -186,5 +187,26 @@ describe("splitCitations", () => {
 
   it("sin citas devuelve el texto tal cual", () => {
     expect(splitCitations("hola")).toEqual([{ text: "hola" }]);
+  });
+});
+
+describe("CitedText", () => {
+  it("convierte [[regla:clave]] en un chip con el grado de la cita", () => {
+    const client = new QueryClient();
+    render(
+      <QueryClientProvider client={client}>
+        <NextIntlClientProvider locale="es" messages={es}>
+          <CitedText
+            text={`Unos 1,6 g/kg [[regla:${KEY}]] al día.`}
+            citations={[{ key: KEY, grade: "strong", title: "x" }]}
+          />
+        </NextIntlClientProvider>
+      </QueryClientProvider>,
+    );
+    const chip = screen.getByTestId("evidence-chip");
+    expect(chip.getAttribute("data-grade")).toBe("strong");
+    expect(document.body.textContent).not.toContain("[[regla");
+    expect(document.body.textContent).toContain("Unos 1,6 g/kg");
+    expect(document.body.textContent).toContain("al día.");
   });
 });

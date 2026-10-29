@@ -1,6 +1,7 @@
 import json
 
 import anthropic
+from django.utils.translation import get_language
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -46,14 +47,14 @@ class CoachChatView(APIView):
             return Response({"detail": msg("chat_context_too_large")}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            reply = services.coach_chat(messages=messages, context=context)
+            reply = services.coach_chat(messages=messages, context=context, language=get_language())
         except services.AIUnavailable:
             return Response({"detail": msg("ai_not_configured")}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         except services.AIBadResponse:
             return Response({"detail": msg("ai_bad_chat_reply")}, status=status.HTTP_502_BAD_GATEWAY)
         except anthropic.APIError:
             return Response({"detail": msg("ai_service_error")}, status=status.HTTP_502_BAD_GATEWAY)
-        return Response({"reply": reply})
+        return Response({"reply": reply.text, "citations": reply.citations})
 
 
 class FoodPhotoView(APIView):
