@@ -18,7 +18,7 @@ describe("training/sports en inglés", () => {
   it("lista de deportes", () => {
     const { container } = renderEn(<SportsPage />);
     expect(screen.getByText("Running")).toBeTruthy();
-    expect(screen.getByText("Soccer")).toBeTruthy();
+    expect(screen.getByText("Football")).toBeTruthy();
     expectClean(container);
   });
 
@@ -50,9 +50,9 @@ describe("training/sports en inglés", () => {
     const { container } = renderEn(<SportsPage />);
     fireEvent.click(screen.getByText("Running"));
     expect(screen.getByText("← Sports")).toBeTruthy();
-    fireEvent.click(screen.getByText("Hard"));
+    fireEvent.click(screen.getByText("Vigorous"));
     expect(screen.getByText("12–16 km/h")).toBeTruthy();
-    fireEvent.click(screen.getByText("Easy"));
+    fireEvent.click(screen.getByText("Light"));
     expectClean(container);
     fireEvent.click(screen.getByText("Start"));
     expect(screen.getByText("Cancel")).toBeTruthy();

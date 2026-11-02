@@ -223,7 +223,8 @@ describe.each([["es"], ["en"]] as const)("Check-in diario (%s)", (locale) => {
     submit();
     const card = await screen.findByTestId("readiness-card");
     expect(card.getAttribute("data-status")).toBe("easy");
-    expect(card.querySelectorAll("[data-testid=evidence-chip]").length).toBe(2);
+    expect(card.querySelectorAll("[data-testid=evidence-chip][data-variant=evidence]").length).toBe(2);
+    expect(card.querySelectorAll("[data-testid=evidence-chip][data-variant=convention]").length).toBe(1);
     expect(card.textContent).toContain(CATALOGS[locale].checkin.wellness.scores.energy.label);
   });
 

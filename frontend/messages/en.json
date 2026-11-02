@@ -735,8 +735,8 @@
         "walk": "Walking",
         "bike": "Cycling",
         "swim": "Swimming",
-        "football": "Soccer",
-        "rope": "Jump rope",
+        "football": "Football",
+        "rope": "Skipping",
         "hike": "Hiking",
         "elliptical": "Elliptical"
       }
@@ -754,9 +754,9 @@
         "activity": "Activity"
       },
       "intensity": {
-        "light": "Easy",
+        "light": "Light",
         "moderate": "Moderate",
-        "intense": "Hard"
+        "intense": "Vigorous"
       },
       "effort": {
         "light": "RPE 3-4 · you can talk",
@@ -841,7 +841,7 @@
         "pads": "{art} · pads {minutes}': rounds of pad work with called combinations; technique first, pace after.",
         "bag": "{art} · bag work {minutes}': alternate technique rounds (precision) with power or pace rounds. Use the round timer in Tools.",
         "technique": "{art} · technique {minutes}': shadowboxing in front of a mirror, working on your guard, footwork and 2-3 specific movements. No rush.",
-        "conditioning": "{art} · conditioning {minutes}': specific intervals (jump rope, burpees, clinch, sprawls). Keep your form even when fatigue hits."
+        "conditioning": "{art} · conditioning {minutes}': specific intervals (skipping, burpees, clinch, sprawls). Keep your form even when fatigue hits."
       },
       "reminder": {
         "grappling": "Keep your nails short and your gi/rash guard clean, and look after your elbows and knees.",
@@ -851,7 +851,7 @@
       "reply": {
         "ack": "Got it.",
         "stretch": "Finish with 5-8 min of gentle stretching (hips, hamstrings, shoulders, neck), 20-30 s each, no bouncing.",
-        "warmup": "Warm up for 8-10 min: mobility, jump rope or an easy jog, and progressive sets of today's technique. Don't go into sparring cold.",
+        "warmup": "Warm up for 8-10 min: mobility, skipping or an easy jog, and progressive sets of today's technique. Don't go into sparring cold.",
         "hydration": "Sip water throughout the session; at high intensity add electrolytes. Arrive already hydrated."
       },
       "voiceMessage": "Today I want to do {work} for {art}, about {minutes} min",
@@ -924,7 +924,7 @@
         },
         "myRoutine": {
           "title": "My routine",
-          "sub": "Assigned by your coach"
+          "sub": "Assigned by your trainer"
         },
         "tools": {
           "title": "Tools",
@@ -1130,7 +1130,7 @@
     "myRoutine": {
       "back": "← Training",
       "title": "My routine",
-      "coachLine": "Your coach · updated {days, plural, one {# day} other {# days}} ago",
+      "coachLine": "Your trainer · updated {days, plural, one {# day} other {# days}} ago",
       "daysBadge": "{n, plural, one {# day} other {# days}}",
       "markDone": "Mark as done",
       "days": {
@@ -1191,7 +1191,7 @@
           }
         }
       },
-      "footer": "This routine is assigned and edited by your coach. The coach panel is coming later."
+      "footer": "This routine is assigned and edited by your trainer. The trainer panel is coming later."
     },
     "load": {
       "back": "← Training",
@@ -1707,7 +1707,7 @@
       "easy": "Your HRV has been below your range for a week and you feel worse today: keep the session easy.",
       "reduce": "You have had 3 days of drops on 2 or more signals against your baseline: hold or reduce the load.",
       "drops": "Below your average today: {items}.",
-      "pragmatic": "These thresholds are pragmatic, not validated: a guide, not a diagnosis."
+      "pragmatic": "The rule itself warns that these thresholds are pragmatic, not validated. The 14-day baseline and the 1-point drop are FightLab conventions. A guide, not a diagnosis."
     },
     "homeCard": {
       "title": "Today's check-in",

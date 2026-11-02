@@ -1707,7 +1707,7 @@
       "easy": "Tu HRV lleva una semana por debajo de tu rango y hoy te notas peor: mantén la sesión suave.",
       "reduce": "Llevas 3 días con bajadas en 2 o más señales respecto a tu línea base: mantén o reduce la carga.",
       "drops": "Por debajo de tu media hoy: {items}.",
-      "pragmatic": "Estos umbrales son pragmáticos, no validados: es una guía, no un diagnóstico."
+      "pragmatic": "La propia regla avisa de que estos umbrales son pragmáticos, no validados. La línea base de 14 días y la bajada de 1 punto son convención de FightLab. Es una guía, no un diagnóstico."
     },
     "homeCard": {
       "title": "Check-in de hoy",

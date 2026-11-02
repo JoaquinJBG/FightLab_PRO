@@ -7,7 +7,7 @@ describe("Mi rutina (en)", () => {
   it("pinta el plan semanal traducido", () => {
     const { container } = renderEn(<MyRoutinePage />);
     expect(screen.getByText("My routine")).toBeTruthy();
-    expect(screen.getByText(/Your coach · updated 2 days ago/)).toBeTruthy();
+    expect(screen.getByText(/Your trainer · updated 2 days ago/)).toBeTruthy();
     expect(screen.getByText("6 days")).toBeTruthy();
     expect(screen.getByText("Monday")).toBeTruthy();
     expect(screen.getByText("Bench press 4×8")).toBeTruthy();

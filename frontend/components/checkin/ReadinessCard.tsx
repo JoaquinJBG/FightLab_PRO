@@ -24,6 +24,8 @@ export function ReadinessCard({ readiness }: { readiness: Readiness }) {
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <EvidenceChip ruleKey={readiness.rule_key} grade={readiness.grade} />
         {readiness.hrv_drop && <EvidenceChip ruleKey={readiness.hrv_rule_key} grade={readiness.hrv_grade} />}
+        {/* La línea base de 14 días y la bajada de 1 punto no las fija la regla: convención de FightLab */}
+        <EvidenceChip />
       </div>
       <p className="t-body mt-2 text-[11px] italic text-muted">{t("readiness.pragmatic")}</p>
     </section>
