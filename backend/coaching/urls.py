@@ -9,6 +9,7 @@ from .safety_views import (
     SafetyView,
     ScreeningView,
 )
+from .strength_views import StrengthE1rmView, StrengthProgressView, StrengthSetsView
 from .targets_views import TargetsView, TrendView, WeighInView, ZonesView
 from .views import EngineView, RuleDetailView, RuleSearchView, SourceDetailView
 
@@ -23,6 +24,9 @@ urlpatterns = [
     path("coach/zones", ZonesView.as_view(), name="coach-zones"),
     path("coach/weigh-in", WeighInView.as_view(), name="coach-weigh-in"),
     path("coach/checkin", CheckinView.as_view(), name="coach-checkin"),
+    path("coach/strength/e1rm", StrengthE1rmView.as_view(), name="coach-strength-e1rm"),
+    path("coach/strength/sets", StrengthSetsView.as_view(), name="coach-strength-sets"),
+    path("coach/strength/progress", StrengthProgressView.as_view(), name="coach-strength-progress"),
     path("coach/screening", ScreeningView.as_view(), name="coach-screening"),
     path("coach/injuries", InjuryListView.as_view(), name="coach-injuries"),
     path("coach/injuries/<int:pk>", InjuryDetailView.as_view(), name="coach-injury"),

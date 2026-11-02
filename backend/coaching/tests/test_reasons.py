@@ -175,6 +175,9 @@ def engine_reasons() -> list[str]:
     add(*trend.weight_trend([(date(2026, 10, 28), 70.0), (date(2026, 10, 29), 70.0)], None).notes)
     guarded(energy.tdee, profiles[0], 2.5, TODAY)
     guarded(energy.tdee, profiles[0], 1.2, TODAY)
+    from .test_strength import _strength_reasons  # fase 6: progresión y descarga
+
+    add(*_strength_reasons())
     return out
 
 

@@ -3,6 +3,7 @@
 El puente solo llama a funciones puras del motor. Los nulos del cribado se omiten en lugar
 de convertirse en `False`: para el coach, *sin contestar* no es *contestado con NO*.
 """
+from dataclasses import dataclass
 from datetime import date
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -61,6 +62,45 @@ def latest_resting_hr(user, today: date | None = None) -> tuple[int, date] | Non
         if today is None or day <= today:
             return log.resting_heart_rate, day
     return None
+
+
+@dataclass(frozen=True)
+class SetRecord:
+    """Una serie con los atributos que lee `coach.strength` (los de `ExerciseSet`)."""
+
+    exercise: str
+    date: date
+    set_type: str
+    weight_kg: float | None
+    reps: int | None
+    rir: float | None
+    rpe: float | None
+
+
+def _float(value) -> float | None:
+    return float(value) if value is not None else None
+
+
+def set_records(user, since: date | None = None, until: date | None = None) -> list[SetRecord]:
+    """Series de gimnasio (`SetLog`) de `user`, con la fecha de la sesión en la zona horaria del
+    perfil, de la más antigua a la más reciente."""
+    from activities.models import SetLog
+
+    profile = user.profile
+    tz = _tz(profile)
+    logs = (
+        SetLog.objects.filter(activity__profile=profile)
+        .select_related("activity")
+        .order_by("activity__started_at", "activity_id", "exercise_index", "set_index")
+    )
+    out = []
+    for log in logs:
+        day = log.activity.started_at.astimezone(tz).date()
+        if (since and day < since) or (until and day > until):
+            continue
+        out.append(SetRecord(log.exercise, day, log.set_type, _float(log.weight_kg), log.reps,
+                             _float(log.rir), _float(log.rpe)))
+    return out
 
 
 def _sex(profile) -> str | None:

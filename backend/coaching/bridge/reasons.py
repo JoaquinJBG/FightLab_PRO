@@ -13,7 +13,7 @@ import logging
 import re
 from dataclasses import dataclass, field
 
-from coach import energy, mealplan, safety, zones
+from coach import energy, mealplan, safety, strength, zones
 
 from coaching.bridge import energy_athletes
 from coaching.keys import rule_key
@@ -95,6 +95,30 @@ RULE_PATTERNS: list[tuple[str, str, str]] = [
     (zones.BANDS_RULE, r"^with known heart disease", "bands_cardiac_team"),
     (zones.HRMAX_RULE, r"^HRmax from Tanaka", "hrmax_tanaka"),
     (mealplan.FREE_MEAL_RULE, r"^no free meal", "free_meal_blocked"),
+    # Fuerza (fase 6): `coach.strength.progression` y `deload`.
+    (
+        strength.SHORT_BREAKS,
+        r"^(?P<days>\d+) days off, restart at (?P<pct>\d+)% of the last working load",
+        "strength_restart",
+    ),
+    (strength.TARGET_RIR, r"^sets ended with 5\+ RIR", "strength_too_easy"),
+    (
+        strength.DOUBLE_PROGRESSION,
+        r"^every work set beat (?P<high>\d+) reps, add load \(a belt or vest\)",
+        "strength_increase_bodyweight",
+    ),
+    (
+        strength.DOUBLE_PROGRESSION,
+        r"^every work set beat (?P<high>\d+) reps, add (?P<step_pct>[\d.]+)% or the smallest",
+        "strength_increase_load",
+    ),
+    (
+        strength.DOUBLE_PROGRESSION,
+        r"^same load, add reps until every set beats (?P<high>\d+)",
+        "strength_add_reps",
+    ),
+    (strength.STALLS, r"^no gain in load or reps for (?P<sessions>\d+) sessions", "strength_stalled"),
+    (strength.DELOADS, r"^(?P<signs>\d+) signs together", "strength_deload"),
 ]
 
 # Motivos que añade el puente de FightLab (no los produce el motor): la ecuación de RMR para
@@ -126,6 +150,8 @@ FREE_PATTERNS: list[tuple[str, str]] = [
     (r"^current intake unknown: holding at maintenance", "intake_unknown_holding"),
     (r"^convention: protein from (?P<weight_kg>[\d.]+) kg", "protein_reference_weight"),
     (r"^protein and fat minimums already exceed", "carbs_zero"),
+    # `hold_progression`: el motor no cita regla; las reglas van en los motivos del flag que siguen.
+    (r"^same load and reps as last session until a clinician reviews$", "strength_hold"),
 ]
 
 # Reglas que el motor cita entre paréntesis (no como prefijo): sus motivos están en FREE_PATTERNS.
@@ -144,7 +170,7 @@ def _convert(params: dict) -> dict:
             continue
         if name == "why":
             out[name] = "age" if value.startswith("aged") else "yes" if value.endswith("YES") else "unanswered"
-        elif name in ("pal", "per_kg", "weight_kg", "ffm_kg", "body_fat_pct"):
+        elif name in ("pal", "per_kg", "weight_kg", "ffm_kg", "body_fat_pct", "step_pct"):
             out[name] = float(value)
         elif name in ("systolic", "diastolic"):
             out[name] = None if value == "?" else int(value)

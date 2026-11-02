@@ -161,6 +161,20 @@ TEXTS: dict[str, dict[str, str]] = {
             "worsening confusion or headache, or repeated vomiting, get emergency care now: the "
             "full list is in the official Concussion Recognition Tool 6 (CRT6)"
         ),
+        # Fuerza (fase 6): `coach.strength.progression` y `deload`.
+        "strength_restart": "{days} days off, restart at {pct}% of the last working load",
+        "strength_too_easy": "sets ended with 5+ RIR",
+        "strength_increase_bodyweight": (
+            "every work set beat {high} reps, add load (a belt or vest) or move to a harder variation"
+        ),
+        "strength_increase_load": "every work set beat {high} reps, add {step_pct_1f}% or the smallest practical jump",
+        "strength_add_reps": "same load, add reps until every set beats {high}",
+        "strength_stalled": (
+            "no gain in load or reps for {sessions} sessions; check effort and weekly sets (10+), "
+            "then add 10-20% more sets for this muscle"
+        ),
+        "strength_deload": "{signs} signs together; one lighter week, keep the loads",
+        "strength_hold": "same load and reps as last session until a clinician reviews",
     },
     "es": {
         "under_18": (
@@ -323,6 +337,24 @@ TEXTS: dict[str, dict[str, str]] = {
             "a más, o vómitos repetidos, ve a urgencias ya: la lista completa está en la "
             "herramienta oficial Concussion Recognition Tool 6 (CRT6)"
         ),
+        # Fuerza (fase 6).
+        "strength_restart": "{days} días sin entrenarlo: vuelve al {pct} % de la última carga de trabajo",
+        "strength_too_easy": "las series acabaron con 5 o más repeticiones en reserva",
+        "strength_increase_bodyweight": (
+            "todas las series de trabajo pasaron de {high} repeticiones: añade carga (cinturón o "
+            "chaleco) o pasa a una variante más difícil"
+        ),
+        "strength_increase_load": (
+            "todas las series de trabajo pasaron de {high} repeticiones: sube un {step_pct_1f} % o el "
+            "salto más pequeño posible"
+        ),
+        "strength_add_reps": "misma carga: añade repeticiones hasta que todas las series pasen de {high}",
+        "strength_stalled": (
+            "sin mejorar carga ni repeticiones en {sessions} sesiones: revisa el esfuerzo y las series "
+            "semanales (10 o más) y después añade un 10-20 % más de series para este músculo"
+        ),
+        "strength_deload": "{signs} señales a la vez: una semana más ligera, sin bajar las cargas",
+        "strength_hold": "misma carga y repeticiones que la última sesión hasta que lo revise un clínico",
     },
 }
 
@@ -427,6 +459,15 @@ SEVERITY: dict[str, str] = {
     # Golpe en la cabeza (E.5): urgencias (`stop`) y bloqueo del contacto con derivación (`refer`).
     "head_blow_red_flags": "stop",
     "head_blow_no_contact": "refer",
+    # Fuerza (fase 6): informan de la siguiente sesión; `strength_hold` limita la progresión.
+    "strength_restart": "info",
+    "strength_too_easy": "info",
+    "strength_increase_bodyweight": "info",
+    "strength_increase_load": "info",
+    "strength_add_reps": "info",
+    "strength_stalled": "info",
+    "strength_deload": "info",
+    "strength_hold": "limit",
 }
 DEFAULT_SEVERITY = "limit"
 
@@ -464,6 +505,9 @@ def _values(reason: Reason, lang: str) -> dict:
         params[f"{name}_fmt"] = f"{params[name]:,}" if lang == "en" else str(params[name])
     if "per_kg" in params:
         params["per_kg_g"] = _decimal(params["per_kg"], lang)
+    if "step_pct" in params:
+        step = f"{params['step_pct']:.1f}"
+        params["step_pct_1f"] = step.replace(".", ",") if lang == "es" else step
     if "pal" in params:
         params["pal_g"] = _decimal(params["pal"], lang)
     if "weight_kg" in params:
