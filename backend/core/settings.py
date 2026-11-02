@@ -165,3 +165,8 @@ PARQ_URL_EN = env(
 # Formulario nativo: solo con permiso escrito de la PAR-Q+ Collaboration (spec §12, A1).
 # No se lee del entorno a propósito: activarlo exige un cambio de código revisado.
 PARQ_NATIVE_FORM = False
+
+# --- Concussion Recognition Tool 6 (E.5) ---
+# Se enlaza el documento oficial (BJSM, Echemendia 2023, fuente [F026] del anexo de combate) y
+# nunca se reproduce: copiarlo o reformatearlo necesita permiso de BMJ.
+CRT6_URL = env("CRT6_URL", default="https://doi.org/10.1136/bjsports-2023-107021")

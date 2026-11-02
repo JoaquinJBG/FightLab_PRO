@@ -35,6 +35,7 @@ function ReasonItem({ reason }: { reason: SafetyReason }) {
  * Termina con la línea de derivación literal si hay `refer_gp`, o con el aviso del coach. */
 export function SafetyPanel({ data, showEmpty = false }: { data: Safety; showEmpty?: boolean }) {
   const t = useTranslations("safety");
+  const tc = useTranslations("combat.head");
   const hasStop = data.reasons.some((r) => r.severity === "stop");
   if (!data.reasons.length && !data.parq_pending && !showEmpty) return null;
   return (
@@ -56,6 +57,11 @@ export function SafetyPanel({ data, showEmpty = false }: { data: Safety; showEmp
             {t("parqComplete")}
           </Link>
         </p>
+      )}
+      {data.crt6_url && data.reasons.some((r) => r.code.startsWith("head_blow")) && (
+        <a href={data.crt6_url} target="_blank" rel="noopener noreferrer" data-testid="crt6-link" className="t-body mt-3 block text-xs text-neon underline">
+          {tc("crt6")}
+        </a>
       )}
       {hasStop && data.emergency_number && (
         <a href={`tel:${data.emergency_number}`} className="t-label mt-3 block" style={{ color: SEVERITY_COLOR.stop }}>

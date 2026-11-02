@@ -6,6 +6,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useClearWeighIn, useSafety, useSaveWeighIn, useWeighIn, WeighInError } from "@/lib/hooks";
 import { weighInDate } from "@/lib/weigh";
 import { SafetyPanel } from "@/components/safety/SafetyBanner";
+import { CutInfoCard } from "@/components/combat/CutInfoCard";
 import type { CoachReason, SafetyReason } from "@/lib/schemas";
 import { ScaleIcon } from "@/components/icons";
 
@@ -13,6 +14,7 @@ const isSafetyReason = (r: CoachReason): r is CoachReason & { severity: SafetyRe
 
 export default function WeighInPage() {
   const t = useTranslations("nutrition.weighIn");
+  const tc = useTranslations("combat.cut");
   const format = useFormatter();
   const { data, isLoading, isError } = useWeighIn();
   const { data: safety } = useSafety();
@@ -48,6 +50,8 @@ export default function WeighInPage() {
         {safety && data.reasons.length > 0 && (
           <SafetyPanel data={{ ...safety, reasons: data.reasons.filter(isSafetyReason), parq_pending: false }} />
         )}
+        {/* Menores: el motivo de por qué no hay contenido de corte (anexo de combate) */}
+        <CutInfoCard />
       </div>
     );
   }
@@ -125,7 +129,10 @@ export default function WeighInPage() {
         {saved && <button onClick={onClear} disabled={clear.isPending} className="btn btn-outline mt-2 w-full">{t("clear")}</button>}
       </section>
 
-      <p className="t-body mt-4 text-center text-xs text-muted">{t("footer")}</p>
+      {/* Hacer el peso: información con sus reglas, nunca un protocolo (anexo de combate) */}
+      <CutInfoCard />
+
+      <p className="t-body mt-4 text-center text-xs text-muted">{tc("footer")}</p>
     </div>
   );
 }

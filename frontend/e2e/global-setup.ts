@@ -35,6 +35,7 @@ SETUPS = {
     "scoff": ({}, {"scoff_yes_count": 2}),
     "noSex": ({"gender": "OTHER"}, {}),
     "noTraining": ({}, {"cardiac_symptoms": True}),
+    "combat": ({}, {}),
 }
 for key, email in READY.items():
     u, p = fresh(email)

@@ -184,3 +184,42 @@ class Injury(models.Model):
 
     def __str__(self) -> str:
         return f"Injury<{self.area} {self.status}>"
+
+
+class HeadImpact(models.Model):
+    """Un golpe en la cabeza (o un golpe fuerte que sacudió la cabeza) que avisa el atleta (E.5).
+
+    Con síntomas o señales vistas por otros pone `no_contact` hasta que el atleta confirma el
+    alta de un clínico (`cleared_on`); nunca se quita por tiempo (combat-sports "No sparring
+    until symptom-free with exertion and cleared"). Solo se guardan respuestas de sí o no.
+    """
+
+    class Origin(models.TextChoices):
+        MMA_SESSION = "mma_session", "mma_session"
+        CHECKIN = "checkin", "checkin"
+        OTHER = "other", "other"
+
+    profile = models.ForeignKey(
+        "profiles.UserProfile", on_delete=models.CASCADE, related_name="head_impacts"
+    )
+    occurred_on = models.DateField()
+    symptoms = models.BooleanField(default=False)  # algún síntoma, o señales que vio otra persona
+    red_flags = models.BooleanField(default=False)  # alguna señal de alarma del CRT6
+    origin = models.CharField(max_length=11, choices=Origin.choices, default=Origin.OTHER)
+    cleared_on = models.DateField(null=True, blank=True)  # alta de un clínico para el contacto
+    cleared_by = models.CharField(max_length=120, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-occurred_on", "-id"]
+
+    def clean(self) -> None:
+        if self.cleared_on and self.occurred_on and self.cleared_on < self.occurred_on:
+            raise ValidationError({"cleared_on": "clearance cannot be before the head blow"})
+
+    @property
+    def blocks_contact(self) -> bool:
+        return (self.symptoms or self.red_flags) and self.cleared_on is None
+
+    def __str__(self) -> str:
+        return f"HeadImpact<{self.occurred_on} {'open' if self.blocks_contact else 'closed'}>"

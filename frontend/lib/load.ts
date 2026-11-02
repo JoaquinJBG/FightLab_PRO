@@ -2,6 +2,11 @@
 // dispositivo (deportes, MMA y gimnasio, cada una con su carga sRPE en AU)
 // y calcula las métricas de Foster: carga semanal, ACWR, monotonía y tensión.
 // Pasa al backend (ActivityLog) en la fase 3 — las fórmulas son las mismas.
+// E.5 (anexo de combate): el ratio solo con 28 días de historial (convención de FightLab) y
+// mostrado como "la semana frente a tu media de 4 semanas", sin "zona segura".
+
+/** Días de historial antes de mostrar el ratio (convención de FightLab). */
+export const RATIO_MIN_DAYS = 28;
 
 export type LoadPoint = { ts: number; load: number };
 
@@ -48,8 +53,10 @@ export function dailyAU(n: number, loads: LoadPoint[] = collectTrainingLoads()):
 export type LoadMetrics = {
   weekAU: number;
   daily7: number[];
-  acwr: number | null;
-  provisional: boolean; // historial < 28 días: el ACWR aún se está calibrando
+  acwr: number | null; // solo con 28 días de historial
+  weekVsAvgPct: number | null; // la semana frente a la media semanal de 4 semanas, en %
+  ratioDaysLeft: number; // días que faltan para el ratio (0 cuando ya hay 28)
+  gaps: boolean; // alguna de las 4 semanas sin carga: el número puede engañar
   monotonia: number | null;
   tension: number | null;
   sinVariacion: boolean; // 7 días con carga idéntica (SD=0): monotonía máxima
@@ -68,18 +75,16 @@ export function loadMetrics(): LoadMetrics {
     ? Math.min(28, Math.round((startOfDay(Date.now()) - startOfDay(firstTs)) / DAY) + 1)
     : 0;
 
-  // ACWR: media diaria aguda (7 d) vs crónica (historial disponible, máx 28 d).
-  // Umbral en 10 días: con exactamente 7, aguda ≡ crónica y el ratio sería un
-  // 1.00 tautológico sin información.
+  // Ratio: media diaria aguda (7 d) vs crónica (28 d, incluida la semana aguda). Solo con
+  // 28 días de historial; antes se ven las cargas y cuántos días faltan.
   let acwr: number | null = null;
-  let provisional = true;
-  if (historyDays >= 10 && weekAU > 0) {
-    const chronicWindow = daily28.slice(-historyDays);
-    const chronicAvg = chronicWindow.reduce((a, b) => a + b, 0) / historyDays;
-    if (chronicAvg > 0) {
-      acwr = weekAU / 7 / chronicAvg;
-      provisional = historyDays < 28;
-    }
+  let weekVsAvgPct: number | null = null;
+  let gaps = false;
+  if (historyDays >= RATIO_MIN_DAYS && weekAU > 0) {
+    const chronicAvg = daily28.reduce((a, b) => a + b, 0) / 28;
+    acwr = weekAU / 7 / chronicAvg;
+    weekVsAvgPct = Math.round((acwr - 1) * 100);
+    gaps = [0, 7, 14, 21].some((i) => daily28.slice(i, i + 7).every((v) => v === 0));
   }
 
   // Monotonía (media/SD de la carga diaria de 7 d) y tensión (semanal × monotonía)
@@ -93,11 +98,14 @@ export function loadMetrics(): LoadMetrics {
       monotonia = meanDaily / sd;
       tension = Math.round(weekAU * monotonia);
     } else {
-      // SD = 0 con carga: cero variación entre días = monotonía MÁXIMA (riesgo),
-      // no "sin datos"
+      // SD = 0 con carga: cero variación entre días = monotonía MÁXIMA, no "sin datos"
       sinVariacion = true;
     }
   }
 
-  return { weekAU: Math.round(weekAU), daily7, acwr, provisional, monotonia, tension, sinVariacion, historyDays };
+  return {
+    weekAU: Math.round(weekAU), daily7, acwr, weekVsAvgPct,
+    ratioDaysLeft: Math.max(0, RATIO_MIN_DAYS - historyDays), gaps,
+    monotonia, tension, sinVariacion, historyDays,
+  };
 }

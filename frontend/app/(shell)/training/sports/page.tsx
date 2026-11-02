@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useBiometrics } from "@/lib/hooks";
 import { deleteServerActivities, enqueueActivity } from "@/lib/activities";
+import { EvidenceChip } from "@/components/evidence/EvidenceChip";
+import { COMBAT_RULES } from "@/lib/combat-rules";
+import { KCAL_BAND } from "@/lib/combat-mets";
 import {
   RunIcon, WalkIcon, BikeIcon, SwimIcon, BallIcon, RopeIcon, PulseIcon, ChevronRight, InfoIcon,
 } from "@/components/icons";
@@ -22,6 +25,10 @@ const SPORTS: Sport[] = [
   { key: "hike", name: "Senderismo", met: 6.0, Icon: WalkIcon, speeds: ["3–4 km/h", "4–5.5 km/h", "5.5–7 km/h"] },
   { key: "elliptical", name: "Elíptica", met: 5.0, Icon: PulseIcon },
 ];
+// E.5: estos METs y los factores de intensidad no están en el anexo de combate (solo cubre las
+// sesiones de combate): se etiquetan como convención de FightLab, sin revisar, y las kcal se
+// muestran como estimación con un rango (combat-sports "METs classify intensity but do not give
+// individual kcal").
 const SPORT_BY_KEY: Record<string, Sport> = Object.fromEntries(SPORTS.map((s) => [s.key, s]));
 
 // El primer valor es el id canónico que se guarda (local + servidor); la etiqueta visible sale de i18n.
@@ -81,6 +88,7 @@ type LiveSession = { sportKey: string; elapsed: number; kcal: number; intIdx: nu
 
 export default function SportsPage() {
   const t = useTranslations("training.sports");
+  const tk = useTranslations("combat.tracker");
   const tAct = useTranslations("training.activities.sports");
   const locale = useLocale();
   const sportLabel = (s: { key: string; name: string }) => (tAct.has(s.key) ? tAct(s.key) : s.name);
@@ -294,8 +302,15 @@ export default function SportsPage() {
             <p className="t-title text-ink">{sportLabel(sel)}</p>
             <div className="flex gap-8">
               <div><p className="stat text-3xl text-ink">{fmtClock(elapsed)}</p><p className="t-label text-muted">{t("summary.time")}</p></div>
-              <div><p className="stat text-3xl neon-text">{Math.round(kcalAcc)}</p><p className="t-label text-muted">{t("summary.kcal")}</p></div>
+              <div><p className="stat text-3xl neon-text">≈ {Math.round(kcalAcc)}</p><p className="t-label text-muted">{t("summary.kcal")}</p></div>
             </div>
+            <p data-testid="sports-kcal-estimate" className="t-body text-xs text-muted">
+              {tk("estimate", {
+                low: Math.round((kcalAcc * (1 - KCAL_BAND)) / 10) * 10,
+                high: Math.round((kcalAcc * (1 + KCAL_BAND)) / 10) * 10,
+              })}{" "}
+              <EvidenceChip ruleKey={COMBAT_RULES.metsRange.key} grade={COMBAT_RULES.metsRange.grade} />
+            </p>
           </div>
 
           <div className="glass mt-4 p-4">
@@ -461,6 +476,9 @@ export default function SportsPage() {
             <PulseIcon className="h-4 w-4 shrink-0 text-neon" />
             <p className="t-body text-xs text-muted">{weightNote}</p>
           </div>
+          <p data-testid="sports-mets-convention" className="t-body mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
+            {tk("mets")} <EvidenceChip />
+          </p>
           <div className="mt-4 flex flex-col gap-3">
             {SPORTS.map((s, i) => (
               <button key={s.key} onClick={() => openSport(s)} className="glass rise flex items-center gap-4 p-4 text-left" style={{ animationDelay: `${i * 35}ms` }}>

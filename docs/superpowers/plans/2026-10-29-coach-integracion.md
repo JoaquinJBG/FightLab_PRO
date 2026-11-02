@@ -653,6 +653,18 @@ BY 4.0, como el resto del contenido de FightLab (spec §1, A2). Lo cubre el
     coach. Lo mismo en la fase 3. Aún no los ha revisado nadie con formación clínica:
     pendiente del usuario, no bloquea.
   - Decisión sobre el PMC del plan v1 §8.
+  - **Decidido (2026-11-02, E.5):** el PMC (CTL/ATL/TSB) **no se construye** en E.5. El
+    anexo solo lo admite como "Convención de FightLab" (reglas "A PMC display is a labelled
+    FightLab convention" y "The 42-day and 7-day PMC constants are conventions"): sin
+    umbrales de TSB, sin forma ni predicciones, y el modelo predice mal el rendimiento
+    individual. No aporta nada que no dé ya la carga frente a la media. Si se hace más
+    adelante, con esa etiqueta y esas limitaciones.
+  - **Hecho (E.5):** ratio solo con 28 días (`ratio_days_left`, `week_vs_avg_pct`, `gaps`);
+    `HeadImpact` y `/coach/head-impacts` con `no_contact` en `/coach/safety` (y
+    `no_cut_content` para menores) y en el chat; CRT6 enlazado (`CRT6_URL`); tarjeta de
+    corte informativa en el pesaje; METs del Compendio 2024 en las sesiones de combate (los
+    del tracker de deportes no están en el anexo y quedan como convención). Las reglas que
+    cita la UI están en `frontend/lib/combat-rules.ts`.
   - Corte y pesaje: contenido informativo con sus reglas.
   - Flag `no_contact` por golpe en la cabeza con su regla (sustituye a la
     convención).

@@ -35,7 +35,7 @@ COACH_SYSTEM = """You are the coach of FightLab Pro, a high-performance coach fo
 Strict rules:
 - Use ONLY the data in the "Athlete context" and what the tools return. If a piece of data is missing, say so and suggest logging it in the app. NEVER invent numbers or trends, and never do your own arithmetic: quote numbers only from the context or from a tool result.
 - Every claim or recommendation about training, nutrition, recovery or health must rest on a rule of the evidence base. Look for it with search_rules, read it with get_rule, and cite it in the text as [[regla:key]], using exactly the key a tool returned this turn. Never cite a key the tools did not return, and never write a threshold, dose or "safe range" from memory. If no rule covers the question, say so plainly instead of improvising.
-- The training-load figures in the context (weekly load, ACWR, monotony...) are descriptive FightLab data. Report them as this week's load against the athlete's own average. Do not call a value safe or risky, do not give thresholds and do not claim they predict injury.
+- The training-load figures in the context (weekly load, the week against the 4-week average, ACWR, monotony...) are descriptive FightLab data. Report the week as a percentage above or below the athlete's own 4-week average, next to how they feel. Do not call a value safe or risky, do not give thresholds and do not claim they predict injury: load-ratio research comes from team sports and has barely been tested in combat sports. With under 28 days of history there is no ratio yet: say how many days are missing.
 - You are not a doctor and you give no medical advice: with pain or symptoms, recommend a health professional. For weight cuts before a weigh-in give only general information, never a prescription, and point to a professional team.
 - No markdown and no lists: plain prose, one to three sentences per idea."""
 
@@ -70,14 +70,35 @@ def with_deferral_line(text: str, language: str | None) -> str:
     return text if line in text else f"{text}\n\n{line}"
 
 
+# Bloqueos de combate que pone el servidor (`coaching/combat.py`, E.5), con la regla del anexo.
+NO_CONTACT_NOTE = (
+    "The athlete reported a blow to the head with symptoms and has not confirmed a clinician's "
+    "clearance (no_contact). Do not suggest sparring, clinch, partner drills, live grappling or any "
+    "contact work; say that a clinician decides the return to contact; never state a diagnosis, a "
+    "number of days or that they are probably fine. For the warning signs, point to the official "
+    "Concussion Recognition Tool 6. Cite combat-sports/a-head-blow-with-symptoms-sets-no-contact-and-refers."
+)
+NO_CUT_NOTE = (
+    "The athlete is under 18. Give no weight-cut or rapid weight-loss information; say that "
+    "sports-medicine consensus discourages weight making in young athletes and suggest a doctor or "
+    "sports dietitian."
+)
+
+
 def coach_chat(
-    *, messages: list[dict], context: dict, language: str | None = None, refer_gp: bool = False
+    *,
+    messages: list[dict],
+    context: dict,
+    language: str | None = None,
+    refer_gp: bool = False,
+    safety_notes: tuple[str, ...] = (),
 ) -> CoachReply:
     """Chat del coach con el contexto real del atleta y herramientas de evidencia.
 
     `language`: el idioma del perfil del usuario (`profile.language`). Las citas `[[regla:clave]]`
     se validan aquí: las que no existen o no salieron en una herramienta se quitan. Con `refer_gp`
-    (flag del motor), la respuesta termina con la línea de derivación.
+    (flag del motor), la respuesta termina con la línea de derivación. `safety_notes`: los bloqueos
+    que calcula el servidor (no los manda el cliente).
     """
     client = _client(timeout=30.0)
 
@@ -97,6 +118,8 @@ def coach_chat(
         + "\n\nAthlete context (real app data, today):\n"
         + json.dumps(context, ensure_ascii=False)
     )
+    if safety_notes:
+        system += "\n\nSafety (set by the server, always applies):\n" + "\n".join(f"- {n}" for n in safety_notes)
     retrieved: set[str] = set()
     convo = list(cleaned)
     for round_ in range(MAX_TOOL_ROUNDS + 1):

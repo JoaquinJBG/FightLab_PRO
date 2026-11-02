@@ -16,25 +16,34 @@ MAX_MESSAGE_CHARS = 2000
 MAX_CONTEXT_CHARS = 2000  # el contexto legítimo ocupa ~300; esto frena el abuso de tokens
 # Solo las claves que el frontend envía de verdad: lo demás no entra al prompt
 CONTEXT_KEYS = {
-    "semana_au", "acwr", "acwr_provisional", "dias_historial_carga", "monotonia",
+    "semana_au", "acwr", "semana_vs_media_pct", "dias_para_ratio", "historial_con_huecos",
+    "dias_historial_carga", "monotonia",
     "recuperacion", "peso_kg", "dias_desde_ultimo_peso", "pesaje",
 }
 # Formatos de imagen que acepta la API de Anthropic
 MEDIA_TYPES = {"JPEG": "image/jpeg", "PNG": "image/png", "WEBP": "image/webp", "GIF": "image/gif"}
 
 
-def _refer_gp(user) -> bool:
-    """`refer_gp` de los flags del motor. Si el motor no puede evaluar el perfil, no hay línea:
+def _safety(user) -> tuple[bool, tuple[str, ...]]:
+    """`refer_gp` de los flags del motor (o un `no_contact` de combate) y las notas de seguridad
+    de combate para el prompt. Si el motor no puede evaluar el perfil, no hay línea por su parte:
     el chat no debe caerse por eso."""
     from coach.profile import ProfileIncomplete
 
+    from coaching.combat import combat_flags
     from coaching.safety_views import _today
     from coaching.services import safety_for
 
+    today = _today(user.profile)
     try:
-        return safety_for(user, _today(user.profile)).refer_gp
+        refer_gp = safety_for(user, today).refer_gp
     except (ProfileIncomplete, ValueError):
-        return False
+        refer_gp = False
+    fight = combat_flags(user.profile, today)
+    notes = tuple(
+        note for on, note in ((fight.no_contact, services.NO_CONTACT_NOTE), (fight.no_cut_content, services.NO_CUT_NOTE)) if on
+    )
+    return refer_gp or fight.no_contact, notes
 
 
 class CoachChatView(APIView):
@@ -59,12 +68,14 @@ class CoachChatView(APIView):
         if len(json.dumps(context)) > MAX_CONTEXT_CHARS:
             return Response({"detail": msg("chat_context_too_large")}, status=status.HTTP_400_BAD_REQUEST)
 
+        refer_gp, safety_notes = _safety(request.user)
         try:
             reply = services.coach_chat(
                 messages=messages,
                 context=context,
                 language=request.user.profile.language,
-                refer_gp=_refer_gp(request.user),
+                refer_gp=refer_gp,
+                safety_notes=safety_notes,
             )
         except services.AIUnavailable:
             return Response({"detail": msg("ai_not_configured")}, status=status.HTTP_503_SERVICE_UNAVAILABLE)

@@ -16,11 +16,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from . import services
+from . import combat, services
 from .bridge import reason_texts
 from .bridge.adapters import latest_weight
 from .bridge.reasons import parse_reason
-from .models import Injury, KnowledgeRule, Screening, ScreeningEvent
+from .models import HeadImpact, Injury, KnowledgeRule, Screening, ScreeningEvent
 from .views import request_language
 
 # Los flags de sí/no de `coach.safety.SafetyFlags` que devuelve la API.
@@ -57,7 +57,10 @@ def _reason_data(reason, lang: str, grades: dict) -> dict:
 
 class SafetyView(APIView):
     """`GET /coach/safety`: flags, motivos (con regla, texto, profesional y gravedad),
-    `refer_gp`, la línea de derivación literal, el aviso y el número de emergencia."""
+    `refer_gp`, la línea de derivación literal, el aviso y el número de emergencia.
+
+    A los flags del motor se suman los de combate (`coaching/combat.py`): `no_contact` y
+    `no_cut_content`. Sus motivos van primero (las urgencias por un golpe en la cabeza mandan)."""
 
     permission_classes = [IsAuthenticated]
 
@@ -65,8 +68,9 @@ class SafetyView(APIView):
         profile = request.user.profile
         today = _today(profile)
         flags = services.safety_for(request.user, today)
+        fight = combat.combat_flags(profile, today)
         lang = _lang()
-        reasons = [parse_reason(text) for text in flags.reasons]
+        reasons = fight.reasons + [parse_reason(text) for text in flags.reasons]
         paused = {
             name: (pause, [parse_reason(text) for text in pause.reasons])
             for name, pause in flags.paused_exercises.items()
@@ -75,22 +79,30 @@ class SafetyView(APIView):
         grades = dict(KnowledgeRule.objects.filter(key__in=keys).values_list("key", "grade"))
         weight = latest_weight(request.user, today)
         screening = services.screening_get(profile)
+        refer_gp = flags.refer_gp or fight.no_contact
         return Response(
             {
                 "screened": flags.screened,
-                "flags": {name: getattr(flags, name) for name in BOOL_FLAGS},
+                "flags": {
+                    **{name: getattr(flags, name) for name in BOOL_FLAGS},
+                    "no_contact": fight.no_contact,
+                    "no_cut_content": fight.no_cut_content,
+                },
                 "reasons": [_reason_data(r, lang, grades) for r in reasons],
                 "paused_exercises": {
                     name: {"assessed": pause.assessed, "reasons": [_reason_data(r, lang, grades) for r in rs]}
                     for name, (pause, rs) in paused.items()
                 },
-                "refer_gp": flags.refer_gp,
-                "deferral_line": reason_texts.DEFERRAL_LINE[lang] if flags.refer_gp else None,
+                "refer_gp": refer_gp,
+                "deferral_line": reason_texts.DEFERRAL_LINE[lang] if refer_gp else None,
                 "disclaimer": reason_texts.DISCLAIMER[lang],
                 "emergency_number": flags.emergency_number,
                 # "No lo sé" deja el PAR-Q+ sin contestar: la Home recuerda completarlo.
                 "parq_pending": screening.parq_any_yes is None,
                 "weight": {"kg": weight[0], "date": weight[1].isoformat()} if weight else None,
+                # El CRT6 oficial, enlazado y nunca copiado (combat-sports "Red flags after a head
+                # blow mean emergency care").
+                "crt6_url": settings.CRT6_URL,
             }
         )
 
@@ -178,3 +190,58 @@ class InjuryDetailView(APIView):
     def delete(self, request, pk):
         self._get(request, pk).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class HeadImpactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HeadImpact
+        fields = ("id", "occurred_on", "symptoms", "red_flags", "origin", "cleared_on", "cleared_by")
+        read_only_fields = ("id",)
+
+    def validate(self, attrs):
+        current = {f: getattr(self.instance, f) for f in ("occurred_on", "cleared_on")} if self.instance else {}
+        instance = HeadImpact(**{**current, **{k: v for k, v in attrs.items() if k in ("occurred_on", "cleared_on")}})
+        today = _today(self.context["profile"])
+        if instance.occurred_on and instance.occurred_on > today:
+            raise serializers.ValidationError({"occurred_on": "a head blow cannot be in the future"})
+        if instance.cleared_on and instance.cleared_on > today:
+            raise serializers.ValidationError({"cleared_on": "clearance cannot be in the future"})
+        try:
+            instance.clean()
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(_errors(exc)) from exc
+        return attrs
+
+
+class HeadImpactListView(APIView):
+    """`GET/POST /coach/head-impacts`: avisar de un golpe en la cabeza (E.5). Con síntomas o
+    señales de alarma pone `no_contact` en `/coach/safety`."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(HeadImpactSerializer(request.user.profile.head_impacts.all(), many=True).data)
+
+    def post(self, request):
+        profile = request.user.profile
+        data = {"occurred_on": _today(profile).isoformat(), **request.data}
+        serializer = HeadImpactSerializer(data=data, context={"profile": profile})
+        serializer.is_valid(raise_exception=True)
+        impact = serializer.save(profile=profile)
+        return Response(HeadImpactSerializer(impact).data, status=status.HTTP_201_CREATED)
+
+
+class HeadImpactDetailView(APIView):
+    """`PATCH /coach/head-impacts/<id>`: el atleta confirma el alta de un clínico (`cleared_on`)
+    o corrige el aviso. El bloqueo solo se quita así, nunca por tiempo."""
+
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        profile = request.user.profile
+        impact = HeadImpact.objects.filter(pk=pk, profile=profile).first()
+        if impact is None:
+            raise Http404
+        serializer = HeadImpactSerializer(impact, data=request.data, partial=True, context={"profile": profile})
+        serializer.is_valid(raise_exception=True)
+        return Response(HeadImpactSerializer(serializer.save()).data)
