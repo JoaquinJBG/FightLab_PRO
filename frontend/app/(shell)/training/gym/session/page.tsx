@@ -14,6 +14,7 @@ import {
   GYM_LIVE_KEY,
   GYM_REST_KEY,
   exerciseStats,
+  gymSets,
   pushGymSession,
   type ExerciseEntry,
   type LiveGym,
@@ -241,6 +242,7 @@ function SessionInner() {
       duration_sec: Math.max(1, Math.round(capped)),
       rpe,
       detail,
+      sets: gymSets(parsedExercises),
     });
     localStorage.removeItem(GYM_LIVE_KEY);
     router.push("/training/gym");

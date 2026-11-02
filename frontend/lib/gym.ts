@@ -1,3 +1,5 @@
+import type { SyncSet } from "./activities";
+
 // Tipos, biblioteca de ejercicios y persistencia local del gimnasio.
 // (localStorage por ahora; pasa al backend con Exercise/WorkoutSession en fase 3)
 
@@ -133,4 +135,26 @@ export function exerciseStats(name: string): { last: string | null; prKg: number
     }
   }
   return { last, prKg };
+}
+
+const MAX_SYNC_SETS = 300;
+
+/** Series de una sesión para `SetLog` (Task 6.1). 0 kg es una serie con el peso corporal
+ * (`weight_kg: null`, como en el coach); las series sin repeticiones o con carga ilegible se
+ * descartan, no se adivinan. */
+export function gymSets(exercises: unknown[]): SyncSet[] {
+  const out: SyncSet[] = [];
+  exercises.forEach((raw, ei) => {
+    const ex = raw as { name?: unknown; sets?: unknown };
+    if (typeof ex?.name !== "string" || !ex.name.trim() || !Array.isArray(ex.sets)) return;
+    ex.sets.forEach((rawSet, si) => {
+      const s = rawSet as { kg?: unknown; reps?: unknown };
+      const kg = typeof s?.kg === "number" ? s.kg : Number.NaN;
+      const reps = typeof s?.reps === "number" ? s.reps : Number.NaN;
+      if (!Number.isInteger(reps) || reps <= 0 || reps > 1000) return;
+      if (!Number.isFinite(kg) || kg < 0 || kg > 1000) return;
+      out.push({ exercise: ex.name.trim().slice(0, 120), exercise_index: ei, set_index: si, weight_kg: kg > 0 ? kg : null, reps });
+    });
+  });
+  return out.slice(0, MAX_SYNC_SETS);
 }

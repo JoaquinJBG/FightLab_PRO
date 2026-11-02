@@ -10,6 +10,7 @@ from .models import Activity
 
 MAX_DETAIL_CHARS = 8_192
 MAX_NOTE_CHARS = 2_000
+MAX_SETS = 300
 STARTED_AT_FLOOR = datetime(2020, 1, 1, tzinfo=dt_timezone.utc)
 FUTURE_SKEW = timedelta(minutes=10)
 
@@ -26,6 +27,21 @@ class ActivitySerializer(serializers.ModelSerializer):
         )
 
 
+class SetItemSerializer(serializers.Serializer):
+    """Una serie de gimnasio (Task 6.1). `weight_kg` nulo: con el peso corporal."""
+
+    exercise = serializers.CharField(max_length=120, trim_whitespace=True)
+    exercise_index = serializers.IntegerField(min_value=0, max_value=200)
+    set_index = serializers.IntegerField(min_value=0, max_value=200)
+    set_type = serializers.ChoiceField(choices=["normal", "warmup", "dropset", "failure"], required=False, default="normal")
+    weight_kg = serializers.DecimalField(max_digits=6, decimal_places=2, min_value=0, max_value=1000, required=False, allow_null=True, default=None)
+    reps = serializers.IntegerField(min_value=0, max_value=1000, required=False, allow_null=True, default=None)
+    rir = serializers.DecimalField(max_digits=3, decimal_places=1, min_value=0, max_value=10, required=False, allow_null=True, default=None)
+    rpe = serializers.DecimalField(max_digits=3, decimal_places=1, min_value=1, max_value=10, required=False, allow_null=True, default=None)
+    distance_km = serializers.DecimalField(max_digits=7, decimal_places=3, min_value=0, required=False, allow_null=True, default=None)
+    duration_s = serializers.IntegerField(min_value=0, max_value=86_400, required=False, allow_null=True, default=None)
+
+
 class SyncItemSerializer(serializers.Serializer):
     """Item de ingesta idempotente. La validación es POR ITEM: un item inválido
     no debe envenenar el lote (contrato con la cola offline del cliente)."""
@@ -39,12 +55,19 @@ class SyncItemSerializer(serializers.Serializer):
     kcal = serializers.IntegerField(min_value=0, max_value=20_000, required=False, allow_null=True, default=None)
     note = serializers.CharField(max_length=MAX_NOTE_CHARS, required=False, allow_blank=True, default="")
     detail = serializers.JSONField(required=False, allow_null=True, default=None)
+    sets = SetItemSerializer(many=True, required=False, max_length=MAX_SETS)
 
     def validate_started_at(self, value):
         if value < STARTED_AT_FLOOR:
             raise serializers.ValidationError(msg("date_too_old"))
         if value > timezone.now() + FUTURE_SKEW:
             raise serializers.ValidationError(msg("date_in_future"))
+        return value
+
+    def validate_sets(self, value):
+        keys = [(s["exercise_index"], s["set_index"]) for s in value]
+        if len(keys) != len(set(keys)):
+            raise serializers.ValidationError(msg("sets_duplicated"))
         return value
 
     def validate_detail(self, value):

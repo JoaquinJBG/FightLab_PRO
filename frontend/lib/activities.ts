@@ -14,6 +14,7 @@
 // por dispositivo (flp_acts_legacy_owner) para no copiar datos de A a B.
 
 import type { LoadMetrics } from "@/lib/load";
+import { gymSets } from "@/lib/gym";
 
 export type ActivityKind = "SPORT" | "MMA" | "GYM";
 
@@ -27,6 +28,16 @@ export type SyncItem = {
   kcal?: number | null;
   note?: string;
   detail?: Record<string, unknown> | null;
+  /** Series de gimnasio (Task 6.1): van aparte para que no las corte el tope de `detail`. */
+  sets?: SyncSet[];
+};
+
+export type SyncSet = {
+  exercise: string;
+  exercise_index: number;
+  set_index: number;
+  weight_kg: number | null; // null: con el peso corporal
+  reps: number;
 };
 
 const UID_CACHE_KEY = "flp_uid";
@@ -280,6 +291,7 @@ function legacyItems(): SyncItem[] {
       duration_sec: dur,
       rpe: rpeOf(g.rpe),
       detail,
+      sets: gymSets(Array.isArray(g.exercises) ? g.exercises : []),
     });
   }
 

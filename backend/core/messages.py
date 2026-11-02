@@ -30,6 +30,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "date_too_old": "Fecha demasiado antigua.",
         "date_in_future": "Fecha en el futuro.",
         "detail_too_large": "detail demasiado grande (máx 8 KB).",
+        "sets_duplicated": "Hay dos series con el mismo ejercicio y número.",
     },
     "en": {
         "chat_bad_messages": "Invalid message format.",
@@ -51,6 +52,7 @@ MESSAGES: dict[str, dict[str, str]] = {
         "date_too_old": "Date too far in the past.",
         "date_in_future": "Date in the future.",
         "detail_too_large": "detail too large (max 8 KB).",
+        "sets_duplicated": "Two sets share the same exercise and number.",
     },
 }
 
