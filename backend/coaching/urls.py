@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .checkin_views import CheckinView
+from .plan_views import PlanApplyView, PlanView
 from .safety_views import (
     HeadImpactDetailView,
     HeadImpactListView,
@@ -24,6 +25,8 @@ urlpatterns = [
     path("coach/zones", ZonesView.as_view(), name="coach-zones"),
     path("coach/weigh-in", WeighInView.as_view(), name="coach-weigh-in"),
     path("coach/checkin", CheckinView.as_view(), name="coach-checkin"),
+    path("coach/plan", PlanView.as_view(), name="coach-plan"),
+    path("coach/plan/<int:pk>/apply", PlanApplyView.as_view(), name="coach-plan-apply"),
     path("coach/strength/e1rm", StrengthE1rmView.as_view(), name="coach-strength-e1rm"),
     path("coach/strength/sets", StrengthSetsView.as_view(), name="coach-strength-sets"),
     path("coach/strength/progress", StrengthProgressView.as_view(), name="coach-strength-progress"),

@@ -276,3 +276,47 @@ class DailyCheckin(models.Model):
 
     def __str__(self) -> str:
         return f"Checkin<{self.profile_id} {self.date}>"
+
+
+class WeeklyPlan(models.Model):
+    """El plan de una semana (spec §6.6, Task 6.4), generado por reglas en `coaching.plan`.
+
+    Cada número sale del motor (cargas de `strength.progression`, kcal y macros de `targets`,
+    minutos de "Weekly baseline dose") y cada línea lleva su regla o su etiqueta de convención.
+    Los motivos se guardan sin texto (`{code, rule_key, params}`) y se traducen al leerlos.
+    `narrative` es lo único que escribe el LLM, y nunca cambia los números.
+    """
+
+    class Status(models.TextChoices):
+        DRAFT = "draft", "draft"
+        ACTIVE = "active", "active"
+        SUPERSEDED = "superseded", "superseded"
+
+    profile = models.ForeignKey(
+        "profiles.UserProfile", on_delete=models.CASCADE, related_name="weekly_plans"
+    )
+    week_start = models.DateField()
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.DRAFT)
+    target_kcal = models.PositiveIntegerField(null=True, blank=True)
+    in_deficit = models.BooleanField(default=False)
+    training_schedule = models.JSONField(default=list)  # por día: gym/mma/cardio con su hora
+    sessions = models.JSONField(default=list)  # sesiones de gimnasio con sus ejercicios
+    cardio = models.JSONField(default=dict)
+    nutrition = models.JSONField(null=True, blank=True)  # copia de objetivos y macros
+    safety_reasons = models.JSONField(default=list)
+    rules_used = models.JSONField(default=list)  # claves de regla
+    engine_sha = models.CharField(max_length=40, blank=True, default="")
+    narrative = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    applied_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-week_start", "-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["profile"], condition=models.Q(status="active"), name="uniq_active_plan_per_profile"
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"WeeklyPlan<{self.profile_id} {self.week_start} {self.status}>"

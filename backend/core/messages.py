@@ -31,6 +31,11 @@ MESSAGES: dict[str, dict[str, str]] = {
         "date_in_future": "Fecha en el futuro.",
         "detail_too_large": "detail demasiado grande (máx 8 KB).",
         "sets_duplicated": "Hay dos series con el mismo ejercicio y número.",
+        "plan_too_few_gym_days": "Elige al menos 2 días de gimnasio: el mínimo son 2 sesiones de cuerpo completo a la semana.",
+        "plan_too_many_gym_days": "Como mucho 6 días de gimnasio: deja al menos uno de descanso.",
+        "plan_gym_days_invalid": "Días de gimnasio no válidos.",
+        "plan_mma_days_invalid": "Días de MMA no válidos.",
+        "plan_cardio_days_invalid": "Días de cardio no válidos.",
     },
     "en": {
         "chat_bad_messages": "Invalid message format.",
@@ -53,6 +58,11 @@ MESSAGES: dict[str, dict[str, str]] = {
         "date_in_future": "Date in the future.",
         "detail_too_large": "detail too large (max 8 KB).",
         "sets_duplicated": "Two sets share the same exercise and number.",
+        "plan_too_few_gym_days": "Choose at least 2 gym days: the minimum is 2 full-body sessions a week.",
+        "plan_too_many_gym_days": "At most 6 gym days: keep at least one rest day.",
+        "plan_gym_days_invalid": "Invalid gym days.",
+        "plan_mma_days_invalid": "Invalid MMA days.",
+        "plan_cardio_days_invalid": "Invalid cardio days.",
     },
 }
 
