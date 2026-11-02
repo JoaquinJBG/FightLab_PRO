@@ -3,8 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { useBiometrics } from "@/lib/hooks";
+import { useBiometrics, useSafety } from "@/lib/hooks";
 import { CitedText, type Citation } from "@/components/evidence/CitedText";
+import { EvidenceChip } from "@/components/evidence/EvidenceChip";
+import { COMBAT_RULES, type RuleRef } from "@/lib/combat-rules";
+import { cite, combatCitations, comparisonPhrase, comparisonRule, isBigJump, loadBadge } from "@/lib/load-texts";
 import { computeRecovery, type Recovery } from "@/lib/recovery";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
 import { fetchServerMetrics } from "@/lib/activities";
@@ -21,6 +24,9 @@ type Ctx = {
   lastWeightDays: number | null;
   weighTarget: number | null;
   weighDays: number | null;
+  // Contenido de corte (anexo de combate): nunca para menores ni con los bloqueos de la fase 4
+  cutAllowed: boolean;
+  minor: boolean;
 };
 
 function num(v: string | number | null): number | null {
@@ -43,12 +49,14 @@ function recoveryText(r: Recovery, t: Tr) {
 
 /* --------------------- briefing y recomendaciones por reglas -------------- */
 
-function buildBriefing(ctx: Ctx, t: Tr): string {
+function buildBriefing(ctx: Ctx, t: Tr, tl: Tr, tc: Tr): { text: string; rules: RuleRef[] } {
   const bits: string[] = [];
+  const rules: RuleRef[] = [];
   if (ctx.recovery?.state === "cuidado") {
     bits.push(t("briefing.care"));
-  } else if (ctx.metrics?.acwr != null && ctx.metrics.acwr > 1.3) {
-    bits.push(t("briefing.acwrHigh", { acwr: ctx.metrics.acwr.toFixed(2) }));
+  } else if (isBigJump(ctx.metrics)) {
+    bits.push(tl("coach.briefingUp", { pct: ctx.metrics!.weekVsAvgPct! }));
+    rules.push(COMBAT_RULES.comparison);
   } else if (ctx.recovery?.state === "listo") {
     bits.push(t("briefing.ready"));
   } else if (ctx.metrics && ctx.metrics.weekAU > 0) {
@@ -56,13 +64,14 @@ function buildBriefing(ctx: Ctx, t: Tr): string {
   } else {
     bits.push(t("briefing.unknown"));
   }
-  if (ctx.weighTarget != null && ctx.weighDays != null && ctx.weight != null) {
+  if (ctx.cutAllowed && ctx.weighTarget != null && ctx.weighDays != null && ctx.weight != null) {
     const over = ctx.weight - ctx.weighTarget;
     if (over > 0.3 && ctx.weighDays <= 10) {
-      bits.push(t("briefing.weigh", { days: ctx.weighDays, over: over.toFixed(1) }));
+      bits.push(tc("cut.briefing", { days: ctx.weighDays, over: over.toFixed(1) }));
+      rules.push(COMBAT_RULES.plannedWeight);
     }
   }
-  return bits.join(" ");
+  return { text: bits.join(" "), rules };
 }
 
 type Rec = {
@@ -72,29 +81,24 @@ type Rec = {
   title: string;
   why: string;
   action?: { label: string; href: string };
+  rule?: RuleRef | null; // la regla del número o del consejo; null = convención de FightLab
 };
 
-function buildRecs(ctx: Ctx, t: Tr): Rec[] {
+function buildRecs(ctx: Ctx, t: Tr, tl: Tr, tc: Tr): Rec[] {
   const recs: Rec[] = [];
   const m = ctx.metrics;
 
-  if (m?.acwr != null && m.acwr > 1.3) {
+  // Anexo de combate: la semana frente a la media, en palabras neutras. El "salto grande"
+  // (30 %) es una convención de FightLab; no hay aviso por quedarse por debajo.
+  if (isBigJump(m)) {
     recs.push({
-      id: "acwr-alto",
-      icon: "load",
-      tone: "warn",
-      title: t("recs.acwrHigh.title", { acwr: m.acwr.toFixed(2) }),
-      why: t("recs.acwrHigh.why"),
-      action: { label: t("recs.acwrHigh.action"), href: "/training/load" },
-    });
-  } else if (m?.acwr != null && m.acwr < 0.8 && m.weekAU > 0 && ctx.recovery?.state !== "cuidado") {
-    recs.push({
-      id: "acwr-bajo",
+      id: "carga-salto",
       icon: "load",
       tone: "info",
-      title: t("recs.acwrLow.title", { acwr: m.acwr.toFixed(2) }),
-      why: t("recs.acwrLow.why"),
-      action: { label: t("recs.acwrLow.action"), href: "/training" },
+      title: tl("coach.recUp.title", { pct: m!.weekVsAvgPct! }),
+      why: tl("coach.recUp.why"),
+      action: { label: tl("coach.recUp.action"), href: "/training/load" },
+      rule: COMBAT_RULES.comparison,
     });
   }
 
@@ -108,14 +112,15 @@ function buildRecs(ctx: Ctx, t: Tr): Rec[] {
     });
   }
 
-  if (ctx.weighTarget != null && ctx.weighDays != null && ctx.weight != null && ctx.weight - ctx.weighTarget > 0.3) {
+  if (ctx.cutAllowed && ctx.weighTarget != null && ctx.weighDays != null && ctx.weight != null && ctx.weight - ctx.weighTarget > 0.3) {
     recs.push({
       id: "pesaje",
       icon: "weigh",
       tone: ctx.weighDays <= 5 ? "warn" : "info",
-      title: t("recs.weigh.title", { over: (ctx.weight - ctx.weighTarget).toFixed(1), days: ctx.weighDays }),
-      why: ctx.weighDays > 5 ? t("recs.weigh.whyFar") : t("recs.weigh.whyNear"),
-      action: { label: t("recs.weigh.action"), href: "/nutrition/weigh-in" },
+      title: tc("cut.recTitle", { over: (ctx.weight - ctx.weighTarget).toFixed(1), days: ctx.weighDays }),
+      why: tc("cut.recWhy"),
+      action: { label: tc("cut.recAction"), href: "/nutrition/weigh-in" },
+      rule: COMBAT_RULES.plannedWeight,
     });
   }
 
@@ -136,7 +141,7 @@ function buildRecs(ctx: Ctx, t: Tr): Rec[] {
       icon: "log",
       tone: "info",
       title: t("recs.start.title"),
-      why: t("recs.start.why"),
+      why: tl("coach.start"),
       action: { label: t("recs.start.action"), href: "/training" },
     });
   }
@@ -147,8 +152,9 @@ function buildRecs(ctx: Ctx, t: Tr): Rec[] {
       icon: "load",
       tone: "good",
       title: t("recs.ok.title"),
-      // Solo afirma "zona segura y recuperación correcta" si de verdad hay datos de ambas
-      why: m?.acwr != null && ctx.recovery ? t("recs.ok.whyData") : t("recs.ok.whyNoData"),
+      // Solo dice "cerca de tu media y recuperación sin avisos" si de verdad hay datos de ambas
+      why: m?.acwr != null && ctx.recovery ? tl("coach.okWhy") : t("recs.ok.whyNoData"),
+      rule: m?.acwr != null && ctx.recovery ? COMBAT_RULES.comparison : undefined,
     });
   }
   return recs;
@@ -167,29 +173,28 @@ const dismissKey = () => {
 type Msg = { role: "coach" | "user"; text: string; citations?: Citation[] };
 const QUICK_KEYS = ["how", "hard", "weight"] as const;
 
-function coachReply(text: string, ctx: Ctx, t: Tr, listFmt: Intl.ListFormat): string {
+function coachReply(text: string, ctx: Ctx, t: Tr, tl: Tr, tc: Tr, listFmt: Intl.ListFormat): string {
   const low = text.toLowerCase();
   const m = ctx.metrics;
-  const acwrTxt = m?.acwr != null
-    ? t(m.provisional ? "reply.acwrProvisional" : "reply.acwr", { value: m.acwr.toFixed(2) })
-    : m != null && m.historyDays >= 10 && m.weekAU === 0
-      ? t("reply.acwrPaused")
-      : t("reply.acwrPending");
+  // La semana frente a la media (o cuántos días faltan), con su regla del anexo de combate
+  const rule = comparisonRule(m);
+  const acwrTxt = comparisonPhrase(m, tl) + (rule ? cite(rule) : "");
   const rec = ctx.recovery ? recoveryText(ctx.recovery, t) : null;
   // Las palabras clave cubren es y en: el texto del usuario puede estar en cualquiera.
   if (/peso|pesaje|corte|weight|weigh|cut/.test(low)) {
+    if (ctx.minor) return tc("cut.minor") + cite(COMBAT_RULES.minorsCut);
     if (ctx.weight == null) return t("reply.weightNone");
-    if (ctx.weighTarget != null && ctx.weighDays != null) {
+    if (ctx.cutAllowed && ctx.weighTarget != null && ctx.weighDays != null) {
       const over = ctx.weight - ctx.weighTarget;
       return over > 0
-        ? t("reply.weightOver", { over: over.toFixed(1), days: ctx.weighDays })
+        ? tc("cut.replyOver", { over: over.toFixed(1), days: ctx.weighDays }) + cite(COMBAT_RULES.plannedWeight)
         : t("reply.weightAt", { target: ctx.weighTarget, days: ctx.weighDays });
     }
     return t("reply.weightLast", { weight: ctx.weight.toFixed(1) });
   }
   if (/fuerte|intens|sparring|entren|hoy|hard|train|today/.test(low)) {
     if (rec && ctx.recovery?.state === "cuidado") return t("reply.hardCare", { chips: listFmt.format(rec.chips) });
-    if (m?.acwr != null && m.acwr > 1.3) return t("reply.hardHigh", { acwr: acwrTxt });
+    if (isBigJump(m)) return tl("coach.replyHigh", { comparison: acwrTxt });
     if (ctx.recovery?.state === "listo") return t("reply.hardReady", { acwr: acwrTxt });
     return t("reply.hardNormal", { acwr: acwrTxt });
   }
@@ -198,8 +203,8 @@ function coachReply(text: string, ctx: Ctx, t: Tr, listFmt: Intl.ListFormat): st
   }
   if (/carga|acwr|riesgo|load|risk/.test(low)) {
     return m && m.weekAU > 0
-      ? t("reply.load", { au: m.weekAU, acwr: acwrTxt, mono: m.monotonia != null ? m.monotonia.toFixed(1) : "—" })
-      : t("reply.loadNone");
+      ? tl("coach.replyLoad", { au: m.weekAU, comparison: acwrTxt, mono: m.monotonia != null ? m.monotonia.toFixed(1) : "—" })
+      : tl("coach.replyNone");
   }
   if (/cómo voy|como voy|resumen|how am i|summary/.test(low)) {
     const parts: string[] = [];
@@ -220,9 +225,12 @@ function coachReply(text: string, ctx: Ctx, t: Tr, listFmt: Intl.ListFormat): st
 
 export default function CoachPage() {
   const t = useTranslations("coach");
+  const tl = useTranslations("load");
+  const tc = useTranslations("combat");
   const locale = useLocale();
   const listFmt = new Intl.ListFormat(locale, { type: "conjunction" });
   const { data: logs = [] } = useBiometrics();
+  const { data: safety } = useSafety();
   const [metrics, setMetrics] = useState<LoadMetrics | null>(null);
   const [weigh, setWeigh] = useState<{ target: number; date: string } | null>(null);
   const [dismissed, setDismissed] = useState<string[]>([]);
@@ -269,9 +277,12 @@ export default function CoachPage() {
     lastWeightDays,
     weighTarget: weigh?.target ?? null,
     weighDays,
+    cutAllowed: !!safety && !["no_cut_content", "no_weight_targets", "no_deficit", "hold_deficit"].some((f) => safety.flags[f]),
+    minor: !!safety?.flags.no_cut_content,
   };
 
-  const recs = buildRecs(ctx, t).filter((r) => !dismissed.includes(r.id));
+  const recs = buildRecs(ctx, t, tl, tc).filter((r) => !dismissed.includes(r.id));
+  const briefing = buildBriefing(ctx, t, tl, tc);
 
   function dismiss(id: string) {
     const n = [...dismissed, id];
@@ -318,7 +329,9 @@ export default function CoachPage() {
           context: {
             semana_au: ctx.metrics?.weekAU ?? 0,
             acwr: ctx.metrics?.acwr ?? null,
-            acwr_provisional: ctx.metrics?.provisional ?? null,
+            semana_vs_media_pct: ctx.metrics?.weekVsAvgPct ?? null,
+            dias_para_ratio: ctx.metrics?.ratioDaysLeft ?? null,
+            historial_con_huecos: ctx.metrics?.gaps ?? false,
             dias_historial_carga: ctx.metrics?.historyDays ?? 0,
             monotonia: ctx.metrics?.monotonia ?? null,
             recuperacion: ctx.recovery ? { estado: ctx.recovery.state, seniales: ctx.recovery.chips } : null,
@@ -336,7 +349,8 @@ export default function CoachPage() {
     } catch {
       if (ctrl.signal.aborted) return; // se salió de la vista: no tocar el estado
       // IA no configurada o caída: respuesta por reglas con los datos locales
-      setChatMsgs((m) => [...m, { role: "coach", text: coachReply(txt, ctx, t, listFmt) }]);
+      const reply = coachReply(txt, ctx, t, tl, tc, listFmt);
+      setChatMsgs((m) => [...m, { role: "coach", text: reply, citations: combatCitations(reply) }]);
       setAiMode("reglas");
     } finally {
       if (!ctrl.signal.aborted) setTyping(false);
@@ -356,7 +370,7 @@ export default function CoachPage() {
 
       {/* Contexto real */}
       <div className="mt-3 flex flex-wrap gap-2">
-        <span className="badge">{metrics?.acwr != null ? `ACWR ${metrics.acwr.toFixed(2)}${metrics.provisional ? "*" : ""}` : t("badges.acwrNone")}</span>
+        <span className="badge" data-testid="coach-load-badge">{loadBadge(metrics, tl)}</span>
         <span className="badge">{t("badges.week", { au: metrics?.weekAU ?? 0 })}</span>
         {weight != null && <span className="badge">{weight.toFixed(1)} kg</span>}
         {weighDays != null && <span className="badge">{t("badges.weighIn", { days: weighDays })}</span>}
@@ -369,7 +383,10 @@ export default function CoachPage() {
           <p className="t-eyebrow text-neon">{t("briefing.eyebrow")}</p>
           <span className="badge">{t("briefing.withData")}</span>
         </div>
-        <p className="t-body mt-2 text-ink">{buildBriefing(ctx, t)}</p>
+        <p className="t-body mt-2 text-ink">
+          {briefing.text}
+          {briefing.rules.map((r) => <span key={r.key}> <EvidenceChip ruleKey={r.key} grade={r.grade} /></span>)}
+        </p>
         <div className="mt-3 flex gap-2">
           <Link href="/training" className="btn btn-tonal btn-sm"><GloveIcon className="h-4 w-4" /> {t("briefing.train")}</Link>
           <Link href="/nutrition" className="btn btn-outline btn-sm">{t("briefing.nutrition")}</Link>
@@ -397,6 +414,7 @@ export default function CoachPage() {
                     <div className="min-w-0 flex-1">
                       <p className="t-label text-ink">{r.title}</p>
                       <p className="t-body mt-1 text-xs text-muted">{r.why}</p>
+                      {r.rule !== undefined && <div className="mt-1.5"><EvidenceChip ruleKey={r.rule?.key} grade={r.rule?.grade} /></div>}
                       <div className="mt-2.5 flex items-center gap-3">
                         {r.action && (
                           <Link href={r.action.href} className="btn btn-tonal btn-sm">{r.action.label} <ChevronRight className="h-3.5 w-3.5" /></Link>
@@ -463,7 +481,7 @@ export default function CoachPage() {
         <p className="t-body mt-2 text-center text-[11px] text-muted">
           {aiMode === "reglas" ? `${t("chat.rulesNotice")} ` : ""}
           {recovery == null && metrics?.weekAU === 0 ? `${t("chat.moreData")} ` : ""}
-          {t("chat.disclaimer")} {metrics?.acwr != null && metrics.provisional ? t("chat.provisionalNote") : ""}
+          {t("chat.disclaimer")}
         </p>
       </div>
 

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useFormatter, useTranslations } from "next-intl";
 import { useBiometrics, useMe, useSafety, useWeighIn } from "@/lib/hooks";
 import { SafetyBanner } from "@/components/safety/SafetyBanner";
+import { LoadSummary } from "@/components/load/LoadSummary";
 import { ZonesCard } from "@/components/zones/ZonesCard";
 import type { Biometrics } from "@/lib/schemas";
 import { computeRecovery } from "@/lib/recovery";
@@ -14,7 +15,6 @@ import {
   ScaleIcon,
   HeartIcon,
   PulseIcon,
-  BoltIcon,
   ArrowUpRight,
   ChevronRight,
   TrainingIcon,
@@ -484,39 +484,8 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* ---------- Carga real (de tus sesiones registradas) ---------- */}
-      <Link
-        href="/training/load"
-        className="glass rise mt-4 flex items-center gap-3 p-4"
-        style={{ animationDelay: "350ms" }}
-      >
-        <span className={local.metrics && local.metrics.weekAU > 0 ? "text-neon" : "text-muted"}>
-          <BoltIcon className="h-5 w-5" />
-        </span>
-        {local.metrics && local.metrics.weekAU > 0 ? (
-          <div className="flex flex-1 items-center gap-5">
-            <div>
-              <p className="t-label text-muted">{t("load.week")}</p>
-              <p className="stat text-xl text-ink">{local.metrics.weekAU}<span className="text-xs text-muted"> {t("load.au")}</span></p>
-            </div>
-            <div>
-              <p className="t-label text-muted">{t("load.acwr")}</p>
-              <p className={`stat text-xl ${local.metrics.acwr != null ? (local.metrics.acwr >= 0.8 && local.metrics.acwr <= 1.3 ? "text-good" : "text-warn") : "text-muted"}`}>
-                {local.metrics.acwr != null ? `${format.number(local.metrics.acwr, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${local.metrics.provisional ? "*" : ""}` : "—"}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="flex-1">
-            <p className="t-label text-ink">{t("load.title")}</p>
-            <p className="t-body text-xs text-muted">{t("load.soon")}</p>
-          </div>
-        )}
-        <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
-      </Link>
-      {local.metrics?.acwr != null && local.metrics.provisional && (
-        <p className="t-body mt-1.5 text-[10px] text-muted">{t("load.provisional")}</p>
-      )}
+      {/* ---------- Carga real (de tus sesiones registradas), según el anexo de combate ---------- */}
+      <LoadSummary metrics={local.metrics} style={{ animationDelay: "350ms" }} />
 
       {/* ---------- Zonas de esfuerzo (motor del coach, calculadas en el servidor) ---------- */}
       <ZonesCard />

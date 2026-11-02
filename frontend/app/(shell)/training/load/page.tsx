@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useBiometrics } from "@/lib/hooks";
 import { computeRecovery, type Recovery } from "@/lib/recovery";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
 import { fetchServerMetrics } from "@/lib/activities";
 import { BoltIcon, InfoIcon, ArrowUpRight } from "@/components/icons";
+import { EvidenceChip } from "@/components/evidence/EvidenceChip";
+import { LoadComparisonCard, LoadIndices } from "@/components/load/LoadComparisonCard";
+import { COMBAT_RULES } from "@/lib/combat-rules";
 
 /** Iniciales de los últimos 7 días, como índices 0-6 de `Date.getDay()` (0 = domingo). */
 function dayIndexes(): number[] {
@@ -39,7 +42,7 @@ function Tip({ k, open }: { k: string; open: string | null }) {
 
 export default function LoadPage() {
   const t = useTranslations("training.load");
-  const locale = useLocale();
+  const tl = useTranslations("load");
   const { data: logs = [] } = useBiometrics();
   const [metrics, setMetrics] = useState<LoadMetrics | null>(null);
   const [open, setOpen] = useState<string | null>(null);
@@ -55,7 +58,6 @@ export default function LoadPage() {
   const m = metrics;
   const max = m ? Math.max(...m.daily7, 1) : 1;
   const labels = dayIndexes().map((i) => t(`dayInitials.${i}`));
-  const acwrPct = (v: number) => Math.max(0, Math.min(100, ((v - 0.5) / (1.8 - 0.5)) * 100));
 
   return (
     <div className="pt-4">
@@ -93,45 +95,8 @@ export default function LoadPage() {
         </section>
       )}
 
-      {/* ACWR */}
-      <section className="glass mt-4 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <span className="t-label text-ink">{t("acwrTitle")}</span>
-            <Info k="acwr" open={open} setOpen={setOpen} />
-          </div>
-          {m?.acwr != null ? (
-            <span className={`stat text-xl ${m.acwr >= 0.8 && m.acwr <= 1.3 ? "text-good" : "text-warn"}`}>
-              {m.acwr.toFixed(2)}
-            </span>
-          ) : (
-            <span className="t-label text-muted">—</span>
-          )}
-        </div>
-        {m?.acwr != null ? (
-          <>
-            {m.provisional && (
-              <p className="t-body mt-1 text-[11px] text-muted">
-                {t("acwrProvisional", { days: m.historyDays })}
-              </p>
-            )}
-            <div className="relative mt-3 h-2.5 w-full rounded-full bg-[rgba(150,190,255,0.12)]">
-              <div className="absolute inset-y-0 rounded-full bg-[rgba(67,232,160,0.35)]" style={{ left: `${acwrPct(0.8)}%`, width: `${acwrPct(1.3) - acwrPct(0.8)}%` }} />
-              <div className="glow absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-neon" style={{ left: `${acwrPct(m.acwr)}%` }} />
-            </div>
-            <div className="mt-1.5 flex justify-between text-[10px] text-muted"><span>0.5</span><span className="text-good">{t("optimalZone")}</span><span>1.8</span></div>
-          </>
-        ) : (
-          <p className="t-body mt-2 text-xs text-muted">
-            {m && m.historyDays >= 10 && m.weekAU === 0
-              ? t("acwrNoRecent")
-              : m && m.historyDays > 0
-                ? t("acwrBuilding", { days: m.historyDays })
-                : t("acwrEmpty")}
-          </p>
-        )}
-        <Tip k="acwr" open={open} />
-      </section>
+      {/* La semana frente a la media (anexo de combate, E.5) */}
+      <LoadComparisonCard metrics={m} />
 
       {/* Carga semanal */}
       <section className="glass mt-4 p-4">
@@ -154,29 +119,17 @@ export default function LoadPage() {
         ) : (
           <p className="t-body mt-2 text-xs text-muted">{t("weekEmpty")}</p>
         )}
-        <Tip k="load" open={open} />
+        {open === "load" && (
+          <p className="t-body mt-2 rounded-xl border border-[rgba(150,190,255,0.12)] bg-[rgba(255,255,255,0.04)] p-2.5 text-xs text-[#cdd9ef]">{tl("loadInfo")}</p>
+        )}
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          <EvidenceChip ruleKey={COMBAT_RULES.sessionRpe.key} grade={COMBAT_RULES.sessionRpe.grade} />
+          <EvidenceChip ruleKey={COMBAT_RULES.rpeCombat.key} grade={COMBAT_RULES.rpeCombat.grade} />
+        </div>
       </section>
 
-      {/* Monotonía / Tensión */}
-      <section className="mt-4 grid grid-cols-2 gap-3">
-        <div className="glass p-4">
-          <div className="flex items-center gap-1.5"><span className="t-label text-muted">{t("monotony")}</span><Info k="monotony" open={open} setOpen={setOpen} /></div>
-          {m?.sinVariacion ? (
-            <>
-              <p className="stat mt-2 text-2xl text-warn">{t("max")}</p>
-              <p className="t-body mt-1 text-[10px] text-muted">{t("noVariation")}</p>
-            </>
-          ) : (
-            <p className="stat mt-2 text-2xl text-ink">{m?.monotonia != null ? m.monotonia.toFixed(1) : "—"}</p>
-          )}
-          <Tip k="monotony" open={open} />
-        </div>
-        <div className="glass p-4">
-          <div className="flex items-center gap-1.5"><span className="t-label text-muted">{t("strain")}</span><Info k="strain" open={open} setOpen={setOpen} /></div>
-          <p className="stat mt-2 text-2xl text-ink">{m?.tension != null ? m.tension.toLocaleString(locale) : "—"}</p>
-          <Tip k="strain" open={open} />
-        </div>
-      </section>
+      {/* Monotonía / Tensión: descriptivas */}
+      <LoadIndices metrics={m} />
 
       <p className="t-body mt-4 text-center text-xs text-muted">
         {t("footer")}

@@ -323,7 +323,8 @@ export async function fetchServerMetrics(): Promise<LoadMetrics | null> {
     const res = await fetch(`/api/proxy/activities/metrics?tz=${encodeURIComponent(tz)}`);
     if (!res.ok) return null;
     const d = (await res.json()) as {
-      week_au: number; daily7: number[]; acwr: number | null; provisional: boolean;
+      week_au: number; daily7: number[]; acwr: number | null; week_vs_avg_pct: number | null;
+      ratio_days_left: number; gaps: boolean;
       monotonia: number | null; tension: number | null; sin_variacion: boolean; history_days: number;
     };
     if (typeof d.week_au !== "number" || !Array.isArray(d.daily7)) return null;
@@ -331,7 +332,9 @@ export async function fetchServerMetrics(): Promise<LoadMetrics | null> {
       weekAU: d.week_au,
       daily7: d.daily7,
       acwr: d.acwr,
-      provisional: d.provisional,
+      weekVsAvgPct: d.week_vs_avg_pct ?? null,
+      ratioDaysLeft: d.ratio_days_left ?? 0,
+      gaps: d.gaps ?? false,
       monotonia: d.monotonia,
       tension: d.tension,
       sinVariacion: d.sin_variacion,

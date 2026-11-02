@@ -66,7 +66,7 @@ describe("Home con los bloqueos del servidor (spec §8.3)", () => {
     mockApi(routes());
     renderApp(<DashboardPage />, locale);
     expect(await screen.findByText(CATALOGS[locale].dashboard.week.title)).toBeTruthy();
-    expect(screen.getByText(CATALOGS[locale].dashboard.load.title)).toBeTruthy();
+    expect(screen.getByText(CATALOGS[locale].load.title)).toBeTruthy(); // la tarjeta de carga (E.5)
   });
 });
 
