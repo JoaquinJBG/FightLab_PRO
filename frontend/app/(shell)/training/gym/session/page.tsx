@@ -4,6 +4,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { intlLocale } from "@/lib/locale";
 import { TrainingIcon, InfoIcon } from "@/components/icons";
 import {
   LIBRARY,
@@ -51,7 +52,7 @@ const REST_OPTS = [60, 90, 120];
 function SessionInner() {
   const t = useTranslations("training.gymSession");
   const tg = useTranslations("training.gym");
-  const locale = useLocale();
+  const locale = intlLocale(useLocale());
   const focusLabel = (f: string) => (FOCUS_KEYS[f] ? tg(`foci.${FOCUS_KEYS[f]}`) : f);
   const exLabel = (n: string) => (EXERCISE_KEYS[n] ? tg(`exercises.${EXERCISE_KEYS[n]}`) : n);
   const groupLabel = (g: string) => (FOCUS_KEYS[g] ? tg(`foci.${FOCUS_KEYS[g]}`) : g);

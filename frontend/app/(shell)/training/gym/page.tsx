@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import { intlLocale } from "@/lib/locale";
 import { TrainingIcon, CoachIcon, ChevronRight } from "@/components/icons";
 import { GYM_LIVE_KEY, EXERCISE_KEYS, FOCUS_KEYS, loadGymSessions, type GymSession, type LiveGym } from "@/lib/gym";
 
@@ -35,7 +36,7 @@ type RoutineDay = { day: number; focus: string; exercises: string[] };
 
 export default function GymPage() {
   const t = useTranslations("training.gym");
-  const locale = useLocale();
+  const locale = intlLocale(useLocale());
   const focusLabel = (f: string) => (FOCUS_KEYS[f] ? t(`foci.${FOCUS_KEYS[f]}`) : f);
   const exLabel = (n: string) => (EXERCISE_KEYS[n] ? t(`exercises.${EXERCISE_KEYS[n]}`) : n);
   function fmtDate(ts: number) {

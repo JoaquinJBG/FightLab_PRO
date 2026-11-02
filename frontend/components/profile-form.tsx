@@ -1,22 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useProfile, useUpdateProfile } from "@/lib/hooks";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { LANGUAGE_SELECTOR_ENABLED, LOCALES, type Locale } from "@/lib/locale";
 import { DobInput, dobErrorCode, dobToIso, type Dob, type DobLabels } from "./dob-input";
 
 const GENDERS = ["MALE", "FEMALE", "OTHER"] as const;
 const STANCES = ["ORTHODOX", "SOUTHPAW", "SWITCH"] as const;
 const UNITS = ["METRIC", "IMPERIAL"] as const;
 
+const LANGUAGE_NAMES: Record<Locale, string> = { es: "Español", en: "English" };
+
+/** El idioma solo se puede cambiar con `selectorEnabled` (spec §7.5, apagado hasta la fase I). */
 export function ProfileForm({
   submitLabel,
   onSaved,
+  selectorEnabled = LANGUAGE_SELECTOR_ENABLED,
 }: {
   submitLabel: string;
   onSaved: () => void;
+  selectorEnabled?: boolean;
 }) {
   const t = useTranslations("profile");
+  const router = useRouter();
+  const uiLocale = useLocale();
   const { data: profile } = useProfile();
   const update = useUpdateProfile();
   const [loaded, setLoaded] = useState(false);
@@ -25,6 +34,7 @@ export function ProfileForm({
   const [heightCm, setHeightCm] = useState("");
   const [stance, setStance] = useState("");
   const [units, setUnits] = useState("METRIC");
+  const [language, setLanguage] = useState<Locale>("es");
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -35,6 +45,7 @@ export function ProfileForm({
       setHeightCm(profile.height_cm != null ? String(profile.height_cm) : "");
       setStance(profile.dominant_stance ?? "");
       setUnits(profile.preferred_units ?? "METRIC");
+      setLanguage(profile.language);
       setLoaded(true);
     }
   }, [profile, loaded]);
@@ -59,10 +70,13 @@ export function ProfileForm({
       height_cm: heightCm ? Number(heightCm) : null,
       dominant_stance: stance || null,
       preferred_units: units,
+      ...(selectorEnabled ? { language } : {}),
     };
     try {
       await update.mutateAsync(payload);
       onSaved();
+      // El BFF ha copiado el idioma a la cookie flp_lang: se recargan los catálogos del servidor.
+      if (selectorEnabled && language !== uiLocale) router.refresh();
     } catch {
       /* error mostrado abajo via update.isError */
     }
@@ -116,6 +130,15 @@ export function ProfileForm({
           {UNITS.map((v) => <option key={v} value={v}>{v === "METRIC" ? t("form.unitsMetric") : t("form.unitsImperial")}</option>)}
         </select>
       </label>
+
+      {selectorEnabled && (
+        <label className="flex flex-col gap-1.5">
+          <span className="t-label text-muted">{t("form.language")}</span>
+          <select value={language} onChange={(e) => setLanguage(e.target.value as Locale)} className={selectCls} data-testid="profile-language">
+            {LOCALES.map((v) => <option key={v} value={v}>{LANGUAGE_NAMES[v]}</option>)}
+          </select>
+        </label>
+      )}
 
       {formError && <p className="text-xs text-bad">{formError}</p>}
       {update.isError && !formError && <p className="text-xs text-bad">{(update.error as Error).message}</p>}

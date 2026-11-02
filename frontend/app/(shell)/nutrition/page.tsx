@@ -43,9 +43,9 @@ function Bar({ label, val, target, color, rule }: { label: string; val: number; 
   const t = useTranslations("nutrition");
   return (
     <div>
-      <div className="flex justify-between">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-1">
         <span className="t-label text-muted">{label}</span>
-        <span className="t-body text-xs text-ink">{target == null ? t("gramsOnly", { value: val }) : t("gramsOf", { value: val, target })}</span>
+        <span className="t-body whitespace-nowrap text-xs text-ink">{target == null ? t("gramsOnly", { value: val }) : t("gramsOf", { value: val, target })}</span>
       </div>
       <div className="mt-1 h-2 rounded-full bg-[rgba(150,190,255,0.12)]">
         <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />

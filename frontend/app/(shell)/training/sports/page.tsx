@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import { intlLocale } from "@/lib/locale";
 import { useBiometrics } from "@/lib/hooks";
 import { deleteServerActivities, enqueueActivity } from "@/lib/activities";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
@@ -90,7 +91,7 @@ export default function SportsPage() {
   const t = useTranslations("training.sports");
   const tk = useTranslations("combat.tracker");
   const tAct = useTranslations("training.activities.sports");
-  const locale = useLocale();
+  const locale = intlLocale(useLocale());
   const sportLabel = (s: { key: string; name: string }) => (tAct.has(s.key) ? tAct(s.key) : s.name);
   const intensityLabel = (canon: string) => (INTENSITY_ID[canon] ? t(`intensity.${INTENSITY_ID[canon]}`) : canon);
   const { data: logs = [] } = useBiometrics();

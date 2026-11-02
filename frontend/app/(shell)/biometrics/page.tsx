@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import { intlLocale } from "@/lib/locale";
 import {
   useBiometrics,
   useDeleteBiometrics,
@@ -68,7 +69,7 @@ function fmtEntry(ts: number, locale: string, unknown: string) {
 
 function TrendChart({ pts, trend }: { pts: Pt[]; trend: number[] }) {
   const t = useTranslations("biometrics");
-  const locale = useLocale();
+  const locale = intlLocale(useLocale());
   const W = 320;
   const H = 150;
   const PAD = 12;
@@ -118,7 +119,7 @@ function TrendChart({ pts, trend }: { pts: Pt[]; trend: number[] }) {
 export default function BiometricsPage() {
   const t = useTranslations("biometrics");
   const tTrend = useTranslations("weightTrend");
-  const locale = useLocale();
+  const locale = intlLocale(useLocale());
   const { data: logs = [], isLoading } = useBiometrics();
   const { data: profileData } = useProfile();
   const del = useDeleteBiometrics();

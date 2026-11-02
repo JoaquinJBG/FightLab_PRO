@@ -654,7 +654,7 @@
       "cta": "Log measurement"
     },
     "trend": {
-      "title": "Trend weight",
+      "title": "Weight trend",
       "infoAria": "What is the trend",
       "info": "The trend is a smoothed average of your logged weights: it ignores daily water and glycogen swings and shows where your weight is really heading. Trust the line, not the dot from today.",
       "rate": "{n} kg/week",
@@ -828,7 +828,7 @@
       "hints": {
         "sparring": "Live rounds. High RPE — control the intensity with your partner.",
         "drilling": "Technique repetition with a partner, at low intensity. Quality over fatigue.",
-        "pads": "Pad work: combinations at a medium-high pace, with feedback from your coach.",
+        "pads": "Pad work: combinations at a medium-high pace, with feedback from your trainer.",
         "bag": "Bag work: power, volume or cardio depending on the day.",
         "technique": "Shadowboxing and form without opposition. Low RPE — precision.",
         "conditioning": "HIIT/combat-specific strength. High RPE."
@@ -1418,6 +1418,7 @@
       "height": "Height (cm)",
       "stance": "Stance",
       "units": "Units",
+      "language": "Language",
       "unitsMetric": "Metric (kg · cm)",
       "unitsImperial": "Imperial (lb · in)",
       "saved": "Saved ✓",
@@ -1446,7 +1447,7 @@
     "empty": "Log your workouts with RPE (Sports, MMA or Gym) and your load will show here.",
     "soon": "It turns on once you log sessions with RPE",
     "gaps": "Your history has weeks with no sessions (a layoff, an injury or a deload): this number may mislead.",
-    "context": "This is a descriptive number: it is not a safety threshold and it does not predict injury. Read it next to how you sleep, soreness, fatigue and what your plan intended; if you jump well above your average, talk it over with your coach or physio.",
+    "context": "This is a descriptive number: it is not a safety threshold and it does not predict injury. Read it next to how you sleep, soreness, fatigue and what your plan intended; if you jump well above your average, talk it over with your trainer or physio.",
     "combatNote": "The comparison comes from team-sport research and has barely been studied in combat sports.",
     "loadInfo": "Load of each session = minutes × RPE (CR10 scale), in arbitrary units (AU). It is perceived effort, not a physiological measurement, and it is not compared between athletes. Your Sports, MMA and Gym sessions with RPE add up here.",
     "comparisonInfo": "Daily average of your last 7 days against that of your last 28 (this week included). It needs a month of history: the 28 days are a FightLab convention, not an evidence-based minimum.",
@@ -1460,10 +1461,10 @@
     "coach": {
       "badgeNone": "Load —",
       "badgeDays": "Load: {days} d to go",
-      "briefingUp": "Your week is {pct}% above your 4-week average. It is not an injury warning: check how you feel and, if it is a big jump, talk it over with your coach.",
+      "briefingUp": "Your week is {pct}% above your 4-week average. It is not an injury warning: check how you feel and, if it is a big jump, talk it over with your trainer.",
       "recUp": {
         "title": "Week {pct}% above your average",
-        "why": "It is a descriptive number, not an injury warning. Compare it with how you sleep and recover and with what your plan intended; if it is a big jump, talk it over with your coach or physio.",
+        "why": "It is a descriptive number, not an injury warning. Compare it with how you sleep and recover and with what your plan intended; if it is a big jump, talk it over with your trainer or physio.",
         "action": "See load"
       },
       "start": "With your workouts (duration + RPE) I work out your load and, after a month of history, compare it with your average.",
@@ -1722,7 +1723,7 @@
     "ok": "{rate} kg per week ({pct} %)",
     "okNow": "Average of the last week: {kg} kg",
     "okBasis": "It compares the average of the first week with the last, never a single weigh-in.",
-    "insufficient": "No trend yet. It needs at least {min_points} weigh-ins covering {min_days} days; you have {points} over {days} days.",
+    "insufficient": "No trend yet. It needs at least {min_points} weigh-ins covering {min_days} days; you have {points} over {days, plural, one {# day} other {# days}}.",
     "insufficientMore": "You need {missing} more weigh-ins.",
     "empty": "No weigh-ins yet. With 7 weigh-ins spread over 14 days you will see your trend.",
     "blocked": "Weight tracking is switched off for you.",

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { resolveLocale } from "@/lib/locale";
+import { intlLocale, resolveLocale } from "@/lib/locale";
+import { foodName } from "@/lib/nutrition";
 
 describe("resolveLocale", () => {
   it("la cookie manda sobre Accept-Language", () => {
@@ -25,5 +26,18 @@ describe("selector de idioma (apagado hasta la fase I)", () => {
     expect(appLocale("en", "en-GB,en;q=0.9", false)).toBe("es");
     expect(appLocale(undefined, "en-GB,en;q=0.9", false)).toBe("es");
     expect(appLocale("en", "es-ES", true)).toBe("en");
+  });
+});
+
+describe("formato y nombres en inglés", () => {
+  it("las fechas y números en inglés son británicos", () => {
+    expect(intlLocale("en")).toBe("en-GB");
+    expect(intlLocale("es")).toBe("es");
+    expect(new Date(2026, 10, 2).toLocaleDateString(intlLocale("en"), { day: "2-digit", month: "short" })).toBe("02 Nov");
+  });
+  it("los alimentos de ejemplo tienen nombre en inglés y en español se quedan igual", () => {
+    expect(foodName("Pechuga de pollo", "en")).toBe("Chicken breast");
+    expect(foodName("Pechuga de pollo", "es")).toBe("Pechuga de pollo");
+    expect(foodName("Algo nuevo", "en")).toBe("Algo nuevo");
   });
 });

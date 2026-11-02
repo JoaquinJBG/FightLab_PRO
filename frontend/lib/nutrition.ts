@@ -36,6 +36,37 @@ export const FOODS: { name: string; kcal: number; p: number; c: number; f: numbe
   { name: "Queso fresco batido", kcal: 72, p: 12, c: 4, f: 0.2 },
 ];
 
+// Nombres en inglés de los alimentos de ejemplo y de los platos simulados de la foto. Lo que
+// se guarda es el nombre que vio el usuario. (Fase 8: la tabla del motor ya trae los dos idiomas.)
+const EN_NAMES: Record<string, string> = {
+  "Pechuga de pollo": "Chicken breast",
+  "Arroz blanco cocido": "Cooked white rice",
+  "Huevo": "Egg",
+  "Avena": "Oats",
+  "Plátano": "Banana",
+  "Atún en lata": "Tinned tuna",
+  "Pan integral": "Wholemeal bread",
+  "Yogur natural": "Natural yoghurt",
+  "Almendras": "Almonds",
+  "Lentejas cocidas": "Cooked lentils",
+  "Salmón": "Salmon",
+  "Patata cocida": "Boiled potato",
+  "Boniato": "Sweet potato",
+  "Aguacate": "Avocado",
+  "Queso fresco batido": "Quark",
+  "Verduras salteadas": "Stir-fried vegetables",
+  "Ensalada mixta": "Mixed salad",
+  "Aceite de oliva": "Olive oil",
+  "Pollo con arroz y verduras": "Chicken with rice and vegetables",
+  "Ensalada con atún": "Tuna salad",
+  "Tostada de aguacate y huevo": "Avocado and egg toast",
+  "Bol de avena con plátano": "Oat bowl with banana",
+};
+
+export function foodName(name: string, locale: string): string {
+  return locale === "en" ? (EN_NAMES[name] ?? name) : name;
+}
+
 export function scale(food: { kcal: number; p: number; c: number; f: number }, grams: number) {
   const k = grams / 100;
   return {

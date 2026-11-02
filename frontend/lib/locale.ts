@@ -36,3 +36,8 @@ export function appLocale(
 ): Locale {
   return selectorEnabled ? resolveLocale(cookie, acceptLanguage) : DEFAULT_LOCALE;
 }
+
+/** El locale para `Intl` (fechas, horas, números): el inglés de la app es británico. */
+export function intlLocale(locale: string): string {
+  return locale === "en" ? "en-GB" : locale;
+}

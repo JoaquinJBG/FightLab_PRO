@@ -137,7 +137,7 @@ describe.each([
     expect(container.textContent).toContain("80.0");
     expect(container.textContent).toContain("bpm");
     if (locale === "en") {
-      expect(container.textContent).toContain("Trend weight");
+      expect(container.textContent).toContain("Weight trend");
       expect(container.textContent).toContain("per week");
       expect(container.textContent).toContain("79.6");
       expect(container.textContent).toContain("BMI");

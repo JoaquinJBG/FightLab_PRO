@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import { intlLocale } from "@/lib/locale";
 import { GloveIcon, InfoIcon, CoachIcon } from "@/components/icons";
 import { deleteServerActivities, enqueueActivity } from "@/lib/activities";
 import { useSafety } from "@/lib/hooks";
@@ -109,7 +110,7 @@ function Stepper({ label, value, set, min, max, step = 1, suffix = "" }: {
 export default function MmaPage() {
   const t = useTranslations("training.mma");
   const tc = useTranslations("combat.head");
-  const locale = useLocale();
+  const locale = intlLocale(useLocale());
   // Golpe en la cabeza con síntomas (E.5): sin sugerencias de trabajo con contacto
   const { data: safety } = useSafety();
   const contactBlocked = noContact(safety);

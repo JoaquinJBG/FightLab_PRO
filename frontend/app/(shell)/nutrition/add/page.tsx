@@ -3,9 +3,10 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   FOODS,
+  foodName,
   MEALS,
   addItem,
   recentFoods,
@@ -68,6 +69,7 @@ type Mode = "recientes" | "buscar" | "rapido";
 function AddInner() {
   const t = useTranslations("nutrition.add");
   const tm = useTranslations("nutrition.meals");
+  const locale = useLocale();
   const router = useRouter();
   const qpMeal = useSearchParams().get("meal");
   const meal = MEALS.includes(qpMeal ?? "") ? (qpMeal as string) : "Comida";
@@ -95,7 +97,8 @@ function AddInner() {
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<(typeof FOODS)[number] | null>(null);
   const [grams, setGrams] = useState(100);
-  const results = FOODS.filter((f) => f.name.toLowerCase().includes(q.toLowerCase())).slice(0, 8);
+  const foods = FOODS.map((f) => ({ ...f, name: foodName(f.name, locale) }));
+  const results = foods.filter((f) => f.name.toLocaleLowerCase(locale).includes(q.toLocaleLowerCase(locale))).slice(0, 8);
   const scaled = sel ? scale(sel, grams) : null;
 
   function addFood() {
@@ -156,7 +159,8 @@ function AddInner() {
       if (res.status === 503) {
         // IA aún sin configurar: ejemplo simulado, marcado como tal
         const plate = PHOTO_PLATES[Math.floor(Math.random() * PHOTO_PLATES.length)];
-        setDetected({ name: plate.name, real: false, nota: null, items: plate.items.map((i) => ({ ...i, base: i })) });
+        const items = plate.items.map((i) => ({ ...i, name: foodName(i.name, locale) }));
+        setDetected({ name: foodName(plate.name, locale), real: false, nota: null, items: items.map((i) => ({ ...i, base: i })) });
         return;
       }
       if (!res.ok) throw new Error(String(res.status));

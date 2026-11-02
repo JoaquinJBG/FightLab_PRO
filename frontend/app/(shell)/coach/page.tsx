@@ -397,9 +397,9 @@ export default function CoachPage() {
       {/* Recomendaciones por reglas */}
       {recs.length > 0 && (
         <div className="mt-5">
-          <div className="flex items-center justify-between">
-            <p className="t-eyebrow text-muted">{t("recs.heading")}</p>
-            <span className="t-body text-[10px] text-muted">{t("recs.byRules")}</span>
+          <div className="flex items-baseline justify-between gap-3">
+            <p className="t-eyebrow shrink-0 text-muted">{t("recs.heading")}</p>
+            <span className="t-body min-w-0 text-right text-[10px] text-muted">{t("recs.byRules")}</span>
           </div>
           <div className="mt-2 flex flex-col gap-2.5">
             {recs.map((r) => {
