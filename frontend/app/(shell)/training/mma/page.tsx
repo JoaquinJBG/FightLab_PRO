@@ -5,6 +5,12 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { GloveIcon, InfoIcon, CoachIcon } from "@/components/icons";
 import { deleteServerActivities, enqueueActivity } from "@/lib/activities";
+import { useSafety } from "@/lib/hooks";
+import { isContactWork, noContact } from "@/lib/combat";
+import { COMBAT_RULES } from "@/lib/combat-rules";
+import { EvidenceChip } from "@/components/evidence/EvidenceChip";
+import { ContactBlockNote, HeadBlowCard } from "@/components/combat/HeadBlowCard";
+import { CombatKcal } from "@/components/combat/CombatKcal";
 
 // Los valores en español son los ids canónicos que se guardan (local + servidor); lo visible sale de i18n.
 const ARTS = ["Boxeo", "Kickboxing", "Muay Thai", "BJJ", "Lucha", "Taekwondo", "Karate", "MMA"] as const;
@@ -102,7 +108,11 @@ function Stepper({ label, value, set, min, max, step = 1, suffix = "" }: {
 
 export default function MmaPage() {
   const t = useTranslations("training.mma");
+  const tc = useTranslations("combat.head");
   const locale = useLocale();
+  // Golpe en la cabeza con síntomas (E.5): sin sugerencias de trabajo con contacto
+  const { data: safety } = useSafety();
+  const contactBlocked = noContact(safety);
   const [art, setArt] = useState<Art>("Boxeo");
   const [workType, setWorkType] = useState<WorkType>("Técnica");
   const [rpeInfo, setRpeInfo] = useState(false);
@@ -181,7 +191,9 @@ export default function MmaPage() {
     setInput("");
     setMsgs((m) => [...m, { role: "user", text: msg }]);
     setTyping(true);
-    const reply = coachReply(t, msg, art, workType, minutes);
+    const reply = contactBlocked && isContactWork(workType)
+      ? tc("noContactPlan", { work: workLabel(t, workType).toLowerCase() })
+      : coachReply(t, msg, art, workType, minutes);
     setTimeout(() => { setMsgs((m) => [...m, { role: "coach", text: reply }]); setTyping(false); }, 650);
   }
   function mockVoice() {
@@ -221,12 +233,17 @@ export default function MmaPage() {
           <button type="button" onClick={() => setRpeInfo((v) => !v)} aria-label={t("rpeWhat")} className={`shrink-0 ${rpeInfo ? "text-neon" : "text-muted hover:text-neon"}`}><InfoIcon className="h-3.5 w-3.5" /></button>
         </div>
         {rpeInfo && <p className="t-body mt-2 rounded-xl border border-[rgba(150,190,255,0.12)] bg-[rgba(255,255,255,0.04)] p-2.5 text-xs text-[#cdd9ef]">{t("rpeInfo")}</p>}
+        <ContactBlockNote contact={isContactWork(workType)} />
       </div>
 
       {/* Plan sugerido */}
       <div className="glass neon-edge mt-4 p-4">
         <p className="t-eyebrow text-neon">{t("plan.title")}</p>
-        <p className="t-body mt-1.5 text-ink">{planFor(t, art, workType, minutes)}</p>
+        <p className="t-body mt-1.5 text-ink">
+          {contactBlocked && isContactWork(workType)
+            ? tc("noContactPlan", { work: workLabel(t, workType).toLowerCase() })
+            : planFor(t, art, workType, minutes)}
+        </p>
         <p className="t-body mt-2 text-xs text-muted">⚠️ {reminderFor(t, art)}</p>
         <p className="t-body mt-3 border-t border-[rgba(150,190,255,0.1)] pt-2.5 text-[11px] text-muted">
           {t.rich("plan.note", { ai: (c) => <span className="text-neon">{c}</span> })}
@@ -257,8 +274,13 @@ export default function MmaPage() {
           <span className="t-label text-muted">{t("log.estimatedLoad")} <span className="text-[10px]">{t("log.loadFormula")}</span></span>
           <span className="stat text-2xl neon-text">{load} <span className="text-xs text-muted">{t("au")}</span></span>
         </div>
+        <div className="mt-1.5"><EvidenceChip ruleKey={COMBAT_RULES.sessionRpe.key} grade={COMBAT_RULES.sessionRpe.grade} /></div>
+        <CombatKcal art={art} workType={workType} minutes={minutes} />
         <button className="btn btn-primary mt-3 w-full" onClick={saveSession}>{savedFlash ? t("log.saved") : t("log.save")}</button>
       </div>
+
+      {/* Golpe en la cabeza: aviso y bloqueo del contacto (anexo de combate) */}
+      <HeadBlowCard />
 
       {/* Stats del mes */}
       {monthSessions.length > 0 && (

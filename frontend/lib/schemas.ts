@@ -134,6 +134,8 @@ export const safety = z.object({
   emergency_number: z.string().nullable(),
   parq_pending: z.boolean(),
   weight: z.object({ kg: z.number(), date: z.string() }).nullable(),
+  // El CRT6 oficial (E.5): se enlaza, nunca se reproduce.
+  crt6_url: z.string().nullable().optional(),
 });
 export type Safety = z.infer<typeof safety>;
 

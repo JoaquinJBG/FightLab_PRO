@@ -4,6 +4,14 @@ import { expectClean, renderEn } from "./sportsmma-helpers";
 import MmaPage from "@/app/(shell)/training/mma/page";
 
 vi.mock("@/lib/activities", () => ({ enqueueActivity: vi.fn(), deleteServerActivities: vi.fn() }));
+// Sin golpes en la cabeza ni peso: la parte de combate (E.5) tiene su propio test (combat.test.tsx)
+vi.mock("@/lib/hooks", () => ({ useSafety: () => ({ data: undefined }), useBiometrics: () => ({ data: [] }) }));
+vi.mock("@/lib/combat", async (orig) => ({
+  ...(await orig<typeof import("@/lib/combat")>()),
+  useHeadImpacts: () => ({ data: [] }),
+  useReportHeadImpact: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
+  useClearContact: () => ({ mutate: vi.fn(), isPending: false }),
+}));
 
 beforeEach(() => { localStorage.clear(); Element.prototype.scrollIntoView = vi.fn(); });
 afterEach(() => { cleanup(); vi.useRealTimers(); });
