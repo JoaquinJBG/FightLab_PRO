@@ -75,7 +75,7 @@ describe("vista Coach en inglés", () => {
     expect(await screen.findByText(/Your snapshot today: week 300 AU, ACWR 1\.00/)).toBeTruthy();
     await waitFor(() => expect(screen.getByText("rule-based")).toBeTruthy());
     fireEvent.click(screen.getByText("Train hard today?"));
-    expect(await screen.findByText(/Today is not the day to kill yourself: Resting HR \+15 vs your average and HRV/)).toBeTruthy();
+    expect(await screen.findByText(/Today is not the day to run yourself into the ground: Resting HR \+15 vs your average and HRV/)).toBeTruthy();
     fireEvent.click(screen.getByText("How's my weight?"));
     expect(await screen.findByText(/Your latest weight is 75\.0 kg/)).toBeTruthy();
     expect(container.textContent).toContain("AI isn't available right now");
