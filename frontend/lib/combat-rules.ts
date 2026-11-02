@@ -13,6 +13,7 @@ export const COMBAT_RULES = {
   // Carga
   sessionRpe: rule("session-rpe-is-a-valid-general-measure-of-internal-load", "moderate"),
   rpeCombat: rule("treat-session-rpe-as-perceived-load-in-grappling-mma-boxing-and-judo", "emerging"),
+  cr10: rule("use-the-cr10-scale-with-foster-s-wording", "emerging"),
   ratio28: rule("show-the-load-ratio-only-after-28-days-of-history", "emerging"),
   comparison: rule("present-load-as-a-neutral-comparison-with-the-recent-average", "emerging"),
   notPredictor: rule("acwr-is-not-a-validated-injury-predictor", "emerging"),

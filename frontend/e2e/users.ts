@@ -12,4 +12,5 @@ export const READY_USERS = {
   scoff: "e2e-nutri-scoff@fightlab.test", // SCOFF positivo: no_deficit y no_weight_targets
   noSex: "e2e-nutri-nosex@fightlab.test", // gender OTHER y sin equation_sex
   noTraining: "e2e-nutri-notraining@fightlab.test", // síntomas cardiacos: no_training
+  combat: "e2e-combat@fightlab.test", // anexo de combate (E.5): golpe en la cabeza, carga y corte
 };

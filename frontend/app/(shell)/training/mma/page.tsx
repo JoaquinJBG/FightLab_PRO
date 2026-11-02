@@ -232,7 +232,11 @@ export default function MmaPage() {
           <p className="t-body text-xs text-muted">{t(`hints.${WT_ID[workType]}`)}</p>
           <button type="button" onClick={() => setRpeInfo((v) => !v)} aria-label={t("rpeWhat")} className={`shrink-0 ${rpeInfo ? "text-neon" : "text-muted hover:text-neon"}`}><InfoIcon className="h-3.5 w-3.5" /></button>
         </div>
-        {rpeInfo && <p className="t-body mt-2 rounded-xl border border-[rgba(150,190,255,0.12)] bg-[rgba(255,255,255,0.04)] p-2.5 text-xs text-[#cdd9ef]">{t("rpeInfo")}</p>}
+        {rpeInfo && (
+          <p className="t-body mt-2 rounded-xl border border-[rgba(150,190,255,0.12)] bg-[rgba(255,255,255,0.04)] p-2.5 text-xs text-[#cdd9ef]">
+            {t("rpeInfo")} <EvidenceChip ruleKey={COMBAT_RULES.cr10.key} grade={COMBAT_RULES.cr10.grade} />
+          </p>
+        )}
         <ContactBlockNote contact={isContactWork(workType)} />
       </div>
 
@@ -245,6 +249,8 @@ export default function MmaPage() {
             : planFor(t, art, workType, minutes)}
         </p>
         <p className="t-body mt-2 text-xs text-muted">⚠️ {reminderFor(t, art)}</p>
+        {/* Rounds, descansos y % del plan: sin regla en el anexo (anexo de combate, E.5) */}
+        <div className="mt-2"><EvidenceChip /></div>
         <p className="t-body mt-3 border-t border-[rgba(150,190,255,0.1)] pt-2.5 text-[11px] text-muted">
           {t.rich("plan.note", { ai: (c) => <span className="text-neon">{c}</span> })}
         </p>

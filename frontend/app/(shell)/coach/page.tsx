@@ -371,6 +371,7 @@ export default function CoachPage() {
       {/* Contexto real */}
       <div className="mt-3 flex flex-wrap gap-2">
         <span className="badge" data-testid="coach-load-badge">{loadBadge(metrics, tl)}</span>
+        {comparisonRule(metrics) && <EvidenceChip ruleKey={comparisonRule(metrics)!.key} grade={comparisonRule(metrics)!.grade} />}
         <span className="badge">{t("badges.week", { au: metrics?.weekAU ?? 0 })}</span>
         {weight != null && <span className="badge">{weight.toFixed(1)} kg</span>}
         {weighDays != null && <span className="badge">{t("badges.weighIn", { days: weighDays })}</span>}
