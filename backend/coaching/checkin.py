@@ -84,7 +84,7 @@ def _number(name: str, value, errors: dict, *, integer=False, low=None, high=Non
     return int(number) if integer else number
 
 
-def _clean(day: date, today: date, values: dict) -> dict:
+def clean_values(day: date, today: date, values: dict) -> dict:
     """Valida lo que trae el check-in y descarta lo nulo (en el motor, nulo = no dado)."""
     errors: dict[str, str] = {}
     if day > today:
@@ -158,7 +158,7 @@ def checkin_upsert(user, day: date, values: dict, today: date) -> DailyCheckin:
     Lanza `ValidationError` (campos fuera de rango o desconocidos) o `CheckinRefused` (peso,
     cintura o kcal con `no_weight_targets`). En ambos casos no se escribe nada.
     """
-    clean = _clean(day, today, values)
+    clean = clean_values(day, today, values)
     refused = [name for name in BODY_FIELDS if name in clean]
     if refused and weight_tracking_blocked(user, today):
         raise CheckinRefused(refused)
@@ -221,3 +221,13 @@ def checkin_data(user, day: date, today: date) -> dict | None:
         "bp_systolic": row.bp_systolic,
         "bp_diastolic": row.bp_diastolic,
     }
+
+
+def checkin_mark(user, day: date, *, illness: str | None, red_flags: list[str]) -> DailyCheckin:
+    """Anota en el check-in de `day` las señales de alarma marcadas (códigos, no texto)."""
+    row, _ = DailyCheckin.objects.select_for_update().get_or_create(profile=user.profile, date=day)
+    if illness:
+        row.illness = illness
+    row.red_flags = list(dict.fromkeys([*row.red_flags, *red_flags]))
+    row.save()
+    return row
