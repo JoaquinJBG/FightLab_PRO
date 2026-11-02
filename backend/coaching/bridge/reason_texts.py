@@ -144,6 +144,23 @@ TEXTS: dict[str, dict[str, str]] = {
             "FightLab convention: no training until a clinician clears it, so the energy estimate "
             "uses the desk activity level"
         ),
+        # Golpe en la cabeza (E.5, `coaching/combat.py`): texto de FightLab que sigue la redacción
+        # sugerida por el anexo; pendiente de que lo revise un clínico.
+        "head_blow_red_flags": (
+            "a warning sign after a blow to the head: get emergency medical care now (call your "
+            "local emergency number). Do not stay alone for at least the first 3 hours, do not go "
+            "home alone, avoid alcohol and drugs your clinician has not prescribed, and do not "
+            "drive until a health professional clears it"
+        ),
+        "head_blow_no_contact": (
+            "a blow to the head with symptoms needs to be checked by a doctor, who decides whether "
+            "it is a concussion. On the day of the blow, stop training. No sparring or contact "
+            "work (sparring, clinch, partner drills, live grappling) until a clinician has cleared "
+            "you; walking and everyday activity are fine if they do not clearly worsen your "
+            "symptoms. If you have a warning sign such as neck pain, a seizure, passing out, "
+            "worsening confusion or headache, or repeated vomiting, get emergency care now: the "
+            "full list is in the official Concussion Recognition Tool 6 (CRT6)"
+        ),
     },
     "es": {
         "under_18": (
@@ -290,6 +307,22 @@ TEXTS: dict[str, dict[str, str]] = {
             "convención de FightLab: sin entrenar hasta que un clínico te dé el alta, así que la "
             "estimación de energía usa el nivel de actividad sedentario (desk)"
         ),
+        "head_blow_red_flags": (
+            "una señal de alarma tras un golpe en la cabeza: ve a urgencias ya (llama al número "
+            "de emergencias). No te quedes solo al menos las 3 primeras horas, no vuelvas solo a "
+            "casa, evita el alcohol y los fármacos que no te haya recetado tu clínico, y no "
+            "conduzcas hasta que te lo autorice un profesional sanitario"
+        ),
+        "head_blow_no_contact": (
+            "un golpe en la cabeza con síntomas lo tiene que valorar un médico, que es quien "
+            "decide si es una conmoción. El día del golpe, no entrenes. Nada de sparring ni de "
+            "trabajo de contacto (sparring, clinch, drills con compañero, grappling en vivo) "
+            "hasta que un clínico te dé el alta; caminar y la actividad diaria están bien si no "
+            "empeoran claramente los síntomas. Si tienes una señal de alarma, como dolor de "
+            "cuello, una convulsión, perder el conocimiento, confusión o dolor de cabeza que van "
+            "a más, o vómitos repetidos, ve a urgencias ya: la lista completa está en la "
+            "herramienta oficial Concussion Recognition Tool 6 (CRT6)"
+        ),
     },
 }
 
@@ -332,6 +365,9 @@ PROFESSIONAL: dict[str, dict[str, str] | None] = {
     # de cardiología.
     "glp1_low_intake": {"en": "prescriber", "es": "quien te receta el medicamento"},
     "bands_cardiac_team": {"en": "cardiac team", "es": "equipo de cardiología"},
+    # Golpe en la cabeza (E.5): urgencias y, después, quien da el alta para el contacto.
+    "head_blow_red_flags": {"en": "emergency services", "es": "urgencias"},
+    "head_blow_no_contact": {"en": "doctor or other qualified clinician", "es": "médico u otro clínico cualificado"},
 }
 
 # Gravedad, según los flags que pone cada motivo en `coach/safety.py`: `stop` si pone
@@ -388,6 +424,9 @@ SEVERITY: dict[str, str] = {
     "body_fat_unreliable": "info",
     "body_fat_error_carries": "info",
     "no_training_desk_pal": "info",
+    # Golpe en la cabeza (E.5): urgencias (`stop`) y bloqueo del contacto con derivación (`refer`).
+    "head_blow_red_flags": "stop",
+    "head_blow_no_contact": "refer",
 }
 DEFAULT_SEVERITY = "limit"
 

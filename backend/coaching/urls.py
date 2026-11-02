@@ -1,6 +1,13 @@
 from django.urls import path
 
-from .safety_views import InjuryDetailView, InjuryListView, SafetyView, ScreeningView
+from .safety_views import (
+    HeadImpactDetailView,
+    HeadImpactListView,
+    InjuryDetailView,
+    InjuryListView,
+    SafetyView,
+    ScreeningView,
+)
 from .targets_views import TargetsView, WeighInView, ZonesView
 from .views import EngineView, RuleDetailView, RuleSearchView, SourceDetailView
 
@@ -16,4 +23,6 @@ urlpatterns = [
     path("coach/screening", ScreeningView.as_view(), name="coach-screening"),
     path("coach/injuries", InjuryListView.as_view(), name="coach-injuries"),
     path("coach/injuries/<int:pk>", InjuryDetailView.as_view(), name="coach-injury"),
+    path("coach/head-impacts", HeadImpactListView.as_view(), name="coach-head-impacts"),
+    path("coach/head-impacts/<int:pk>", HeadImpactDetailView.as_view(), name="coach-head-impact"),
 ]

@@ -3,7 +3,8 @@
 Una prueba de API por fila de la tabla de flags de `docs/safety.md` (spec §8.4):
 perfil → endpoint → flags y motivos esperados.
 """
-from datetime import date
+from datetime import date, datetime, time
+from datetime import timezone as dt_tz
 from unittest import mock
 
 import pytest
@@ -68,7 +69,8 @@ def test_flags_table_row(user_client, row):
     data = resp.data
     on = {name for name, value in data["flags"].items() if value}
     assert row.flags <= on, (row.id, on)
-    assert set(data["flags"]) == BOOL_FLAGS
+    # Los del motor y los de combate que añade FightLab (`coaching/combat.py`, E.5).
+    assert set(data["flags"]) == BOOL_FLAGS | {"no_contact", "no_cut_content"}
     codes = {r["code"] for r in data["reasons"]}
     assert row.codes <= codes, (row.id, codes)
     for reason in data["reasons"]:
@@ -118,7 +120,9 @@ def test_emergency_number_and_weight(user_client):
     user.profile.save()
     from profiles.models import BiometricsLog
 
-    BiometricsLog.objects.create(profile=user.profile, weight_kg="80.20")
+    # El día de hoy está fijado (TODAY): el peso tiene que ser de ese día, no de la hora real.
+    log = BiometricsLog.objects.create(profile=user.profile, weight_kg="80.20")
+    BiometricsLog.objects.filter(pk=log.pk).update(timestamp=datetime.combine(TODAY, time(12), tzinfo=dt_tz.utc))
     data = client.get(SAFETY).data
     assert data["emergency_number"] == "112"
     assert data["weight"]["kg"] == 80.2 and data["weight"]["date"]
