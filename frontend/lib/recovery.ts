@@ -11,6 +11,9 @@ export type Recovery = {
   chips: string[];
   // Los números detrás de los chips, para quien los muestre en otro idioma (Home).
   signals: { rhrDelta: number | null; hrvPct: number | null };
+  // Los mismos datos sueltos, como los lee Coach y Carga (fase I).
+  rhrDelta?: number;
+  hrvPct?: number;
 };
 
 const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
@@ -57,6 +60,8 @@ export function computeRecovery(logs: Biometrics[]): Recovery | null {
       color: "#ffd25a",
       chips,
       signals: { rhrDelta, hrvPct },
+      rhrDelta: rhrDelta ?? undefined,
+      hrvPct: hrvPct ?? undefined,
     };
   }
   if (good === signals) {
@@ -67,6 +72,8 @@ export function computeRecovery(logs: Biometrics[]): Recovery | null {
       color: "#43e8a0",
       chips,
       signals: { rhrDelta, hrvPct },
+      rhrDelta: rhrDelta ?? undefined,
+      hrvPct: hrvPct ?? undefined,
     };
   }
   return {
@@ -76,5 +83,7 @@ export function computeRecovery(logs: Biometrics[]): Recovery | null {
     color: "#45e9ff",
     chips,
     signals: { rhrDelta, hrvPct },
+    rhrDelta: rhrDelta ?? undefined,
+    hrvPct: hrvPct ?? undefined,
   };
 }

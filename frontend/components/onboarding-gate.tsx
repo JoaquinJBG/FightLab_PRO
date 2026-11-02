@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useProfile, useScreening, useUpdateProfile } from "@/lib/hooks";
 import { isOnboardingComplete } from "@/lib/onboarding";
 import { LEGACY_GOAL_KEY, goalToMigrate } from "@/lib/goal";
@@ -12,6 +13,7 @@ import { LEGACY_GOAL_KEY, goalToMigrate } from "@/lib/goal";
  * el onboarding, que se reanuda en el paso que falta.
  */
 export function OnboardingGate({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("common");
   const router = useRouter();
   const { data: profile, isLoading, isError } = useProfile();
   const { data: screening, isLoading: screeningLoading } = useScreening();
@@ -43,7 +45,7 @@ export function OnboardingGate({ children }: { children: React.ReactNode }) {
   if (isLoading || screeningLoading || incomplete) {
     return (
       <div className="flex min-h-[60dvh] items-center justify-center">
-        <p className="t-body pulse text-muted">Cargando…</p>
+        <p className="t-body pulse text-muted">{t("loading")}</p>
       </div>
     );
   }

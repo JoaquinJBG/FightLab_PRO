@@ -49,6 +49,58 @@ export const FOCUS_EXERCISES: Record<string, string[]> = {
   Brazo: ["Curl bíceps", "Extensión de tríceps", "Curl martillo", "Fondos"],
 };
 
+/* Claves i18n de los textos de dominio. Los ids guardados (localStorage/servidor)
+   siguen siendo los nombres en español: aquí solo se mapean a claves de catálogo. */
+export const EXERCISE_KEYS: Record<string, string> = {
+  "Press banca": "benchPress",
+  "Press inclinado": "inclinePress",
+  "Press con mancuernas": "dumbbellPress",
+  Aperturas: "flyes",
+  Fondos: "dips",
+  Dominadas: "pullUps",
+  "Jalón al pecho": "latPulldown",
+  "Remo con barra": "barbellRow",
+  "Remo en máquina": "machineRow",
+  "Peso muerto": "deadlift",
+  "Face pull": "facePull",
+  Sentadilla: "squat",
+  Prensa: "legPress",
+  "Peso muerto rumano": "romanianDeadlift",
+  Zancadas: "lunges",
+  "Extensión de cuádriceps": "legExtension",
+  "Curl femoral": "legCurl",
+  Gemelos: "calfRaises",
+  "Press militar": "overheadPress",
+  "Elevaciones laterales": "lateralRaises",
+  Pájaros: "rearDeltFlyes",
+  "Press Arnold": "arnoldPress",
+  "Curl bíceps": "bicepsCurl",
+  "Curl martillo": "hammerCurl",
+  "Extensión de tríceps": "tricepsExtension",
+  "Press francés": "skullCrushers",
+  Plancha: "plank",
+  "Crunch en polea": "cableCrunch",
+  "Rueda abdominal": "abWheel",
+  "Elevaciones de piernas": "legRaises",
+  Remo: "row",
+  "Extensión tríceps": "tricepsExtensionShort",
+};
+
+export const FOCUS_KEYS: Record<string, string> = {
+  Descanso: "rest",
+  "Full body": "fullBody",
+  Empuje: "push",
+  Tirón: "pull",
+  Pierna: "legs",
+  Torso: "upper",
+  Pecho: "chest",
+  Espalda: "back",
+  Hombro: "shoulders",
+  Brazo: "arms",
+  Cardio: "cardio",
+  Core: "core",
+};
+
 export function loadGymSessions(): GymSession[] {
   if (typeof window === "undefined") return [];
   try {

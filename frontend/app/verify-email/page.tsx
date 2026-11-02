@@ -3,8 +3,10 @@
 import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 function Verify() {
+  const t = useTranslations("auth.verifyEmail");
   const token = useSearchParams().get("token");
   const [state, setState] = useState<"loading" | "ok" | "error">("loading");
 
@@ -24,20 +26,20 @@ function Verify() {
 
   return (
     <div className="glass neon-edge mt-6 p-6 text-center">
-      {state === "loading" && <p className="t-body text-muted">Verificando…</p>}
+      {state === "loading" && <p className="t-body text-muted">{t("verifying")}</p>}
       {state === "ok" && (
         <>
-          <p className="t-title text-ink">¡Email verificado! ✅</p>
+          <p className="t-title text-ink">{t("verified")}</p>
           <Link href="/login" className="btn btn-primary mt-5">
-            Iniciar sesión
+            {t("signIn")}
           </Link>
         </>
       )}
       {state === "error" && (
         <>
-          <p className="t-title text-ink">Enlace no válido o caducado</p>
+          <p className="t-title text-ink">{t("invalidLink")}</p>
           <Link href="/register" className="btn btn-tonal mt-5">
-            Volver a registrarme
+            {t("backToRegister")}
           </Link>
         </>
       )}
@@ -46,10 +48,11 @@ function Verify() {
 }
 
 export default function VerifyEmailPage() {
+  const t = useTranslations("auth.verifyEmail");
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-6 safe-top safe-bottom">
-      <h1 className="t-display text-3xl text-ink">Verificación</h1>
-      <Suspense fallback={<p className="t-body mt-6 text-muted">Cargando…</p>}>
+      <h1 className="t-display text-3xl text-ink">{t("title")}</h1>
+      <Suspense fallback={<p className="t-body mt-6 text-muted">{t("loading")}</p>}>
         <Verify />
       </Suspense>
     </div>

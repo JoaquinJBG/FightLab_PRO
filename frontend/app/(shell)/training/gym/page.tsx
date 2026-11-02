@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import { TrainingIcon, CoachIcon, ChevronRight } from "@/components/icons";
-import { GYM_LIVE_KEY, loadGymSessions, type GymSession, type LiveGym } from "@/lib/gym";
+import { GYM_LIVE_KEY, EXERCISE_KEYS, FOCUS_KEYS, loadGymSessions, type GymSession, type LiveGym } from "@/lib/gym";
 
-const DAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 const FOCI = ["Descanso", "Full body", "Empuje", "Tirón", "Pierna", "Torso", "Pecho", "Espalda", "Hombro", "Brazo", "Cardio"];
 
 const EXERCISES: Record<string, string[]> = {
@@ -20,29 +21,29 @@ const EXERCISES: Record<string, string[]> = {
   Brazo: ["Curl bíceps", "Extensión tríceps", "Curl martillo", "Fondos"],
 };
 const SPLITS: Record<string, string[]> = {
-  "Full body": ["Full body"],
-  "Torso / Pierna": ["Torso", "Pierna"],
-  "PPL (Empuje/Tirón/Pierna)": ["Empuje", "Tirón", "Pierna"],
-  "Dividida (Weider)": ["Pecho", "Espalda", "Pierna", "Hombro", "Brazo"],
+  fullBody: ["Full body"],
+  upperLower: ["Torso", "Pierna"],
+  ppl: ["Empuje", "Tirón", "Pierna"],
+  weider: ["Pecho", "Espalda", "Pierna", "Hombro", "Brazo"],
 };
-const REPS: Record<string, string> = {
-  Fuerza: "4-6 reps · descansos largos",
-  Hipertrofia: "8-12 reps",
-  "Pérdida de grasa": "12-15 reps + cardio",
-  Mantenimiento: "8-10 reps",
-};
+const GOALS = ["strength", "hypertrophy", "fatLoss", "maintenance"];
+const LEVELS = ["beginner", "intermediate", "advanced"];
 
 const WEEK_KEY = "flp_gym_week";
 type RoutineDay = { day: number; focus: string; exercises: string[] };
 
-function fmtDate(ts: number) {
-  const d = new Date(ts);
-  return d.toDateString() === new Date().toDateString()
-    ? "Hoy"
-    : d.toLocaleDateString("es", { day: "2-digit", month: "short" });
-}
 
 export default function GymPage() {
+  const t = useTranslations("training.gym");
+  const locale = useLocale();
+  const focusLabel = (f: string) => (FOCUS_KEYS[f] ? t(`foci.${FOCUS_KEYS[f]}`) : f);
+  const exLabel = (n: string) => (EXERCISE_KEYS[n] ? t(`exercises.${EXERCISE_KEYS[n]}`) : n);
+  function fmtDate(ts: number) {
+    const d = new Date(ts);
+    return d.toDateString() === new Date().toDateString()
+      ? t("today")
+      : d.toLocaleDateString(locale, { day: "2-digit", month: "short" });
+  }
   const [view, setView] = useState<"cal" | "ia">("cal");
   const [week, setWeek] = useState<string[]>(() => Array(7).fill("Descanso"));
   const [live, setLive] = useState<LiveGym | null>(null);
@@ -73,10 +74,10 @@ export default function GymPage() {
   }
 
   // wizard IA
-  const [nivel, setNivel] = useState("Intermedio");
+  const [nivel, setNivel] = useState("intermediate");
   const [dias, setDias] = useState(4);
-  const [tipo, setTipo] = useState("PPL (Empuje/Tirón/Pierna)");
-  const [objetivo, setObjetivo] = useState("Hipertrofia");
+  const [tipo, setTipo] = useState("ppl");
+  const [objetivo, setObjetivo] = useState("hypertrophy");
   const [generating, setGenerating] = useState(false);
   const [routine, setRoutine] = useState<RoutineDay[] | null>(null);
 
@@ -106,10 +107,10 @@ export default function GymPage() {
 
   return (
     <div className="pt-4">
-      <Link href="/training" className="t-label text-muted">← Entreno</Link>
+      <Link href="/training" className="t-label text-muted">{t("back")}</Link>
       <div className="mt-2 flex items-center gap-2">
         <span className="text-neon"><TrainingIcon className="h-6 w-6" /></span>
-        <h1 className="t-display text-2xl text-ink">Gimnasio</h1>
+        <h1 className="t-display text-2xl text-ink">{t("title")}</h1>
       </div>
 
       {/* sesión sin terminar */}
@@ -117,55 +118,55 @@ export default function GymPage() {
         <div className="glass neon-edge mt-4 flex items-center gap-3 p-4">
           <span className="text-warn"><TrainingIcon className="h-5 w-5" /></span>
           <div className="min-w-0 flex-1">
-            <p className="t-label text-ink">Entreno sin terminar</p>
+            <p className="t-label text-ink">{t("unfinished")}</p>
             <p className="t-body text-xs text-muted">
-              {live.focus ? `${live.focus} · ` : ""}{live.exercises.length} ejercicios
+              {live.focus ? `${focusLabel(live.focus)} · ` : ""}{t("exerciseCount", { n: live.exercises.length })}
             </p>
           </div>
-          <Link href="/training/gym/session" className="btn btn-tonal btn-sm shrink-0">Reanudar</Link>
-          <button onClick={() => { localStorage.removeItem(GYM_LIVE_KEY); setLive(null); }} aria-label="Descartar" className="t-label shrink-0 text-muted">✕</button>
+          <Link href="/training/gym/session" className="btn btn-tonal btn-sm shrink-0">{t("resume")}</Link>
+          <button onClick={() => { localStorage.removeItem(GYM_LIVE_KEY); setLive(null); }} aria-label={t("discard")} className="t-label shrink-0 text-muted">✕</button>
         </div>
       )}
 
       {/* empezar entreno */}
       {!live && (
         <Link href={startHref} className="btn btn-primary mt-4 w-full">
-          ▶ Empezar entreno{todayFocus && todayFocus !== "Descanso" ? ` · ${todayFocus}` : ""}
+          {todayFocus && todayFocus !== "Descanso" ? t("startWithFocus", { focus: focusLabel(todayFocus) }) : t("start")}
         </Link>
       )}
 
       {/* toggle */}
       <div className="glass mt-4 grid grid-cols-2 gap-1 rounded-2xl p-1">
-        {([["cal", "Calendario"], ["ia", "Crear rutina"]] as const).map(([k, label]) => (
+        {(["cal", "ia"] as const).map((k) => (
           <button key={k} onClick={() => setView(k)} className="rounded-xl py-2.5 text-sm font-medium transition-colors"
             style={view === k ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)", color: "#03101c" } : { background: "transparent", color: "var(--color-muted)" }}>
-            {label}
+            {t(`views.${k}`)}
           </button>
         ))}
       </div>
 
       {view === "cal" ? (
         <div className="mt-4">
-          <p className="t-eyebrow text-muted">Tu semana</p>
+          <p className="t-eyebrow text-muted">{t("yourWeek")}</p>
           <div className="mt-2 flex flex-col gap-2">
             {DAYS.map((d, i) => {
               const rest = week[i] === "Descanso";
               return (
                 <div key={d} className="glass flex items-center gap-3 p-3">
-                  <span className={`stat w-10 text-sm ${rest ? "text-muted" : "text-neon"}`}>{d}</span>
+                  <span className={`stat w-10 text-sm ${rest ? "text-muted" : "text-neon"}`}>{t(`days.${d}`)}</span>
                   <select value={week[i]} onChange={(e) => setDay(i, e.target.value)} className={`${selectCls} flex-1`}>
-                    {FOCI.map((f) => <option key={f} value={f}>{f}</option>)}
+                    {FOCI.map((f) => <option key={f} value={f}>{focusLabel(f)}</option>)}
                   </select>
                 </div>
               );
             })}
           </div>
-          <p className="t-body mt-3 text-xs text-muted">Apunta qué toca cada día. Se guarda solo en tu dispositivo (luego, en tu cuenta).</p>
+          <p className="t-body mt-3 text-xs text-muted">{t("weekHint")}</p>
 
           {/* últimos entrenos */}
           {recent.length > 0 && (
             <div className="mt-5">
-              <p className="t-eyebrow text-muted">Últimos entrenos</p>
+              <p className="t-eyebrow text-muted">{t("recent")}</p>
               <div className="mt-2 flex flex-col gap-2">
                 {recent.map((s) => (
                   <div key={s.id} className="glass flex items-center gap-3 p-3.5">
@@ -173,9 +174,9 @@ export default function GymPage() {
                       <TrainingIcon className="h-5 w-5" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="t-label text-ink">{s.focus ?? "Entreno"} <span className="text-muted">· {fmtDate(s.ts)}</span></p>
+                      <p className="t-label text-ink">{s.focus ? focusLabel(s.focus) : t("workout")} <span className="text-muted">· {fmtDate(s.ts)}</span></p>
                       <p className="t-body text-[11px] text-muted">
-                        {s.exercises.length} ejercicios · {s.exercises.reduce((a, x) => a + x.sets.length, 0)} series · {s.volume.toLocaleString("es")} kg
+                        {t("exerciseCount", { n: s.exercises.length })} · {t("setCount", { n: s.exercises.reduce((a, x) => a + x.sets.length, 0) })} · {s.volume.toLocaleString(locale)} kg
                         {s.load ? ` · ${s.load} AU` : ""}
                       </p>
                     </div>
@@ -189,58 +190,58 @@ export default function GymPage() {
       ) : (
         <div className="mt-4">
           <div className="flex items-center gap-2">
-            <p className="t-eyebrow text-muted">Crear rutina</p>
-            <span className="badge badge-neon">IA simulada</span>
+            <p className="t-eyebrow text-muted">{t("views.ia")}</p>
+            <span className="badge badge-neon">{t("simulatedAi")}</span>
           </div>
-          <p className="t-body mt-1 text-xs text-muted">Responde unas preguntas y la IA te arma la rutina.</p>
+          <p className="t-body mt-1 text-xs text-muted">{t("wizardIntro")}</p>
 
           <div className="mt-3 grid grid-cols-2 gap-3">
             <label className="flex flex-col gap-1.5">
-              <span className="t-label text-muted">Nivel</span>
+              <span className="t-label text-muted">{t("level")}</span>
               <select value={nivel} onChange={(e) => setNivel(e.target.value)} className={selectCls}>
-                {["Principiante", "Intermedio", "Avanzado"].map((o) => <option key={o}>{o}</option>)}
+                {LEVELS.map((o) => <option key={o} value={o}>{t(`levels.${o}`)}</option>)}
               </select>
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="t-label text-muted">Días/semana</span>
+              <span className="t-label text-muted">{t("daysPerWeek")}</span>
               <select value={dias} onChange={(e) => setDias(Number(e.target.value))} className={selectCls}>
-                {[2, 3, 4, 5, 6].map((o) => <option key={o} value={o}>{o} días</option>)}
+                {[2, 3, 4, 5, 6].map((o) => <option key={o} value={o}>{t("daysOption", { n: o })}</option>)}
               </select>
             </label>
             <label className="col-span-2 flex flex-col gap-1.5">
-              <span className="t-label text-muted">Tipo de rutina</span>
+              <span className="t-label text-muted">{t("splitType")}</span>
               <select value={tipo} onChange={(e) => setTipo(e.target.value)} className={selectCls}>
-                {Object.keys(SPLITS).map((o) => <option key={o}>{o}</option>)}
+                {Object.keys(SPLITS).map((o) => <option key={o} value={o}>{t(`splits.${o}`)}</option>)}
               </select>
             </label>
             <label className="col-span-2 flex flex-col gap-1.5">
-              <span className="t-label text-muted">Objetivo</span>
+              <span className="t-label text-muted">{t("goal")}</span>
               <select value={objetivo} onChange={(e) => setObjetivo(e.target.value)} className={selectCls}>
-                {Object.keys(REPS).map((o) => <option key={o}>{o}</option>)}
+                {GOALS.map((o) => <option key={o} value={o}>{t(`goals.${o}.label`)}</option>)}
               </select>
             </label>
           </div>
 
           <button className="btn btn-primary mt-4 w-full" onClick={generate} disabled={generating}>
-            <CoachIcon className="h-4 w-4" /> {generating ? "Generando…" : "Generar rutina con IA"}
+            <CoachIcon className="h-4 w-4" /> {generating ? t("generating") : t("generate")}
           </button>
 
           {generating && (
-            <div className="glass mt-4 p-4"><span className="pulse t-body text-sm text-muted">La IA está diseñando tu rutina ({nivel}, {dias} días, {objetivo.toLowerCase()})…</span></div>
+            <div className="glass mt-4 p-4"><span className="pulse t-body text-sm text-muted">{t("designing", { level: t(`levels.${nivel}`), days: dias, goal: t(`goals.${objetivo}.label`).toLocaleLowerCase(locale) })}</span></div>
           )}
 
           {routine && (
             <div className="mt-4">
-              <p className="t-eyebrow text-neon">Rutina propuesta · {REPS[objetivo]}</p>
+              <p className="t-eyebrow text-neon">{t("proposed", { reps: t(`goals.${objetivo}.reps`) })}</p>
               <div className="mt-2 flex flex-col gap-2">
                 {routine.map((d) => (
                   <div key={d.day} className="glass p-3.5">
-                    <p className="t-label text-ink">Día {d.day} · <span className="text-neon">{d.focus}</span></p>
-                    <p className="t-body mt-1 text-xs text-muted">{d.exercises.join(" · ")}</p>
+                    <p className="t-label text-ink">{t.rich("dayLine", { day: d.day, focus: focusLabel(d.focus), neon: (c) => <span className="text-neon">{c}</span> })}</p>
+                    <p className="t-body mt-1 text-xs text-muted">{d.exercises.map(exLabel).join(" · ")}</p>
                   </div>
                 ))}
               </div>
-              <button className="btn btn-tonal mt-3 w-full" onClick={applyToCalendar}>Aplicar al calendario</button>
+              <button className="btn btn-tonal mt-3 w-full" onClick={applyToCalendar}>{t("applyToCalendar")}</button>
             </div>
           )}
         </div>

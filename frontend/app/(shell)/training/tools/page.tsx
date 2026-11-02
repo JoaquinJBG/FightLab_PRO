@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 /* ----------------------------- helpers ---------------------------------- */
 function fmtStopwatch(ms: number) {
@@ -79,7 +80,7 @@ const finalBell = () => bell(3);
 const vibe = (p: number | number[]) => { try { navigator.vibrate?.(p); } catch { /* noop */ } };
 
 const CFG_KEY = "flp_round_cfg";
-const WARN_OPTS: [number, string][] = [[0, "Off"], [10, "10 s"], [30, "30 s"]];
+const WARN_OPTS = [0, 10, 30];
 
 type Phase = "prep" | "work" | "rest";
 function buildSegments(rounds: number, workSec: number, restSec: number, prepSec: number) {
@@ -100,13 +101,12 @@ const PHASE_COLOR: Record<Phase | "done", string> = {
   rest: "#ffd25a",
   done: "#43e8a0",
 };
-const PHASE_LABEL: Record<Phase, string> = { prep: "Prepárate", work: "Trabajo", rest: "Descanso" };
 
 const PRESETS = [
-  { name: "Boxeo", rounds: 3, work: 180, rest: 60 },
-  { name: "MMA", rounds: 5, work: 300, rest: 60 },
-  { name: "Tabata", rounds: 8, work: 20, rest: 10 },
-  { name: "HIIT", rounds: 10, work: 30, rest: 15 },
+  { id: "boxing", rounds: 3, work: 180, rest: 60 },
+  { id: "mma", rounds: 5, work: 300, rest: 60 },
+  { id: "tabata", rounds: 8, work: 20, rest: 10 },
+  { id: "hiit", rounds: 10, work: 30, rest: 15 },
 ];
 
 /* ----------------------------- stepper ----------------------------------- */
@@ -146,6 +146,7 @@ function Ring({ progress, color, children }: { progress: number; color: string; 
 
 /* ----------------------------- rounds ------------------------------------ */
 function RoundTimer() {
+  const t = useTranslations("training.tools");
   const [rounds, setRounds] = useState(5);
   const [workSec, setWorkSec] = useState(180);
   const [restSec, setRestSec] = useState(60);
@@ -245,34 +246,34 @@ function RoundTimer() {
     return (
       <div className="flex flex-col gap-4 pt-4">
         <div>
-          <span className="t-eyebrow text-muted">Presets</span>
+          <span className="t-eyebrow text-muted">{t("presets")}</span>
           <div className="mt-2 flex flex-wrap gap-2">
             {PRESETS.map((p) => (
-              <button key={p.name} onClick={() => applyPreset(p)}
+              <button key={p.id} onClick={() => applyPreset(p)}
                 className={`badge ${rounds === p.rounds && workSec === p.work && restSec === p.rest ? "badge-neon" : ""}`}>
-                {p.name}
+                {t(`presetNames.${p.id}`)}
               </button>
             ))}
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Stepper label="Rounds" value={rounds} set={setRounds} min={1} max={20} />
-          <Stepper label="Preparación" value={prepSec} set={setPrepSec} min={0} max={30} step={5} fmt={fmtClock} />
-          <Stepper label="Trabajo" value={workSec} set={setWorkSec} min={10} max={600} step={10} fmt={fmtClock} />
-          <Stepper label="Descanso" value={restSec} set={setRestSec} min={0} max={300} step={5} fmt={fmtClock} />
+          <Stepper label={t("rounds")} value={rounds} set={setRounds} min={1} max={20} />
+          <Stepper label={t("prep")} value={prepSec} set={setPrepSec} min={0} max={30} step={5} fmt={fmtClock} />
+          <Stepper label={t("work")} value={workSec} set={setWorkSec} min={10} max={600} step={10} fmt={fmtClock} />
+          <Stepper label={t("rest")} value={restSec} set={setRestSec} min={0} max={300} step={5} fmt={fmtClock} />
         </div>
         <div className="glass flex items-center justify-between p-3">
-          <span className="t-label text-muted">Aviso de fin de round</span>
+          <span className="t-label text-muted">{t("warnLabel")}</span>
           <div className="flex gap-1.5">
-            {WARN_OPTS.map(([v, label]) => (
+            {WARN_OPTS.map((v) => (
               <button key={v} type="button" onClick={() => setWarnSec(v)}
                 className={`badge ${warnSec === v ? "badge-neon" : ""}`}>
-                {label}
+                {v === 0 ? t("warnOff") : t("warnSeconds", { n: v })}
               </button>
             ))}
           </div>
         </div>
-        <button className="btn btn-primary" onClick={start}>Empezar · {rounds} rounds</button>
+        <button className="btn btn-primary" onClick={start}>{t("start", { rounds })}</button>
       </div>
     );
   }
@@ -286,9 +287,9 @@ function RoundTimer() {
       <div className="flex flex-col items-center gap-6 pt-2">
         <Ring progress={progress} color={color}>
           <div className="flex flex-col items-center">
-            <span className="t-eyebrow" style={{ color }}>{done ? "Completado" : PHASE_LABEL[seg.phase]}</span>
+            <span className="t-eyebrow" style={{ color }}>{done ? t("completed") : t(`phase.${seg.phase}`)}</span>
             <span className="stat mt-1 text-5xl text-ink tabular-nums">{done ? "00:00" : fmtClock(remaining)}</span>
-            <span className="t-label mt-1 text-muted">{done ? `${rounds} rounds ✓` : `Round ${seg.round} / ${rounds}`}</span>
+            <span className="t-label mt-1 text-muted">{done ? t("roundsDone", { rounds }) : t("roundOf", { round: seg.round, rounds })}</span>
           </div>
         </Ring>
 
@@ -311,11 +312,11 @@ function RoundTimer() {
         <div className="flex w-full gap-3">
           {!done && (
             !running
-              ? <button className="btn btn-primary flex-1" onClick={() => setRunning(true)}>Reanudar</button>
-              : <button className="btn btn-tonal flex-1" onClick={() => setRunning(false)}>Pausar</button>
+              ? <button className="btn btn-primary flex-1" onClick={() => setRunning(true)}>{t("resume")}</button>
+              : <button className="btn btn-tonal flex-1" onClick={() => setRunning(false)}>{t("pause")}</button>
           )}
-          {!done && <button className="btn btn-outline flex-1" onClick={skip}>Saltar</button>}
-          <button className="btn btn-outline flex-1" onClick={reset}>{done ? "Nuevo" : "Salir"}</button>
+          {!done && <button className="btn btn-outline flex-1" onClick={skip}>{t("skip")}</button>}
+          <button className="btn btn-outline flex-1" onClick={reset}>{done ? t("new") : t("exit")}</button>
         </div>
       </div>
     </>
@@ -324,6 +325,7 @@ function RoundTimer() {
 
 /* ----------------------------- cronómetro -------------------------------- */
 function Stopwatch() {
+  const t = useTranslations("training.tools");
   const [ms, setMs] = useState(0);
   const [running, setRunning] = useState(false);
   const [laps, setLaps] = useState<number[]>([]);
@@ -342,17 +344,17 @@ function Stopwatch() {
       <div className="stat text-6xl neon-text tabular-nums">{fmtStopwatch(ms)}</div>
       <div className="flex w-full gap-3">
         {!running
-          ? <button className="btn btn-primary flex-1" onClick={() => setRunning(true)}>{ms === 0 ? "Iniciar" : "Reanudar"}</button>
-          : <button className="btn btn-tonal flex-1" onClick={() => setRunning(false)}>Pausar</button>}
+          ? <button className="btn btn-primary flex-1" onClick={() => setRunning(true)}>{ms === 0 ? t("startStopwatch") : t("resume")}</button>
+          : <button className="btn btn-tonal flex-1" onClick={() => setRunning(false)}>{t("pause")}</button>}
         {running
-          ? <button className="btn btn-outline flex-1" onClick={() => setLaps((l) => [ms, ...l])}>Vuelta</button>
-          : <button className="btn btn-outline flex-1" onClick={() => { setMs(0); setLaps([]); }}>Reset</button>}
+          ? <button className="btn btn-outline flex-1" onClick={() => setLaps((l) => [ms, ...l])}>{t("lap")}</button>
+          : <button className="btn btn-outline flex-1" onClick={() => { setMs(0); setLaps([]); }}>{t("reset")}</button>}
       </div>
       {laps.length > 0 && (
         <div className="w-full">
           {laps.map((l, i) => (
             <div key={i} className="flex justify-between border-b border-[rgba(150,190,255,0.08)] py-2 last:border-0">
-              <span className="t-label text-muted">Vuelta {laps.length - i}</span>
+              <span className="t-label text-muted">{t("lapN", { n: laps.length - i })}</span>
               <span className="stat text-ink">{fmtStopwatch(l)}</span>
             </div>
           ))}
@@ -364,20 +366,21 @@ function Stopwatch() {
 
 /* ----------------------------- página ------------------------------------ */
 export default function ToolsPage() {
+  const t = useTranslations("training.tools");
   const [tab, setTab] = useState<"rounds" | "chrono">("rounds");
   return (
     <div className="pt-4">
-      <Link href="/training" className="t-label text-muted">← Entreno</Link>
-      <h1 className="t-display mt-2 text-2xl text-ink">Herramientas</h1>
+      <Link href="/training" className="t-label text-muted">{t("back")}</Link>
+      <h1 className="t-display mt-2 text-2xl text-ink">{t("title")}</h1>
 
       <div className="glass mt-4 grid grid-cols-2 gap-1 rounded-2xl p-1">
-        {([["rounds", "Rounds"], ["chrono", "Cronómetro"]] as const).map(([k, label]) => (
+        {(["rounds", "chrono"] as const).map((k) => (
           <button key={k} onClick={() => setTab(k)}
             className="rounded-xl py-2.5 text-sm font-medium transition-colors"
             style={tab === k
               ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)", color: "#03101c" }
               : { background: "transparent", color: "var(--color-muted)" }}>
-            {label}
+            {t(`tabs.${k}`)}
           </button>
         ))}
       </div>

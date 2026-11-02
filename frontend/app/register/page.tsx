@@ -2,21 +2,25 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { credentials } from "@/lib/schemas";
 
-function passwordChecks(password: string, email: string) {
+type T = ReturnType<typeof useTranslations>;
+
+function passwordChecks(password: string, email: string, t: T) {
   const local = email.split("@")[0]?.toLowerCase() ?? "";
   return [
-    { label: "Al menos 8 caracteres", ok: password.length >= 8 },
-    { label: "No solo números", ok: password.length > 0 && !/^\d+$/.test(password) },
+    { label: t("register.checkLength"), ok: password.length >= 8 },
+    { label: t("register.checkNotNumeric"), ok: password.length > 0 && !/^\d+$/.test(password) },
     {
-      label: "Distinta de tu email",
+      label: t("register.checkNotEmail"),
       ok: password.length > 0 && (local.length < 3 || !password.toLowerCase().includes(local)),
     },
   ];
 }
 
 export default function RegisterPage() {
+  const t = useTranslations("auth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -24,7 +28,7 @@ export default function RegisterPage() {
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const checks = passwordChecks(password, email);
+  const checks = passwordChecks(password, email, t);
   const allOk = checks.every((c) => c.ok);
 
   async function onSubmit(e: React.FormEvent) {
@@ -32,11 +36,11 @@ export default function RegisterPage() {
     setError(null);
     const parsed = credentials.safeParse({ email, password });
     if (!parsed.success) {
-      setError(parsed.error.issues[0].message);
+      setError(parsed.error.issues[0].path[0] === "email" ? t("common.emailInvalid") : t("common.passwordMin"));
       return;
     }
     if (!allOk) {
-      setError("Revisa los requisitos de la contraseña.");
+      setError(t("register.checkRequirements"));
       return;
     }
     setLoading(true);
@@ -49,50 +53,49 @@ export default function RegisterPage() {
     if (res.status === 201) setDone(true);
     else {
       const d = await res.json().catch(() => ({}));
-      setError(typeof d?.detail === "string" ? d.detail : "No se pudo registrar");
+      setError(typeof d?.detail === "string" ? d.detail : t("register.failed"));
     }
   }
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-6 safe-top safe-bottom">
       <h1 className="t-display text-3xl text-ink">
-        Crear <span className="neon-text">cuenta</span>
+        {t.rich("register.title", { neon: (c) => <span className="neon-text">{c}</span> })}
       </h1>
       {done ? (
         <div className="glass neon-edge mt-6 p-6">
-          <p className="t-title text-ink">Revisa tu email</p>
+          <p className="t-title text-ink">{t("register.checkEmailTitle")}</p>
           <p className="t-body mt-2 text-muted">
-            Te enviamos un enlace de verificación a <span className="text-ink">{email}</span>.
-            Revisa tu bandeja de entrada (y la carpeta de spam). El enlace vence en 24 horas.
+            {t.rich("register.checkEmailBody", { email, strong: (c) => <span className="text-ink">{c}</span> })}
           </p>
           <Link href="/login" className="btn btn-tonal mt-5">
-            Ir a iniciar sesión
+            {t("register.goToLogin")}
           </Link>
         </div>
       ) : (
         <form className="mt-6 flex flex-col gap-3" onSubmit={onSubmit}>
           <label className="flex flex-col gap-1.5">
-            <span className="t-label text-muted">Email</span>
+            <span className="t-label text-muted">{t("common.email")}</span>
             <input
               type="email"
               inputMode="email"
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
+              placeholder={t("common.emailPlaceholder")}
               className="field px-4 py-3.5 text-sm"
             />
           </label>
 
           <label className="flex flex-col gap-1.5">
-            <span className="t-label text-muted">Contraseña</span>
+            <span className="t-label text-muted">{t("common.password")}</span>
             <div className="relative">
               <input
                 type={showPass ? "text" : "password"}
                 autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="mínimo 8 caracteres"
+                placeholder={t("register.passwordPlaceholder")}
                 className="field w-full px-4 py-3.5 pr-20 text-sm"
               />
               <button
@@ -100,7 +103,7 @@ export default function RegisterPage() {
                 onClick={() => setShowPass((v) => !v)}
                 className="t-label absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-neon"
               >
-                {showPass ? "Ocultar" : "Mostrar"}
+                {showPass ? t("register.hide") : t("register.show")}
               </button>
             </div>
           </label>
@@ -127,12 +130,12 @@ export default function RegisterPage() {
 
           {error && <p className="text-xs text-bad">{error}</p>}
           <button type="submit" disabled={loading} className="btn btn-primary mt-2 disabled:opacity-60">
-            {loading ? "Creando…" : "Crear cuenta"}
+            {loading ? t("register.submitting") : t("register.submit")}
           </button>
           <p className="t-body mt-3 text-center text-xs text-muted">
-            ¿Ya tienes cuenta?{" "}
+            {t("register.haveAccount")}{" "}
             <Link href="/login" className="text-neon">
-              Entrar
+              {t("register.signIn")}
             </Link>
           </p>
         </form>

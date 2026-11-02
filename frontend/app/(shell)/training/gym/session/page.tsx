@@ -3,10 +3,13 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { TrainingIcon, InfoIcon } from "@/components/icons";
 import {
   LIBRARY,
   FOCUS_EXERCISES,
+  EXERCISE_KEYS,
+  FOCUS_KEYS,
   GYM_LIVE_KEY,
   GYM_REST_KEY,
   exerciseStats,
@@ -15,9 +18,6 @@ import {
   type LiveGym,
 } from "@/lib/gym";
 import { enqueueActivity } from "@/lib/activities";
-
-const RPE_INFO =
-  "RPE = Esfuerzo Percibido de TODA la sesión (1-10). Con él calculamos tu carga (min × RPE).";
 
 function fmtClock(sec: number) {
   const h = Math.floor(sec / 3600);
@@ -49,6 +49,12 @@ function beep(freq: number, dur: number, gain = 0.3) {
 const REST_OPTS = [60, 90, 120];
 
 function SessionInner() {
+  const t = useTranslations("training.gymSession");
+  const tg = useTranslations("training.gym");
+  const locale = useLocale();
+  const focusLabel = (f: string) => (FOCUS_KEYS[f] ? tg(`foci.${FOCUS_KEYS[f]}`) : f);
+  const exLabel = (n: string) => (EXERCISE_KEYS[n] ? tg(`exercises.${EXERCISE_KEYS[n]}`) : n);
+  const groupLabel = (g: string) => (FOCUS_KEYS[g] ? tg(`foci.${FOCUS_KEYS[g]}`) : g);
   const router = useRouter();
   const focusParam = useSearchParams().get("focus");
 
@@ -244,27 +250,27 @@ function SessionInner() {
   }
 
   const results = q.trim().length > 0
-    ? LIBRARY.flatMap((g) => g.items.filter((i) => i.toLowerCase().includes(q.toLowerCase())).map((i) => ({ group: g.group, name: i })))
+    ? LIBRARY.flatMap((g) => g.items.filter((i) => exLabel(i).toLocaleLowerCase(locale).includes(q.toLocaleLowerCase(locale))).map((i) => ({ group: g.group, name: i })))
     : LIBRARY.flatMap((g) => g.items.map((i) => ({ group: g.group, name: i })));
 
   /* ============================ RESUMEN ============================ */
   if (phase === "summary") {
     return (
       <div className="pt-4">
-        <h1 className="t-display text-2xl text-ink">¿Cómo ha ido?</h1>
+        <h1 className="t-display text-2xl text-ink">{t("howWasIt")}</h1>
         <div className="glass neon-edge mt-4 p-5">
-          <p className="t-title text-ink">{focus ? `Entreno · ${focus}` : "Entreno de gimnasio"}</p>
+          <p className="t-title text-ink">{focus ? t("workoutFocus", { focus: focusLabel(focus) }) : t("gymWorkout")}</p>
           <div className="mt-3 flex justify-between text-center">
-            <div><p className="stat text-xl text-ink">{fmtClock(elapsed)}</p><p className="t-label text-muted">duración</p></div>
-            <div><p className="stat text-xl text-ink">{totalSets}</p><p className="t-label text-muted">series</p></div>
-            <div><p className="stat text-xl neon-text">{volume.toLocaleString("es")}</p><p className="t-label text-muted">kg totales</p></div>
+            <div><p className="stat text-xl text-ink">{fmtClock(elapsed)}</p><p className="t-label text-muted">{t("duration")}</p></div>
+            <div><p className="stat text-xl text-ink">{totalSets}</p><p className="t-label text-muted">{t("sets")}</p></div>
+            <div><p className="stat text-xl neon-text">{volume.toLocaleString(locale)}</p><p className="t-label text-muted">{t("totalKg")}</p></div>
           </div>
           {parsedExercises.length > 0 && (
             <ul className="mt-3 flex flex-col gap-1 border-t border-[rgba(150,190,255,0.1)] pt-3">
               {parsedExercises.map((x) => (
                 <li key={x.name} className="t-body flex justify-between text-xs text-muted">
-                  <span>{x.name}</span>
-                  <span className="text-ink">{x.sets.length} series</span>
+                  <span>{exLabel(x.name)}</span>
+                  <span className="text-ink">{t("setCount", { n: x.sets.length })}</span>
                 </li>
               ))}
             </ul>
@@ -273,13 +279,13 @@ function SessionInner() {
 
         <div className="glass mt-4 p-4">
           <div className="flex items-center gap-1.5">
-            <p className="t-label text-ink">Esfuerzo de la sesión (RPE)</p>
-            <button type="button" onClick={() => setRpeInfo((v) => !v)} aria-label="Qué es RPE"
+            <p className="t-label text-ink">{t("sessionEffort")}</p>
+            <button type="button" onClick={() => setRpeInfo((v) => !v)} aria-label={t("whatIsRpe")}
               className={rpeInfo ? "text-neon" : "text-muted hover:text-neon"}>
               <InfoIcon className="h-3.5 w-3.5" />
             </button>
           </div>
-          {rpeInfo && <p className="t-body mt-2 rounded-xl border border-[rgba(150,190,255,0.12)] bg-[rgba(255,255,255,0.04)] p-2.5 text-xs text-[#cdd9ef]">{RPE_INFO}</p>}
+          {rpeInfo && <p className="t-body mt-2 rounded-xl border border-[rgba(150,190,255,0.12)] bg-[rgba(255,255,255,0.04)] p-2.5 text-xs text-[#cdd9ef]">{t("rpeInfo")}</p>}
           <div className="mt-3 grid grid-cols-5 gap-1.5">
             {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
               <button key={n} type="button" onClick={() => setRpe(rpe === n ? null : n)}
@@ -293,17 +299,17 @@ function SessionInner() {
           </div>
           {rpe && (
             <p className="t-body mt-2.5 text-center text-xs text-muted">
-              Carga: <span className="text-neon">{Math.round((elapsed / 60) * rpe)} AU</span> (min × RPE)
+              {t.rich("loadLine", { au: Math.round((elapsed / 60) * rpe), neon: (c) => <span className="text-neon">{c}</span> })}
             </p>
           )}
         </div>
 
         <div className="mt-4 flex gap-3">
-          <button onClick={() => setPhase("live")} className="btn btn-outline flex-1">Volver</button>
-          <button onClick={save} disabled={totalSets === 0} className="btn btn-primary flex-1 disabled:opacity-60">Guardar</button>
+          <button onClick={() => setPhase("live")} className="btn btn-outline flex-1">{t("back")}</button>
+          <button onClick={save} disabled={totalSets === 0} className="btn btn-primary flex-1 disabled:opacity-60">{t("save")}</button>
         </div>
-        {totalSets === 0 && <p className="t-body mt-2 text-center text-[11px] text-muted">Completa al menos una serie con kg y reps para guardar.</p>}
-        <button onClick={discard} className="t-label mt-3 w-full text-center text-muted">Descartar entreno</button>
+        {totalSets === 0 && <p className="t-body mt-2 text-center text-[11px] text-muted">{t("saveHint")}</p>}
+        <button onClick={discard} className="t-label mt-3 w-full text-center text-muted">{t("discard")}</button>
       </div>
     );
   }
@@ -312,17 +318,17 @@ function SessionInner() {
   return (
     <div className="pt-4 pb-24">
       <div className="flex items-center justify-between">
-        <Link href="/training/gym" className="t-label text-muted">← Gimnasio</Link>
+        <Link href="/training/gym" className="t-label text-muted">{t("backToGym")}</Link>
         <span className="stat text-lg text-neon tabular-nums">{fmtClock(elapsed)}</span>
       </div>
       <div className="mt-1 flex items-center gap-2">
         <span className="text-neon"><TrainingIcon className="h-6 w-6" /></span>
-        <h1 className="t-display text-2xl text-ink">{focus ? `Entreno · ${focus}` : "Entreno"}</h1>
+        <h1 className="t-display text-2xl text-ink">{focus ? t("workoutFocus", { focus: focusLabel(focus) }) : t("workout")}</h1>
       </div>
 
       {/* descanso entre series */}
       <div className="glass mt-3 flex items-center justify-between p-3">
-        <span className="t-label text-muted">Descanso entre series</span>
+        <span className="t-label text-muted">{t("restBetweenSets")}</span>
         <div className="flex gap-1.5">
           {REST_OPTS.map((v) => (
             <button key={v} type="button" onClick={() => changeRest(v)} className={`badge ${restDur === v ? "badge-neon" : ""}`}>
@@ -340,19 +346,19 @@ function SessionInner() {
             <div key={x.name} className="glass p-4">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="t-title text-ink">{x.name}</p>
+                  <p className="t-title text-ink">{exLabel(x.name)}</p>
                   <p className="t-body text-[11px] text-muted">
-                    {stats.last ? `Última vez: ${stats.last}` : "Primera vez — a estrenar"}
-                    {stats.prKg !== null ? ` · PR ${stats.prKg} kg` : ""}
+                    {stats.last ? t("lastTime", { last: stats.last }) : t("firstTime")}
+                    {stats.prKg !== null ? ` · ${t("pr", { kg: stats.prKg })}` : ""}
                   </p>
                 </div>
-                <button onClick={() => removeExercise(ei)} aria-label="Quitar ejercicio" className="t-label shrink-0 px-1 text-muted hover:text-bad">✕</button>
+                <button onClick={() => removeExercise(ei)} aria-label={t("removeExercise")} className="t-label shrink-0 px-1 text-muted hover:text-bad">✕</button>
               </div>
 
               <div className="mt-3 grid grid-cols-[2rem_1fr_1fr_2.5rem] items-center gap-2 px-1">
                 <span className="t-label text-muted">#</span>
                 <span className="t-label text-muted">kg</span>
-                <span className="t-label text-muted">reps</span>
+                <span className="t-label text-muted">{t("reps")}</span>
                 <span />
                 {x.sets.map((s, si) => (
                   <SetRow key={si} index={si} set={s}
@@ -361,7 +367,7 @@ function SessionInner() {
                     onDone={() => toggleDone(ei, si)} />
                 ))}
               </div>
-              <button onClick={() => addSet(ei)} className="btn btn-tonal btn-sm mt-3 w-full">+ Serie</button>
+              <button onClick={() => addSet(ei)} className="btn btn-tonal btn-sm mt-3 w-full">{t("addSet")}</button>
             </div>
           );
         })}
@@ -372,33 +378,33 @@ function SessionInner() {
         {adding ? (
           <div className="glass p-4">
             <div className="flex items-center justify-between">
-              <p className="t-label text-ink">Añadir ejercicio</p>
-              <button onClick={() => { setAdding(false); setQ(""); }} className="t-label text-muted">Cerrar ✕</button>
+              <p className="t-label text-ink">{t("addExercise")}</p>
+              <button onClick={() => { setAdding(false); setQ(""); }} className="t-label text-muted">{t("close")}</button>
             </div>
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar: press, remo, sentadilla…" autoFocus
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("searchPlaceholder")} autoFocus
               className="field mt-2 w-full px-4 py-3 text-sm" />
             <div className="mt-2 flex max-h-56 flex-col gap-1 overflow-y-auto">
               {results.map((r) => (
                 <button key={r.name} onClick={() => addExercise(r.name)} className="flex items-center justify-between rounded-xl px-3 py-2.5 text-left hover:bg-[rgba(255,255,255,0.05)]">
-                  <span className="t-body text-sm text-ink">{r.name}</span>
-                  <span className="t-body text-[11px] text-muted">{r.group}</span>
+                  <span className="t-body text-sm text-ink">{exLabel(r.name)}</span>
+                  <span className="t-body text-[11px] text-muted">{groupLabel(r.group)}</span>
                 </button>
               ))}
-              {results.length === 0 && <p className="t-body py-3 text-center text-xs text-muted">Sin resultados.</p>}
+              {results.length === 0 && <p className="t-body py-3 text-center text-xs text-muted">{t("noResults")}</p>}
             </div>
           </div>
         ) : (
-          <button onClick={() => setAdding(true)} className="btn btn-tonal w-full">+ Añadir ejercicio</button>
+          <button onClick={() => setAdding(true)} className="btn btn-tonal w-full">{t("addExerciseBtn")}</button>
         )}
       </div>
 
-      <button onClick={() => setPhase("summary")} className="btn btn-primary mt-4 w-full">Terminar entreno</button>
+      <button onClick={() => setPhase("summary")} className="btn btn-primary mt-4 w-full">{t("finish")}</button>
 
       {/* chip flotante de descanso */}
       {restLeft !== null && restLeft > 0 && (
         <div className="fixed inset-x-0 bottom-24 z-40 flex justify-center">
           <div className="glass glow flex items-center gap-3 rounded-full px-4 py-2.5">
-            <span className="t-label text-muted">Descanso</span>
+            <span className="t-label text-muted">{t("rest")}</span>
             <span className="stat text-xl neon-text tabular-nums">{restLeft}s</span>
             <button
               onClick={() => {
@@ -409,7 +415,7 @@ function SessionInner() {
             >
               +30s
             </button>
-            <button onClick={() => setRestUntil(null)} className="badge">Saltar</button>
+            <button onClick={() => setRestUntil(null)} className="badge">{t("skip")}</button>
           </div>
         </div>
       )}
@@ -424,6 +430,7 @@ function SetRow({ index, set, onKg, onReps, onDone }: {
   onReps: (v: string) => void;
   onDone: () => void;
 }) {
+  const t = useTranslations("training.gymSession");
   return (
     <>
       <span className="t-body text-sm text-muted">{index + 1}</span>
@@ -431,7 +438,7 @@ function SetRow({ index, set, onKg, onReps, onDone }: {
         className={`field px-2 py-2 text-center text-sm ${set.done ? "opacity-60" : ""}`} />
       <input value={set.reps} onChange={(e) => onReps(e.target.value)} inputMode="numeric" placeholder="—"
         className={`field px-2 py-2 text-center text-sm ${set.done ? "opacity-60" : ""}`} />
-      <button type="button" onClick={onDone} aria-label="Serie hecha"
+      <button type="button" onClick={onDone} aria-label={t("setDone")}
         className="flex h-9 w-9 items-center justify-center rounded-full border text-sm transition-colors"
         style={set.done
           ? { background: "#43e8a0", borderColor: "transparent", color: "#03101c" }
@@ -443,8 +450,9 @@ function SetRow({ index, set, onKg, onReps, onDone }: {
 }
 
 export default function GymSessionPage() {
+  const t = useTranslations("training.gymSession");
   return (
-    <Suspense fallback={<div className="pt-6 text-center"><p className="t-body text-muted">Cargando…</p></div>}>
+    <Suspense fallback={<div className="pt-6 text-center"><p className="t-body text-muted">{t("loading")}</p></div>}>
       <SessionInner />
     </Suspense>
   );
