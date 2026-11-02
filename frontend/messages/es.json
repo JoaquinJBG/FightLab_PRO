@@ -929,6 +929,10 @@
         "tools": {
           "title": "Herramientas",
           "sub": "Cronómetro y timer de rounds"
+        },
+        "plan": {
+          "title": "Plan de la semana",
+          "sub": "Lo prepara el coach con reglas y evidencia"
         }
       }
     },
@@ -1742,5 +1746,179 @@
       "other": "Otro método"
     },
     "blocked": "Con tu perfil de seguridad actual no se guardan peso, grasa corporal ni perímetros; sí la FC en reposo y la HRV."
+  },
+  "weeklyPlan": {
+    "title": "Plan de la semana",
+    "back": "← Entreno",
+    "intro": "Lo prepara el coach con reglas: cada número sale del motor y cada línea lleva su regla.",
+    "weekOf": "Semana del {date}",
+    "loading": "Cargando…",
+    "error": "No se pudo cargar el plan.",
+    "blocked": {
+      "title": "Sin plan hasta la revisión médica",
+      "body": "Con lo que nos has contado, no se prepara plan de entreno hasta que lo revise un médico. Puedes seguir registrando lo que hagas."
+    },
+    "incomplete": "Para preparar el plan te falta el cribado del onboarding.",
+    "completeOnboarding": "Completar el cribado",
+    "form": {
+      "gymDays": "Días de gimnasio",
+      "gymHint": "Mínimo {min}: dos sesiones de cuerpo completo a la semana.",
+      "mmaDays": "Días de MMA",
+      "mmaHint": "Los que has registrado en las últimas 4 semanas. Cámbialos si no es así.",
+      "generate": "Preparar plan",
+      "regenerate": "Volver a preparar",
+      "generating": "Preparando…"
+    },
+    "errors": {
+      "too_few_gym_days": "Elige al menos 2 días de gimnasio.",
+      "too_many_gym_days": "Como mucho 6 días de gimnasio: deja uno de descanso.",
+      "no_training": "Sin plan hasta la revisión médica.",
+      "profile_incomplete": "Te falta el cribado del onboarding.",
+      "generic": "No se pudo preparar el plan. Inténtalo de nuevo."
+    },
+    "status": {
+      "draft": "Borrador",
+      "active": "En Mi rutina",
+      "superseded": "Sustituido"
+    },
+    "apply": "Aplicar a Mi rutina",
+    "applying": "Aplicando…",
+    "applied": "Aplicado: ya lo tienes en Mi rutina.",
+    "goRoutine": "Ver Mi rutina",
+    "sections": {
+      "week": "La semana",
+      "sessions": "Sesiones de gimnasio",
+      "cardio": "Cardio",
+      "nutrition": "Nutrición",
+      "safety": "Notas de seguridad",
+      "rules": "Reglas usadas",
+      "narrative": "Resumen",
+      "strength": "Series duras por músculo"
+    },
+    "narrativeNote": "Lo redacta la IA a partir del plan; los números son los del plan.",
+    "day": {
+      "gym": "Gimnasio · Sesión {session}",
+      "mma": "MMA",
+      "cardio": "Cardio moderado · {minutes} min",
+      "rest": "Descanso",
+      "at": "a las {time}"
+    },
+    "session": "Sesión {key}",
+    "effort": "Termina cada serie a {low}-{high} repeticiones del fallo",
+    "rotation": "Rotación A, B: si se te pasa una sesión, sigue con la siguiente sin recuperarla.",
+    "item": {
+      "scheme": "{sets} × {low}-{high}",
+      "load": "{kg} kg",
+      "noLoad": "Carga: una con la que podrías hacer 2-3 repeticiones más",
+      "pausedNoLoad": "Sin carga hasta que lo valore un profesional",
+      "ceiling": "Como mucho {kg} kg",
+      "swapped": "En lugar de {name} (en pausa)"
+    },
+    "actions": {
+      "no_data": "Primera vez",
+      "add_reps": "Misma carga, más repeticiones",
+      "increase_load": "Sube la carga",
+      "too_easy": "Demasiado fácil: sube la carga",
+      "stalled": "Estancado",
+      "restart": "Vuelta tras un descanso",
+      "hold": "Mantén carga y repeticiones",
+      "paused": "En pausa por lesión",
+      "no_training": "Sin entrenar"
+    },
+    "setsBasis": {
+      "log": "Series de tu registro",
+      "coach_convention": "Sin registro: 2-3 series",
+      "weekly_sets": "Una serie más, hacia 10 por músculo"
+    },
+    "conventionCoach": "Convención del coach",
+    "patterns": {
+      "legs": "Pierna",
+      "push": "Empuje",
+      "pull": "Tirón"
+    },
+    "mma": {
+      "allowed": "Puedes hacer",
+      "excluded": "Fuera esta semana"
+    },
+    "modalities": {
+      "walking_brisk": "Caminar a paso ligero",
+      "continuous_moderate": "Cardio continuo moderado",
+      "hiit": "HIIT",
+      "sprints": "Sprints a tope",
+      "sit": "SIT (sprints a tope)",
+      "rehit": "REHIT",
+      "jump_rope": "Comba",
+      "one_rm_test": "Test de 1RM",
+      "plyometrics": "Saltos pliométricos",
+      "near_maximal_lift": "Cargas casi máximas",
+      "sparring_hard": "Sparring duro",
+      "sparring_light": "Sparring ligero",
+      "competition": "Competición",
+      "pads_hard": "Paos a ritmo alto",
+      "bag_slow": "Saco a ritmo lento",
+      "technical_drilling": "Técnica y drilling",
+      "drills_all_out": "Drills a tope",
+      "rolling_hard": "Rolls duros",
+      "rolling_flow": "Rolls suaves"
+    },
+    "intensity": {
+      "light": "Ligera",
+      "moderate": "Moderada",
+      "vigorous": "Vigorosa",
+      "maximal": "Máxima"
+    },
+    "blockedBy": {
+      "review_before_vigorous": "hasta que un profesional revise el trabajo vigoroso",
+      "cap_moderate": "solo intensidad ligera o moderada",
+      "no_all_out_sprints": "SIT y REHIT piden todas las respuestas del PAR-Q+ en NO",
+      "no_contact": "sin contacto hasta el alta de un clínico",
+      "no_training": "sin entrenar hasta la revisión médica",
+      "prerequisites": "piden 4 semanas de cardio moderado regular sin síntomas"
+    },
+    "cardio": {
+      "dose": "{minutes} min a la semana de cardio moderado",
+      "mma": "Tus sesiones de MMA suman {minutes} min a la semana y cuentan como cardio moderado",
+      "remaining": "Te quedan {minutes} min: {perDay} min × {days, plural, one {# día} other {# días}}",
+      "covered": "Tus sesiones de MMA ya cubren el mínimo.",
+      "zone": "Esfuerzo RPE {low}-{high}",
+      "zoneBpm": "{low}-{high} ppm",
+      "options": "Opciones",
+      "excluded": "Fuera de tu plan"
+    },
+    "nutrition": {
+      "kcal": "{kcal} kcal al día",
+      "deficit": "con déficit",
+      "protein": "Proteína {g} g",
+      "fat": "Grasa {g} g",
+      "carbs": "Hidratos {g} g",
+      "fibre": "Fibra {g} g",
+      "missing": "Sin objetivos de calorías: falta un dato del perfil.",
+      "blocked": "Sin objetivos de calorías por seguridad."
+    },
+    "safetyNone": "Ningún aviso de seguridad activo.",
+    "strength": {
+      "week": "Semana del {start} al {end}",
+      "reference": "Referencia: unas {n} series duras a la semana por músculo",
+      "unmapped": "Sin mapear (no cuentan): {names}",
+      "empty": "Aún no hay series registradas."
+    },
+    "muscles": {
+      "chest": "Pecho",
+      "back": "Espalda",
+      "front_delts": "Deltoides anterior",
+      "side_delts": "Deltoides lateral",
+      "rear_delts": "Deltoides posterior",
+      "biceps": "Bíceps",
+      "triceps": "Tríceps",
+      "quads": "Cuádriceps",
+      "hamstrings": "Isquiotibiales",
+      "glutes": "Glúteos",
+      "adductors": "Aductores",
+      "calves": "Gemelos"
+    },
+    "startSession": "Empezar sesión {key}",
+    "routineCta": "Prepara tu plan de la semana con el coach",
+    "routineActive": "Plan del coach · semana del {date}",
+    "routineEdit": "Cambiar el plan"
   }
 }

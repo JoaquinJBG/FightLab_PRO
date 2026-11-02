@@ -19,6 +19,7 @@ const cards = [
   { href: "/training/sports", Icon: RunIcon, id: "sports" },
   { href: "/training/mma", Icon: GloveIcon, id: "mma" },
   { href: "/training/gym", Icon: TrainingIcon, id: "gym" },
+  { href: "/training/plan", Icon: ClipboardIcon, id: "plan" },
   { href: "/training/my-routine", Icon: ClipboardIcon, id: "myRoutine" },
   { href: "/training/tools", Icon: TimerIcon, id: "tools" },
 ] as const;

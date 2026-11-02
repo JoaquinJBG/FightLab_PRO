@@ -20,6 +20,7 @@ import {
   type LiveGym,
 } from "@/lib/gym";
 import { enqueueActivity } from "@/lib/activities";
+import { useWeeklyPlan } from "@/lib/plan";
 
 function fmtClock(sec: number) {
   const h = Math.floor(sec / 3600);
@@ -53,12 +54,20 @@ const REST_OPTS = [60, 90, 120];
 function SessionInner() {
   const t = useTranslations("training.gymSession");
   const tg = useTranslations("training.gym");
+  const tp = useTranslations("weeklyPlan");
   const locale = intlLocale(useLocale());
   const focusLabel = (f: string) => (FOCUS_KEYS[f] ? tg(`foci.${FOCUS_KEYS[f]}`) : f);
   const exLabel = (n: string) => (EXERCISE_KEYS[n] ? tg(`exercises.${EXERCISE_KEYS[n]}`) : n);
   const groupLabel = (g: string) => (FOCUS_KEYS[g] ? tg(`foci.${FOCUS_KEYS[g]}`) : g);
   const router = useRouter();
-  const focusParam = useSearchParams().get("focus");
+  const params = useSearchParams();
+  const focusParam = params.get("focus");
+  // Sesión del plan de la semana (Mi rutina → "Empezar sesión A"): se rellena con sus ejercicios.
+  const planParam = params.get("plan");
+  const [planSession, setPlanSession] = useState<string | null>(null);
+  // Id del plan con el que ya se rellenó la sesión (-1: sesión restaurada, no se rellena).
+  const [filledFrom, setFilledFrom] = useState<number | null>(null);
+  const { data: planState } = useWeeklyPlan(planParam !== null);
 
   const [focus, setFocus] = useState<string | null>(null);
   const [exercises, setExercises] = useState<ExerciseEntry[]>([]);
@@ -88,6 +97,8 @@ function SessionInner() {
           setFocus(live.focus);
           setExercises(live.exercises);
           setStartedAt(live.startedAt);
+          setPlanSession(live.plan ?? null);
+          setFilledFrom(-1);
           restored = true;
         }
       }
@@ -95,7 +106,12 @@ function SessionInner() {
       if (REST_OPTS.includes(rd)) setRestDur(rd);
     } catch { /* sesión corrupta */ }
 
-    if (!restored) {
+    if (!restored && planParam) {
+      setFocus(null);
+      setPlanSession(planParam);
+      setExercises([]);
+      setStartedAt(Date.now());
+    } else if (!restored) {
       const f = focusParam && FOCUS_EXERCISES[focusParam] ? focusParam : null;
       setFocus(f);
       setExercises(
@@ -110,6 +126,22 @@ function SessionInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /* ---------- ejercicios de la sesión del plan (cargas del motor; sin carga, vacío) ---------- */
+  // Se ajusta el estado al llegar el plan, en el render (sin efecto): una sola vez por plan.
+  const activePlan = planState?.active;
+  const planSessionData = planSession && activePlan ? activePlan.sessions.find((s) => s.key === planSession) : undefined;
+  if (planSessionData && activePlan && filledFrom === null) {
+    setFilledFrom(activePlan.id);
+    setExercises(
+      planSessionData.items
+        .filter((i) => i.sets > 0)
+        .map((i) => ({
+          name: i.exercise,
+          sets: Array.from({ length: i.sets }, () => ({ kg: i.load_kg !== null ? String(i.load_kg) : "", reps: "", done: false })),
+        })),
+    );
+  }
+
   /* ---------- reloj de sesión (wall-clock) ---------- */
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -123,10 +155,10 @@ function SessionInner() {
     try {
       localStorage.setItem(
         GYM_LIVE_KEY,
-        JSON.stringify({ startedAt, focus, exercises, savedAt: Date.now() } satisfies LiveGym),
+        JSON.stringify({ startedAt, focus, exercises, savedAt: Date.now(), plan: planSession } satisfies LiveGym),
       );
     } catch { /* sin espacio */ }
-  }, [exercises, focus, startedAt, phase]);
+  }, [exercises, focus, startedAt, phase, planSession]);
 
   /* ---------- wake lock ---------- */
   useEffect(() => {
@@ -229,11 +261,12 @@ function SessionInner() {
       volume,
       exercises: parsedExercises,
     });
-    let detail: Record<string, unknown> = { focus, volume_kg: volume, exercises: parsedExercises };
+    const planned = planSession ? { plan_session: planSession } : {};
+    let detail: Record<string, unknown> = { focus, volume_kg: volume, exercises: parsedExercises, ...planned };
     try {
-      // tope del backend: si el desglose no cabe, se queda el resumen
-      if (JSON.stringify(detail).length > 8000) detail = { focus, volume_kg: volume };
-    } catch { detail = { focus }; }
+      // tope del backend: si el desglose no cabe, se queda el resumen (las series van en `sets`)
+      if (JSON.stringify(detail).length > 8000) detail = { focus, volume_kg: volume, ...planned };
+    } catch { detail = { focus, ...planned }; }
     enqueueActivity({
       client_id: clientId,
       kind: "GYM",
@@ -326,7 +359,7 @@ function SessionInner() {
       </div>
       <div className="mt-1 flex items-center gap-2">
         <span className="text-neon"><TrainingIcon className="h-6 w-6" /></span>
-        <h1 className="t-display text-2xl text-ink">{focus ? t("workoutFocus", { focus: focusLabel(focus) }) : t("workout")}</h1>
+        <h1 className="t-display text-2xl text-ink">{focus ? t("workoutFocus", { focus: focusLabel(focus) }) : planSession ? tp("session", { key: planSession }) : t("workout")}</h1>
       </div>
 
       {/* descanso entre series */}

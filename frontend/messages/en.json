@@ -929,6 +929,10 @@
         "tools": {
           "title": "Tools",
           "sub": "Stopwatch and round timer"
+        },
+        "plan": {
+          "title": "Weekly plan",
+          "sub": "Built by the coach from rules and evidence"
         }
       }
     },
@@ -1742,5 +1746,179 @@
       "other": "Another method"
     },
     "blocked": "With your current safety profile weight, body fat and girths are not saved; resting heart rate and HRV are."
+  },
+  "weeklyPlan": {
+    "title": "Weekly plan",
+    "back": "← Training",
+    "intro": "The coach builds it from rules: every number comes from the engine and every line carries its rule.",
+    "weekOf": "Week of {date}",
+    "loading": "Loading…",
+    "error": "Couldn't load the plan.",
+    "blocked": {
+      "title": "No plan until a doctor reviews it",
+      "body": "From what you've told us, no training plan is built until a doctor reviews it. You can keep logging what you do."
+    },
+    "incomplete": "To build the plan, finish the screening in onboarding.",
+    "completeOnboarding": "Finish the screening",
+    "form": {
+      "gymDays": "Gym days",
+      "gymHint": "At least {min}: two full-body sessions a week.",
+      "mmaDays": "MMA days",
+      "mmaHint": "The ones you've logged over the last 4 weeks. Change them if that's not right.",
+      "generate": "Build plan",
+      "regenerate": "Build again",
+      "generating": "Building…"
+    },
+    "errors": {
+      "too_few_gym_days": "Choose at least 2 gym days.",
+      "too_many_gym_days": "At most 6 gym days: keep one rest day.",
+      "no_training": "No plan until a doctor reviews it.",
+      "profile_incomplete": "The onboarding screening isn't finished.",
+      "generic": "Couldn't build the plan. Please try again."
+    },
+    "status": {
+      "draft": "Draft",
+      "active": "In My routine",
+      "superseded": "Replaced"
+    },
+    "apply": "Apply to My routine",
+    "applying": "Applying…",
+    "applied": "Applied: it's now in My routine.",
+    "goRoutine": "See My routine",
+    "sections": {
+      "week": "The week",
+      "sessions": "Gym sessions",
+      "cardio": "Cardio",
+      "nutrition": "Nutrition",
+      "safety": "Safety notes",
+      "rules": "Rules used",
+      "narrative": "Summary",
+      "strength": "Hard sets per muscle"
+    },
+    "narrativeNote": "Written by the AI from the plan; the numbers are the plan's own.",
+    "day": {
+      "gym": "Gym · Session {session}",
+      "mma": "MMA",
+      "cardio": "Moderate cardio · {minutes} min",
+      "rest": "Rest",
+      "at": "at {time}"
+    },
+    "session": "Session {key}",
+    "effort": "Stop each set {low}-{high} reps short of failure",
+    "rotation": "A, B rotation: if you miss a session, carry on with the next one without making it up.",
+    "item": {
+      "scheme": "{sets} × {low}-{high}",
+      "load": "{kg} kg",
+      "noLoad": "Load: one you could lift 2-3 more times",
+      "pausedNoLoad": "No load until a professional has assessed it",
+      "ceiling": "At most {kg} kg",
+      "swapped": "Instead of {name} (paused)"
+    },
+    "actions": {
+      "no_data": "First time",
+      "add_reps": "Same load, more reps",
+      "increase_load": "Increase the load",
+      "too_easy": "Too easy: increase the load",
+      "stalled": "Stalled",
+      "restart": "Back after a break",
+      "hold": "Keep load and reps",
+      "paused": "Paused for an injury",
+      "no_training": "No training"
+    },
+    "setsBasis": {
+      "log": "Sets from your log",
+      "coach_convention": "No log yet: 2-3 sets",
+      "weekly_sets": "One more set, towards 10 per muscle"
+    },
+    "conventionCoach": "Coach convention",
+    "patterns": {
+      "legs": "Legs",
+      "push": "Push",
+      "pull": "Pull"
+    },
+    "mma": {
+      "allowed": "You can do",
+      "excluded": "Out this week"
+    },
+    "modalities": {
+      "walking_brisk": "Brisk walking",
+      "continuous_moderate": "Continuous moderate cardio",
+      "hiit": "HIIT",
+      "sprints": "All-out sprints",
+      "sit": "SIT (all-out sprints)",
+      "rehit": "REHIT",
+      "jump_rope": "Skipping rope",
+      "one_rm_test": "1RM test",
+      "plyometrics": "Plyometric jumps",
+      "near_maximal_lift": "Near-maximal lifts",
+      "sparring_hard": "Hard sparring",
+      "sparring_light": "Light sparring",
+      "competition": "Competition",
+      "pads_hard": "Fast-paced pad work",
+      "bag_slow": "Slow-paced bag work",
+      "technical_drilling": "Technique and drilling",
+      "drills_all_out": "All-out drills",
+      "rolling_hard": "Hard rolling",
+      "rolling_flow": "Flow rolling"
+    },
+    "intensity": {
+      "light": "Light",
+      "moderate": "Moderate",
+      "vigorous": "Vigorous",
+      "maximal": "Maximal"
+    },
+    "blockedBy": {
+      "review_before_vigorous": "until a professional reviews vigorous work",
+      "cap_moderate": "light or moderate intensity only",
+      "no_all_out_sprints": "SIT and REHIT need every PAR-Q+ answer to be NO",
+      "no_contact": "no contact until a clinician clears you",
+      "no_training": "no training until a doctor reviews it",
+      "prerequisites": "they need 4 weeks of regular moderate cardio without symptoms"
+    },
+    "cardio": {
+      "dose": "{minutes} min a week of moderate cardio",
+      "mma": "Your MMA sessions add up to {minutes} min a week and count as moderate cardio",
+      "remaining": "{minutes} min to go: {perDay} min × {days, plural, one {# day} other {# days}}",
+      "covered": "Your MMA sessions already cover the minimum.",
+      "zone": "Effort RPE {low}-{high}",
+      "zoneBpm": "{low}-{high} bpm",
+      "options": "Options",
+      "excluded": "Not in your plan"
+    },
+    "nutrition": {
+      "kcal": "{kcal} kcal a day",
+      "deficit": "in a deficit",
+      "protein": "Protein {g} g",
+      "fat": "Fat {g} g",
+      "carbs": "Carbohydrate {g} g",
+      "fibre": "Fibre {g} g",
+      "missing": "No calorie targets: a profile detail is missing.",
+      "blocked": "No calorie targets, for safety."
+    },
+    "safetyNone": "No safety flags are active.",
+    "strength": {
+      "week": "Week from {start} to {end}",
+      "reference": "Reference: about {n} hard sets a week per muscle",
+      "unmapped": "Not mapped (they don't count): {names}",
+      "empty": "No sets logged yet."
+    },
+    "muscles": {
+      "chest": "Chest",
+      "back": "Back",
+      "front_delts": "Front delts",
+      "side_delts": "Side delts",
+      "rear_delts": "Rear delts",
+      "biceps": "Biceps",
+      "triceps": "Triceps",
+      "quads": "Quads",
+      "hamstrings": "Hamstrings",
+      "glutes": "Glutes",
+      "adductors": "Adductors",
+      "calves": "Calves"
+    },
+    "startSession": "Start session {key}",
+    "routineCta": "Build your weekly plan with the coach",
+    "routineActive": "Coach's plan · week of {date}",
+    "routineEdit": "Change the plan"
   }
 }

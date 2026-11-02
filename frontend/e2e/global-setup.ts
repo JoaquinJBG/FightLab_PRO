@@ -40,6 +40,8 @@ SETUPS = {
     "checkinCardiac": ({}, {}),
     "checkinEmergency": ({}, {}),
     "checkinFat": ({}, {}),
+    "plan": ({}, {}),
+    "planParq": ({}, {"parq_any_yes": True}),
 }
 for key, email in READY.items():
     u, p = fresh(email)
@@ -50,6 +52,18 @@ for key, email in READY.items():
     p.save()
     screening_update(p, {**CLEAN, **screening}, origin="onboarding")
     BiometricsLog.objects.create(profile=p, weight_kg=72, resting_heart_rate=55, hrv_ms=80, timestamp=timezone.now())
+
+# Fase 6: dos sesiones de press banca (3 x 10 a 60 kg) y MMA el mismo día de la semana en dos semanas.
+from datetime import timedelta
+from activities.models import Activity, SetLog
+for key in ("plan", "planParq"):
+    p = UserProfile.objects.get(user__email=READY[key])
+    now = timezone.now()
+    for days in (3, 10):
+        a = Activity.objects.create(profile=p, kind="GYM", title="Full body", started_at=now - timedelta(days=days), duration_sec=3600, rpe=7)
+        SetLog.objects.bulk_create(SetLog(activity=a, exercise="Press banca", exercise_index=0, set_index=i, weight_kg=60, reps=10) for i in range(3))
+    for days in (2, 9):
+        Activity.objects.create(profile=p, kind="MMA", title="MMA", started_at=now - timedelta(days=days), duration_sec=3600, rpe=7)
 `;
   execFileSync(python, ["manage.py", "shell", "-c", code], { cwd: backend, stdio: "inherit" });
 }

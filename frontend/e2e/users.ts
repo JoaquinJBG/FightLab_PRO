@@ -18,4 +18,8 @@ export const READY_USERS = {
   checkinCardiac: "e2e-checkin-cardiac@fightlab.test",
   checkinEmergency: "e2e-checkin-emergency@fightlab.test",
   checkinFat: "e2e-checkin-fat@fightlab.test",
+  // Fase 6 (plan de la semana): con series de press banca y MMA registrados; y con un SÍ en el
+  // PAR-Q+ (review_before_vigorous y no_all_out_sprints).
+  plan: "e2e-plan@fightlab.test",
+  planParq: "e2e-plan-parq@fightlab.test",
 };

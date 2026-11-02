@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { TrainingIcon, GloveIcon, MoonIcon, ChevronRight } from "@/components/icons";
+import { PlanView } from "@/components/plan/PlanView";
+import { intlLocale } from "@/lib/locale";
+import { useWeeklyPlan } from "@/lib/plan";
 
 const COACH = { name: "Carlos Méndez", updatedDays: 2 };
 
@@ -24,7 +27,50 @@ const PLAN: Day[] = [
 
 const ICONS = { gym: TrainingIcon, mma: GloveIcon, rest: MoonIcon } as const;
 
+/** El plan del coach que se aplicó desde "Plan de la semana" (fase 6). */
+function ActivePlan() {
+  const t = useTranslations("training.myRoutine");
+  const tp = useTranslations("weeklyPlan");
+  const locale = intlLocale(useLocale());
+  const { data } = useWeeklyPlan();
+  const plan = data?.active;
+  if (!plan) {
+    return (
+      <Link href="/training/plan" data-testid="routine-plan-cta" className="glass neon-edge mt-4 flex items-center justify-between gap-3 p-4">
+        <span className="t-title text-sm text-ink">{tp("routineCta")}</span>
+        <ChevronRight className="h-4 w-4 shrink-0 text-neon" />
+      </Link>
+    );
+  }
+  const date = new Date(`${plan.week_start}T12:00:00`).toLocaleDateString(locale, { day: "numeric", month: "long" });
+  return (
+    <div data-testid="routine-active-plan" className="pb-4">
+      <Link href="/training" className="t-label text-muted">{t("back")}</Link>
+      <h1 className="t-display mt-2 text-2xl text-ink">{t("title")}</h1>
+      <div className="glass neon-edge mt-4 flex items-center justify-between gap-3 p-4">
+        <p className="t-title text-sm text-ink">{tp("routineActive", { date })}</p>
+        <Link href="/training/plan" className="t-label shrink-0 text-neon">{tp("routineEdit")}</Link>
+      </div>
+      <PlanView
+        plan={plan}
+        sessionAction={(s) => (
+          <Link href={`/training/gym/session?plan=${s.key}`} className="btn btn-tonal btn-sm mt-3 w-full">
+            {tp("startSession", { key: s.key })}
+          </Link>
+        )}
+      />
+    </div>
+  );
+}
+
 export default function MyRoutinePage() {
+  const { data } = useWeeklyPlan();
+  if (data?.active) return <div className="pt-4"><ActivePlan /></div>;
+  return <ExampleRoutine />;
+}
+
+/** La rutina de ejemplo de antes (sin plan aplicado), con el acceso al plan del coach. */
+function ExampleRoutine() {
   const t = useTranslations("training.myRoutine");
   const tg = useTranslations("training.gym");
   const [done, setDone] = useState<Set<number>>(new Set());
@@ -35,6 +81,8 @@ export default function MyRoutinePage() {
     <div className="pt-4">
       <Link href="/training" className="t-label text-muted">{t("back")}</Link>
       <h1 className="t-display mt-2 text-2xl text-ink">{t("title")}</h1>
+
+      <ActivePlan />
 
       {/* Coach */}
       <div className="glass neon-edge mt-4 flex items-center gap-3 p-4">

@@ -1,10 +1,18 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { fireEvent, screen } from "@testing-library/react";
 import { renderEn, expectClean } from "./i18nB-helpers";
+import { makePlan, makeState } from "./plan-fixture";
 import MyRoutinePage from "@/app/(shell)/training/my-routine/page";
+
+const state = vi.hoisted(() => ({ plan: undefined as unknown }));
+vi.mock("@/lib/plan", async (orig) => ({
+  ...(await orig<typeof import("@/lib/plan")>()),
+  useWeeklyPlan: () => ({ data: state.plan }),
+}));
 
 describe("Mi rutina (en)", () => {
   it("pinta el plan semanal traducido", () => {
+    state.plan = makeState();
     const { container } = renderEn(<MyRoutinePage />);
     expect(screen.getByText("My routine")).toBeTruthy();
     expect(screen.getByText(/Your trainer · updated 2 days ago/)).toBeTruthy();
@@ -19,5 +27,22 @@ describe("Mi rutina (en)", () => {
     const { container } = renderEn(<MyRoutinePage />);
     fireEvent.click(screen.getAllByLabelText("Mark as done")[0]);
     expectClean(container, ["Carlos Méndez"]);
+  });
+
+  it("sin plan aplicado ofrece preparar el del coach", () => {
+    state.plan = makeState();
+    renderEn(<MyRoutinePage />);
+    expect(screen.getByTestId("routine-plan-cta").getAttribute("href")).toBe("/training/plan");
+    expect(screen.getByText("Build your weekly plan with the coach")).toBeTruthy();
+  });
+
+  it("con un plan aplicado lo pinta con sus sesiones para empezar", () => {
+    state.plan = makeState({ active: makePlan({ status: "active", applied_at: "2026-10-29T11:00:00Z" }) });
+    const { container } = renderEn(<MyRoutinePage />);
+    expect(screen.getByTestId("routine-active-plan")).toBeTruthy();
+    expect(screen.getByText("Coach's plan · week of 26 October")).toBeTruthy();
+    expect(screen.getByText("Start session A").getAttribute("href")).toBe("/training/gym/session?plan=A");
+    expect(screen.queryByText(/Your trainer/)).toBeNull();
+    expectClean(container);
   });
 });

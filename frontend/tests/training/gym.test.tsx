@@ -11,6 +11,7 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => ({ get: (k: string) => (k === "focus" ? nav.focus : null) }),
 }));
 vi.mock("@/lib/activities", () => ({ enqueueActivity: vi.fn(), fetchServerMetrics: vi.fn(async () => null) }));
+vi.mock("@/lib/plan", () => ({ useWeeklyPlan: () => ({ data: undefined }) }));
 
 beforeEach(() => { localStorage.clear(); nav.focus = null; nav.push.mockClear(); });
 
