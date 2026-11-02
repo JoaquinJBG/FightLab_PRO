@@ -184,3 +184,56 @@ class Injury(models.Model):
 
     def __str__(self) -> str:
         return f"Injury<{self.area} {self.status}>"
+
+
+# --- Check-in diario (spec §6.4) ---
+
+
+class DailyCheckin(models.Model):
+    """Un día, como una fila de `data/checkins.csv`. El peso y la cintura no se guardan aquí:
+    van a `BiometricsLog` (una fila por día con `external_id="checkin:AAAA-MM-DD"`).
+
+    El bienestar (plan v1 §8) son cinco puntuaciones de 1 a 5, **donde 5 es lo mejor** (dormí bien,
+    con energía, sin agujetas, sin estrés, buen ánimo): así una bajada es siempre una puntuación
+    menor, sin invertir escalas. Es la lista de "Simple readiness monitoring".
+    Las respuestas a las señales de alarma no se guardan como texto: su efecto va a `Screening` o
+    a `Injury` (con su `ScreeningEvent`) y aquí solo queda el código de lo que se marcó.
+    """
+
+    class Illness(models.TextChoices):
+        SYSTEMIC = "systemic", "systemic"  # fiebre, dolor por todo el cuerpo, mal por debajo del cuello
+        HEAD_COLD = "head_cold", "head_cold"
+
+    profile = models.ForeignKey(
+        "profiles.UserProfile", on_delete=models.CASCADE, related_name="checkins"
+    )
+    date = models.DateField()
+    intake_kcal = models.PositiveIntegerField(null=True, blank=True)  # la de ayer
+    sleep_hours = models.FloatField(null=True, blank=True)  # la de anoche
+    sleep_quality = models.PositiveSmallIntegerField(null=True, blank=True)
+    energy = models.PositiveSmallIntegerField(null=True, blank=True)
+    soreness = models.PositiveSmallIntegerField(null=True, blank=True)
+    stress = models.PositiveSmallIntegerField(null=True, blank=True)
+    mood = models.PositiveSmallIntegerField(null=True, blank=True)
+    soreness_zones = models.JSONField(default=list, blank=True)
+    illness = models.CharField(max_length=9, choices=Illness.choices, blank=True, default="")
+    red_flags = models.JSONField(default=list, blank=True)  # códigos de `coaching.redflags`
+    # Preguntas semanales (5.3): hay "registro" de la semana si alguno no es nulo.
+    period_status = models.CharField(
+        max_length=14, choices=Screening.Menstrual.choices, null=True, blank=True
+    )
+    hormonal_contraception = models.BooleanField(null=True, blank=True)
+    bp_systolic = models.PositiveSmallIntegerField(null=True, blank=True)
+    bp_diastolic = models.PositiveSmallIntegerField(null=True, blank=True)
+    notes = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-date"]
+        constraints = [
+            models.UniqueConstraint(fields=["profile", "date"], name="uniq_checkin_profile_date")
+        ]
+
+    def __str__(self) -> str:
+        return f"Checkin<{self.profile_id} {self.date}>"
