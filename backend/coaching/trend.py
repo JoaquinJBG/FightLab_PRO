@@ -15,10 +15,15 @@ from coach.safety import flags as coach_flags
 from .bridge.adapters import to_coach_profile, weigh_ins
 from .bridge.reasons import parse_reason
 from .keys import rule_key
+from .models import KnowledgeRule
 from .targets import reasons_data
 from .weigh_in import policy_for
 
 TREND_RULE = rule_key("nutrition.md", "Read the scale with weekly averages")
+
+
+def _grade() -> str | None:
+    return KnowledgeRule.objects.filter(key=TREND_RULE).values_list("grade", flat=True).first()
 
 
 def _empty(status: str, *, blocked: bool, reasons: list) -> dict:
@@ -36,6 +41,7 @@ def _empty(status: str, *, blocked: bool, reasons: list) -> dict:
         "min_points": coach_trend.MIN_POINTS,
         "min_days": coach_trend.MIN_DAYS,
         "rule_key": TREND_RULE,
+        "grade": _grade(),
         "reasons": reasons,
     }
 

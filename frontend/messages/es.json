@@ -1423,5 +1423,190 @@
       "saved": "Guardado ✓",
       "saving": "Guardando…"
     }
+  },
+  "checkin": {
+    "title": "Check-in de <hl>hoy</hl>",
+    "subtitle": "Un solo formulario por la mañana: cómo estás, tus datos y si algo te preocupa. Corto y a menudo.",
+    "loading": "Cargando…",
+    "alreadyDone": "Ya hiciste el check-in de hoy. Lo que añadas completa o sustituye lo anterior; las notas se suman.",
+    "wellness": {
+      "title": "Cómo estás hoy",
+      "hint": "Del 1 al 5, donde 5 es lo mejor. Se compara contigo mismo, no con nadie más.",
+      "scores": {
+        "sleep_quality": {
+          "label": "Sueño",
+          "low": "dormí mal",
+          "high": "dormí bien"
+        },
+        "energy": {
+          "label": "Energía",
+          "low": "agotado",
+          "high": "con energía"
+        },
+        "soreness": {
+          "label": "Agujetas",
+          "low": "muy doloridas",
+          "high": "ninguna"
+        },
+        "stress": {
+          "label": "Estrés",
+          "low": "muy estresado",
+          "high": "tranquilo"
+        },
+        "mood": {
+          "label": "Ánimo",
+          "low": "bajo",
+          "high": "alto"
+        }
+      },
+      "zonesLabel": "¿Dónde tienes agujetas?",
+      "zones": {
+        "legs": "Piernas",
+        "glutes": "Glúteos",
+        "back": "Espalda",
+        "chest": "Pecho",
+        "shoulders": "Hombros",
+        "arms": "Brazos",
+        "core": "Abdomen",
+        "neck": "Cuello"
+      },
+      "scoreAria": "{name}: {n} de 5"
+    },
+    "data": {
+      "title": "Tus datos",
+      "sleepHours": "Horas dormidas anoche",
+      "intake": "Calorías de ayer (si las anotas)",
+      "weight": "Peso de esta mañana",
+      "weightHint": "Al levantarte, tras ir al baño y antes de comer. Lo que cuenta es la media de la semana, no el pesaje de hoy.",
+      "waist": "Cintura",
+      "waistHint": "Con una vez por semana basta.",
+      "optionalToggle": "Con pulsómetro o reloj · opcional",
+      "rhr": "FC en reposo",
+      "hrv": "HRV",
+      "hrvNote": "La HRV es opcional: si la mides, solo cuenta tu propia tendencia de 7 días, nunca una lectura suelta, y junto a cómo te sientes.",
+      "blocked": "El peso, la cintura y las calorías están desactivados para ti. Solo te preguntamos por el sueño, cómo te sientes y los síntomas.",
+      "missedDays": "Los días que no registraste no se rellenan después."
+    },
+    "signs": {
+      "title": "Señales de alarma",
+      "intro": "Marca solo lo que te pase. Si dudas, relee la descripción; si sigue sin estar claro, no lo marques y actúa así en cuanto aparezca.",
+      "cardiac": "Dolor o presión en el pecho, cuello, mandíbula o brazo, falta de aire, mareo o desmayo, o palpitaciones (al hacer ejercicio o en reposo)",
+      "cardiacEmergency": "Es dolor en el pecho en reposo, un desmayo, o dolor en el pecho con falta de aire y sudor",
+      "systemic_illness": "Fiebre, dolores por todo el cuerpo o malestar por debajo del cuello",
+      "head_cold": "Solo un resfriado de cabeza (mocos o garganta, sin fiebre ni dolores)",
+      "disordered_eating": "Vómitos, laxantes o pastillas para adelgazar, ejercicio para compensar lo comido, atracones sin control o mucho miedo a engordar",
+      "disorderedUrgent": "Además: desmayo, confusión, comer casi nada 2 días o más, o vomitar varias veces al día",
+      "rhabdo": "Músculos muy doloridos, débiles o hinchados con orina oscura después de entrenar",
+      "injury": "Dolor nuevo o una lesión en alguna zona",
+      "injuryArea": "Zona (con tus palabras)",
+      "injuryExercises": "Ejercicios que afecta (separados por comas)",
+      "injuryProfessional": "¿Quién la ha valorado? (opcional)",
+      "injurySevere": "El dolor es agudo o empeora, o tengo entumecimiento o debilidad"
+    },
+    "weekly": {
+      "title": "Preguntas de la semana",
+      "intro": "Solo las hacemos si no las has contestado en los últimos 7 días.",
+      "menstrual": {
+        "question": "¿Algún cambio nuevo en tu regla: retrasos, faltas o irregularidades?",
+        "normal": "Normal",
+        "irregular_new": "Retrasos o cambios nuevos",
+        "absent": "Sin regla desde hace 3 meses o más",
+        "contraception": "Uso anticonceptivo hormonal (enmascara el ciclo)"
+      },
+      "bp": {
+        "question": "Tu última tensión en reposo, sentado tras 5 minutos de descanso",
+        "systolic": "Máxima (sistólica)",
+        "diastolic": "Mínima (diastólica)"
+      }
+    },
+    "notes": {
+      "label": "Notas",
+      "placeholder": "Cómo ha ido el entreno, síntomas, lo que quieras apuntar"
+    },
+    "submit": "Guardar check-in",
+    "saving": "Guardando…",
+    "errors": {
+      "generic": "No se ha podido guardar. Revisa los datos e inténtalo de nuevo.",
+      "blocked": "Este dato no se puede guardar con tu perfil de seguridad actual.",
+      "invalid": "Algún dato está fuera de rango: {fields}."
+    },
+    "result": {
+      "title": "Check-in guardado",
+      "recorded": "Registrado: {items}.",
+      "items": {
+        "weight": "peso",
+        "waist": "cintura",
+        "intake": "calorías",
+        "sleep": "sueño",
+        "wellness": "bienestar",
+        "rhr": "FC en reposo",
+        "hrv": "HRV",
+        "notes": "notas",
+        "weekly": "preguntas semanales",
+        "signs": "señales de alarma"
+      },
+      "refused": "No se ha guardado: {fields}.",
+      "nothing": "No había nada que registrar.",
+      "again": "Añadir algo más",
+      "home": "Volver al inicio",
+      "alertsTitle": "Importante",
+      "newReasons": "Avisos de seguridad",
+      "professional": "A quién acudir: {name}"
+    },
+    "urgent": {
+      "eyebrow": "Urgencia ahora",
+      "call": "Llamar al {number}",
+      "understood": "Entendido, volver al inicio",
+      "stopTraining": "No entrenes. La app no te sugerirá entrenar hasta que un clínico lo autorice."
+    },
+    "alertLevel": {
+      "emergency": "Urgencia",
+      "urgent": "Urgente",
+      "stop": "Para",
+      "refer": "Consulta",
+      "rest": "Descansa",
+      "info": "Aviso"
+    },
+    "readiness": {
+      "title": "Cómo estás de readiness",
+      "no_data": "Aún no hay datos suficientes para compararte contigo mismo. Con unos días de check-in aparecerá.",
+      "ok": "Sin bajadas sostenidas respecto a tu línea base. Entrena según tu plan.",
+      "easy": "Tu HRV lleva una semana por debajo de tu rango y hoy te notas peor: mantén la sesión suave.",
+      "reduce": "Llevas 3 días con bajadas en 2 o más señales respecto a tu línea base: mantén o reduce la carga.",
+      "drops": "Por debajo de tu media hoy: {items}.",
+      "pragmatic": "Estos umbrales son pragmáticos, no validados: es una guía, no un diagnóstico."
+    },
+    "homeCard": {
+      "title": "Check-in de hoy",
+      "todo": "Cuéntale al coach cómo estás: dos minutos.",
+      "done": "Hecho hoy",
+      "cta": "Hacer el check-in",
+      "update": "Añadir algo"
+    }
+  },
+  "weightTrend": {
+    "title": "Tendencia de peso",
+    "ok": "{rate} kg por semana ({pct} %)",
+    "okNow": "Media de la última semana: {kg} kg",
+    "okBasis": "Compara la media de la primera y la de la última semana, nunca un pesaje suelto.",
+    "insufficient": "Aún no hay tendencia. Hacen falta al menos {min_points} pesajes que cubran {min_days} días; llevas {points} en {days} días.",
+    "insufficientMore": "Te faltan {missing} pesajes.",
+    "empty": "Sin pesajes todavía. Con 7 pesajes repartidos en 14 días verás tu tendencia.",
+    "blocked": "El seguimiento de peso está desactivado para ti.",
+    "chartNote": "La línea de la gráfica es solo visual: una media suavizada de tus pesajes. El ritmo semanal sale de la tendencia del coach."
+  },
+  "bodyFat": {
+    "method": "¿Cómo lo mediste?",
+    "hint": "Con DXA, BodPod, BIA de laboratorio o pliegues, el coach puede usar tu masa magra para estimar tu gasto (ecuación de Cunningham). Con una báscula doméstica u otro método, no: el error de medida pasaría directo al cálculo.",
+    "unknown": "No lo sé",
+    "methods": {
+      "dxa": "DXA",
+      "bodpod": "BodPod",
+      "bia_lab": "BIA de laboratorio u octopolar",
+      "skinfolds": "Pliegues cutáneos",
+      "smart_scale": "Báscula doméstica",
+      "other": "Otro método"
+    },
+    "blocked": "Con tu perfil de seguridad actual no se guardan peso, grasa corporal ni perímetros; sí la FC en reposo y la HRV."
   }
 }

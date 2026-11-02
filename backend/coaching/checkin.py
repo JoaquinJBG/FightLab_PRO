@@ -8,7 +8,6 @@ positivo o con menos de 18 años, la cintura y las kcal) y no los devuelve.
 """
 from datetime import date, datetime, time
 from decimal import Decimal
-from zoneinfo import ZoneInfo
 
 from coach import checkins as coach_checkins
 from coach.profile import ProfileIncomplete

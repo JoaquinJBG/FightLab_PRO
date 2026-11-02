@@ -1423,5 +1423,190 @@
       "saved": "Saved ✓",
       "saving": "Saving…"
     }
+  },
+  "checkin": {
+    "title": "Check-in for <hl>today</hl>",
+    "subtitle": "One morning form: how you feel, your numbers and anything that worries you. Short and often.",
+    "loading": "Loading…",
+    "alreadyDone": "You already checked in today. Anything you add fills in or replaces what you gave; notes are added together.",
+    "wellness": {
+      "title": "How you feel today",
+      "hint": "From 1 to 5, where 5 is best. You are compared with yourself, not with anyone else.",
+      "scores": {
+        "sleep_quality": {
+          "label": "Sleep",
+          "low": "slept badly",
+          "high": "slept well"
+        },
+        "energy": {
+          "label": "Energy",
+          "low": "drained",
+          "high": "full of energy"
+        },
+        "soreness": {
+          "label": "Soreness",
+          "low": "very sore",
+          "high": "none"
+        },
+        "stress": {
+          "label": "Stress",
+          "low": "very stressed",
+          "high": "calm"
+        },
+        "mood": {
+          "label": "Mood",
+          "low": "low",
+          "high": "high"
+        }
+      },
+      "zonesLabel": "Where are you sore?",
+      "zones": {
+        "legs": "Legs",
+        "glutes": "Glutes",
+        "back": "Back",
+        "chest": "Chest",
+        "shoulders": "Shoulders",
+        "arms": "Arms",
+        "core": "Core",
+        "neck": "Neck"
+      },
+      "scoreAria": "{name}: {n} of 5"
+    },
+    "data": {
+      "title": "Your numbers",
+      "sleepHours": "Hours slept last night",
+      "intake": "Yesterday's calories (if you track them)",
+      "weight": "This morning's weight",
+      "weightHint": "On waking, after the toilet and before eating. What counts is the weekly average, not today's weigh-in.",
+      "waist": "Waist",
+      "waistHint": "Once a week is enough.",
+      "optionalToggle": "With a watch or chest strap · optional",
+      "rhr": "Resting heart rate",
+      "hrv": "HRV",
+      "hrvNote": "HRV is optional: if you measure it, only your own 7-day trend counts, never a single reading, and alongside how you feel.",
+      "blocked": "Weight, waist and calories are switched off for you. We only ask about sleep, how you feel and symptoms.",
+      "missedDays": "Days you did not log are not filled in afterwards."
+    },
+    "signs": {
+      "title": "Warning signs",
+      "intro": "Tick only what is happening. If you are unsure, read the description again; if it is still unclear, do not tick it and act on it as soon as it appears.",
+      "cardiac": "Chest, neck, jaw or arm pain or pressure, breathlessness, dizziness or fainting, or palpitations (during exercise or at rest)",
+      "cardiacEmergency": "It is chest pain at rest, fainting, or chest pain with breathlessness and sweating",
+      "systemic_illness": "Fever, aches all over, or feeling unwell below the neck",
+      "head_cold": "Just a head cold (runny nose or sore throat, no fever or aches)",
+      "disordered_eating": "Vomiting, laxatives or diet pills, exercising to make up for food, bingeing with loss of control, or a marked fear of gaining weight",
+      "disorderedUrgent": "Also: fainting, confusion, eating almost nothing for 2 days or more, or vomiting several times a day",
+      "rhabdo": "Very sore, weak or swollen muscles with dark urine after training",
+      "injury": "New pain or an injury in some area",
+      "injuryArea": "Area (in your own words)",
+      "injuryExercises": "Exercises it affects (comma-separated)",
+      "injuryProfessional": "Who has assessed it? (optional)",
+      "injurySevere": "The pain is sharp or getting worse, or I have numbness or weakness"
+    },
+    "weekly": {
+      "title": "This week's questions",
+      "intro": "We only ask these if you have not answered them in the last 7 days.",
+      "menstrual": {
+        "question": "Any new change in your period: delays, missed periods or irregularity?",
+        "normal": "Normal",
+        "irregular_new": "New delays or changes",
+        "absent": "No period for 3 months or more",
+        "contraception": "I use hormonal contraception (it masks the cycle)"
+      },
+      "bp": {
+        "question": "Your latest resting blood pressure, seated after 5 minutes of rest",
+        "systolic": "Top number (systolic)",
+        "diastolic": "Bottom number (diastolic)"
+      }
+    },
+    "notes": {
+      "label": "Notes",
+      "placeholder": "How training went, symptoms, anything you want to note"
+    },
+    "submit": "Save check-in",
+    "saving": "Saving…",
+    "errors": {
+      "generic": "Could not save. Check the values and try again.",
+      "blocked": "This value cannot be saved with your current safety profile.",
+      "invalid": "Some values are out of range: {fields}."
+    },
+    "result": {
+      "title": "Check-in saved",
+      "recorded": "Recorded: {items}.",
+      "items": {
+        "weight": "weight",
+        "waist": "waist",
+        "intake": "calories",
+        "sleep": "sleep",
+        "wellness": "wellness",
+        "rhr": "resting heart rate",
+        "hrv": "HRV",
+        "notes": "notes",
+        "weekly": "weekly questions",
+        "signs": "warning signs"
+      },
+      "refused": "Not saved: {fields}.",
+      "nothing": "There was nothing to record.",
+      "again": "Add something else",
+      "home": "Back to home",
+      "alertsTitle": "Important",
+      "newReasons": "Safety notices",
+      "professional": "Who to see: {name}"
+    },
+    "urgent": {
+      "eyebrow": "Urgent, now",
+      "call": "Call {number}",
+      "understood": "Understood, back to home",
+      "stopTraining": "Do not train. The app will not suggest training until a clinician clears it."
+    },
+    "alertLevel": {
+      "emergency": "Emergency",
+      "urgent": "Urgent",
+      "stop": "Stop",
+      "refer": "See someone",
+      "rest": "Rest",
+      "info": "Notice"
+    },
+    "readiness": {
+      "title": "How ready you are",
+      "no_data": "Not enough data yet to compare you with yourself. A few days of check-ins will fix that.",
+      "ok": "No sustained drops against your own baseline. Train as planned.",
+      "easy": "Your HRV has been below your range for a week and you feel worse today: keep the session easy.",
+      "reduce": "You have had 3 days of drops on 2 or more signals against your baseline: hold or reduce the load.",
+      "drops": "Below your average today: {items}.",
+      "pragmatic": "These thresholds are pragmatic, not validated: a guide, not a diagnosis."
+    },
+    "homeCard": {
+      "title": "Today's check-in",
+      "todo": "Tell the coach how you are: two minutes.",
+      "done": "Done today",
+      "cta": "Do the check-in",
+      "update": "Add something"
+    }
+  },
+  "weightTrend": {
+    "title": "Weight trend",
+    "ok": "{rate} kg per week ({pct} %)",
+    "okNow": "Average of the last week: {kg} kg",
+    "okBasis": "It compares the average of the first week with the last, never a single weigh-in.",
+    "insufficient": "No trend yet. It needs at least {min_points} weigh-ins covering {min_days} days; you have {points} over {days} days.",
+    "insufficientMore": "You need {missing} more weigh-ins.",
+    "empty": "No weigh-ins yet. With 7 weigh-ins spread over 14 days you will see your trend.",
+    "blocked": "Weight tracking is switched off for you.",
+    "chartNote": "The chart line is visual only: a smoothed average of your weigh-ins. The weekly rate comes from the coach's trend."
+  },
+  "bodyFat": {
+    "method": "How was it measured?",
+    "hint": "With DXA, BodPod, lab-grade BIA or skinfolds the coach can use your lean mass to estimate your energy use (Cunningham equation). With a smart scale or another method it cannot: the measurement error would go straight into the calculation.",
+    "unknown": "I don't know",
+    "methods": {
+      "dxa": "DXA",
+      "bodpod": "BodPod",
+      "bia_lab": "Lab-grade or octopolar BIA",
+      "skinfolds": "Skinfolds",
+      "smart_scale": "Smart scale",
+      "other": "Another method"
+    },
+    "blocked": "With your current safety profile weight, body fat and girths are not saved; resting heart rate and HRV are."
   }
 }

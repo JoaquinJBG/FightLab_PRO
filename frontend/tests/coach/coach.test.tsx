@@ -4,12 +4,19 @@ import type { LoadMetrics } from "@/lib/load";
 import CoachPage from "@/app/(shell)/coach/page";
 import { expectClean, renderEn } from "./_helpers";
 
-const state = vi.hoisted(() => ({ logs: [] as unknown[], metrics: null as unknown }));
+const WEIGH_IN = {
+  blocked: false, deficit_blocked: false, reasons: [], goal_weight_kg: null, goal_date: null, weigh_in_at: null,
+  weight_class: null, days_left: null, current_kg: null, to_go_kg: null,
+};
+const state = vi.hoisted(() => ({ logs: [] as unknown[], metrics: null as unknown, weighIn: undefined as unknown }));
 
 vi.mock("next/link", () => ({
   default: ({ href, children, ...r }: { href: string; children: React.ReactNode }) => <a href={href} {...r}>{children}</a>,
 }));
-vi.mock("@/lib/hooks", () => ({ useBiometrics: () => ({ data: state.logs }) }));
+vi.mock("@/lib/hooks", () => ({
+  useBiometrics: () => ({ data: state.logs }),
+  useWeighIn: () => ({ data: state.weighIn }),
+}));
 vi.mock("@/lib/load", () => ({ loadMetrics: () => state.metrics }));
 vi.mock("@/lib/activities", () => ({ fetchServerMetrics: () => Promise.resolve(null) }));
 vi.mock("@/components/evidence/CitedText", () => ({
@@ -34,6 +41,7 @@ beforeEach(() => {
   Element.prototype.scrollIntoView = vi.fn();
   state.logs = [];
   state.metrics = baseMetrics;
+  state.weighIn = WEIGH_IN;
 });
 afterEach(() => vi.unstubAllGlobals());
 
@@ -48,7 +56,7 @@ describe("vista Coach en inglés", () => {
   it("con datos: carga alta, recuperación baja y pesaje cercano", () => {
     state.logs = tiredLogs;
     state.metrics = { ...baseMetrics, weekAU: 600, acwr: 1.6, provisional: true, historyDays: 20, monotonia: 2.1 };
-    localStorage.setItem("flp_weigh", JSON.stringify({ target: 70, date: new Date(Date.now() + 4 * day).toISOString() }));
+    state.weighIn = { ...WEIGH_IN, goal_weight_kg: 70, days_left: 4 };
     const { container } = renderEn(<CoachPage />);
     expect(screen.getByText("Load rising fast (ACWR 1.60)")).toBeTruthy();
     expect(screen.getByText("Low recovery signals")).toBeTruthy();
@@ -56,6 +64,24 @@ describe("vista Coach en inglés", () => {
     expect(screen.getByText("Take it easy")).toBeTruthy();
     expect(container.textContent).toContain("Resting HR +15 vs your average");
     expectClean(container);
+  });
+
+  it("con no_weight_targets (o sin saberlo aún) no hay peso, ni pesaje, ni avisos de pesarse", () => {
+    state.logs = tiredLogs;
+    state.weighIn = { ...WEIGH_IN, blocked: true, goal_weight_kg: 70, days_left: 4 };
+    const { container } = renderEn(<CoachPage />);
+    expect(container.textContent).not.toMatch(/kg over target|weigh-in in|75\.0 kg/);
+    state.weighIn = undefined; // cargando: se oculta, que es lo seguro
+    const again = renderEn(<CoachPage />);
+    expect(again.container.textContent).not.toContain("75.0 kg");
+  });
+
+  it("con el déficit bloqueado sigue la cuenta atrás, pero no 'a X kg del objetivo'", () => {
+    state.logs = tiredLogs;
+    state.weighIn = { ...WEIGH_IN, deficit_blocked: true, goal_weight_kg: 70, days_left: 4 };
+    const { container } = renderEn(<CoachPage />);
+    expect(container.textContent).not.toMatch(/kg over target/);
+    expect(container.textContent).toContain("75.0 kg");
   });
 
   it("descartar y votar siguen funcionando", () => {

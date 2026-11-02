@@ -118,7 +118,12 @@ def test_emergency_number_and_weight(user_client):
     user.profile.save()
     from profiles.models import BiometricsLog
 
-    BiometricsLog.objects.create(profile=user.profile, weight_kg="80.20")
+    from datetime import datetime, timezone
+
+    # El «hoy» de la API está fijado en TODAY: el pesaje no puede llevar la fecha real.
+    BiometricsLog.objects.create(
+        profile=user.profile, weight_kg="80.20", timestamp=datetime(2026, 10, 28, 8, tzinfo=timezone.utc)
+    )
     data = client.get(SAFETY).data
     assert data["emergency_number"] == "112"
     assert data["weight"]["kg"] == 80.2 and data["weight"]["date"]

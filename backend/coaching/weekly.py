@@ -17,7 +17,7 @@ from coach import profile as coach_profile
 from django.core.exceptions import ValidationError
 
 from .bridge.adapters import GENDER_TO_SEX
-from .models import DailyCheckin, Screening
+from .models import Screening
 from .services import screening_get, screening_set
 
 WINDOW_DAYS = 7  # `checkin/SKILL.md`: «the 7 calendar days up to today»

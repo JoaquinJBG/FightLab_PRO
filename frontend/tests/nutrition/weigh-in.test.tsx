@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import WeighInPage from "@/app/(shell)/nutrition/weigh-in/page";
-import { WeighSync } from "@/components/weigh-sync";
-import { LEGACY_WEIGH_KEY, WEIGH_MIGRATED_KEY, daysUntil, mirrorValue, parseLegacyWeigh, weighInDate } from "@/lib/weigh";
+import { WeighMigrate } from "@/components/weigh-migrate";
+import { LEGACY_WEIGH_KEY, WEIGH_MIGRATED_KEY, daysUntil, parseLegacyWeigh, weighInDate } from "@/lib/weigh";
 import { PROFILE, SAFETY, WEIGH_IN, mockApi, renderApp } from "../support/app";
 
 beforeEach(() => localStorage.clear());
@@ -69,38 +69,44 @@ describe("pantalla de pesaje", () => {
   });
 });
 
-describe("puente provisional de flp_weigh (WeighSync)", () => {
-  it("migra el pesaje antiguo una vez y marca la migración", async () => {
+describe("migración de flp_weigh (WeighMigrate)", () => {
+  it("migra el pesaje antiguo una vez, marca la migración y borra la clave", async () => {
     localStorage.setItem(LEGACY_WEIGH_KEY, JSON.stringify({ target: 66, date: "2026-11-20T09:00:00.000Z" }));
     const calls = mockApi({ ...route(WEIGH_IN), "/api/proxy/coach/weigh-in": (init) => ({ body: init?.method === "PUT" ? { ...SAVED, goal_weight_kg: 66 } : WEIGH_IN }) });
-    renderApp(<WeighSync />);
+    renderApp(<WeighMigrate />);
     await waitFor(() => expect(localStorage.getItem(WEIGH_MIGRATED_KEY)).toBe("1"));
     const put = calls.mock.calls.find(([, init]) => init?.method === "PUT");
     expect(JSON.parse(String(put![1]!.body))).toEqual({ goal_weight_kg: 66, weigh_in_at: "2026-11-20T09:00:00.000Z" });
+    expect(localStorage.getItem(LEGACY_WEIGH_KEY)).toBeNull();
   });
 
-  it("no pisa un pesaje que el servidor ya tiene", async () => {
+  it("no pisa un pesaje que el servidor ya tiene y ya no lo refleja en flp_weigh", async () => {
     localStorage.setItem(LEGACY_WEIGH_KEY, JSON.stringify({ target: 60, date: "2026-12-01T09:00:00.000Z" }));
     const calls = mockApi(route(SAVED));
-    renderApp(<WeighSync />);
-    await waitFor(() => expect(JSON.parse(localStorage.getItem(LEGACY_WEIGH_KEY)!).target).toBe(68.5)); // refleja el del servidor
+    renderApp(<WeighMigrate />);
+    await waitFor(() => expect(localStorage.getItem(WEIGH_MIGRATED_KEY)).toBe("1"));
+    expect(localStorage.getItem(LEGACY_WEIGH_KEY)).toBeNull(); // nadie lo lee ya: no se deja uno viejo
     expect(calls.mock.calls.some(([, init]) => init?.method === "PUT")).toBe(false);
   });
 
-  it("con no_weight_targets borra flp_weigh para que Biometría y Coach tampoco lo muestren", async () => {
+  it("con no_weight_targets no migra nada", async () => {
     localStorage.setItem(LEGACY_WEIGH_KEY, JSON.stringify({ target: 66, date: "2026-11-20T09:00:00.000Z" }));
     const calls = mockApi(route({ ...WEIGH_IN, blocked: true }));
-    renderApp(<WeighSync />);
-    await waitFor(() => expect(localStorage.getItem(LEGACY_WEIGH_KEY)).toBeNull());
+    renderApp(<WeighMigrate />);
+    await waitFor(() => expect(calls).toHaveBeenCalled());
+    await new Promise((r) => setTimeout(r, 30));
     expect(calls.mock.calls.some(([, init]) => init?.method === "PUT")).toBe(false);
+    expect(localStorage.getItem(WEIGH_MIGRATED_KEY)).toBeNull();
   });
 
-  it("al quitar el pesaje en el servidor se quita también el espejo", async () => {
+  it("migrada ya una vez, no vuelve a tocar el servidor", async () => {
     localStorage.setItem(WEIGH_MIGRATED_KEY, "1");
     localStorage.setItem(LEGACY_WEIGH_KEY, JSON.stringify({ target: 66, date: "2026-11-20T09:00:00.000Z" }));
-    mockApi(route(WEIGH_IN));
-    renderApp(<WeighSync />);
-    await waitFor(() => expect(localStorage.getItem(LEGACY_WEIGH_KEY)).toBeNull());
+    const calls = mockApi(route(WEIGH_IN));
+    renderApp(<WeighMigrate />);
+    await waitFor(() => expect(calls).toHaveBeenCalled());
+    await new Promise((r) => setTimeout(r, 30));
+    expect(calls.mock.calls.some(([, init]) => init?.method === "PUT")).toBe(false);
   });
 });
 
@@ -110,13 +116,6 @@ describe("lib/weigh", () => {
     for (const bad of [null, "", "{", JSON.stringify({ target: "70", date: "x" }), JSON.stringify({ target: 70, date: "no" })]) {
       expect(parseLegacyWeigh(bad)).toBeNull();
     }
-  });
-
-  it("solo se refleja un pesaje que el servidor da", () => {
-    expect(mirrorValue(undefined)).toBeNull();
-    expect(mirrorValue({ ...SAVED, blocked: true })).toBeNull();
-    expect(mirrorValue(WEIGH_IN)).toBeNull();
-    expect(mirrorValue(SAVED)).toEqual({ target: 68.5, date: "2026-11-12T09:00:00Z" });
   });
 
   it("la fecha del pesaje es hoy + N días y la cuenta atrás es por días naturales", () => {

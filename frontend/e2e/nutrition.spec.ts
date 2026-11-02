@@ -36,7 +36,7 @@ test("perfil completo: objetivos del motor con chips, ecuación usada y sin cál
   await expect(page.getByTestId("evidence-sheet")).toBeVisible();
 });
 
-test("pesaje en la BD: se guarda en el servidor, sobrevive a recargar y refleja flp_weigh", async ({ page }) => {
+test("pesaje en la BD: se guarda en el servidor, sobrevive a recargar y ya no usa flp_weigh", async ({ page }) => {
   await login(page, READY_USERS.plain);
   await page.goto("/nutrition/weigh-in");
   await page.getByTestId("weigh-save").click();
@@ -44,8 +44,8 @@ test("pesaje en la BD: se guarda en el servidor, sobrevive a recargar y refleja 
   // el pesaje es del servidor: ya no se guarda en localStorage desde esta pantalla
   await page.reload();
   await expect(page.getByTestId("weigh-summary")).toContainText("70");
-  // el reflejo provisional para Biometría y Coach (fase I) lo escribe WeighSync
-  await expect.poll(() => page.evaluate(() => localStorage.getItem("flp_weigh"))).toContain('"target":70');
+  // Biometría y Coach leen el servidor: ya no se refleja nada en localStorage
+  expect(await page.evaluate(() => localStorage.getItem("flp_weigh"))).toBeNull();
   await page.goto("/nutrition");
   await expect(page.getByTestId("weigh-card")).toContainText("Objetivo 70 kg");
 });
