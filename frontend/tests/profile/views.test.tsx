@@ -30,7 +30,7 @@ describe("Perfil en inglés", () => {
     expect(screen.getByText("Southpaw")).toBeTruthy();
     expect(screen.getByText("Imperial")).toBeTruthy();
     expect(screen.getByText("170 cm")).toBeTruthy();
-    expect(screen.getByText("Log out")).toBeTruthy();
+    expect(screen.getByText("Sign out")).toBeTruthy();
     expectClean(container, [/@example\.com/]);
   });
 

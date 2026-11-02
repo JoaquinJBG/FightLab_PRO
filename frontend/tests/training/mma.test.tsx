@@ -59,7 +59,7 @@ describe("training/mma en inglés", () => {
     const { container } = renderEn(<MmaPage />);
     fireEvent.click(screen.getByLabelText("Open coach chat"));
     expect(screen.getByText(/Ready to train!/)).toBeTruthy();
-    expect(screen.getByText("AI Coach")).toBeTruthy();
+    expect(screen.getByText("AI coach")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "What should I do today?" }));
     expect(screen.getByText("The coach is typing…")).toBeTruthy();
     expectClean(container);

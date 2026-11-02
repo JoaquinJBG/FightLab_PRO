@@ -4,9 +4,8 @@ import { useRef } from "react";
 
 export type Dob = { day: string; month: string; year: string };
 
-/** Etiquetas y marcadores (por defecto en español; el onboarding pasa las de su idioma). */
+/** Etiquetas y marcadores del idioma activo (vienen de los catálogos de mensajes). */
 export type DobLabels = { day: string; month: string; year: string; dd: string; mm: string; yyyy: string };
-const DEFAULT_LABELS: DobLabels = { day: "Día", month: "Mes", year: "Año", dd: "DD", mm: "MM", yyyy: "AAAA" };
 
 /**
  * Fecha de nacimiento como cajas DD / MM / AAAA con teclado numérico y
@@ -15,11 +14,11 @@ const DEFAULT_LABELS: DobLabels = { day: "Día", month: "Mes", year: "Año", dd:
 export function DobInput({
   value,
   onChange,
-  labels = DEFAULT_LABELS,
+  labels,
 }: {
   value: Dob;
   onChange: (v: Dob) => void;
-  labels?: DobLabels;
+  labels: DobLabels;
 }) {
   const dayRef = useRef<HTMLInputElement>(null);
   const monthRef = useRef<HTMLInputElement>(null);
@@ -105,19 +104,6 @@ export function dobErrorCode(v: Dob): DobError | null {
   if (y < 1900) return "year";
   if (d >= new Date()) return "future";
   return null;
-}
-
-const DOB_ERRORS_ES: Record<DobError, string> = {
-  incomplete: "Completa la fecha (día, mes y año de 4 cifras).",
-  invalid: "Esa fecha no existe. Comprueba el día y el mes.",
-  year: "Revisa el año.",
-  future: "La fecha de nacimiento no puede ser futura.",
-};
-
-/** Valida la fecha; devuelve mensaje de error (en español) o null si es válida. */
-export function validateDob(v: Dob): string | null {
-  const code = dobErrorCode(v);
-  return code ? DOB_ERRORS_ES[code] : null;
 }
 
 /** Convierte a YYYY-MM-DD (formato de la API). Asume fecha ya validada. */
