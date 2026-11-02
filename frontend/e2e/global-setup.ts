@@ -36,6 +36,10 @@ SETUPS = {
     "noSex": ({"gender": "OTHER"}, {}),
     "noTraining": ({}, {"cardiac_symptoms": True}),
     "combat": ({}, {}),
+    "checkin": ({}, {}),
+    "checkinCardiac": ({}, {}),
+    "checkinEmergency": ({}, {}),
+    "checkinFat": ({}, {}),
 }
 for key, email in READY.items():
     u, p = fresh(email)

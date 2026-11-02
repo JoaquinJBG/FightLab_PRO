@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from . import targets, weigh_in
+from . import targets, trend, weigh_in
 from .safety_views import _lang, _today
 
 
@@ -25,6 +25,15 @@ class ZonesView(APIView):
 
     def get(self, request):
         return Response(targets.zones_data(request.user, _today(request.user.profile), _lang()))
+
+
+class TrendView(APIView):
+    """`GET /coach/trend`: la tendencia de peso del motor (Task 5.4)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(trend.trend_data(request.user, _today(request.user.profile), _lang()))
 
 
 class WeighInSerializer(serializers.Serializer):

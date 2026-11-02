@@ -25,6 +25,11 @@ import {
   targets,
   zones,
   weighIn,
+  trend,
+  checkinState,
+  checkinResult,
+  type Trend,
+  type CheckinState,
   type Targets,
   type Zones,
   type WeighIn,
@@ -34,7 +39,7 @@ import { resetActivityUid } from "./activities";
 // Todo lo que el servidor calcula con el motor depende del perfil, el cribado y los pesos: si
 // cambian, se vuelve a pedir.
 function invalidateCoach(qc: ReturnType<typeof useQueryClient>) {
-  for (const key of ["safety", "targets", "zones", "weigh-in"]) qc.invalidateQueries({ queryKey: [key] });
+  for (const key of ["safety", "targets", "zones", "weigh-in", "trend", "checkin"]) qc.invalidateQueries({ queryKey: [key] });
 }
 
 async function getJson(path: string) {
@@ -330,6 +335,62 @@ export function useClearWeighIn() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["weigh-in"] });
       qc.invalidateQueries({ queryKey: ["profile"] });
+    },
+  });
+}
+
+
+/* --- Tendencia de peso y check-in diario (coach, fase 5) --- */
+
+export function useTrend(enabled = true) {
+  return useQuery<Trend>({
+    queryKey: ["trend"],
+    queryFn: async () => trend.parse(await getJson("/api/proxy/coach/trend")),
+    enabled,
+  });
+}
+
+export function useCheckin() {
+  return useQuery<CheckinState>({
+    queryKey: ["checkin"],
+    queryFn: async () => checkinState.parse(await getJson("/api/proxy/coach/checkin")),
+  });
+}
+
+/** El servidor rechaza con `code` (`weight_targets_blocked`) y `fields` lo que `no_weight_targets`
+ * no deja guardar, o con 400 y un objeto de errores por campo. */
+export class CheckinError extends Error {
+  status: number;
+  code: string;
+  fields: string[];
+  errors: Record<string, unknown>;
+  constructor(status: number, body: Record<string, unknown>) {
+    const code = typeof body.code === "string" ? body.code : "";
+    super(code || String(status));
+    this.status = status;
+    this.code = code;
+    this.fields = Array.isArray(body.fields) ? (body.fields as string[]) : [];
+    this.errors = body;
+  }
+}
+
+export function useSaveCheckin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Record<string, unknown>) => {
+      const res = await fetch("/api/proxy/coach/checkin", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new CheckinError(res.status, data ?? {});
+      return checkinResult.parse(data);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["biometrics"] });
+      invalidateCoach(qc);
     },
   });
 }

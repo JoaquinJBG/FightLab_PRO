@@ -39,16 +39,37 @@ class ProfileView(APIView):
         return Response(self._payload(request, profile))
 
 
+# Lo que el motor no registra con `no_weight_targets` (peso, grasa y perímetros). La FC en reposo,
+# la VFC y el sueño sí.
+BODY_FIELDS = (
+    "weight_kg", "body_fat_pct", "waist_cm", "hip_cm", "chest_cm", "arm_cm", "thigh_cm", "neck_cm",
+)
+
+
 class BiometricsListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         logs = selectors.biometrics_list(user=request.user)
-        return Response(BiometricsSerializer(logs, many=True).data)
+        data = BiometricsSerializer(logs, many=True).data
+        from coaching import checkin
+        from coaching.safety_views import _today
+
+        # Con `no_weight_targets` el servidor no devuelve datos corporales (spec §8.3).
+        if checkin.weight_tracking_blocked(request.user, _today(request.user.profile)):
+            data = [{**row, **dict.fromkeys(BODY_FIELDS)} for row in data]
+        return Response(data)
 
     def post(self, request):
         serializer = BiometricsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        # Con `no_weight_targets` el servidor no guarda datos corporales (spec §8.3).
+        from coaching import checkin
+        from coaching.safety_views import _today
+
+        body = [n for n in BODY_FIELDS if serializer.validated_data.get(n) is not None]
+        if body and checkin.weight_tracking_blocked(request.user, _today(request.user.profile)):
+            return Response({"code": "weight_targets_blocked", "fields": body}, status=status.HTTP_403_FORBIDDEN)
         try:
             log = services.biometrics_create(user=request.user, **serializer.validated_data)
         except DjangoValidationError as exc:

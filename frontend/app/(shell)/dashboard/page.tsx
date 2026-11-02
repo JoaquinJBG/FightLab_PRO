@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useFormatter, useTranslations } from "next-intl";
-import { useBiometrics, useMe, useSafety, useWeighIn } from "@/lib/hooks";
+import { useBiometrics, useCheckin, useMe, useSafety, useTrend, useWeighIn } from "@/lib/hooks";
+import { TrendLine } from "@/components/trend/TrendLine";
 import { SafetyBanner } from "@/components/safety/SafetyBanner";
 import { LoadSummary } from "@/components/load/LoadSummary";
 import { ZonesCard } from "@/components/zones/ZonesCard";
@@ -19,6 +20,7 @@ import {
   ChevronRight,
   TrainingIcon,
   GloveIcon,
+  ClipboardIcon,
 } from "@/components/icons";
 
 /* ----------------------------- helpers ----------------------------------- */
@@ -129,6 +131,10 @@ export default function DashboardPage() {
   const { data: logs = [], isLoading } = useBiometrics();
   const { data: safety } = useSafety();
   const { data: weighIn } = useWeighIn();
+  // La tendencia es la del coach (`/coach/trend`), no una diferencia entre pesajes sueltos.
+  const { data: trend } = useTrend(!!weighIn && !weighIn.blocked);
+  const { data: checkin } = useCheckin();
+  const tCheckin = useTranslations("checkin");
 
   const [greeting, setGreeting] = useState<Greeting>("hello");
   const [local, setLocal] = useState<LocalData>({ gymWeek: null, trainedTs: [], metrics: null });
@@ -211,7 +217,6 @@ export default function DashboardPage() {
     .map((l) => num(l.weight_kg))
     .filter((n): n is number => n !== null)
     .slice(-7);
-  const weightDelta = spark.length >= 2 ? spark[spark.length - 1] - spark[0] : null;
 
   const rhrs = logs.map((l) => l.resting_heart_rate).filter((v): v is number => v != null);
   const hrvs = logs.map((l) => l.hrv_ms).filter((v): v is number => v != null);
@@ -330,6 +335,31 @@ export default function DashboardPage() {
         <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
       </Link>
 
+      {/* ---------- Check-in de hoy (un solo formulario matinal) ---------- */}
+      <Link
+        href="/checkin"
+        data-testid="checkin-card"
+        className="glass rise mt-4 flex items-center gap-3 p-4"
+        style={{ animationDelay: "105ms" }}
+      >
+        <span className="text-neon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(69,233,255,0.07)]">
+          <ClipboardIcon className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="t-label text-ink">
+            {checkin?.checkin ? tCheckin("homeCard.done") : tCheckin("homeCard.title")}
+          </p>
+          <p className="t-body text-xs text-muted">
+            {checkin?.checkin && checkin.readiness.status !== "no_data"
+              ? tCheckin(`readiness.${checkin.readiness.status}`)
+              : tCheckin("homeCard.todo")}
+          </p>
+        </div>
+        <span className="t-label shrink-0 text-neon">
+          {checkin?.checkin ? tCheckin("homeCard.update") : tCheckin("homeCard.cta")}
+        </span>
+      </Link>
+
       {/* ---------- Recordatorio quincenal ---------- */}
       {stale && (
         <Link
@@ -354,11 +384,6 @@ export default function DashboardPage() {
               <span className="text-neon"><ScaleIcon className="h-[18px] w-[18px]" /></span>
               <span className="t-label">{t("weight.label", { when })}</span>
             </div>
-            {weightDelta !== null && weightDelta !== 0 && (
-              <span className={`t-label ${weightDelta < 0 ? "text-good" : "text-warn"}`}>
-                {weightDelta > 0 ? "+" : ""}{format.number(weightDelta, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kg
-              </span>
-            )}
           </div>
           <div className="mt-2 flex items-end justify-between gap-4">
             <div className="flex items-end gap-1">
@@ -367,6 +392,11 @@ export default function DashboardPage() {
             </div>
             <div className="w-36"><Sparkline points={spark} /></div>
           </div>
+          {trend && (
+            <div data-testid="weight-trend" className="mt-2">
+              <TrendLine trend={trend} compact chip={false} />
+            </div>
+          )}
           {toGo && (
             <p data-testid="weight-to-goal" className="t-body mt-2 text-xs text-muted">
               {weight - toGo.goal_weight_kg! > 0 ? (

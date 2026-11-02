@@ -1,17 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import {
   useBiometrics,
   useDeleteBiometrics,
   useProfile,
+  useTrend,
+  useWeighIn,
   usePhotos,
   useUploadPhoto,
   useDeletePhoto,
 } from "@/lib/hooks";
 import { ScaleIcon, ArrowUpRight, InfoIcon, HeartIcon, PulseIcon } from "@/components/icons";
+import { TrendLine } from "@/components/trend/TrendLine";
 
 const mediaUrl = (path: string) => `/api/media${path.replace(/^\/media/, "")}`;
 
@@ -43,19 +46,6 @@ function trendSeries(pts: Pt[]): number[] {
     out.push(trend);
   });
   return out;
-}
-
-/** Ritmo semanal de la tendencia (kg/semana) sobre los últimos ~21 días. */
-function weeklyRate(pts: Pt[], trend: number[]): number | null {
-  if (pts.length < 3) return null;
-  const lastT = pts[pts.length - 1].t;
-  const windowStart = lastT - 21 * 86_400_000;
-  let i0 = pts.findIndex((p) => p.t >= windowStart);
-  if (i0 < 0) i0 = 0;
-  if (i0 >= pts.length - 1) i0 = Math.max(0, pts.length - 2);
-  const days = (lastT - pts[i0].t) / 86_400_000;
-  if (days < 3) return null; // ventana demasiado corta para hablar de ritmo
-  return ((trend[trend.length - 1] - trend[i0]) / days) * 7;
 }
 
 const RANGES: [string, number | null][] = [
@@ -127,6 +117,7 @@ function TrendChart({ pts, trend }: { pts: Pt[]; trend: number[] }) {
 
 export default function BiometricsPage() {
   const t = useTranslations("biometrics");
+  const tTrend = useTranslations("weightTrend");
   const locale = useLocale();
   const { data: logs = [], isLoading } = useBiometrics();
   const { data: profileData } = useProfile();
@@ -140,14 +131,12 @@ export default function BiometricsPage() {
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const [showInfo, setShowInfo] = useState(false);
   const [showImcInfo, setShowImcInfo] = useState(false);
-  const [weighTarget, setWeighTarget] = useState<number | null>(null);
-
-  useEffect(() => {
-    try {
-      const w = JSON.parse(localStorage.getItem("flp_weigh") ?? "null");
-      if (w && typeof w.target === "number") setWeighTarget(w.target);
-    } catch { /* sin objetivo configurado */ }
-  }, []);
+  // El pesaje y la tendencia salen del servidor (`no_weight_targets` los oculta, spec §8.3). La EWMA
+  // de abajo es solo la línea de la gráfica: el peso y el ritmo semanal son los de `/coach/trend`.
+  const { data: weighIn } = useWeighIn();
+  const blocked = !weighIn || weighIn.blocked;
+  const { data: trendData } = useTrend(!blocked);
+  const weighTarget = weighIn && !weighIn.blocked && !weighIn.deficit_blocked ? weighIn.goal_weight_kg : null;
 
   // puntos de peso ascendentes en el rango elegido
   const { pts, trend } = useMemo(() => {
@@ -160,8 +149,7 @@ export default function BiometricsPage() {
     return { pts: filtered, trend: trendSeries(filtered) };
   }, [logs, range]);
 
-  const trendNow = trend.length > 0 ? trend[trend.length - 1] : null;
-  const rate = weeklyRate(pts, trend);
+  const trendNow = trendData?.status === "ok" ? trendData.weight_kg : null;
 
   // IMC calculado (peso de tendencia + altura del perfil)
   const heightCm = profileData?.height_cm ?? null;
@@ -205,7 +193,14 @@ export default function BiometricsPage() {
         <Link href="/biometrics/new" className="btn btn-tonal btn-sm">{t("addMeasurement")}</Link>
       </div>
 
-      {isLoading ? (
+      {blocked && weighIn ? (
+        <section data-testid="weight-blocked" className="glass mt-4 p-5">
+          <p className="t-body text-sm text-muted">{tTrend("blocked")}</p>
+          {weighIn.reasons.map((r, i) => (
+            <p key={`${r.code}-${i}`} className="t-body mt-2 text-xs text-muted first-letter:uppercase">{r.text}</p>
+          ))}
+        </section>
+      ) : isLoading || !weighIn ? (
         <div className="glass mt-4 h-48 animate-pulse rounded-3xl" />
       ) : pts.length === 0 ? (
         <section className="glass neon-edge mt-4 flex flex-col items-center gap-3 p-6 text-center">
@@ -238,16 +233,14 @@ export default function BiometricsPage() {
                 {t("trend.info")}
               </p>
             )}
-            <div className="mt-2 flex items-end justify-between">
-              <div className="flex items-end gap-1">
-                <span className="stat text-4xl text-ink">{trendNow?.toFixed(1)}</span>
+            {trendNow !== null && (
+              <div className="mt-2 flex items-end gap-1">
+                <span className="stat text-4xl text-ink">{trendNow.toFixed(1)}</span>
                 <span className="mb-1 text-xs text-muted">kg</span>
               </div>
-              {rate !== null && (
-                <span className={`t-label ${rate < 0 ? "text-good" : rate > 0 ? "text-warn" : "text-muted"}`}>
-                  {t("trend.rate", { n: `${rate > 0 ? "+" : ""}${rate.toFixed(2)}` })}
-                </span>
-              )}
+            )}
+            <div className="mt-2">
+              {trendData ? <TrendLine trend={trendData} /> : <div className="h-4 animate-pulse rounded bg-[rgba(255,255,255,0.05)]" />}
             </div>
             {weighTarget !== null && trendNow !== null && (
               <p className="t-body mt-1.5 text-xs text-muted">
@@ -308,7 +301,7 @@ export default function BiometricsPage() {
               )}
             </div>
             <p className="t-body mt-1 px-1 text-[10px] text-muted">
-              {t("chart.legend")}
+              {t("chart.legend")} · {tTrend("chartNote")}
             </p>
           </div>
         </>

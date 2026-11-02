@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { useBiometrics, useSafety } from "@/lib/hooks";
+import { useBiometrics, useSafety, useWeighIn } from "@/lib/hooks";
 import { CitedText, type Citation } from "@/components/evidence/CitedText";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { COMBAT_RULES, type RuleRef } from "@/lib/combat-rules";
@@ -232,7 +232,6 @@ export default function CoachPage() {
   const { data: logs = [] } = useBiometrics();
   const { data: safety } = useSafety();
   const [metrics, setMetrics] = useState<LoadMetrics | null>(null);
-  const [weigh, setWeigh] = useState<{ target: number; date: string } | null>(null);
   const [dismissed, setDismissed] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<Record<string, boolean>>({});
 
@@ -241,10 +240,6 @@ export default function CoachPage() {
     setMetrics(loadMetrics()); // pintura inmediata; el servidor sobreescribe al llegar
     fetchServerMetrics().then((m) => { if (alive && m) setMetrics(m); });
     try {
-      const w = JSON.parse(localStorage.getItem("flp_weigh") ?? "null");
-      if (w && typeof w.target === "number" && typeof w.date === "string" && !Number.isNaN(new Date(w.date).getTime())) {
-        setWeigh(w);
-      }
       const d = JSON.parse(localStorage.getItem(dismissKey()) ?? "[]");
       if (Array.isArray(d)) setDismissed(d);
       // Limpia los descartes de días anteriores para que no se acumulen
@@ -257,25 +252,30 @@ export default function CoachPage() {
     return () => { alive = false; };
   }, []);
 
+  // El pesaje sale del servidor (`/coach/weigh-in`), no de localStorage. Con `no_weight_targets`
+  // no hay peso, ni pesaje, ni avisos de pesarse (spec §8.3); con el déficit bloqueado sigue la
+  // cuenta atrás pero no la distancia al objetivo. Mientras carga, se oculta: es lo seguro.
+  const { data: weighIn } = useWeighIn();
+  const weightHidden = !weighIn || weighIn.blocked;
+
   const recovery = computeRecovery(logs);
-  const lastWeightLog = logs.find((l) => num(l.weight_kg ?? null) !== null);
+  const lastWeightLog = weightHidden ? undefined : logs.find((l) => num(l.weight_kg ?? null) !== null);
   const weight = lastWeightLog ? num(lastWeightLog.weight_kg ?? null) : null;
   const lastWeightDays = lastWeightLog
     ? Math.round((new Date().setHours(0, 0, 0, 0) - new Date(lastWeightLog.timestamp).setHours(0, 0, 0, 0)) / 86_400_000)
     : null;
 
   // Pesaje ya pasado (días negativos) → null: no tiene sentido seguir avisando
-  const weighDaysRaw = weigh
-    ? Math.round((new Date(weigh.date).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) / 86_400_000)
-    : null;
+  const weighDaysRaw = weightHidden ? null : weighIn.days_left;
   const weighDays = weighDaysRaw != null && weighDaysRaw >= 0 ? weighDaysRaw : null;
+  const weighTarget = weightHidden || weighIn.deficit_blocked ? null : weighIn.goal_weight_kg;
 
   const ctx: Ctx = {
     metrics,
     recovery,
     weight,
     lastWeightDays,
-    weighTarget: weigh?.target ?? null,
+    weighTarget,
     weighDays,
     cutAllowed: !!safety && !["no_cut_content", "no_weight_targets", "no_deficit", "hold_deficit"].some((f) => safety.flags[f]),
     minor: !!safety?.flags.no_cut_content,

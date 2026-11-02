@@ -13,6 +13,7 @@ export const biometrics = z.object({
   resting_heart_rate: z.number().nullable(),
   sleep_quality_score: z.number().nullable(),
   hrv_ms: z.number().nullable(),
+  body_fat_method: z.string().optional(),
   waist_cm: z.string().nullable(),
   hip_cm: z.string().nullable(),
   chest_cm: z.string().nullable(),
@@ -261,3 +262,101 @@ export const weighIn = z.object({
   to_go_kg: z.number().nullable(),
 });
 export type WeighIn = z.infer<typeof weighIn>;
+
+// --- Tendencia de peso (coach, fase 5): `coach.trend.weight_trend` en el servidor ---
+export const trend = z.object({
+  status: z.enum(["ok", "insufficient_data", "disabled"]),
+  blocked: z.boolean(),
+  rate_kg_week: z.number().nullable(),
+  rate_pct_week: z.number().nullable(),
+  weight_kg: z.number().nullable(),
+  points: z.number(),
+  days: z.number(),
+  start: z.string().nullable(),
+  end: z.string().nullable(),
+  can_recalibrate: z.boolean(),
+  min_points: z.number(),
+  min_days: z.number(),
+  rule_key: z.string().nullable(),
+  grade: z.string().nullable(),
+  reasons: z.array(coachReason),
+});
+export type Trend = z.infer<typeof trend>;
+
+// --- Check-in diario (coach, fase 5) ---
+export const SCORE_KEYS = ["sleep_quality", "energy", "soreness", "stress", "mood"] as const;
+export const SORENESS_ZONES = ["legs", "glutes", "back", "chest", "shoulders", "arms", "core", "neck"] as const;
+
+export const checkinDay = z.object({
+  date: z.string(),
+  weight_kg: z.number().nullable(),
+  waist_cm: z.number().nullable(),
+  intake_kcal: z.number().nullable(),
+  resting_heart_rate: z.number().nullable(),
+  hrv_ms: z.number().nullable(),
+  sleep_hours: z.number().nullable(),
+  sleep_quality: z.number().nullable(),
+  energy: z.number().nullable(),
+  soreness: z.number().nullable(),
+  stress: z.number().nullable(),
+  mood: z.number().nullable(),
+  soreness_zones: z.array(z.string()),
+  illness: z.string().nullable(),
+  notes: z.string(),
+  period_status: z.string().nullable(),
+  hormonal_contraception: z.boolean().nullable(),
+  bp_systolic: z.number().nullable(),
+  bp_diastolic: z.number().nullable(),
+});
+export type CheckinDay = z.infer<typeof checkinDay>;
+
+export const weeklyQuestion = z.object({
+  code: z.enum(["menstrual", "bp"]),
+  ask_contraception: z.boolean().optional(),
+});
+
+export const readiness = z.object({
+  status: z.enum(["no_data", "ok", "easy", "reduce"]),
+  drops_today: z.array(z.string()),
+  days_with_drop: z.number(),
+  hrv_drop: z.boolean(),
+  rule_key: z.string(),
+  grade: z.string().nullable(),
+  hrv_rule_key: z.string(),
+  hrv_grade: z.string().nullable(),
+});
+export type Readiness = z.infer<typeof readiness>;
+
+export const checkinAlert = z.object({
+  code: z.string(),
+  sign: z.string(),
+  level: z.enum(["emergency", "urgent", "stop", "refer", "rest", "info"]),
+  urgent: z.boolean(),
+  rule_key: z.string().nullable(),
+  grade: z.string().nullable(),
+  text: z.string(),
+  professional: z.string().nullable(),
+});
+export type CheckinAlert = z.infer<typeof checkinAlert>;
+
+export const checkinState = z.object({
+  date: z.string(),
+  checkin: checkinDay.nullable(),
+  weight_blocked: z.boolean(),
+  weekly_questions: z.array(weeklyQuestion),
+  readiness,
+});
+export type CheckinState = z.infer<typeof checkinState>;
+
+export const checkinResult = checkinState.extend({
+  alerts: z.array(checkinAlert),
+  refused: z.array(z.string()),
+  safety: z.object({
+    flags: z.record(z.string(), z.boolean()),
+    reasons: z.array(safetyReason),
+    refer_gp: z.boolean(),
+    deferral_line: z.string().nullable(),
+    emergency_number: z.string().nullable(),
+  }),
+});
+export type CheckinResult = z.infer<typeof checkinResult>;

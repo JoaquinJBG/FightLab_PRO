@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useCreateBiometrics } from "@/lib/hooks";
+import { useCreateBiometrics, useWeighIn } from "@/lib/hooks";
 import { InfoIcon, ChevronDown } from "@/components/icons";
 
 // label/info: claves advanced.<key>.label|info
@@ -28,6 +28,10 @@ const advanced = [
   },
 ] as const;
 
+// Cómo se midió la grasa corporal (U04): solo los cuatro primeros valen para la ecuación de
+// Cunningham, que usa la masa magra; con los otros el coach no la usa. El orden es el del servidor.
+const BODY_FAT_METHODS = ["dxa", "bodpod", "bia_lab", "skinfolds", "smart_scale", "other"] as const;
+
 // Perímetros con cinta métrica (decimales en cm)
 const girths = [
   { key: "waist_cm" },
@@ -40,8 +44,12 @@ const girths = [
 
 export default function NewBiometricsPage() {
   const t = useTranslations("biometrics.new");
+  const tFat = useTranslations("bodyFat");
   const router = useRouter();
   const create = useCreateBiometrics();
+  // `no_weight_targets`: ni peso, ni grasa, ni perímetros (spec §8.3); la FC y la HRV sí.
+  const { data: weighIn } = useWeighIn();
+  const blocked = !!weighIn?.blocked;
   const [vals, setVals] = useState<Record<string, string>>({});
   const [showAdv, setShowAdv] = useState(false);
   const [showGirths, setShowGirths] = useState(false);
@@ -54,12 +62,16 @@ export default function NewBiometricsPage() {
     e.preventDefault();
     setFormError(null);
     const payload: Record<string, unknown> = {};
-    if (vals.weight_kg) payload.weight_kg = vals.weight_kg; // decimal -> string
+    if (!blocked && vals.weight_kg) payload.weight_kg = vals.weight_kg; // decimal -> string
     for (const f of advanced) {
+      if (blocked && f.key === "body_fat_pct") continue;
       const v = vals[f.key];
       if (v !== undefined && v !== "") payload[f.key] = f.decimal ? v : Number(v);
     }
-    for (const g of girths) {
+    if (!blocked && payload.body_fat_pct !== undefined && vals.body_fat_method) {
+      payload.body_fat_method = vals.body_fat_method;
+    }
+    for (const g of blocked ? [] : girths) {
       const v = vals[g.key];
       if (v !== undefined && v !== "") payload[g.key] = v; // decimal -> string
     }
@@ -85,8 +97,10 @@ export default function NewBiometricsPage() {
       <p className="t-body mt-1 text-muted">{t("subtitle")}</p>
 
       <form className="mt-5 flex flex-col gap-4" onSubmit={onSubmit}>
+        {blocked && <p data-testid="body-blocked" className="t-body glass p-3.5 text-xs text-muted">{tFat("blocked")}</p>}
+
         {/* Típica */}
-        <div className="flex flex-col gap-2">
+        {!blocked && <div className="flex flex-col gap-2">
           <span className="t-eyebrow text-muted">{t("typical")}</span>
           <label className="glass neon-edge flex items-center justify-between gap-3 p-4">
             <span className="t-label text-ink">{t("weight")}</span>
@@ -104,7 +118,7 @@ export default function NewBiometricsPage() {
               <span className="t-label w-8 text-muted">kg</span>
             </span>
           </label>
-        </div>
+        </div>}
 
         {/* Avanzadas (plegable) */}
         <div className="flex flex-col gap-2">
@@ -120,7 +134,7 @@ export default function NewBiometricsPage() {
           </button>
 
           {showAdv &&
-            advanced.map((f) => (
+            advanced.filter((f) => !(blocked && f.key === "body_fat_pct")).map((f) => (
               <div key={f.key} className="glass p-3.5">
                 <div className="flex items-center justify-between gap-3">
                   <span className="t-label flex items-center gap-1.5 text-ink">
@@ -152,12 +166,31 @@ export default function NewBiometricsPage() {
                     {t(`advanced.${f.key}.info`)}
                   </p>
                 )}
+                {f.key === "body_fat_pct" && (vals.body_fat_pct ?? "") !== "" && (
+                  <div data-testid="body-fat-method" className="mt-2.5 border-t border-[rgba(150,190,255,0.12)] pt-2.5">
+                    <label className="flex items-center justify-between gap-3">
+                      <span className="t-label text-ink">{tFat("method")}</span>
+                      <select
+                        data-testid="body-fat-method-select"
+                        value={vals.body_fat_method ?? ""}
+                        onChange={(e) => set("body_fat_method", e.target.value)}
+                        className="field max-w-[60%] px-2 py-2 text-sm"
+                      >
+                        <option value="">{tFat("unknown")}</option>
+                        {BODY_FAT_METHODS.map((m) => (
+                          <option key={m} value={m}>{tFat(`methods.${m}`)}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <p className="t-body mt-2 text-[11px] text-muted">{tFat("hint")}</p>
+                  </div>
+                )}
               </div>
             ))}
         </div>
 
         {/* Perímetros (plegable) */}
-        <div className="flex flex-col gap-2">
+        {!blocked && <div className="flex flex-col gap-2">
           <button
             type="button"
             onClick={() => setShowGirths((v) => !v)}
@@ -195,7 +228,7 @@ export default function NewBiometricsPage() {
               {t("girthsHint")}
             </p>
           )}
-        </div>
+        </div>}
 
         {err && <p className="text-xs text-bad">{err}</p>}
         <button type="submit" disabled={create.isPending} className="btn btn-primary mt-1 disabled:opacity-60">
