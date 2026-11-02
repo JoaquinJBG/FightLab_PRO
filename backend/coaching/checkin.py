@@ -18,6 +18,7 @@ from django.db import transaction
 
 from profiles.models import BiometricsLog
 
+from . import weekly
 from .bridge.adapters import _tz, to_coach_profile
 from .models import DailyCheckin, Screening
 
@@ -84,7 +85,7 @@ def _number(name: str, value, errors: dict, *, integer=False, low=None, high=Non
     return int(number) if integer else number
 
 
-def clean_values(day: date, today: date, values: dict) -> dict:
+def clean_values(day: date, today: date, values: dict, user=None) -> dict:
     """Valida lo que trae el check-in y descarta lo nulo (en el motor, nulo = no dado)."""
     errors: dict[str, str] = {}
     if day > today:
@@ -134,7 +135,10 @@ def clean_values(day: date, today: date, values: dict) -> dict:
                 clean[name] = text
     if errors:
         raise ValidationError(errors)
-    return {k: v for k, v in clean.items() if v is not None}
+    clean = {k: v for k, v in clean.items() if v is not None}
+    if user is not None:
+        weekly.validate(user, clean)
+    return clean
 
 
 def _log_moment(profile, day: date) -> datetime:
@@ -158,7 +162,7 @@ def checkin_upsert(user, day: date, values: dict, today: date) -> DailyCheckin:
     Lanza `ValidationError` (campos fuera de rango o desconocidos) o `CheckinRefused` (peso,
     cintura o kcal con `no_weight_targets`). En ambos casos no se escribe nada.
     """
-    clean = clean_values(day, today, values)
+    clean = clean_values(day, today, values, user)
     refused = [name for name in BODY_FIELDS if name in clean]
     if refused and weight_tracking_blocked(user, today):
         raise CheckinRefused(refused)
@@ -174,6 +178,7 @@ def checkin_upsert(user, day: date, values: dict, today: date) -> DailyCheckin:
             setattr(row, name, clean[name])
     row.full_clean()
     row.save()
+    weekly.apply(user, clean, day)
 
     body = {name: clean[name] for name in LOG_FIELDS if name in clean}
     if body:

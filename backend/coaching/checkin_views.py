@@ -13,7 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from . import checkin, redflags, services
+from . import checkin, redflags, services, weekly
 from .bridge import reason_texts
 from .bridge.reasons import parse_reason
 from .models import KnowledgeRule
@@ -39,6 +39,7 @@ def payload(user, day: date, today: date) -> dict:
         "date": day.isoformat(),
         "checkin": checkin.checkin_data(user, day, today),
         "weight_blocked": checkin.weight_tracking_blocked(user, today),
+        "weekly_questions": weekly.questions(user, today),
     }
 
 
@@ -77,7 +78,7 @@ class CheckinView(APIView):
         try:
             day = _day(request, today, data)
             values = {k: v for k, v in data.items() if k != "date"}
-            checkin.clean_values(day, today, values)  # valida antes de escribir nada
+            checkin.clean_values(day, today, values, user)  # valida antes de escribir nada
             signs = redflags.validate_signs(raw_signs) if raw_signs is not None else []
         except DjangoValidationError as exc:
             return Response(_errors(exc), status=status.HTTP_400_BAD_REQUEST)
