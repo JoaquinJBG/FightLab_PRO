@@ -51,7 +51,14 @@ class BiometricsListCreateView(APIView):
 
     def get(self, request):
         logs = selectors.biometrics_list(user=request.user)
-        return Response(BiometricsSerializer(logs, many=True).data)
+        data = BiometricsSerializer(logs, many=True).data
+        from coaching import checkin
+        from coaching.safety_views import _today
+
+        # Con `no_weight_targets` el servidor no devuelve datos corporales (spec §8.3).
+        if checkin.weight_tracking_blocked(request.user, _today(request.user.profile)):
+            data = [{**row, **dict.fromkeys(BODY_FIELDS)} for row in data]
+        return Response(data)
 
     def post(self, request):
         serializer = BiometricsSerializer(data=request.data)

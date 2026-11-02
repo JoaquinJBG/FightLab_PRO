@@ -2,7 +2,7 @@ from django.urls import path
 
 from .checkin_views import CheckinView
 from .safety_views import InjuryDetailView, InjuryListView, SafetyView, ScreeningView
-from .targets_views import TargetsView, WeighInView, ZonesView
+from .targets_views import TargetsView, TrendView, WeighInView, ZonesView
 from .views import EngineView, RuleDetailView, RuleSearchView, SourceDetailView
 
 urlpatterns = [
@@ -12,6 +12,7 @@ urlpatterns = [
     path("coach/engine", EngineView.as_view(), name="coach-engine"),
     path("coach/safety", SafetyView.as_view(), name="coach-safety"),
     path("coach/targets", TargetsView.as_view(), name="coach-targets"),
+    path("coach/trend", TrendView.as_view(), name="coach-trend"),
     path("coach/zones", ZonesView.as_view(), name="coach-zones"),
     path("coach/weigh-in", WeighInView.as_view(), name="coach-weigh-in"),
     path("coach/checkin", CheckinView.as_view(), name="coach-checkin"),
