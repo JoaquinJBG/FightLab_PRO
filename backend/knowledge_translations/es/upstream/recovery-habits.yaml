@@ -408,11 +408,11 @@ rules:
 - key: recovery-habits/muscle-strain-early-pain-guided-loading
   source_hash: d0b009c59bc335135046573deea21049292ab6caedcd30a22539d9a3b6781f81
   status: machine
-  heading: 'Rotura fibrilar: carga temprana guiada por el dolor'
+  heading: 'Lesión muscular: carga temprana guiada por el dolor'
   rule_text: |-
-    Tras una rotura fibrilar leve-moderada sin señales de alarma, empieza en los primeros días una carga suave guiada por el dolor (isométricos y después rangos ligeros) en lugar de reposar durante semanas. Permite una molestia leve que se calme rápido y progresa cuando el paso anterior se tolere. Vuelve a los levantamientos pesados o explosivos de ese músculo solo cuando la palpación, la fuerza en todo el rango y las pruebas funcionales o de sprint no den dolor y la fuerza sea más o menos simétrica. Una rotura grave (hematoma grande, hueco palpable, no poder caminar con normalidad) necesita primero valoración médica.
+    Tras una lesión muscular leve-moderada sin señales de alarma, empieza en los primeros días una carga suave guiada por el dolor (isométricos y después rangos ligeros) en lugar de reposar durante semanas. Permite una molestia leve que se calme rápido y progresa cuando el paso anterior se tolere. Vuelve a los levantamientos pesados o explosivos de ese músculo solo cuando la palpación, la fuerza en todo el rango y las pruebas funcionales o de sprint no den dolor y la fuerza sea más o menos simétrica. Una lesión muscular grave (hematoma grande, hueco palpable, no poder caminar con normalidad) necesita primero valoración médica.
   applies_to: |-
-    Hombres con lesión aguda de isquiotibiales, deportistas recreativos con roturas graves de muslo o gemelo, expertos de fútbol (Delphi). No se ha probado la generalización a personas mayores ni a mujeres en el gimnasio.
+    Hombres con lesión aguda de isquiotibiales, deportistas recreativos con lesiones musculares graves de muslo o gemelo, expertos de fútbol (Delphi). No se ha probado la generalización a personas mayores ni a mujeres en el gimnasio.
   conflicts: |-
     Los criterios de vuelta a la competición siguen favoreciendo las pruebas sin dolor, mientras que un ECA respalda una rehabilitación hasta el umbral de dolor durante la carga. Los ensayos son pequeños y los datos de recaída tienen poca potencia estadística.
 - key: recovery-habits/acute-sprains-and-strains-protect-briefly-then-load
@@ -430,11 +430,11 @@ rules:
   status: machine
   heading: 'Distensión de la pared abdominal: vuelta guiada por los síntomas'
   rule_text: |-
-    Una distensión de la pared abdominal afecta al recto abdominal o a los oblicuos y se produce por un golpe directo o por un giro, una flexión o una extensión del tronco bruscos o repetitivos. Normalmente se maneja sin cirugía, con los síntomas guiando la vuelta al entrenamiento; aplícale "Rotura fibrilar: carga temprana guiada por el dolor" (una extrapolación de los datos del muslo). Deriva para valoración médica cuando el dolor abdominal siga a un golpe directo y no se esté calmando, sobre todo en un cliente que toma anticoagulantes: el raro hematoma de la vaina del recto puede necesitar algo más que un manejo guiado por los síntomas. Deriva también ante dolor inguinal y en la parte baja del abdomen que se reproduce con un abdominal contra resistencia o con una tos o un estornudo forzados, o que sigue obligando a parar el entrenamiento pese al reposo y la rehabilitación: puede ser una pubalgia del deportista (hernia del deportista) y no una simple distensión. La evidencia es escasa: solo revisiones narrativas.
+    Una distensión de la pared abdominal afecta al recto abdominal o a los oblicuos y se produce por un golpe directo o por un giro, una flexión o una extensión del tronco bruscos o repetitivos. Normalmente se maneja sin cirugía, con los síntomas guiando la vuelta al entrenamiento; aplícale "Lesión muscular: carga temprana guiada por el dolor" (una extrapolación de los datos del muslo). Deriva para valoración médica cuando el dolor abdominal siga a un golpe directo y no se esté calmando, sobre todo en un cliente que toma anticoagulantes: el raro hematoma de la vaina del recto puede necesitar algo más que un manejo guiado por los síntomas. Deriva también ante dolor inguinal y en la parte baja del abdomen que se reproduce con un abdominal contra resistencia o con una tos o un estornudo forzados, o que sigue obligando a parar el entrenamiento pese al reposo y la rehabilitación: puede ser una pubalgia del deportista (hernia del deportista) y no una simple distensión. La evidencia es escasa: solo revisiones narrativas.
   applies_to: |-
     Deportistas (revisiones narrativas); Liao trata el hematoma de la vaina del recto en pacientes en general. No hay ensayos en quienes entrenan fuerza por ocio.
   conflicts: |-
-    No se encontró ningún ECA, metaanálisis ni declaración de consenso sobre la rehabilitación de la distensión de la pared abdominal ni sobre los plazos de vuelta, y ninguna fuente dio criterios de imagen. Los pasos de carga se extrapolan de los datos de isquiotibiales y muslo en los que se basa "Rotura fibrilar: carga temprana guiada por el dolor". Una simple distensión del recto también puede doler con un abdominal contra resistencia (razonamiento, no un hallazgo de las fuentes), así que el aviso de pubalgia se basa sobre todo en la localización inguinal y la persistencia.
+    No se encontró ningún ECA, metaanálisis ni declaración de consenso sobre la rehabilitación de la distensión de la pared abdominal ni sobre los plazos de vuelta, y ninguna fuente dio criterios de imagen. Los pasos de carga se extrapolan de los datos de isquiotibiales y muslo en los que se basa "Lesión muscular: carga temprana guiada por el dolor". Una simple distensión del recto también puede doler con un abdominal contra resistencia (razonamiento, no un hallazgo de las fuentes), así que el aviso de pubalgia se basa sobre todo en la localización inguinal y la persistencia.
 - key: recovery-habits/balance-work-for-ankle-sprain-prevention
   source_hash: 581aab249aea247183ce05bf22a8b50343901405dcc4798656a24753067f8bd5
   status: machine
@@ -697,7 +697,7 @@ rules:
   status: machine
   heading: Expectativas honestas sobre recuperar el peso
   rule_text: |-
-    Fija expectativas honestas: recuperar parte del peso es habitual y no es un fracaso, y mantener fuera una parte significativa de lo perdido es un éxito realista. Mantén el apoyo para el mantenimiento (revisiones, actividad) más allá del final de la fase de pérdida de peso.
+    Fija expectativas honestas: recuperar parte del peso es habitual y no es un fracaso, y no recuperar una parte significativa de lo perdido es un éxito realista. Mantén el apoyo para el mantenimiento (revisiones, actividad) más allá del final de la fase de pérdida de peso.
   applies_to: |-
     Adultos con obesidad en programas estructurados. Anderson 2001 es antiguo, solo de EE. UU. y basado en quienes completaron el programa; el NWCR es autoseleccionado.
   conflicts: |-
