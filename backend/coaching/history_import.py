@@ -47,7 +47,7 @@ from .models import DailyCheckin, DayLog, MealCheck, WeeklyReview
 
 ON_CONFLICT = ("keep", "replace")
 FLOOR = date(2000, 1, 1)  # antes de esto es un error de formato (ParteDiario es de 2026)
-MAX_DAYS = 20_000
+MAX_DAYS = 5_000  # unos 13 años de partes: más, en varias subidas
 MAX_CONFLICTS_LISTED = 60
 MAX_EXAMPLES = 3
 # convention (FightLab): controles de entrada de lo importado, no recomendaciones.
@@ -245,7 +245,9 @@ def _existing(profile, days: list[date]) -> dict:
             if value is not None:
                 other[day].setdefault(name, value)
     day_logs = {d.date: d for d in DayLog.objects.filter(profile=profile, date__in=wanted)}
-    meals = {(m.date, m.meal): m for m in MealCheck.objects.filter(profile=profile, date__in=wanted)}
+    meals = defaultdict(dict)
+    for m in MealCheck.objects.filter(profile=profile, date__in=wanted):
+        meals[m.date][m.meal] = m
     cardio = defaultdict(list)
     for activity in Activity.objects.filter(
         profile=profile, source=Activity.Source.IMPORT, external_id__startswith=CARDIO_PREFIX
@@ -296,7 +298,7 @@ def _plan(clean: Clean, existing: dict, replace: bool) -> Plan:
     log = existing["logs"].get(day)
     other = existing["other"].get(day, {})
     day_log = existing["day_logs"].get(day)
-    meals = {meal: m for (d, meal), m in existing["meals"].items() if d == day}
+    meals = existing["meals"].get(day, {})
     cardio = existing["cardio"].get(day, [])
     plan = Plan(clean, exists=any((row, log, other, day_log, meals, cardio)))
 

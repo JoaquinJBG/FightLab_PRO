@@ -452,3 +452,14 @@ def test_a_user_only_writes_to_their_own_account():
     upload(client_for(one), ("copia.json", backup()))
     assert not DailyCheckin.objects.filter(profile=other.profile).exists()
     assert not MealCheck.objects.filter(profile=other.profile).exists()
+
+
+def test_too_many_days_is_refused_before_writing(monkeypatch):
+    from coaching import history_import
+
+    monkeypatch.setattr(history_import, "MAX_DAYS", 2)
+    user = make_user(weight=None)
+    response = upload(client_for(user), ("copia.json", backup()))
+    assert response.status_code == 400
+    assert (response.data["code"], response.data["params"]) == ("too_many_days", {"max": 2})
+    assert not DailyCheckin.objects.exists()

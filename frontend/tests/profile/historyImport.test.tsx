@@ -204,13 +204,13 @@ describe("useImportHistory", () => {
 
   it("un 400 con código pasa a HistoryImportError; los topes se comprueban antes de subir", async () => {
     const { useImportHistory: realHook } = await vi.importActual<typeof import("@/lib/history-import")>("@/lib/history-import");
-    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ code: "too_many_days", params: { max: 20000 } }), { status: 400 }));
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ code: "too_many_days", params: { max: 5000 } }), { status: 400 }));
     vi.stubGlobal("fetch", fetchMock);
     const { result: hook } = renderHook(() => realHook(), { wrapper });
     hook.current.mutate({ files: files(), dryRun: true, onConflict: "keep" });
     await waitFor(() => expect(hook.current.error).toBeTruthy());
     expect((hook.current.error as HistoryImportError).code).toBe("too_many_days");
-    expect((hook.current.error as HistoryImportError).params).toEqual({ max: 20000 });
+    expect((hook.current.error as HistoryImportError).params).toEqual({ max: 5000 });
 
     expect(checkFiles([])?.code).toBe("missing_file");
     expect(checkFiles(Array.from({ length: 61 }, (_, i) => new File(["x"], `${i}.csv`)))?.code).toBe("too_many_files");
