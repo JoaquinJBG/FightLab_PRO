@@ -167,3 +167,32 @@ def test_every_loaded_rule_has_an_up_to_date_spanish_translation(all_knowledge):
         for f in ("applies_to", "conflicts"):
             assert bool(getattr(r, f)) == bool(getattr(tr, f)), f"{r.key}.{f}"
     assert "0 altas, 0 cambios (519 sin cambios)" in run("--lang", "es")
+
+
+# La hoja de evidencia del frontend se prueba con esta misma respuesta de la API
+# (`frontend/tests/evidence/rule-translation.test.tsx`): si cambia una de estas traducciones,
+# regenera el archivo con `python manage.py shell` y `rule_detail(rule, "es")`.
+FRONTEND_FIXTURE = Path(settings.BASE_DIR).parent / "frontend" / "tests" / "evidence" / "fixtures" / "rules-es.json"
+
+
+@pytest.mark.skipif(not FRONTEND_FIXTURE.is_file(), reason="sin el frontend al lado")
+def test_api_serves_the_spanish_translation_the_frontend_test_uses(all_knowledge):
+    import json
+
+    from rest_framework.test import APIClient
+
+    from users.services import email_verify, user_create
+    from users.tokens import generate_email_verification_token
+
+    run("--lang", "es")
+    user = user_create(email="tr@test.com", password="pw-strong-123")
+    email_verify(token=generate_email_verification_token(user))
+    client = APIClient()
+    login = client.post("/api/v1/auth/login", {"email": "tr@test.com", "password": "pw-strong-123"}, format="json")
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
+    expected = json.loads(FRONTEND_FIXTURE.read_text(encoding="utf-8"))
+    for key, rule in expected.items():
+        got = client.get(f"/api/v1/knowledge/rules/{key}", HTTP_ACCEPT_LANGUAGE="es").json()
+        assert got["translation"] == rule["translation"], key
+        assert got["translation"]["status"] == "machine"
+        assert got["heading"] == rule["heading"]
