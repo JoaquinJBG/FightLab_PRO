@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { ClipboardIcon } from "@/components/icons";
 import { ReviewView } from "@/components/review/ReviewView";
+import { ImportedReviews } from "@/components/review/ImportedReviews";
 import { intlLocale } from "@/lib/locale";
 import { SIGNS, type Sign, type StaleKnowledge, useAcceptReview, useRunReview, useWeeklyReview } from "@/lib/review";
 
@@ -125,6 +126,7 @@ export default function WeeklyReviewPage() {
           onAccept={(kinds) => accept.mutate({ id: review.id, accept: kinds })}
         />
       )}
+      {data.imported && <ImportedReviews reviews={data.imported} />}
     </div>
   );
 }

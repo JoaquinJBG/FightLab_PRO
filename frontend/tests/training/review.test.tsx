@@ -175,6 +175,28 @@ describe("Revisión semanal (en)", () => {
     expectClean(container, ["Press banca", "60 kg"]);
   });
 
+  it("las revisiones importadas del coach salen aparte, con su TDEE, su objetivo y su texto", () => {
+    state.data = makeState({
+      imported: [
+        { id: 8, week_end: "2026-10-25", tdee_kcal: 2650.5, target_kcal: 2300, in_deficit: true, text: "- Adherence: 4 of 4 sessions." },
+        { id: 7, week_end: "2026-10-18", tdee_kcal: null, target_kcal: null, in_deficit: null, text: "" },
+      ],
+    });
+    const { container } = renderEn(<WeeklyReviewPage />);
+    const section = screen.getByTestId("imported-reviews");
+    expect(within(section).getByText("Coach reviews imported")).toBeTruthy();
+    const rows = within(section).getAllByTestId("imported-review");
+    expect(rows).toHaveLength(2);
+    expect(rows[0].textContent).toContain("Week ending");
+    expect(rows[0].textContent).toContain("TDEE: 2,651 kcal · Target: 2,300 kcal · in deficit");
+    expect(rows[0].textContent).toContain("- Adherence: 4 of 4 sessions.");
+    // Sin números (p. ej. con no_weight_targets) no queda ninguna etiqueta suelta.
+    expect(rows[1].textContent).not.toContain("TDEE");
+    // No es la revisión de la app: no hay propuestas que aceptar.
+    expect(screen.queryByTestId("weekly-review")).toBeNull();
+    expectClean(container);
+  });
+
   it("el admin ve la evidencia antigua", () => {
     state.data = makeState({ stale: { months: 6, files: [{ file: "nutrition.md", checked: "2026-01-10", origin: "upstream" }] } });
     const { container } = renderEn(<WeeklyReviewPage />);

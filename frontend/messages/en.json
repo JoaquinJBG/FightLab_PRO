@@ -2399,5 +2399,161 @@
       "server": "The upload failed. Try again."
     },
     "noLoad": "Imported sessions do not carry a session effort (RPE), so they do not add to your load."
+  },
+  "historyImport": {
+    "profileLink": "Import history",
+    "back": "← Profile",
+    "title": "Import history",
+    "subtitle": "Bring in your ParteDiario logs and your AI Coach files. First check what is there, then decide whether to import it.",
+    "help": {
+      "title": "What you can upload",
+      "backup": "ParteDiario backup (.json): weights, sleep, kcal, energy, notes, meals done or swapped, cardio and day type.",
+      "weekly": "ParteDiario weekly CSV (.csv): you can upload several weeks at once. Watch heart-rate data is saved but not shown yet.",
+      "coach": "From the AI Coach: checkins.csv (weigh-ins and sleep), the reviews in reviews/ (YYYY-MM-DD.md files) and sessions.csv (gym sets).",
+      "later": "Menus, the shopping list and receipt photos are not imported here: they will come with the full menus."
+    },
+    "files": "Files (up to {max}, {mb} MB each)",
+    "chosen": "{n, plural, one {# file chosen} other {# files chosen}}",
+    "check": "Check files",
+    "import": "Import",
+    "reading": "Reading…",
+    "importing": "Importing…",
+    "preview": "This is what would be imported",
+    "done": "Imported",
+    "checkFirst": "Check the files before importing them.",
+    "nothing": "Nothing new to import: everything in the files was already there.",
+    "kinds": {
+      "parte_diario_json": "ParteDiario backup",
+      "parte_diario_csv": "ParteDiario CSV",
+      "coach_checkins": "coach check-ins",
+      "coach_review": "coach review",
+      "sets": "gym sets"
+    },
+    "fileDays": "{n, plural, one {# day} other {# days}}",
+    "summary": {
+      "range": "From {first} to {last}",
+      "new": "{n, plural, one {# new day} other {# new days}}",
+      "filled": "{n, plural, one {# existing day gets completed} other {# existing days get completed}}",
+      "conflict": "{n, plural, one {# day in conflict} other {# days in conflict}}",
+      "unchanged": "{n, plural, one {# day was already the same} other {# days were already the same}}",
+      "written": "{n, plural, one {# day saved} other {# days saved}}",
+      "toWrite": "{n, plural, one {# day would be saved} other {# days would be saved}}"
+    },
+    "items": {
+      "title": "What gets saved",
+      "checkins": "{n, plural, one {# check-in (sleep, kcal, energy, notes)} other {# check-ins (sleep, kcal, energy, notes)}}",
+      "weights": "{n, plural, one {# weight} other {# weights}}",
+      "waists": "{n, plural, one {# waist measurement} other {# waist measurements}}",
+      "resting_hr": "{n, plural, one {# resting HR} other {# resting HRs}}",
+      "meals": "{n, plural, one {# meal marked} other {# meals marked}}",
+      "cardio": "{n, plural, one {# cardio session} other {# cardio sessions}}",
+      "day_logs": "{n, plural, one {# day with type, workout or mobility} other {# days with type, workout or mobility}}",
+      "heart": "{n, plural, one {# day with watch heart rate} other {# days with watch heart rate}}"
+    },
+    "reviews": {
+      "new": "{n, plural, one {# new coach review} other {# new coach reviews}}",
+      "conflict": "{n, plural, one {# review imported before and different} other {# reviews imported before and different}}",
+      "unchanged": "{n, plural, one {# review was already there} other {# reviews were already there}}",
+      "kept_app": "{n, plural, one {# week already has a review made in FightLab: the FightLab one stays} other {# weeks already have a review made in FightLab: the FightLab ones stay}}"
+    },
+    "sets": {
+      "line": "{name}: {n, plural, one {# new set} other {# new sets}}",
+      "duplicates": "{n, plural, one {# was already there} other {# were already there}}"
+    },
+    "conflicts": {
+      "title": "Days in conflict",
+      "intro": "On these days FightLab already has a value that differs from the file. What should I do?",
+      "keep": "Keep what FightLab has",
+      "keepHint": "Only missing values are filled in. This is the safe choice.",
+      "replace": "Use the file",
+      "replaceHint": "The FightLab values are replaced for those fields. Notes and aches are always added up.",
+      "more": "{n, plural, one {and # more day} other {and # more days}}"
+    },
+    "fields": {
+      "weight_kg": "weight",
+      "waist_cm": "waist",
+      "intake_kcal": "kcal",
+      "sleep_hours": "sleep",
+      "energy": "energy",
+      "resting_heart_rate": "resting HR",
+      "quad": "quadriceps",
+      "trained": "workout done",
+      "mobility": "mobility",
+      "day_type": "day type",
+      "tipo_dia": "day type",
+      "meal": "meal",
+      "meal_state": "meal status",
+      "meal_desayuno": "breakfast",
+      "meal_comida": "lunch",
+      "meal_merienda": "afternoon snack",
+      "meal_cena": "dinner",
+      "cardio": "cardio",
+      "cardio_type": "cardio type",
+      "cardio_sesiones": "cardio sessions",
+      "fc_media": "average HR",
+      "fc_max": "max HR",
+      "min_z1": "minutes in zone 1",
+      "min_z2": "minutes in zone 2",
+      "min_z3": "minutes in zone 3",
+      "date": "date",
+      "review": "review",
+      "tdee_kcal": "TDEE",
+      "target_kcal": "kcal target",
+      "in_deficit": "deficit"
+    },
+    "discarded": {
+      "title": "What is discarded",
+      "out_of_range": "{field}: {n, plural, one {# value out of range} other {# values out of range}}",
+      "not_a_number": "{field}: {n, plural, one {# value that is not a number} other {# values that are not numbers}}",
+      "unknown_value": "{field}: {n, plural, one {# value not recognised} other {# values not recognised}}",
+      "bad_date": "{n, plural, one {# row with a date that does not exist} other {# rows with dates that do not exist}}",
+      "future_date": "{field}: {n, plural, one {# date in the future} other {# dates in the future}}",
+      "too_old": "{field}: {n, plural, one {# date before 2000} other {# dates before 2000}}",
+      "cardio_minutes": "{n, plural, one {# cardio session with impossible minutes} other {# cardio sessions with impossible minutes}}",
+      "cardio_without_detail": "{n, plural, one {# day with “Varios” cardio and no per-session detail} other {# days with “Varios” cardio and no per-session detail}}",
+      "examples": "e.g. {dates}",
+      "generic": "{field}: {n, plural, one {# value discarded} other {# values discarded}}"
+    },
+    "blocked": "Because of your safety profile, FightLab does not save weight, waist or kcal (same as the check-in): {n, plural, one {# value is not imported} other {# values are not imported}}. Everything else is.",
+    "notices": {
+      "menus_later": "{n, plural, one {# menu} other {# menus}} in the backup: not imported now, they will come with the full menus.",
+      "shopping_later": "{n, plural, one {# ticked shopping item} other {# ticked shopping items}}: they will come with the menus.",
+      "tickets_later": "{n, plural, one {# receipt photo} other {# receipt photos}}: the backup does not carry the photos; they will come with the menus.",
+      "cardio_no_load": "Imported cardio has no effort rating (RPE), so it does not add to your training load.",
+      "heart_hidden": "Watch heart-rate data is saved but not shown yet.",
+      "quad_to_soreness": "Quadriceps aches go to “legs” in the check-in aches, with a note.",
+      "same_day_in_several_files": "{n, plural, one {# day was in more than one file} other {# days were in more than one file}}: the last one wins."
+    },
+    "fileErrors": {
+      "title": "Files that could not be read",
+      "too_large": "It is larger than {mb} MB.",
+      "unknown_format": "Not a recognised format (upload .json, .csv or .md).",
+      "empty_file": "It is empty.",
+      "encoding": "It is not UTF-8.",
+      "not_csv": "It is not a text file.",
+      "not_json": "It is not valid JSON.",
+      "not_backup": "It is not a ParteDiario backup.",
+      "newer_backup": "It comes from a newer ParteDiario version.",
+      "damaged_backup": "The backup is damaged.",
+      "review_name": "A review must be named after its date, e.g. 2026-10-26.md.",
+      "generic": "It could not be read."
+    },
+    "errors": {
+      "missing_file": "Choose at least one file.",
+      "too_many_files": "You can upload up to {max} files at once.",
+      "too_large": "Together they are larger than {mb} MB.",
+      "bad_conflict_mode": "Choose what to do with the days in conflict.",
+      "too_many_days": "There are more than {max} days: upload them in several goes.",
+      "throttled": "Too many attempts in a row. Wait a minute.",
+      "server": "The import failed. Try again."
+    },
+    "review": {
+      "title": "Coach reviews imported",
+      "weekEnd": "Week ending {date}",
+      "tdee": "TDEE: {kcal} kcal",
+      "target": "Target: {kcal} kcal",
+      "deficit": "in deficit",
+      "noDeficit": "no deficit"
+    }
   }
 }

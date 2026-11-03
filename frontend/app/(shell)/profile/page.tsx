@@ -23,6 +23,7 @@ export default function ProfilePage() {
   const tc = useTranslations("common");
   const ts = useTranslations("safety");
   const t = useTranslations("profile");
+  const th = useTranslations("historyImport");
   // Valor desconocido del servidor: se muestra tal cual en vez de romper la vista
   const opt = (group: string, v?: string | null) => (v ? (t.has(`options.${group}.${v}`) ? t(`options.${group}.${v}`) : v) : null);
 
@@ -63,6 +64,9 @@ export default function ProfilePage() {
 
       <Link href="/profile/edit" className="btn btn-tonal mt-4 w-full">
         {t("edit.link")}
+      </Link>
+      <Link href="/profile/import" data-testid="history-import-link" className="btn btn-outline mt-3 w-full">
+        {th("profileLink")}
       </Link>
       <Link href="/profile/credits" className="btn btn-outline mt-3 w-full">
         {tc("creditsLink")}
