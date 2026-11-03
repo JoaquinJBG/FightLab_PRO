@@ -223,6 +223,11 @@ export const targets = z.object({
       rule_key: z.string(),
     })
     .nullable(),
+  // TDEE de la última revisión semanal aceptada (fase 7), si lo hay.
+  recalibrated: z
+    .object({ review_id: z.number(), week_end: z.string(), tdee_kcal: z.number(), held: z.boolean() })
+    .nullable()
+    .optional(),
   rules: z.record(z.string(), z.array(ruleRef)),
   reasons: z.array(coachReason),
   weight: z.object({ kg: z.number(), date: z.string(), stale_days: z.number() }).nullable(),

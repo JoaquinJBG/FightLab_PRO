@@ -379,7 +379,9 @@
       "fatMin": "Grasa mínima: {g} g",
       "rules": "Reglas en las que se apoya",
       "engine": "Motor del coach {sha}",
-      "checked": "evidencia revisada el {date}"
+      "checked": "evidencia revisada el {date}",
+      "maintenanceReview": "Mantenimiento medido con tu tendencia en la revisión semanal del {date}: {kcal} kcal",
+      "heldTarget": "objetivo acordado en esa revisión"
     },
     "weighIn": {
       "back": "← Nutrición",
@@ -933,6 +935,10 @@
         "plan": {
           "title": "Plan de la semana",
           "sub": "Lo prepara el coach con reglas y evidencia"
+        },
+        "review": {
+          "title": "Revisión semanal",
+          "sub": "Adherencia, peso, calorías y descarga, con su regla"
         }
       }
     },
@@ -1823,12 +1829,14 @@
       "restart": "Vuelta tras un descanso",
       "hold": "Mantén carga y repeticiones",
       "paused": "En pausa por lesión",
-      "no_training": "Sin entrenar"
+      "no_training": "Sin entrenar",
+      "deload": "Descarga: mismas cargas"
     },
     "setsBasis": {
       "log": "Series de tu registro",
       "coach_convention": "Sin registro: 2-3 series",
-      "weekly_sets": "Una serie más, hacia 10 por músculo"
+      "weekly_sets": "Una serie más, hacia 10 por músculo",
+      "deload": "Series recortadas para la descarga"
     },
     "conventionCoach": "Convención del coach",
     "patterns": {
@@ -1919,6 +1927,144 @@
     "startSession": "Empezar sesión {key}",
     "routineCta": "Prepara tu plan de la semana con el coach",
     "routineActive": "Plan del coach · semana del {date}",
-    "routineEdit": "Cambiar el plan"
+    "routineEdit": "Cambiar el plan",
+    "deload": {
+      "title": "Semana de descarga",
+      "body": "La aceptaste en la revisión semanal: series recortadas un {low}-{high} %, las mismas cargas y cada serie a {rir} o más repeticiones del fallo.",
+      "rest": "Añade {low}-{high} días de descanso esta semana.",
+      "effort": "Termina cada serie a {rir} o más repeticiones del fallo"
+    }
+  },
+  "weeklyReview": {
+    "title": "Revisión semanal",
+    "back": "← Entreno",
+    "intro": "Lo que dicen tus datos de la semana y si conviene cambiar algo. Cada número sale del motor del coach y cada propuesta lleva su regla.",
+    "loading": "Cargando…",
+    "error": "No se pudo cargar la revisión.",
+    "weekEnding": "Semana del {start} al {end}",
+    "form": {
+      "title": "Cómo ha ido",
+      "weekEnd": "Último día de la semana revisada",
+      "signsQuestion": "¿Cuáles de estas cosas llevan 1-2 semanas contigo?",
+      "signsHint": "Si el coach ve un ejercicio estancado, lo cuenta como estancamiento aunque no lo marques.",
+      "run": "Hacer la revisión",
+      "rerun": "Rehacer la revisión",
+      "running": "Revisando…"
+    },
+    "signs": {
+      "performance_stall": "El rendimiento se ha estancado",
+      "joint_aches": "Molestias en las articulaciones",
+      "poor_sleep": "Duermo mal",
+      "low_motivation": "Poca motivación",
+      "drop_despite_rest": "El rendimiento baja aunque descanse",
+      "low_mood": "Ánimo bajo"
+    },
+    "errors": {
+      "profile_incomplete": "Te falta el cribado del onboarding.",
+      "week_end_future": "La semana no puede acabar después de hoy.",
+      "week_end_too_old": "Solo se pueden revisar las últimas 8 semanas.",
+      "already_accepted": "Esta revisión ya está aceptada.",
+      "superseded": "Hay una revisión más reciente: acepta esa.",
+      "calories_blocked": "Por seguridad no se cambian las calorías.",
+      "no_training": "Sin entrenar hasta la revisión médica: no hay descarga ni plan.",
+      "generic": "No se pudo hacer. Inténtalo de nuevo."
+    },
+    "completeOnboarding": "Completar el cribado",
+    "status": {
+      "pending": "Pendiente de aceptar",
+      "accepted": "Aceptada"
+    },
+    "sections": {
+      "adherence": "Adherencia",
+      "weight": "Peso",
+      "calories": "Calorías",
+      "training": "Entrenamiento",
+      "recovery": "Recuperación",
+      "proposals": "Propuestas",
+      "narrative": "Resumen",
+      "safety": "Notas de seguridad",
+      "rules": "Reglas usadas"
+    },
+    "adherence": {
+      "planned": "{done} de {planned} sesiones del plan",
+      "noPlan": "Sin plan aplicado esta semana: solo cuento lo que registraste.",
+      "kinds": {
+        "gym": "Gimnasio",
+        "mma": "MMA",
+        "cardio": "Cardio"
+      },
+      "count": "{kind}: {done} de {planned}",
+      "countNoPlan": "{kind}: {done}",
+      "done": "Hecha",
+      "missed": "No registrada",
+      "rotation": "Si se te pasó una sesión, sigue con la siguiente del plan, sin recuperarla.",
+      "intake": "Comiste de media {mean} kcal en {days, plural, one {# día registrado} other {# días registrados}}; tu objetivo es {target} kcal ({diff} kcal).",
+      "intakeNoTarget": "Comiste de media {mean} kcal en {days, plural, one {# día registrado} other {# días registrados}}.",
+      "intakeNone": "Sin ingesta registrada esta semana: anótala en el check-in para comparar con tu objetivo.",
+      "intakeBlocked": "Por seguridad no comparamos lo que comes con un objetivo de calorías."
+    },
+    "weight": {
+      "ok": "Tendencia: {kg} kg de media la última semana; {rate} kg por semana ({pct} % por semana) en {days} días.",
+      "insufficient": "Aún no hay tendencia: hacen falta {minPoints} pesajes en {minDays} días (tienes {points}). Sin tendencia no se saca ninguna conclusión.",
+      "disabled": "Sin datos de peso por seguridad."
+    },
+    "calories": {
+      "range": "El rango de tu objetivo es de {low} a {high} % del peso por semana.",
+      "inRange": "Tu ritmo está dentro del rango: no se propone cambiar las calorías.",
+      "outOfRange": "Tu ritmo está fuera del rango.",
+      "noRateRule": "Ninguna regla da un ritmo para tu objetivo, así que no se propone cambiar las calorías.",
+      "insufficient": "Sin tendencia no se cambian las calorías.",
+      "blocked": "Por seguridad no hay objetivos de calorías.",
+      "tdee": "Mantenimiento medido con tu tendencia: {kcal} kcal al día.",
+      "tdeeWait": "Con menos de 4 semanas de pesajes solo se mira la dirección: aún no se recalcula el mantenimiento.",
+      "tdeeNoIntake": "Para recalcular el mantenimiento hace falta la ingesta registrada en el check-in.",
+      "noChange": "Fuera del rango, pero el motor no cambia tu objetivo con los avisos de seguridad que tienes.",
+      "current": "Tu objetivo actual: {kcal} kcal al día."
+    },
+    "training": {
+      "sets": "Series duras por músculo ({start} – {end}); la referencia de {ref} por semana es para ganar músculo, no un mínimo.",
+      "lifts": "Progresión por ejercicio",
+      "stalled": "Estancado: cuenta como señal de estancamiento.",
+      "load": "{kg} kg",
+      "noLifts": "Sin series registradas en las últimas 4 semanas.",
+      "blocked": "Sin consejos de entrenamiento hasta que lo autorice un médico."
+    },
+    "recovery": {
+      "no_signs": "Sin señales de recuperación: no hace falta descarga.",
+      "not_indicated": "Con una sola señal no hace falta descarga.",
+      "indicated": "Hay señales juntas: se propone una semana de descarga.",
+      "no_training": "Sin entrenar hasta la revisión médica: no hay consejos de descarga.",
+      "derived": "Contado por el coach: {signs}.",
+      "ache": "Si una molestia sigue después de la semana de descarga, ve a tu médico de cabecera o a un fisioterapeuta."
+    },
+    "proposals": {
+      "none": "No hay cambios que proponer esta semana.",
+      "calories": "Calorías: de {current} a {kcal} kcal al día ({change} kcal).",
+      "caloriesStep": "Baja de un escalón de {step} kcal; el resto se revisa dentro de 2-4 semanas.",
+      "caloriesDeficit": "Con déficit de {deficit} kcal sobre tu mantenimiento.",
+      "deload": "Semana de descarga: recorta las series un {low}-{high} %, mantén las cargas y para cada serie al menos {rir} repeticiones antes del fallo.",
+      "rest": "Añade {low}-{high} días de descanso.",
+      "accept": "Aceptar lo marcado",
+      "acceptNone": "Aceptar sin cambios",
+      "accepting": "Aceptando…",
+      "acceptedNote": "Aceptada. Lo aceptado ya cuenta en tus objetivos de calorías.",
+      "planReady": "Tienes un plan nuevo para la semana del {date}: revísalo y aplícalo.",
+      "goPlan": "Ver el plan nuevo",
+      "noPlan": "Sin cambios aceptados, el plan sigue igual.",
+      "accepted": "Aceptado",
+      "declined": "No aceptado"
+    },
+    "narrativeNote": "Lo redacta la IA a partir de la revisión; los números son los de la revisión.",
+    "safetyNone": "Ningún aviso de seguridad.",
+    "stale": {
+      "title": "Evidencia por revisar (solo admin)",
+      "body": "Estos archivos de evidencia tienen la revisión de fuentes de hace más de {months} meses.",
+      "checked": "revisado el {date}",
+      "never": "sin fecha de revisión",
+      "origin": {
+        "upstream": "coach",
+        "fightlab": "anexo de FightLab"
+      }
+    }
   }
 }

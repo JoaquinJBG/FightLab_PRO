@@ -26,7 +26,7 @@ export const planItem = z.object({
   exercise: z.string(),
   pattern: z.enum(["legs", "push", "pull"]),
   sets: z.number(),
-  sets_basis: z.enum(["log", "coach_convention", "weekly_sets"]),
+  sets_basis: z.enum(["log", "coach_convention", "weekly_sets", "deload"]),
   sets_rule_key: z.string().nullable(),
   rep_range: z.tuple([z.number(), z.number()]),
   load_kg: z.number().nullable(),
@@ -87,6 +87,17 @@ export const nutrition = z.object({
   reasons: z.array(coachReason).optional(),
 });
 
+// Semana de descarga aceptada en la revisión semanal (fase 7), con la regla "Deloads".
+export const planDeload = z.object({
+  review_id: z.number(),
+  volume_cut: z.tuple([z.number(), z.number()]),
+  stop_rir: z.number(),
+  extra_rest_days: z.tuple([z.number(), z.number()]),
+  rule_key: z.string(),
+  sets_convention: convention,
+});
+export type PlanDeload = z.infer<typeof planDeload>;
+
 export const weeklyPlan = z.object({
   id: z.number(),
   week_start: z.string(),
@@ -101,6 +112,7 @@ export const weeklyPlan = z.object({
   rules: z.array(ruleRef),
   engine_sha: z.string(),
   narrative: z.string(),
+  deload: planDeload.nullable().default(null),
   created_at: z.string(),
   applied_at: z.string().nullable(),
 });

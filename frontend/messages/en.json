@@ -379,7 +379,9 @@
       "fatMin": "Minimum fat: {g} g",
       "rules": "Rules they rest on",
       "engine": "Coach engine {sha}",
-      "checked": "evidence checked on {date}"
+      "checked": "evidence checked on {date}",
+      "maintenanceReview": "Maintenance measured from your trend in the weekly review of {date}: {kcal} kcal",
+      "heldTarget": "target agreed in that review"
     },
     "weighIn": {
       "back": "← Nutrition",
@@ -933,6 +935,10 @@
         "plan": {
           "title": "Weekly plan",
           "sub": "Built by the coach from rules and evidence"
+        },
+        "review": {
+          "title": "Weekly review",
+          "sub": "Adherence, weight, calories and deload, with their rules"
         }
       }
     },
@@ -1823,12 +1829,14 @@
       "restart": "Back after a break",
       "hold": "Keep load and reps",
       "paused": "Paused for an injury",
-      "no_training": "No training"
+      "no_training": "No training",
+      "deload": "Deload: same loads"
     },
     "setsBasis": {
       "log": "Sets from your log",
       "coach_convention": "No log yet: 2-3 sets",
-      "weekly_sets": "One more set, towards 10 per muscle"
+      "weekly_sets": "One more set, towards 10 per muscle",
+      "deload": "Sets cut for the deload"
     },
     "conventionCoach": "Coach convention",
     "patterns": {
@@ -1919,6 +1927,144 @@
     "startSession": "Start session {key}",
     "routineCta": "Build your weekly plan with the coach",
     "routineActive": "Coach's plan · week of {date}",
-    "routineEdit": "Change the plan"
+    "routineEdit": "Change the plan",
+    "deload": {
+      "title": "Deload week",
+      "body": "You accepted it in the weekly review: sets cut by {low}-{high} %, the same loads and every set {rir} or more reps short of failure.",
+      "rest": "Add {low}-{high} rest days this week.",
+      "effort": "Stop every set {rir} or more reps short of failure"
+    }
+  },
+  "weeklyReview": {
+    "title": "Weekly review",
+    "back": "← Training",
+    "intro": "What your data for the week says and whether anything should change. Every number comes from the coach's engine and every proposal carries its rule.",
+    "loading": "Loading…",
+    "error": "The review could not be loaded.",
+    "weekEnding": "Week from {start} to {end}",
+    "form": {
+      "title": "How it went",
+      "weekEnd": "Last day of the reviewed week",
+      "signsQuestion": "Which of these have been with you for 1-2 weeks?",
+      "signsHint": "If the coach sees a stalled lift, it counts as a performance stall even if you do not tick it.",
+      "run": "Run the review",
+      "rerun": "Run the review again",
+      "running": "Reviewing…"
+    },
+    "signs": {
+      "performance_stall": "My performance has stalled",
+      "joint_aches": "Aching joints",
+      "poor_sleep": "Poor sleep",
+      "low_motivation": "Low motivation",
+      "drop_despite_rest": "Performance drops even after rest",
+      "low_mood": "Low mood"
+    },
+    "errors": {
+      "profile_incomplete": "You still need to finish the onboarding screening.",
+      "week_end_future": "The week cannot end after today.",
+      "week_end_too_old": "Only the last 8 weeks can be reviewed.",
+      "already_accepted": "This review has already been accepted.",
+      "superseded": "There is a newer review: accept that one.",
+      "calories_blocked": "For safety, calories are not changed.",
+      "no_training": "No training until a doctor reviews it: no deload and no plan.",
+      "generic": "That did not work. Please try again."
+    },
+    "completeOnboarding": "Finish the screening",
+    "status": {
+      "pending": "Waiting for you to accept",
+      "accepted": "Accepted"
+    },
+    "sections": {
+      "adherence": "Adherence",
+      "weight": "Weight",
+      "calories": "Calories",
+      "training": "Training",
+      "recovery": "Recovery",
+      "proposals": "Proposals",
+      "narrative": "Summary",
+      "safety": "Safety notes",
+      "rules": "Rules used"
+    },
+    "adherence": {
+      "planned": "{done} of {planned} planned sessions",
+      "noPlan": "No plan applied this week: only what you logged counts.",
+      "kinds": {
+        "gym": "Gym",
+        "mma": "MMA",
+        "cardio": "Cardio"
+      },
+      "count": "{kind}: {done} of {planned}",
+      "countNoPlan": "{kind}: {done}",
+      "done": "Done",
+      "missed": "Not logged",
+      "rotation": "If you missed a session, carry on with the next one in the plan; do not catch up.",
+      "intake": "You ate {mean} kcal on average over {days, plural, one {# logged day} other {# logged days}}; your target is {target} kcal ({diff} kcal).",
+      "intakeNoTarget": "You ate {mean} kcal on average over {days, plural, one {# logged day} other {# logged days}}.",
+      "intakeNone": "No intake logged this week: add it in the check-in to compare it with your target.",
+      "intakeBlocked": "For safety, what you eat is not compared with a calorie target."
+    },
+    "weight": {
+      "ok": "Trend: {kg} kg average over the last week; {rate} kg a week ({pct} % a week) over {days} days.",
+      "insufficient": "No trend yet: it needs {minPoints} weigh-ins over {minDays} days (you have {points}). Without a trend, no conclusion is drawn.",
+      "disabled": "No weight data, for safety."
+    },
+    "calories": {
+      "range": "The range for your goal is {low} to {high} % of body weight a week.",
+      "inRange": "Your rate is inside the range: no calorie change is proposed.",
+      "outOfRange": "Your rate is outside the range.",
+      "noRateRule": "No rule gives a rate for your goal, so no calorie change is proposed.",
+      "insufficient": "Without a trend, calories are not changed.",
+      "blocked": "For safety, there are no calorie targets.",
+      "tdee": "Maintenance measured from your trend: {kcal} kcal a day.",
+      "tdeeWait": "With under 4 weeks of weigh-ins only the direction is checked: maintenance is not recalculated yet.",
+      "tdeeNoIntake": "Recalculating maintenance needs the intake logged in the check-in.",
+      "noChange": "Outside the range, but the engine does not change your target with your current safety notes.",
+      "current": "Your current target: {kcal} kcal a day."
+    },
+    "training": {
+      "sets": "Hard sets per muscle ({start} – {end}); the reference of {ref} a week is for muscle gain, not a minimum.",
+      "lifts": "Progression per exercise",
+      "stalled": "Stalled: counts as a performance stall.",
+      "load": "{kg} kg",
+      "noLifts": "No sets logged in the last 4 weeks.",
+      "blocked": "No training advice until a doctor clears it."
+    },
+    "recovery": {
+      "no_signs": "No recovery signs: no deload needed.",
+      "not_indicated": "One sign on its own does not call for a deload.",
+      "indicated": "Several signs together: a deload week is proposed.",
+      "no_training": "No training until a doctor reviews it: no deload advice.",
+      "derived": "Counted by the coach: {signs}.",
+      "ache": "If an ache persists after the deload week, see your GP or a physiotherapist."
+    },
+    "proposals": {
+      "none": "No changes to propose this week.",
+      "calories": "Calories: from {current} to {kcal} kcal a day ({change} kcal).",
+      "caloriesStep": "One step of {step} kcal down; the rest is reviewed in 2-4 weeks.",
+      "caloriesDeficit": "With a {deficit} kcal deficit below your maintenance.",
+      "deload": "Deload week: cut your sets by {low}-{high} %, keep the loads and stop every set at least {rir} reps short of failure.",
+      "rest": "Add {low}-{high} rest days.",
+      "accept": "Accept what is ticked",
+      "acceptNone": "Accept without changes",
+      "accepting": "Accepting…",
+      "acceptedNote": "Accepted. What you accepted now counts towards your calorie targets.",
+      "planReady": "You have a new plan for the week of {date}: check it and apply it.",
+      "goPlan": "See the new plan",
+      "noPlan": "With no changes accepted, the plan stays the same.",
+      "accepted": "Accepted",
+      "declined": "Not accepted"
+    },
+    "narrativeNote": "Written by the AI from the review; the numbers are the review's.",
+    "safetyNone": "No safety notes.",
+    "stale": {
+      "title": "Evidence to re-check (admin only)",
+      "body": "These evidence files had their sources checked more than {months} months ago.",
+      "checked": "checked on {date}",
+      "never": "no check date",
+      "origin": {
+        "upstream": "coach",
+        "fightlab": "FightLab annex"
+      }
+    }
   }
 }

@@ -42,6 +42,8 @@ SETUPS = {
     "checkinFat": ({}, {}),
     "plan": ({}, {}),
     "planParq": ({}, {"parq_any_yes": True}),
+    "review": ({"goal": "fat_loss"}, {}),
+    "reviewScoff": ({"goal": "fat_loss"}, {"scoff_yes_count": 2}),
 }
 for key, email in READY.items():
     u, p = fresh(email)
@@ -64,6 +66,20 @@ for key in ("plan", "planParq"):
         SetLog.objects.bulk_create(SetLog(activity=a, exercise="Press banca", exercise_index=0, set_index=i, weight_kg=60, reps=10) for i in range(3))
     for days in (2, 9):
         Activity.objects.create(profile=p, kind="MMA", title="MMA", started_at=now - timedelta(days=days), duration_sec=3600, rpe=7)
+
+# Fase 7: un pesaje diario durante 28 días (unos -0,2 % a la semana, fuera del rango de pérdida),
+# 2000 kcal registradas en el check-in y cuatro sesiones iguales de press banca (estancado).
+from coaching.models import DailyCheckin
+for key in ("review", "reviewScoff"):
+    p = UserProfile.objects.get(user__email=READY[key])
+    now = timezone.now()
+    BiometricsLog.objects.filter(profile=p).delete()
+    for i in range(28):
+        BiometricsLog.objects.create(profile=p, weight_kg=round(72 - 0.02 * i, 2), timestamp=now - timedelta(days=27 - i))
+        DailyCheckin.objects.create(profile=p, date=(now - timedelta(days=i)).date(), intake_kcal=2000)
+    for days in (12, 8, 4, 1):
+        a = Activity.objects.create(profile=p, kind="GYM", title="Full body", started_at=now - timedelta(days=days), duration_sec=3600, rpe=8)
+        SetLog.objects.bulk_create(SetLog(activity=a, exercise="Press banca", exercise_index=0, set_index=i, weight_kg=60, reps=10) for i in range(3))
 `;
   execFileSync(python, ["manage.py", "shell", "-c", code], { cwd: backend, stdio: "inherit" });
 }

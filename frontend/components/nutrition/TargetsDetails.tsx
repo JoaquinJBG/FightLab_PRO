@@ -37,7 +37,17 @@ export function TargetsDetails({ targets }: { targets: Targets }) {
       <summary className="t-label cursor-pointer text-ink">{t("title")}</summary>
       <div className="mt-3 flex flex-col gap-3">
         <ul className="flex flex-col gap-1.5">
-          <li className="t-body text-xs text-muted">{t("maintenance", { kcal: format.number(targets.maintenance_kcal) })}</li>
+          {targets.recalibrated ? (
+            <li data-testid="targets-recalibrated" className="t-body text-xs text-ink">
+              {t("maintenanceReview", {
+                kcal: format.number(targets.maintenance_kcal),
+                date: format.dateTime(new Date(`${targets.recalibrated.week_end}T12:00:00`), { day: "numeric", month: "long" }),
+              })}
+              {targets.recalibrated.held && ` · ${t("heldTarget")}`}
+            </li>
+          ) : (
+            <li className="t-body text-xs text-muted">{t("maintenance", { kcal: format.number(targets.maintenance_kcal) })}</li>
+          )}
           <li className="t-body text-xs text-muted">
             {deficit > 0
               ? t("deficit", { kcal: format.number(deficit) })

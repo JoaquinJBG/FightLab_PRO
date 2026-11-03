@@ -1,8 +1,9 @@
 # E2E (Playwright)
 
 Prueban el onboarding con cribado (`onboarding.spec.ts`), los objetivos, el pesaje y los bloqueos
-de la fase 4 (`nutrition.spec.ts`) y el check-in diario con la tendencia de la fase 5 (`checkin.spec.ts`)
-de punta a punta: Next (BFF) + Django + motor del coach.
+de la fase 4 (`nutrition.spec.ts`), el check-in diario con la tendencia de la fase 5
+(`checkin.spec.ts`), el plan de la semana de la fase 6 (`plan.spec.ts`) y la revisión semanal de la
+fase 7 (`review.spec.ts`) de punta a punta: Next (BFF) + Django + motor del coach.
 Usan el Chrome instalado (`channel: "chrome"`), así que no hace falta `playwright install`.
 
 1. Backend con su base de datos migrada, en el puerto que lee el BFF (por defecto 8001):

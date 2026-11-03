@@ -11,6 +11,7 @@ import {
   DAYS,
   gradeIndex,
   type Modality,
+  type PlanDeload,
   type PlanItem,
   type PlanSession,
   type ScheduleEntry,
@@ -51,7 +52,7 @@ function useExerciseLabel() {
   return (name: string) => (EXERCISE_KEYS[name] ? tg(`exercises.${EXERCISE_KEYS[name]}`) : name);
 }
 
-function ReasonLine({ reason }: { reason: CoachReason }) {
+export function ReasonLine({ reason }: { reason: CoachReason }) {
   return (
     <li data-testid="plan-reason" data-code={reason.code} className="flex flex-wrap items-center gap-2">
       <span className="t-body text-xs first-letter:uppercase" style={{ color: SEVERITY_COLOR[reason.severity] ?? "inherit" }}>
@@ -98,6 +99,7 @@ function ItemRow({ item, grades }: { item: PlanItem; grades: Record<string, stri
         <LineChip ruleKey={item.rule_key} grades={grades} />
         <span className="t-body text-[11px] text-muted">{t(`setsBasis.${item.sets_basis}`)}</span>
         {item.sets_basis === "coach_convention" && <LineChip ruleKey={null} grades={grades} convention="coach" />}
+        {item.sets_basis === "deload" && <LineChip ruleKey={null} grades={grades} />}
         {item.sets_rule_key && <LineChip ruleKey={item.sets_rule_key} grades={grades} />}
       </div>
       {item.reasons.length > 0 && <ul className="flex flex-col gap-1">{item.reasons.map((r, i) => <ReasonLine key={`${r.code}-${i}`} reason={r} />)}</ul>}
@@ -105,7 +107,12 @@ function ItemRow({ item, grades }: { item: PlanItem; grades: Record<string, stri
   );
 }
 
-export function SessionCard({ session, grades, action }: { session: PlanSession; grades: Record<string, string | null>; action?: ReactNode }) {
+export function SessionCard({ session, grades, action, deload }: {
+  session: PlanSession;
+  grades: Record<string, string | null>;
+  action?: ReactNode;
+  deload?: PlanDeload | null;
+}) {
   const t = useTranslations("weeklyPlan");
   return (
     <div data-testid="plan-session" data-session={session.key} className="rounded-2xl border border-[rgba(150,190,255,0.1)] p-3">
@@ -114,7 +121,7 @@ export function SessionCard({ session, grades, action }: { session: PlanSession;
         <LineChip ruleKey={session.rule_key} grades={grades} />
       </div>
       <p className="t-body mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
-        {t("effort", { low: session.effort.rir[0], high: session.effort.rir[1] })}
+        {deload ? t("deload.effort", { rir: deload.stop_rir }) : t("effort", { low: session.effort.rir[0], high: session.effort.rir[1] })}
         <LineChip ruleKey={session.effort.rule_key} grades={grades} />
       </p>
       <ul className="mt-3 flex flex-col gap-2">
@@ -197,6 +204,27 @@ export function PlanView({ plan, sessionAction }: { plan: WeeklyPlan; sessionAct
         </Section>
       )}
 
+      {plan.deload && (
+        <section data-testid="plan-deload" className="glass mt-4 p-4" style={{ borderColor: "#ffd25a" }}>
+          <p className="t-title flex flex-wrap items-center gap-2 text-ink">
+            {t("deload.title")}
+            <LineChip ruleKey={plan.deload.rule_key} grades={grades} />
+          </p>
+          <p className="t-body mt-1 text-sm text-ink">
+            {t("deload.body", {
+              low: Math.round(plan.deload.volume_cut[0] * 100),
+              high: Math.round(plan.deload.volume_cut[1] * 100),
+              rir: plan.deload.stop_rir,
+            })}
+          </p>
+          {plan.deload.extra_rest_days[1] > 0 && (
+            <p className="t-body mt-1 text-xs text-muted">
+              {t("deload.rest", { low: plan.deload.extra_rest_days[0], high: plan.deload.extra_rest_days[1] })}
+            </p>
+          )}
+        </section>
+      )}
+
       <Section title={t("sections.week")} testId="plan-week">
         <ul className="flex flex-col gap-2">
           {DAYS.map((d) => <DayRow key={d} day={d} entries={byDay(d)} grades={grades} />)}
@@ -206,7 +234,7 @@ export function PlanView({ plan, sessionAction }: { plan: WeeklyPlan; sessionAct
 
       <Section title={t("sections.sessions")} testId="plan-sessions">
         <div className="flex flex-col gap-3">
-          {plan.sessions.map((s) => <SessionCard key={s.key} session={s} grades={grades} action={sessionAction?.(s)} />)}
+          {plan.sessions.map((s) => <SessionCard key={s.key} session={s} grades={grades} action={sessionAction?.(s)} deload={plan.deload} />)}
         </div>
       </Section>
 
