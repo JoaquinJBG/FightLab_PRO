@@ -13,7 +13,6 @@ import {
   FOCUS_KEYS,
   GYM_LIVE_KEY,
   GYM_REST_KEY,
-  exerciseStats,
   gymSets,
   pushGymSession,
   type ExerciseEntry,
@@ -21,6 +20,9 @@ import {
 } from "@/lib/gym";
 import { enqueueActivity } from "@/lib/activities";
 import { useWeeklyPlan } from "@/lib/plan";
+import { gymStats, useLastStats } from "@/lib/strength";
+import { GYM_INCLUDES, type GymInclude } from "@/lib/session-check";
+import { VigorousWarning } from "@/components/safety/VigorousWarning";
 
 function fmtClock(sec: number) {
   const h = Math.floor(sec / 3600);
@@ -76,6 +78,8 @@ function SessionInner() {
   const [phase, setPhase] = useState<"live" | "summary">("live");
   const [rpe, setRpe] = useState<number | null>(null);
   const [rpeInfo, setRpeInfo] = useState(false);
+  // Test de 1RM o pliometría: trabajo vigoroso que pide el aviso (spec §8.2)
+  const [includes, setIncludes] = useState<GymInclude[]>([]);
 
   // descanso entre series
   const [restDur, setRestDur] = useState(90);
@@ -148,6 +152,9 @@ function SessionInner() {
     return () => clearInterval(id);
   }, []);
   const elapsed = startedAt ? Math.max(0, Math.floor((now - startedAt) / 1000)) : 0;
+
+  /* ---------- "Última vez" y récords: del servidor (`SetLog`), o del navegador si aún no están ---------- */
+  const { data: serverStats } = useLastStats(exercises.map((x) => x.name));
 
   /* ---------- persistencia de la sesión viva ---------- */
   useEffect(() => {
@@ -261,7 +268,10 @@ function SessionInner() {
       volume,
       exercises: parsedExercises,
     });
-    const planned = planSession ? { plan_session: planSession } : {};
+    const planned = {
+      ...(planSession ? { plan_session: planSession } : {}),
+      ...(includes.length > 0 ? { includes } : {}),
+    };
     let detail: Record<string, unknown> = { focus, volume_kg: volume, exercises: parsedExercises, ...planned };
     try {
       // tope del backend: si el desglose no cabe, se queda el resumen (las series van en `sets`)
@@ -340,6 +350,20 @@ function SessionInner() {
           )}
         </div>
 
+        <div className="glass mt-4 p-4">
+          <p className="t-label text-ink">{t("includesTitle")}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {GYM_INCLUDES.map((i) => (
+              <button key={i} type="button" aria-pressed={includes.includes(i)}
+                onClick={() => setIncludes((xs) => (xs.includes(i) ? xs.filter((x) => x !== i) : [...xs, i]))}
+                className={`badge ${includes.includes(i) ? "badge-neon" : ""}`}>
+                {t(`includes.${i}`)}
+              </button>
+            ))}
+          </div>
+          <VigorousWarning params={includes.length > 0 ? { kind: "GYM", includes } : null} />
+        </div>
+
         <div className="mt-4 flex gap-3">
           <button onClick={() => setPhase("live")} className="btn btn-outline flex-1">{t("back")}</button>
           <button onClick={save} disabled={totalSets === 0} className="btn btn-primary flex-1 disabled:opacity-60">{t("save")}</button>
@@ -377,7 +401,7 @@ function SessionInner() {
       {/* ejercicios */}
       <div className="mt-4 flex flex-col gap-3">
         {exercises.map((x, ei) => {
-          const stats = exerciseStats(x.name);
+          const stats = gymStats(x.name, serverStats);
           return (
             <div key={x.name} className="glass p-4">
               <div className="flex items-start justify-between gap-2">
@@ -387,6 +411,13 @@ function SessionInner() {
                     {stats.last ? t("lastTime", { last: stats.last }) : t("firstTime")}
                     {stats.prKg !== null ? ` · ${t("pr", { kg: stats.prKg })}` : ""}
                   </p>
+                  {stats.e1rmKg !== null && (
+                    // Epley con las repeticiones en reserva: convención del coach, sin regla
+                    <p data-testid="gym-e1rm" className="t-body mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
+                      {t("e1rm", { kg: stats.e1rmKg })}
+                      <span className="t-label inline-flex rounded-full border border-white/20 px-2 py-0.5 text-[10px] text-muted">{tp("conventionCoach")}</span>
+                    </p>
+                  )}
                 </div>
                 <button onClick={() => removeExercise(ei)} aria-label={t("removeExercise")} className="t-label shrink-0 px-1 text-muted hover:text-bad">✕</button>
               </div>

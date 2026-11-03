@@ -16,6 +16,8 @@ const state = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/activities", () => ({ enqueueActivity: vi.fn(), deleteServerActivities: vi.fn() }));
+// El aviso de sesión vigorosa (F9) tiene su propio test (vigorousWarning.test.tsx)
+vi.mock("@/lib/session-check", async (orig) => ({ ...(await orig<typeof import("@/lib/session-check")>()), useSessionCheck: () => ({ data: undefined }) }));
 vi.mock("@/lib/hooks", () => ({ useSafety: () => ({ data: state.safety }), useBiometrics: () => ({ data: state.logs }) }));
 vi.mock("@/lib/combat", async (orig) => ({
   ...(await orig<typeof import("@/lib/combat")>()),

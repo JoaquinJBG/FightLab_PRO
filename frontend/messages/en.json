@@ -799,6 +799,12 @@
         "empty": "You haven't logged any activity yet. Time a sport and it will show up here.",
         "rpe": "RPE {n}",
         "au": "{n} AU"
+      },
+      "format": {
+        "title": "Format",
+        "continuous": "Continuous",
+        "hiit": "Intervals (HIIT)",
+        "sprints": "All-out sprints"
       }
     },
     "mma": {
@@ -1099,7 +1105,8 @@
         "legRaises": "Leg raises",
         "row": "Row",
         "tricepsExtensionShort": "Triceps extension"
-      }
+      },
+      "importLink": "Import from Hevy or CSV"
     },
     "gymSession": {
       "loading": "Loading…",
@@ -1135,7 +1142,13 @@
       "finish": "Finish workout",
       "rest": "Rest",
       "skip": "Skip",
-      "setDone": "Set done"
+      "setDone": "Set done",
+      "e1rm": "e1RM ≈ {kg} kg",
+      "includesTitle": "Did it include any of these?",
+      "includes": {
+        "one_rm_test": "A 1RM test",
+        "plyometrics": "Plyometrics (jumps)"
+      }
     },
     "myRoutine": {
       "back": "← Training",
@@ -2066,5 +2079,78 @@
         "fightlab": "FightLab annex"
       }
     }
+  },
+  "sessionCheck": {
+    "title": "Vigorous session: best reviewed first",
+    "modality": "{modality}: {intensity} intensity",
+    "intensity": {
+      "light": "light",
+      "moderate": "moderate",
+      "vigorous": "vigorous",
+      "maximal": "maximal"
+    },
+    "rpeBasis": "RPE {n} or above counts as hard",
+    "because": "Your profile says: {flags}.",
+    "canSave": "You can still save it: what you have already done is always logged. Check with a professional before the next one."
+  },
+  "gymImport": {
+    "back": "← Gym",
+    "title": "Import workouts",
+    "subtitle": "Upload the CSV your gym app exports. The sets go into your history and count towards strength and your plan.",
+    "format": "Format",
+    "formats": {
+      "auto": "Detect",
+      "hevy_csv": "Hevy",
+      "generic_csv": "Generic CSV"
+    },
+    "help": {
+      "hevy": "Hevy: Settings › Export Data. Kilograms or pounds both work.",
+      "generic": "Generic CSV: columns date (YYYY-MM-DD, or YYYY-MM-DD HH:MM for two sessions on one day) and exercise. Optional: weight_kg or weight_lbs, reps, rir, rpe, set_type, distance_km, duration_s, session and notes. Use a full stop for decimals (12.5).",
+      "lyfta": "Lyfta: there is no importer yet. You can convert its export to the generic CSV."
+    },
+    "file": "CSV file (max {mb} MB)",
+    "chosen": "Chosen: {name}",
+    "check": "Check file",
+    "import": "Import",
+    "reading": "Reading…",
+    "preview": "This is what would be imported",
+    "done": "Imported",
+    "summary": {
+      "sets": "{n, plural, one {# new set} other {# new sets}}",
+      "duplicates": "{n, plural, one {# was already there and is not duplicated} other {# were already there and are not duplicated}}",
+      "sessionsNew": "{n, plural, one {# new session} other {# new sessions}}",
+      "sessionsUpdated": "{n, plural, one {# session extended} other {# sessions extended}}",
+      "range": "From {first} to {last}",
+      "importer": "Read as {name}",
+      "nothingNew": "Nothing new: everything in the file was already there."
+    },
+    "warnings": {
+      "template_rows": "{n, plural, one {# empty template row} other {# empty template rows}} (sets never filled in): not imported.",
+      "set_out_of_range": "{n, plural, one {# set} other {# sets}} with an impossible weight or rep count: not imported.",
+      "value_dropped": "{n, plural, one {# set} other {# sets}} with an out-of-range RPE, RIR, distance or duration: imported without that value.",
+      "session_out_of_range": "{n, plural, one {# session} other {# sessions}} dated before 2000 or in the future: not imported.",
+      "session_truncated": "{n, plural, one {# session} other {# sessions}} with more than 300 sets: only the first 300 are imported.",
+      "set_invalid": "{n, plural, one {# set} other {# sets}} with no exercise: not imported."
+    },
+    "errors": {
+      "missing_file": "Choose a file.",
+      "too_large": "The file is larger than {mb} MB.",
+      "not_csv": "This is not a CSV file.",
+      "empty_file": "The file is empty.",
+      "encoding": "The file is not UTF-8. Save it as “CSV UTF-8” and try again.",
+      "unknown_format": "The columns are not recognised: this is neither a Hevy export nor a generic CSV.",
+      "ambiguous_format": "It matches more than one format: choose which one it is.",
+      "missing_columns": "Missing columns: {columns}.",
+      "decimal_comma": "Line {line} has more fields than the header. A decimal comma (12,5)? Use a full stop (12.5).",
+      "not_a_number": "Line {line}: {column} “{value}” is not a number.",
+      "not_whole": "Line {line}: {column} “{value}” must be a whole number.",
+      "bad_date": "A date could not be read ({value}). Use YYYY-MM-DD.",
+      "no_sets": "The file has no completed sets.",
+      "too_many_sets": "Too many sets in one file (max {max}). Split it into several.",
+      "invalid": "The file could not be read.",
+      "throttled": "Too many attempts in a row. Wait a minute.",
+      "server": "The upload failed. Try again."
+    },
+    "noLoad": "Imported sessions do not carry a session effort (RPE), so they do not add to your load."
   }
 }

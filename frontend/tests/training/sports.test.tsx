@@ -5,6 +5,8 @@ import SportsPage from "@/app/(shell)/training/sports/page";
 
 vi.mock("@/lib/hooks", () => ({ useBiometrics: () => ({ data: [{ weight_kg: "80" }] }) }));
 vi.mock("@/lib/activities", () => ({ enqueueActivity: vi.fn(), deleteServerActivities: vi.fn() }));
+// El aviso de sesión vigorosa (F9) tiene su propio test (vigorousWarning.test.tsx)
+vi.mock("@/lib/session-check", async (orig) => ({ ...(await orig<typeof import("@/lib/session-check")>()), useSessionCheck: () => ({ data: undefined }) }));
 
 beforeEach(() => { localStorage.clear(); });
 afterEach(() => { cleanup(); vi.useRealTimers(); });
