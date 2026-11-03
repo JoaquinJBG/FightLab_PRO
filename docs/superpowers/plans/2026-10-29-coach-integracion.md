@@ -609,6 +609,21 @@ plan; cada línea del plan lleva su regla.
 - **Task 9.1:** Subida de CSV de Hevy, Lyfta o genérico → `coach.sessions.importers`
   → `SetLog`, con la deduplicación de `ExerciseSet.key` y el aviso de filas de
   plantilla vacías.
+- **Hecho (F9):** `POST /coach/import` (multipart, `importer` `auto`/`hevy_csv`/`generic_csv`,
+  `dry_run`) con el puente `coaching/bridge/importers.py` y el servicio `coaching/imports.py`:
+  cada sesión es una `Activity` de gimnasio con `source=IMPORT` y `external_id` = el `session_id`
+  del coach; reimportar no duplica (la serie guardada gana, como en `store.append`). Tope de 5 MB,
+  UTF-8 y sin binarios; los errores del motor llegan como código traducible. Pantalla
+  `/training/gym/import`. **Lyfta no está:** el motor vendorizado (`69e5537`) no trae su
+  importador (solo existe en la copia local del usuario, sin publicar); pendiente de decisión.
+  `test_hevy_basic` fallaba en Windows por `core.autocrlf` (fixture con CRLF): `.gitattributes`
+  con `eol=lf` para los fixtures del motor y normalización en el puente (U16). Duración de Hevy
+  desde `end_time` (U17).
+- **Pendientes de F6 hechos en F9:** "Última vez", récord y e1RM del gimnasio desde `SetLog`
+  (`GET /coach/strength/last`), con lo del navegador solo para lo que el servidor aún no tiene; y
+  el aviso al registrar a mano una sesión vigorosa (`GET /coach/session-check`, spec §8.2) en MMA,
+  Deportes (formato HIIT o sprints, y la comba) y el gimnasio (test de 1RM, pliometría). No bloquea
+  guardar.
 
 ---
 
