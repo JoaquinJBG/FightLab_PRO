@@ -1,5 +1,8 @@
 """Traducción de las reglas de evidencia con el LLM (spec §7.3).
 
+El español ya no pasa por aquí: sus traducciones están en `knowledge_translations/` y las carga
+`load_translations` (ver `translation_loader.py`). Este módulo queda para otros idiomas.
+
 Se traduce una vez (`status=machine`) y se revisa a mano (`reviewed`). Las reglas que cambian
 en origen pasan a `stale` y se vuelven a traducir. Los campos que se traducen son los que
 muestra la hoja de evidencia; `evidence` (el resumen de los estudios) no se traduce.

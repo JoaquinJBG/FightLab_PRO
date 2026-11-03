@@ -8,8 +8,9 @@ It covers:
 
 - `docs/`: specs, plans, the user guide and the list of suggestions for the coach's author.
 - `backend/knowledge_fightlab/`: the combat-sports evidence annex.
-- The Spanish translations of the coach's rules and messages. They are adaptations of content
-  from AI personal coach (see "Relationship with AI personal coach" below).
+- The Spanish translations of the coach's rules (`backend/knowledge_translations/`) and
+  messages. They are adaptations of content from AI personal coach (see "Relationship with AI
+  personal coach" below). The translations of the combat-sports annex are FightLab Pro's own.
 - The images made for FightLab Pro.
 
 Attribution: "FightLab Pro by Joaquín J Beltrán García, CC BY 4.0", with a note of any changes
