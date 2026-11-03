@@ -56,7 +56,7 @@ describe("VigorousWarning (en)", () => {
     expect(box.textContent).toContain("You can still save it");
     const chips = screen.getAllByTestId("evidence-chip");
     expect(chips.map((c) => c.dataset.variant)).toEqual(["evidence", "evidence", "convention", "evidence"]);
-    expectClean(container, ["a PAR-Q+ YES: a qualified exercise professional reviews vigorous work before it starts"]);
+    expectClean(container);
   });
 
   it("sin aviso del servidor no pinta nada", () => {
