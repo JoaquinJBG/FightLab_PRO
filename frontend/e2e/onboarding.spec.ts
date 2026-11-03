@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import en from "../messages/en.json";
 import es from "../messages/es.json";
 import { PASSWORD, USERS } from "./users";
 
@@ -91,39 +92,39 @@ test("SCOFF positivo: ve el bloqueo del déficit y la línea de derivación (es)
   await expect(blocked.getByTestId("safety-footer")).toHaveText(es.safety.deferralLine);
 });
 
-test.describe("navegador en inglés con el selector apagado (hasta la fase I)", () => {
+test.describe("selector de idioma encendido, con el navegador en inglés", () => {
   test.use({ locale: "en-GB", extraHTTPHeaders: { "Accept-Language": "en-GB,en;q=0.9" } });
 
-  test("onboarding completo en español, con el PAR-Q+ sin contestar", async ({ page }) => {
+  test("elige inglés en el primer paso y el resto del onboarding va en inglés", async ({ page }) => {
     await login(page, USERS.english);
     await page.getByTestId("onboarding-start").click();
 
-    // Solo la región: sin selector de idioma, y la UI en español
-    await expect(page.getByTestId("language-selector")).toHaveCount(0);
-    await expect(page.getByTestId("lang-en")).toHaveCount(0);
+    // Idioma y región: el selector está y, al elegir inglés, la UI cambia
+    await expect(page.getByTestId("language-selector")).toBeVisible();
+    await page.getByTestId("lang-en").click();
     await page.getByTestId("region-other").click();
     await page.getByRole("button", { name: "911" }).click();
     await next(page);
 
-    await expect(page.getByText(es.onboarding.scoff.question)).toBeVisible();
+    await expect(page.getByText(en.onboarding.scoff.question)).toBeVisible();
     await answerScoff(page, []);
     await next(page);
-    await expect(page.getByTestId("scoff-outcome")).toContainText(es.onboarding.scoff.clear);
-    await expect(page.getByTestId("safety-disclaimer")).toHaveText(es.safety.disclaimer);
+    await expect(page.getByTestId("scoff-outcome")).toContainText(en.onboarding.scoff.clear);
+    await expect(page.getByTestId("safety-disclaimer")).toHaveText(en.safety.disclaimer);
     await next(page);
 
     await basics(page, "MALE");
-    await expect(page.getByText(es.onboarding.basics.weightHint)).toBeVisible();
+    await expect(page.getByText(en.onboarding.basics.weightHint)).toBeVisible();
     await page.getByTestId("weight-input").fill("80");
     await next(page);
 
-    await expect(page.getByText(es.onboarding.parq.anyYes)).toBeVisible();
+    await expect(page.getByText(en.onboarding.parq.anyYes)).toBeVisible();
     await page.getByTestId("parq-any-yes").getByTestId("unsure").click();
-    await expect(page.getByText(es.onboarding.parq.unsureNote)).toBeVisible();
+    await expect(page.getByText(en.onboarding.parq.unsureNote)).toBeVisible();
     await next(page);
 
     await page.getByTestId("cardiac-unsure").click();
-    await expect(page.getByText(es.onboarding.cardiac.unsureAgain)).toBeVisible();
+    await expect(page.getByText(en.onboarding.cardiac.unsureAgain)).toBeVisible();
     await page.getByTestId("cardiac-none").click();
 
     await page.getByTestId("token-beta_blocker").click();
@@ -134,16 +135,14 @@ test.describe("navegador en inglés con el selector apagado (hasta la fase I)", 
     await page.getByTestId("activities-desk_training").click();
     await next(page);
 
-    // Los motivos del motor llegan en español, como la UI
+    // Los motivos del motor llegan en inglés, como la UI
     const banner = page.getByTestId("safety-banner");
-    await expect(banner.locator('[data-code="beta_blocker_rpe"]')).toContainText(
-      "la intensidad se pauta por esfuerzo percibido (RPE) y la prueba del habla",
-    );
-    await expect(banner).toContainText(es.safety.parqPending);
-    await expect(banner.getByTestId("safety-footer")).toHaveText(es.safety.disclaimer);
+    await expect(banner.locator('[data-code="beta_blocker_rpe"]')).toContainText("prescribe by RPE and the talk test");
+    await expect(banner).toContainText(en.safety.parqPending);
+    await expect(banner.getByTestId("safety-footer")).toHaveText(en.safety.disclaimer);
     await page.getByTestId("onboarding-finish").click();
     await page.waitForURL("**/dashboard");
-    await expect(page.getByTestId("safety-banner")).toContainText(es.safety.parqPending);
+    await expect(page.getByTestId("safety-banner")).toContainText(en.safety.parqPending);
   });
 });
 

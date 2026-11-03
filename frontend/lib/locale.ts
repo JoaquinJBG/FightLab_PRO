@@ -23,10 +23,10 @@ export function resolveLocale(
   return DEFAULT_LOCALE;
 }
 
-/** Selector de idioma (spec §7.5): apagado hasta que acabe la fase I, para que nadie vea
- * la app a medias en inglés. Se activa con `NEXT_PUBLIC_LANGUAGE_SELECTOR_ENABLED=true`
- * (en el build) y, en el backend, `LANGUAGE_SELECTOR_ENABLED=True`. */
-export const LANGUAGE_SELECTOR_ENABLED = process.env.NEXT_PUBLIC_LANGUAGE_SELECTOR_ENABLED === "true";
+/** Selector de idioma (spec §7.5): encendido por defecto desde que la UI está en es y en.
+ * Se apaga con `NEXT_PUBLIC_LANGUAGE_SELECTOR_ENABLED=false` (en el build) y, en el backend,
+ * `LANGUAGE_SELECTOR_ENABLED=False`; apagado, toda la app va en español. */
+export const LANGUAGE_SELECTOR_ENABLED = process.env.NEXT_PUBLIC_LANGUAGE_SELECTOR_ENABLED !== "false";
 
 /** El idioma de la app: con el selector apagado, siempre español. */
 export function appLocale(

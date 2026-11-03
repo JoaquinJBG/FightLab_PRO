@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ArrowUpRight } from "@/components/icons";
@@ -9,7 +8,6 @@ import { credentials } from "@/lib/schemas";
 
 export default function LoginPage() {
   const t = useTranslations("auth");
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +28,9 @@ export default function LoginPage() {
       body: JSON.stringify(parsed.data),
     });
     setLoading(false);
-    if (res.ok) router.push("/dashboard");
+    // Carga completa: el login ha puesto la cookie con el idioma del perfil y el layout raíz
+    // tiene que volver a leer los textos (con router.push se quedaría el idioma del navegador).
+    if (res.ok) window.location.assign("/dashboard");
     else setError(t("login.badCredentials"));
   }
 

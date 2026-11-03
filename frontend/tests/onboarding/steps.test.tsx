@@ -140,8 +140,8 @@ describe("onboarding en los dos idiomas", () => {
     }
   }
 
-  it("sin el flag de la fase I no hay selector de idioma ni se envía language", async () => {
-    wrap(<LanguageStep profile={PROFILE} onNext={noop} />);
+  it("con el selector apagado no hay selector de idioma ni se envía language", async () => {
+    wrap(<LanguageStep profile={PROFILE} onNext={noop} selectorEnabled={false} />);
     expect(screen.queryByTestId("language-selector")).toBeNull();
     expect(screen.getByText("Tu", { exact: false })).toBeTruthy();
     fireEvent.click(screen.getByTestId("region-es"));

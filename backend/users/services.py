@@ -33,8 +33,8 @@ def user_create(*, email: str, password: str, language: str | None = None):
     """Create an inactive user and send the verification email.
 
     `language` es el de la petición de registro (`Accept-Language`); queda en el perfil
-    y, si no es uno de los idiomas de la app, se usa el español (spec §6.2). Mientras
-    `LANGUAGE_SELECTOR_ENABLED` esté apagado, siempre español.
+    y, si no es uno de los idiomas de la app, se usa el español (spec §6.2). Con
+    `LANGUAGE_SELECTOR_ENABLED` apagado, siempre español.
 
     Si ya existe una cuenta con ese email pero SIN verificar, no es un error:
     se actualiza la contraseña y se reenvía el enlace de verificación (así el
@@ -61,7 +61,7 @@ def _profile_language_set(user, language: str | None) -> None:
     from profiles.models import DEFAULT_LANGUAGE, LANGUAGES, UserProfile
 
     code = (language or "").split("-")[0].lower()
-    # Hasta la fase I (UI existente traducida) todo el mundo empieza en español.
+    # Con el selector apagado todo el mundo empieza en español.
     if not settings.LANGUAGE_SELECTOR_ENABLED or code not in dict(LANGUAGES):
         code = DEFAULT_LANGUAGE
     profile, _ = UserProfile.objects.get_or_create(user=user)

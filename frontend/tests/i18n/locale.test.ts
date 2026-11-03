@@ -16,10 +16,10 @@ describe("resolveLocale", () => {
   });
 });
 
-describe("selector de idioma (apagado hasta la fase I)", () => {
-  it("está apagado por defecto", async () => {
+describe("selector de idioma", () => {
+  it("está encendido por defecto", async () => {
     const { LANGUAGE_SELECTOR_ENABLED } = await import("@/lib/locale");
-    expect(LANGUAGE_SELECTOR_ENABLED).toBe(false);
+    expect(LANGUAGE_SELECTOR_ENABLED).toBe(true);
   });
   it("apagado, la app va en español aunque el navegador o la cookie digan inglés", async () => {
     const { appLocale } = await import("@/lib/locale");

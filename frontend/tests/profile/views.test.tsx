@@ -60,7 +60,8 @@ describe("Editar perfil en inglés", () => {
     expect(screen.getByText("Orthodox")).toBeTruthy();
     expect(screen.getByText("Save changes")).toBeTruthy();
     expect(screen.getByText("Saved ✓")).toBeTruthy();
-    expectClean(container);
+    // "Español" es el nombre del idioma en el selector, que siempre va en su propia lengua
+    expectClean(container, [/Español/]);
   });
 
   it("fecha incompleta: el error sale en inglés", () => {
