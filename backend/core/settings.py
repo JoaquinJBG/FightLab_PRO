@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "ai",
     "activities",
     "userstate",
+    "coaching",
 ]
 
 MIDDLEWARE = [
@@ -74,6 +75,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -135,7 +137,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-LANGUAGE_CODE = "es-es"
+LANGUAGE_CODE = "es"
+# Selector de idioma (spec §7.5): encendido desde que la UI está en es y en. Con False todo va en español.
+LANGUAGE_SELECTOR_ENABLED = env.bool("LANGUAGE_SELECTOR_ENABLED", default=True)
+LANGUAGES = [("es", "Español"), ("en", "English")]
 TIME_ZONE = "Europe/Madrid"
 USE_I18N = True
 USE_TZ = True
@@ -202,6 +207,8 @@ REST_FRAMEWORK = {
     # dejaría que cualquiera que llame directo al backend se salte el
     # throttle inventándose X-Forwarded-For.
     "NUM_PROXIES": env.int("NUM_PROXIES", default=1),
+    # ProfileIncomplete del motor -> 409 profile_incomplete (spec §8.1)
+    "EXCEPTION_HANDLER": "core.exceptions.api_exception_handler",
 }
 
 from datetime import timedelta  # noqa: E402
@@ -391,3 +398,24 @@ AI_DAILY_QUOTA_FOOD = env.int("AI_DAILY_QUOTA_FOOD", default=20)
 # Freno global de coste: tokens (entrada + salida) de todos los usuarios en el
 # día local. Al superarlo, los endpoints de IA responden 503 hasta mañana. <= 0 lo desactiva.
 AI_GLOBAL_DAILY_TOKEN_BUDGET = env.int("AI_GLOBAL_DAILY_TOKEN_BUDGET", default=2_000_000)
+# Traducción de las reglas de evidencia (`manage.py translate_rules`)
+AI_MODEL_TRANSLATE = env("AI_MODEL_TRANSLATE", default=AI_MODEL_CHAT)
+
+# Base de evidencia: el arranque del contenedor la carga solo si cambiaron sus archivos
+# (`manage.py sync_knowledge --on-start`, backend/Dockerfile). False la desactiva.
+KNOWLEDGE_SYNC_ON_START = env.bool("KNOWLEDGE_SYNC_ON_START", default=True)
+
+# --- PAR-Q+ (spec §8.1) ---
+# El formulario oficial se abre desde eparmedx.com; nunca se copia ni se incrusta en la app.
+PARQ_URL_ES = env("PARQ_URL_ES", default="https://eparmedx.com/wp-content/uploads/2023/12/Spanish.pdf")
+PARQ_URL_EN = env(
+    "PARQ_URL_EN", default="https://eparmedx.com/wp-content/uploads/2025/01/PARQPlus2025Fillable.pdf"
+)
+# Formulario nativo: solo con permiso escrito de la PAR-Q+ Collaboration (spec §12, A1).
+# No se lee del entorno a propósito: activarlo exige un cambio de código revisado.
+PARQ_NATIVE_FORM = False
+
+# --- Concussion Recognition Tool 6 (E.5) ---
+# Se enlaza el documento oficial (BJSM, Echemendia 2023, fuente [F026] del anexo de combate) y
+# nunca se reproduce: copiarlo o reformatearlo necesita permiso de BMJ.
+CRT6_URL = env("CRT6_URL", default="https://doi.org/10.1136/bjsports-2023-107021")

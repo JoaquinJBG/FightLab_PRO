@@ -1,8 +1,9 @@
-from .models import BiometricsLog, UserProfile
+from .models import PROFILE_COACH_FIELDS, BiometricsLog, UserProfile
 
 EDITABLE_PROFILE_FIELDS = {
     "date_of_birth", "gender", "height_cm",
     "dominant_stance", "preferred_units", "timezone",
+    *PROFILE_COACH_FIELDS,
 }
 
 

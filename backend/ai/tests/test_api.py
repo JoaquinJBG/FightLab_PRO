@@ -367,7 +367,7 @@ def test_chat_lee_la_memoria_del_servidor_no_del_cuerpo_de_la_peticion(auth_clie
     assert resp.status_code == 200
     system = MockClient.return_value.messages.create.call_args.kwargs["system"]
     assert "Rodilla derecha" in system
-    assert "DIRECTO" in system
+    assert "DIRECT:" in system  # instrucción de tono (el prompt está en inglés)
 
 
 @pytest.mark.django_db
@@ -396,7 +396,28 @@ def test_chat_sin_memoria_guardada_funciona_igual(auth_client):
 
 
 def test_prompt_del_coach_ya_no_fija_08_13_como_zona_segura_universal():
-    # P0.1b: el ACWR se interpreta frente al rango habitual del atleta, no un umbral fijo.
+    # P0.1b y E.5: la carga se compara con la media del propio atleta, sin umbral fijo.
     assert "0.8" not in ai_views.services.COACH_SYSTEM
     assert "1.3" not in ai_views.services.COACH_SYSTEM
-    assert "rango habitual" in ai_views.services.COACH_SYSTEM
+    assert "own 4-week average" in ai_views.services.COACH_SYSTEM
+
+
+@pytest.mark.django_db
+def test_el_objetivo_de_peso_de_la_memoria_no_llega_al_modelo_con_el_pesaje_bloqueado(auth_client):
+    from coaching.services import screening_update
+
+    user = get_user_model().objects.get(email="ia@test.com")
+    UserState.objects.create(
+        profile=user.profile, key="coach_memory", value={"objetivo_peso_kg": 61.2}, updated_at=timezone.now()
+    )
+
+    def system_prompt():
+        with patch("ai.services.anthropic.Anthropic") as MockClient:
+            MockClient.return_value.messages.create.return_value = fake_response("Vale.")
+            assert auth_client.post("/api/v1/ai/coach/chat", CHAT_PAYLOAD, format="json").status_code == 200
+        return MockClient.return_value.messages.create.call_args.kwargs["system"]
+
+    # Sin el cribado de TCA contestado el pesaje está bloqueado (spec §8.3).
+    assert "61.2" not in system_prompt()
+    screening_update(user.profile, {"scoff_yes_count": 0, "scoff_positive": False}, origin="onboarding")
+    assert "61.2" in system_prompt()

@@ -2,6 +2,7 @@ import { TabBar } from "@/components/tab-bar";
 import { OnboardingGate } from "@/components/onboarding-gate";
 import { ServerWarmup } from "@/components/server-warmup";
 import { StateRejectedNotice } from "@/components/state-rejected-notice";
+import { WeighMigrate } from "@/components/weigh-migrate";
 
 export default function ShellLayout({
   children,
@@ -15,6 +16,7 @@ export default function ShellLayout({
       <main className="safe-top flex-1 px-4 pb-28">
         <OnboardingGate>{children}</OnboardingGate>
       </main>
+      <WeighMigrate />
       <TabBar />
     </div>
   );

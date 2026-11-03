@@ -109,7 +109,8 @@ describe("djangoFetch / djangoUpload", () => {
 
     const { djangoRequest } = await import("./api");
     const res = djangoRequest("/health");
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    // fetch sale tras resolver el idioma de la petición (cookie / Accept-Language)
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [, init] = fetchMock.mock.calls[0];
     expect(init.signal).toBeInstanceOf(AbortSignal);
     // No esperamos a que expire el timeout real (55 s); solo comprobamos que

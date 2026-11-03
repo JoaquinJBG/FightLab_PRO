@@ -9,3 +9,4 @@ Pillow==12.2.0
 anthropic==0.109.1
 gunicorn==26.2.0
 whitenoise==6.12.0
+PyYAML==6.0.3

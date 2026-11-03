@@ -87,8 +87,8 @@ def test_coach_chat_incluye_la_memoria_y_las_instrucciones_de_tono_en_el_system_
     )
     system = captured["system"]
     assert "Rodilla" in system
-    assert "MOTIVADOR" in system
-    assert "molestes lo mínimo" in system
+    assert "MOTIVATING" in system
+    assert "bothered as little as possible" in system
 
 
 def test_coach_chat_sin_memoria_no_anade_nada_al_prompt(monkeypatch):

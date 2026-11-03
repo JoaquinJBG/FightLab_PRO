@@ -4,16 +4,39 @@ import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tansta
 import { z } from "zod";
 import {
   biometrics,
+  engineInfo,
+  ruleDetail,
   me,
   profile,
   progressPhoto,
   type Biometrics,
+  type EngineInfo,
+  type RuleDetail,
   type Me,
   type Profile,
   type ProgressPhoto,
+  safety,
+  screening,
+  injury,
+  type Safety,
+  type Screening,
+  type ScreeningValues,
+  type Injury,
+  targets,
+  zones,
+  weighIn,
+  trend,
+  checkinState,
+  checkinResult,
+  type Trend,
+  type CheckinState,
+  type Targets,
+  type Zones,
+  type WeighIn,
 } from "./schemas";
 import { resetActivityUid, cachedActivityUid, flushActivities } from "./activities";
 import { flushUserState, resetUserStateQueue } from "./user-state";
+import { PHOTO_TOO_LARGE } from "./compress-image";
 
 // Claves flp_* que son preferencias del DISPOSITIVO (no del usuario): sobreviven
 // al logout para no reconfigurar el timer de rounds o el descanso del gimnasio
@@ -56,6 +79,12 @@ export class ApiError extends Error {
 
 export function isUnauthorized(err: unknown): boolean {
   return err instanceof ApiError && err.status === 401;
+}
+
+// Todo lo que el servidor calcula con el motor depende del perfil, el cribado y los pesos: si
+// cambian, se vuelve a pedir.
+function invalidateCoach(qc: ReturnType<typeof useQueryClient>) {
+  for (const key of ["safety", "targets", "zones", "weigh-in", "trend", "checkin"]) qc.invalidateQueries({ queryKey: [key] });
 }
 
 async function getJson(path: string) {
@@ -104,7 +133,10 @@ export function useCreateBiometrics() {
   return useMutation({
     mutationFn: (payload: Record<string, unknown>) =>
       sendJson("/api/proxy/me/biometrics", "POST", payload),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["biometrics"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["biometrics"] });
+      invalidateCoach(qc);
+    },
   });
 }
 
@@ -118,7 +150,10 @@ export function useDeleteBiometrics() {
       });
       if (!res.ok && res.status !== 204) throw new Error(String(res.status));
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["biometrics"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["biometrics"] });
+      invalidateCoach(qc);
+    },
   });
 }
 
@@ -141,9 +176,8 @@ export function useUploadPhoto() {
   return useMutation({
     mutationFn: async (file: File) => {
       if (file.size > MAX_UPLOAD_BYTES) {
-        throw new Error(
-          "La foto pesa demasiado para subirla sin comprimir. Prueba con otra foto o desde otro navegador.",
-        );
+        // Código y no texto: la pantalla lo traduce (`biometrics.photos.tooLarge`).
+        throw new Error(PHOTO_TOO_LARGE);
       }
       const form = new FormData();
       form.append("image", file);
@@ -191,7 +225,10 @@ export function useUpdateProfile() {
   return useMutation({
     mutationFn: (payload: Record<string, unknown>) =>
       sendJson("/api/proxy/me/profile", "PATCH", payload),
-    onSuccess: (data) => applyProfileUpdate(qc, data),
+    onSuccess: (data) => {
+      applyProfileUpdate(qc, data);
+      invalidateCoach(qc);
+    },
   });
 }
 
@@ -284,5 +321,223 @@ export function useLogout() {
   return useMutation({
     mutationFn: () => performLogout(),
     onSuccess: (uid) => finishLogout(qc, uid),
+  });
+}
+
+/** Versión del motor y fecha de la evidencia (pantalla de Créditos). */
+export function useEngine() {
+  return useQuery<EngineInfo>({
+    queryKey: ["coach-engine"],
+    queryFn: async () => engineInfo.parse(await getJson("/api/proxy/coach/engine")),
+  });
+}
+
+/** Regla de la base de evidencia con sus fuentes (hoja de evidencia). */
+export function useRule(key: string | null) {
+  return useQuery<RuleDetail>({
+    queryKey: ["knowledge-rule", key],
+    enabled: !!key,
+    queryFn: async () =>
+      ruleDetail.parse(await getJson(`/api/proxy/knowledge/rules/${key}`)),
+  });
+}
+
+/* --- Seguridad y cribado (coach, fase 3). Los flags los calcula el servidor. --- */
+
+export function useSafety(enabled = true) {
+  return useQuery<Safety>({
+    queryKey: ["safety"],
+    queryFn: async () => safety.parse(await getJson("/api/proxy/coach/safety")),
+    enabled,
+  });
+}
+
+export function useScreening() {
+  return useQuery<Screening>({
+    queryKey: ["screening"],
+    queryFn: async () => screening.parse(await getJson("/api/proxy/coach/screening")),
+  });
+}
+
+export function useUpdateScreening() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (values: Partial<ScreeningValues>) =>
+      screening.parse(await sendJson("/api/proxy/coach/screening", "PATCH", { values, origin: "onboarding" })),
+    onSuccess: (data) => {
+      qc.setQueryData(["screening"], data);
+      invalidateCoach(qc);
+    },
+  });
+}
+
+export function useInjuries() {
+  return useQuery<Injury[]>({
+    queryKey: ["injuries"],
+    queryFn: async () => z.array(injury).parse(await getJson("/api/proxy/coach/injuries")),
+  });
+}
+
+export function useAddInjury() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: Record<string, unknown>) => sendJson("/api/proxy/coach/injuries", "POST", payload),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["injuries"] });
+      qc.invalidateQueries({ queryKey: ["safety"] });
+    },
+  });
+}
+
+export function useDeleteInjury() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/proxy/coach/injuries/${id}`, { method: "DELETE", credentials: "include" });
+      if (!res.ok && res.status !== 204) throw new Error(String(res.status));
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["injuries"] });
+      invalidateCoach(qc);
+    },
+  });
+}
+
+/* --- Objetivos, zonas y pesaje (coach, fase 4). Los calcula el servidor con el motor. --- */
+
+/** `kind: "incomplete"` es el 409 del motor: falta un dato (`field`) para calcular. */
+export type TargetsResult = { kind: "ok"; data: Targets } | { kind: "incomplete"; field: string };
+
+export function useTargets() {
+  return useQuery<TargetsResult>({
+    queryKey: ["targets"],
+    queryFn: async () => {
+      const res = await fetch("/api/proxy/coach/targets", { credentials: "include" });
+      if (res.status === 409) {
+        const body = await res.json().catch(() => ({}));
+        return { kind: "incomplete", field: typeof body?.field === "string" ? body.field : "" };
+      }
+      if (!res.ok) throw new Error(String(res.status));
+      return { kind: "ok", data: targets.parse(await res.json()) };
+    },
+  });
+}
+
+export function useZones(enabled = true) {
+  return useQuery<Zones>({
+    queryKey: ["zones"],
+    queryFn: async () => zones.parse(await getJson("/api/proxy/coach/zones")),
+    enabled,
+  });
+}
+
+export function useWeighIn(enabled = true) {
+  return useQuery<WeighIn>({
+    queryKey: ["weigh-in"],
+    queryFn: async () => weighIn.parse(await getJson("/api/proxy/coach/weigh-in")),
+    enabled,
+  });
+}
+
+/** El servidor rechaza con `code` (`weight_targets_blocked`, `deficit_blocked`) un pesaje que
+ * los avisos de seguridad no permiten; el error lo lleva para que la UI lo explique. */
+export class WeighInError extends Error {
+  status: number;
+  code: string;
+  constructor(status: number, code: string) {
+    super(code || String(status));
+    this.status = status;
+    this.code = code;
+  }
+}
+
+export function useSaveWeighIn() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { goal_weight_kg: number; weigh_in_at: string; weight_class?: string | null }) => {
+      const res = await fetch("/api/proxy/coach/weigh-in", {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new WeighInError(res.status, typeof data?.code === "string" ? data.code : "");
+      return weighIn.parse(data);
+    },
+    onSuccess: (data) => {
+      qc.setQueryData(["weigh-in"], data);
+      qc.invalidateQueries({ queryKey: ["profile"] });
+    },
+  });
+}
+
+export function useClearWeighIn() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/proxy/coach/weigh-in", { method: "DELETE", credentials: "include" });
+      if (!res.ok && res.status !== 204) throw new Error(String(res.status));
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["weigh-in"] });
+      qc.invalidateQueries({ queryKey: ["profile"] });
+    },
+  });
+}
+
+
+/* --- Tendencia de peso y check-in diario (coach, fase 5) --- */
+
+export function useTrend(enabled = true) {
+  return useQuery<Trend>({
+    queryKey: ["trend"],
+    queryFn: async () => trend.parse(await getJson("/api/proxy/coach/trend")),
+    enabled,
+  });
+}
+
+export function useCheckin() {
+  return useQuery<CheckinState>({
+    queryKey: ["checkin"],
+    queryFn: async () => checkinState.parse(await getJson("/api/proxy/coach/checkin")),
+  });
+}
+
+/** El servidor rechaza con `code` (`weight_targets_blocked`) y `fields` lo que `no_weight_targets`
+ * no deja guardar, o con 400 y un objeto de errores por campo. */
+export class CheckinError extends Error {
+  status: number;
+  code: string;
+  fields: string[];
+  errors: Record<string, unknown>;
+  constructor(status: number, body: Record<string, unknown>) {
+    const code = typeof body.code === "string" ? body.code : "";
+    super(code || String(status));
+    this.status = status;
+    this.code = code;
+    this.fields = Array.isArray(body.fields) ? (body.fields as string[]) : [];
+    this.errors = body;
+  }
+}
+
+export function useSaveCheckin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Record<string, unknown>) => {
+      const res = await fetch("/api/proxy/coach/checkin", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new CheckinError(res.status, data ?? {});
+      return checkinResult.parse(data);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["biometrics"] });
+      invalidateCoach(qc);
+    },
   });
 }

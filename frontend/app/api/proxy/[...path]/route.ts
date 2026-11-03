@@ -7,6 +7,7 @@ import {
   setAuthCookies,
   setAccessCookie,
   clearAuthCookies,
+  setLangCookie,
 } from "@/lib/cookies";
 import {
   isPathSafe,
@@ -159,7 +160,15 @@ async function handle(req: Request, path: string[]) {
       }
     }
 
-    return buildProxyResponse(upstream);
+    const res = await buildProxyResponse(upstream);
+    // El idioma guardado en el perfil manda: se copia a la cookie `flp_lang` (spec §6.2).
+    if (res.status === 200 && path.join("/") === "me/profile") {
+      const data: unknown = await res.clone().json().catch(() => null);
+      if (data && typeof data === "object") {
+        await setLangCookie((data as { language?: unknown }).language);
+      }
+    }
+    return res;
   } catch (err) {
     // Timeout (cold start que no llega a tiempo) o fallo de red al hablar con
     // Django: sin este catch, el error se propaga como un 500 genérico. Antes

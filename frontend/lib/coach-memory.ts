@@ -45,14 +45,16 @@ export const EMPTY_DRAFT: CoachMemoryDraft = {
 const MAX_LESION = 200;
 const MAX_FASE = 120;
 const FECHA_RE = /^\d{4}-\d{2}-\d{2}$/;
-const TONOS: readonly CoachTone[] = ["directo", "motivador", "tecnico"];
-const FRECUENCIAS: readonly CoachAlertFrequency[] = ["alta", "media", "baja"];
+/** Valores válidos, en el orden de los selectores. Sus textos están en el catálogo:
+ *  `coach.memory.tones.<tono>` y `coach.memory.frequencies.<frecuencia>`. */
+export const COACH_TONES: readonly CoachTone[] = ["directo", "motivador", "tecnico"];
+export const COACH_FREQUENCIES: readonly CoachAlertFrequency[] = ["alta", "media", "baja"];
 
 function isTono(v: unknown): v is CoachTone {
-  return typeof v === "string" && (TONOS as readonly string[]).includes(v);
+  return typeof v === "string" && (COACH_TONES as readonly string[]).includes(v);
 }
 function isFrecuencia(v: unknown): v is CoachAlertFrequency {
-  return typeof v === "string" && (FRECUENCIAS as readonly string[]).includes(v);
+  return typeof v === "string" && (COACH_FREQUENCIES as readonly string[]).includes(v);
 }
 
 /** Defensivo: lo que venga de localStorage o del servidor puede estar
@@ -100,18 +102,6 @@ export function memoryFromDraft(d: CoachMemoryDraft): CoachMemory {
     frecuencia_avisos: d.frecuenciaAvisos || null,
   });
 }
-
-export const TONE_LABELS: Record<CoachTone, string> = {
-  directo: "Directo",
-  motivador: "Motivador",
-  tecnico: "Técnico",
-};
-
-export const FREQUENCY_LABELS: Record<CoachAlertFrequency, string> = {
-  alta: "Frecuentes",
-  media: "Normal",
-  baja: "Solo lo esencial",
-};
 
 /** Frecuencia de avisos: con "baja" el atleta pidió que le molestemos poco,
  *  así que las recomendaciones puramente informativas ("info") se ocultan y

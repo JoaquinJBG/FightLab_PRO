@@ -1,0 +1,2151 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "back": "Back",
+    "creditsLink": "Credits and licences"
+  },
+  "credits": {
+    "title": "Credits and licences",
+    "coach": {
+      "title": "Calculation engine and evidence base",
+      "body": "<coach>AI personal coach</coach> by matgarfer499. Code under MIT; content under <ccby>CC BY 4.0</ccby>."
+    },
+    "changes": {
+      "title": "Changes made by FightLab",
+      "body": "Spanish translation of rules and messages, structured reasons, adaptation to a web app, database storage and our own improvements to the calculations."
+    },
+    "engine": "Engine: version {sha} · Evidence checked on {date}",
+    "data": {
+      "title": "Third-party data and forms",
+      "usda": "Foods: <usda>USDA FoodData Central</usda> (public domain).",
+      "off": "Products: <off>Open Food Facts</off>, under the <odbl>ODbL</odbl> licence.",
+      "parq": "PAR-Q+: © PAR-Q+ Collaboration; Spanish version by Dr. Martín Rubio. Official form at <parq>eparmedx.com</parq>."
+    },
+    "fightlab": {
+      "title": "FightLab licence",
+      "body": "FightLab Pro, by Joaquín J Beltrán García. Code under MIT (<license>LICENSE</license>); content under CC BY 4.0 (<licenseContent>LICENSE-CONTENT.md</licenseContent>)."
+    }
+  },
+  "evidence": {
+    "title": "Evidence",
+    "close": "Close",
+    "loading": "Loading…",
+    "error": "The rule could not be loaded.",
+    "grade": {
+      "strong": "Strong evidence",
+      "moderate": "Moderate evidence",
+      "emerging": "Emerging evidence",
+      "none": "Evidence"
+    },
+    "convention": "FightLab convention, not reviewed",
+    "label": {
+      "machine": "Machine translation, not reviewed",
+      "untranslated": "Not translated (original text)"
+    },
+    "appliesTo": "Who it applies to",
+    "unclear": "Where it is unclear",
+    "sources": "Sources",
+    "link": "Link"
+  },
+  "safety": {
+    "title": "Safety",
+    "disclaimer": "This is general guidance from an automated coach, not medical advice.",
+    "deferralLine": "This is general guidance from an automated coach, not medical advice. Because of what you told me, talk to your doctor (or the professional named above) before acting on it.",
+    "professional": "Professional: {name}",
+    "emergency": "Emergency: {number}",
+    "severity": {
+      "stop": "Stop",
+      "refer": "Refer",
+      "limit": "Limit"
+    },
+    "parqPending": "Your PAR-Q+ is missing: until you answer it, light-to-moderate work only.",
+    "parqComplete": "Complete the PAR-Q+",
+    "redo": "Redo the screening",
+    "loading": "Working out your safety notices…",
+    "error": "Your safety notices could not be loaded.",
+    "none": "No safety notices from what you told us."
+  },
+  "onboarding": {
+    "step": "Step {n} of {total}",
+    "back": "← Back",
+    "continue": "Continue",
+    "skip": "Skip",
+    "saving": "Saving…",
+    "saveError": "Could not save. Check your connection and try again.",
+    "yes": "Yes",
+    "no": "No",
+    "welcome": {
+      "title": "Welcome to <neon>FightLab</neon>",
+      "subtitle": "Your corner, in and out of the gym.",
+      "f1Title": "Know how to show up to train",
+      "f1Body": " — your daily status from your own recovery metrics.",
+      "f2Title": "Real combat training",
+      "f2Body": " — MMA, gym and sports with training load and a round timer.",
+      "f3Title": "Nutrition and weight under control",
+      "f3Body": " — macros that fit you and the weigh-in always in sight.",
+      "start": "Set up your profile",
+      "resume": "Pick up where you left off"
+    },
+    "language": {
+      "title": "Language and <neon>region</neon>",
+      "titleRegion": "Your <neon>region</neon>",
+      "intro": "The app, the coach and the safety notices will speak to you in this language.",
+      "languageLabel": "Language",
+      "where": "Where do you live?",
+      "spain": "Spain",
+      "other": "Another country",
+      "otherNote": "There is no region for your country yet: menus use the general food table and Open Food Facts products.",
+      "emergencyLabel": "Which number do you call in an emergency where you live?",
+      "emergencyHint": "112 across the EU, 911 in the US, Canada and Mexico, 999 in the UK, 000 in Australia. If you're not sure, keep 112 and check it.",
+      "emergencyInvalid": "Enter a number of 2 to 6 digits.",
+      "spainEmergency": "Emergency number in Spain: 112."
+    },
+    "scoff": {
+      "title": "You and <neon>food</neon>",
+      "intro": "Before we talk about weight, five short questions. It is not a diagnosis: it tells us whether to avoid deficits and weigh-ins.",
+      "question": "Does any of this happen to you?",
+      "items": {
+        "sick": "Making yourself sick when uncomfortably full",
+        "control": "Worry about losing control over how much you eat",
+        "fat": "Feeling fat when others say you are thin",
+        "dominate": "Food or weight dominating your thoughts or life",
+        "weightLoss": "A recent large weight loss that worried you or others"
+      },
+      "partial": "Sometimes",
+      "followUp": "Does it happen often, or does it bother you a fair amount?",
+      "followUpControl": "Do you have episodes of eating a lot while feeling unable to stop?",
+      "incomplete": "Answer all five questions to continue.",
+      "single": "Noted. A single yes isn't a positive screen; we'll take it into account.",
+      "clear": "Noted. Thanks for answering.",
+      "positive": "From your answers, FightLab will not suggest deficits, weight targets or weigh-ins.",
+      "redoNote": "If things change or a professional reviews you, you can redo it from your profile."
+    },
+    "basics": {
+      "title": "The basics <neon>about you</neon>",
+      "intro": "We use this for your zones, your energy needs and your targets. Only you can see it.",
+      "dob": "Date of birth",
+      "dobHint": "Your age sets your heart-rate zones.",
+      "height": "Height (cm)",
+      "heightHint": "With your weight, it sets your calories and macros.",
+      "heightInvalid": "Enter a valid height in cm (100–230).",
+      "gender": "Sex",
+      "optional": "(optional)",
+      "genderHint": "It refines your resting metabolic rate.",
+      "genders": {
+        "MALE": "Male",
+        "FEMALE": "Female",
+        "OTHER": "Other"
+      },
+      "equationSex": "The energy equations exist only for female and male. Which one should we use?",
+      "equationSexHint": "If you don't choose, there are no calorie or macro targets. Zones, plan and check-in work the same, and you can choose later in your profile.",
+      "equationSexes": {
+        "female": "Female",
+        "male": "Male",
+        "none": "Not now"
+      },
+      "weightTitle": "Your <neon>weight</neon>",
+      "weight": "Weight (kg)",
+      "weightHint": "It is the starting point for your targets. You can skip it.",
+      "weightGentle": "Are you happy to share an approximate weight for the estimates? It's optional, and you don't need to weigh yourself.",
+      "weightInvalid": "Enter a valid weight in kg (30–250).",
+      "under18": "For under-18s, FightLab gives no calorie targets and no weigh-ins.",
+      "dobLabels": {
+        "day": "Day",
+        "month": "Month",
+        "year": "Year",
+        "dd": "DD",
+        "mm": "MM",
+        "yyyy": "YYYY"
+      },
+      "dobErrors": {
+        "incomplete": "Complete the date (day, month and 4-digit year).",
+        "invalid": "That date doesn't exist. Check the day and month.",
+        "year": "Check the year.",
+        "future": "Your date of birth can't be in the future."
+      },
+      "heightPlaceholder": "Your current height",
+      "weightPlaceholder": "Your current weight"
+    },
+    "parq": {
+      "title": "PAR-Q+, <neon>ready for exercise</neon>",
+      "intro": "The PAR-Q+ is the official questionnaire that tells you whether to check with a professional before becoming more physically active.",
+      "open": "Open the official PAR-Q+",
+      "openNote": "It opens on eparmedx.com in a new tab. We don't copy it into the app: the official form must not be modified. Fill it in and come back here.",
+      "anyYes": "Any YES on the 7 general questions?",
+      "followupYes": "Any YES on the follow-up questions?",
+      "unsure": "I don't know or haven't filled it in",
+      "unsureNote": "Without the PAR-Q+, light-to-moderate work only. We will remind you.",
+      "vigorous": "Has a qualified exercise professional or clinician reviewed vigorous or maximal work for you (HIIT, 1RM tests, all-out sprints)?",
+      "incomplete": "Answer the question to continue."
+    },
+    "cardiac": {
+      "title": "Warning <neon>signs</neon>",
+      "question": "Do you have any of these symptoms?",
+      "symptoms": [
+        "Chest, neck, jaw or arm pain or pressure",
+        "Breathlessness at rest or with mild effort",
+        "Dizziness or fainting",
+        "Palpitations",
+        "Ankle swelling",
+        "Calf pain on walking"
+      ],
+      "none": "None",
+      "some": "Yes, some",
+      "unsure": "I'm not sure",
+      "unsureAgain": "Look at the list once more: have you noticed any of these symptoms lately?",
+      "stillUnsure": "Still not sure",
+      "unsureStored": "OK. If any of them appears, stop training and see a doctor.",
+      "now": "Is it happening now or at rest?",
+      "stopTitle": "Stop here and seek medical care",
+      "stopBody": "Do not exercise. For chest pain at rest, fainting, or chest pain with breathlessness and sweating, call emergency services now.",
+      "call": "Call {number}",
+      "exit": "Exit",
+      "incomplete": "Answer the question to continue."
+    },
+    "medical": {
+      "title": "Medication and <neon>health</neon>",
+      "intro": "Only some of these change what the coach works out. Tick the ones you have.",
+      "medications": "Medication",
+      "conditions": "Diagnoses",
+      "tokens": {
+        "beta_blocker": "Beta-blocker (bisoprolol, atenolol, metoprolol, propranolol, nebivolol, carvedilol)",
+        "glp1": "GLP-1 or tirzepatide (Ozempic, Wegovy, Rybelsus, Saxenda, Victoza, Trulicity, Mounjaro)",
+        "hypertension": "Hypertension (high blood pressure or BP medication)",
+        "heart_disease": "Diagnosed heart condition",
+        "weight_related_condition": "A condition your doctor links to weight (type 2 diabetes, sleep apnoea, fatty liver…)",
+        "pregnant": "I am pregnant",
+        "planning_pregnancy": "I am trying to conceive"
+      },
+      "pregnancy": "Pregnancy",
+      "otherMedications": "Other medication",
+      "otherConditions": "Other diagnoses",
+      "otherHint": "Comma-separated. The coach can't classify them: they are stored as given.",
+      "knowBp": "I know my blood pressure"
+    },
+    "bp": {
+      "title": "Your <neon>blood pressure</neon>",
+      "intro": "Your latest seated reading, after 5 minutes of rest.",
+      "systolic": "Systolic (top number)",
+      "diastolic": "Diastolic (bottom number)",
+      "unknown": "If you don't know it, leave it empty and take one before your next check-in.",
+      "invalid": "Enter both numbers in mmHg."
+    },
+    "cycle": {
+      "title": "Your <neon>cycle</neon>",
+      "question": "How are your periods?",
+      "states": {
+        "normal": "Regular",
+        "irregular_new": "Newly irregular",
+        "absent": "Absent 3 months or more (or fewer than 6 a year)",
+        "not_applicable": "Not applicable"
+      },
+      "contraception": "Do you use hormonal contraception?",
+      "contraceptionNote": "It masks your cycle: mention low energy, low libido or stress fractures at your check-in.",
+      "incomplete": "Choose an option to continue."
+    },
+    "goals": {
+      "title": "Your <neon>goal</neon> and training",
+      "goal": "What are you after right now?",
+      "goals": {
+        "fat_loss": "Lose fat",
+        "maintenance": "Maintain",
+        "muscle_gain": "Build muscle",
+        "recomposition": "Recomposition"
+      },
+      "recompositionHint": "Recomposition: eat around maintenance while you train. For beginners, returning lifters and higher body fat.",
+      "experience": "Your experience",
+      "experiences": {
+        "novice": "Under 12 months of consistent training (about 2 or more sessions a week)",
+        "intermediate": "12 months or more, and still adding load or reps most months",
+        "advanced": "12 months or more, and progress has slowed to a plateau"
+      },
+      "activity": "Your day-to-day",
+      "activities": {
+        "desk": "Desk job with little exercise, or a few sessions a week",
+        "desk_training": "Desk job and about 1 h of training on 4 or more days a week",
+        "active": "Physical job, or daily moderate-to-vigorous exercise plus lots of daily movement"
+      },
+      "disciplines": "What do you train?",
+      "disciplinesHint": "(pick any)",
+      "frequency": "How many days a week do you train?",
+      "days": "{n} days",
+      "daysPlus": "{n}+ days",
+      "stance": "Stance",
+      "stances": {
+        "ORTHODOX": "Orthodox",
+        "SOUTHPAW": "Southpaw",
+        "SWITCH": "Switch"
+      },
+      "injuries": "Any current injury or pain?",
+      "injuryArea": "Area (for example, right shoulder)",
+      "injurySince": "Since",
+      "injuryProfessional": "Who assessed it (if anyone)",
+      "injuryExercises": "Exercises it affects (comma-separated)",
+      "injuryAdd": "Add injury",
+      "injuryRemove": "Remove",
+      "injuryAreaMissing": "Enter the injured area.",
+      "disciplineNames": {
+        "Boxeo": "Boxing",
+        "Kickboxing": "Kickboxing",
+        "Muay Thai": "Muay Thai",
+        "BJJ": "BJJ",
+        "Lucha": "Wrestling",
+        "Taekwondo": "Taekwondo",
+        "Karate": "Karate",
+        "MMA": "MMA"
+      }
+    },
+    "done": {
+      "title": "Your starting <neon>point</neon>",
+      "intro": "This is what FightLab will keep in mind from what you told us.",
+      "start": "Start",
+      "firstActionIntro": "Your profile is saved. The first step to make the app yours: log your first session.",
+      "firstAction": "Log my first session",
+      "goHome": "Go to Home"
+    }
+  },
+  "nutrition": {
+    "title": "Nutrition",
+    "today": "Today",
+    "ofTarget": "/ {target} kcal",
+    "kcalUnit": "kcal",
+    "remaining": "left",
+    "protein": "Protein",
+    "carbs": "Carbs",
+    "fat": "Fat",
+    "gramsOf": "{value}/{target} g",
+    "gramsOnly": "{value} g",
+    "fibreLine": "Fibre: at least {grams} g a day",
+    "goal": {
+      "perder": "Lose",
+      "mantener": "Maintain",
+      "ganar": "Gain"
+    },
+    "goalNote": "Targets calculated by the coach engine from your profile: weight, height, age, the sex used for the equations and activity level.",
+    "meals": {
+      "Desayuno": "Breakfast",
+      "Comida": "Lunch",
+      "Cena": "Dinner",
+      "Snack": "Snack"
+    },
+    "addTo": "Add to {meal}",
+    "delete": "Delete {name}",
+    "confirmDelete": "Delete?",
+    "water": {
+      "title": "Water 💧",
+      "line": "{liters} L · goal ~2 L",
+      "remove": "Remove a glass",
+      "add": "Add a glass"
+    },
+    "staleWeight": "Your last weight is {days} days old. Update it to refine your targets.",
+    "staleWeightCta": "Log weight",
+    "weigh": {
+      "title": "Weigh-in",
+      "setup": "Set your goal weight and date",
+      "goalLine": "Goal {target} kg · {current} kg now",
+      "goalOnly": "Goal {target} kg",
+      "countdown": "{days, plural, =0 {Weigh-in today} one {Weigh-in in # day} other {Weigh-in in # days}}"
+    },
+    "targets": {
+      "loading": "Calculating your targets…",
+      "error": "Your targets could not be calculated. Try again later.",
+      "missingProfile": "Some of your profile data is missing to calculate your targets.",
+      "missingProfileCta": "Complete your profile",
+      "weightFor": "your calorie and macro targets",
+      "fullMeasurement": "Or log a full measurement"
+    },
+    "noSex": {
+      "title": "No calorie targets for now",
+      "body": "Energy-expenditure equations only exist for two sexes, female and male. Until you choose which ones to use we can't give you calorie or macro targets; the rest of the app works the same and you can choose whenever you like.",
+      "female": "Female equations",
+      "male": "Male equations",
+      "error": "Could not save. Try again."
+    },
+    "details": {
+      "title": "How they are calculated",
+      "maintenance": "Estimated maintenance: {kcal} kcal",
+      "deficit": "Deficit of {kcal} kcal below maintenance",
+      "surplus": "Surplus of {kcal} kcal above maintenance",
+      "atMaintenance": "Target at maintenance",
+      "equation": "Resting energy equation: {name}",
+      "equations": {
+        "mifflin_st_jeor": "Mifflin-St Jeor",
+        "cunningham": "Cunningham (fat-free mass)",
+        "ten_haaf": "ten Haaf (athletes)"
+      },
+      "ffm": "{kg} kg of fat-free mass",
+      "pal": "Activity level (PAL): {pal}",
+      "protein": "Protein: {perKg} g per kg of body weight",
+      "fatMin": "Minimum fat: {g} g",
+      "rules": "Rules they rest on",
+      "engine": "Coach engine {sha}",
+      "checked": "evidence checked on {date}",
+      "maintenanceReview": "Maintenance measured from your trend in the weekly review of {date}: {kcal} kcal",
+      "heldTarget": "target agreed in that review"
+    },
+    "weighIn": {
+      "back": "← Nutrition",
+      "title": "Weigh-in",
+      "loading": "Loading…",
+      "loadError": "Your weigh-in could not be loaded.",
+      "blocked": {
+        "title": "No weigh-in for now",
+        "body": "With the safety notices you have, FightLab shows no weigh-in, countdown or weight class. It is there to look after you: what matters now is what your professional tells you."
+      },
+      "daysLeft": "days to weigh-in",
+      "current": "current (kg)",
+      "goal": "goal (kg)",
+      "toGo": "to lose",
+      "needWeight": "Log your weight in Biometrics to see your progress.",
+      "deficitNote": "With your safety notices we don't show the distance to your goal weight and a goal below your current weight cannot be set.",
+      "updateTitle": "Update weigh-in",
+      "configureTitle": "Set up weigh-in",
+      "goalWeight": "Goal weight",
+      "lessGoal": "Lower the goal weight by 0.5 kg",
+      "moreGoal": "Raise the goal weight by 0.5 kg",
+      "kg": "{kg} kg",
+      "daysUntil": "Days to weigh-in",
+      "days": "{days} d",
+      "lessDays": "One day less",
+      "moreDays": "One day more",
+      "save": "Save weigh-in",
+      "update": "Update",
+      "clear": "Remove weigh-in",
+      "errors": {
+        "deficit_blocked": "With your safety notices a goal weight below your current weight cannot be set.",
+        "weight_targets_blocked": "With your safety notices no weigh-in data is saved.",
+        "generic": "The weigh-in could not be saved. Try again."
+      },
+      "footer": "Basic weight cut (goal + countdown). No aggressive fluid protocols."
+    },
+    "add": {
+      "back": "← Nutrition",
+      "title": "Add to <neon>{meal}</neon>",
+      "addTo": "Add to {meal}",
+      "macros": "{kcal} kcal · P {p} · C {c} · F {f}",
+      "copyYesterday": "Copy yesterday's {meal}",
+      "photo": {
+        "title": "Photo → kcal",
+        "intro": "The AI detects the foods on the plate. Review and adjust before adding.",
+        "take": "📷 Take photo",
+        "analyzing": "Analysing the photo…",
+        "removeGrams": "Remove 10 g of {name}",
+        "addGrams": "Add 10 g of {name}",
+        "remove": "Remove",
+        "addAll": "Add all · {kcal} kcal",
+        "empty": "You removed every food. Take another photo.",
+        "noFood": "I didn't recognise any food in the photo. Try another shot.",
+        "failed": "The photo could not be analysed. Check your connection and try again.",
+        "detected": "Detected dish",
+        "detectedByAi": "Detected by AI",
+        "errors": {
+          "unavailable": "The AI isn't available right now. Add the food manually in the meantime.",
+          "quota": "You've reached today's limit for AI photos. Add the food manually in the meantime.",
+          "failed": "The AI couldn't analyse the photo. Add the food manually in the meantime."
+        }
+      },
+      "modes": {
+        "recientes": "Recent",
+        "buscar": "Search",
+        "rapido": "Quick"
+      },
+      "recent": {
+        "empty": "No recent foods yet. Once you add foods they will show up here so you can repeat them in one tap.",
+        "done": "Done"
+      },
+      "search": {
+        "placeholder": "Chicken, rice, oats…",
+        "perHundred": "{kcal} kcal/100g",
+        "none": "No results. Try another search, Quick mode or the photo.",
+        "amount": "Amount",
+        "less": "Remove 10 g",
+        "more": "Add 10 g",
+        "back": "Back"
+      },
+      "quick": {
+        "intro": "Know the kcal but don't want to search? Enter them directly.",
+        "name": "Name (optional)",
+        "kcal": "Kcal *",
+        "p": "P (g)",
+        "c": "C (g)",
+        "f": "F (g)",
+        "defaultName": "Quick food"
+      }
+    },
+    "noTargetsNote": "Without your details we don't calculate targets, but everything you log still counts."
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening",
+      "hello": "Hello"
+    },
+    "athlete": "athlete",
+    "profileAria": "Profile",
+    "state": {
+      "eyebrowRecovery": "Today's status · based on your recovery",
+      "eyebrow": "Today's status",
+      "noTraining": "No training until a medical review",
+      "noTrainingBody": "From what you have told us, today is not a training day. You can keep logging what you do: nothing is deleted.",
+      "activate": "Turn on your readiness",
+      "activateBody": "Log your resting HR and HRV for a few days and every morning I will tell you how to show up to train.",
+      "addMeasures": "Add measurements"
+    },
+    "recovery": {
+      "cuidado": {
+        "label": "Take it easy",
+        "phrase": "Your recovery signals are below your average. Today: light technique or active rest."
+      },
+      "listo": {
+        "label": "Ready to train",
+        "phrase": "Recovery above your average. A good day for demanding work."
+      },
+      "normal": {
+        "label": "Normal day",
+        "phrase": "Signals around your average. Train according to your plan."
+      },
+      "chipRhr": "Resting HR {value} vs your average",
+      "chipHrv": "HRV {value}% vs your average"
+    },
+    "today": {
+      "done": "Today's training done ✓",
+      "sessions": "{count, plural, one {# session logged} other {# sessions logged}} · good work",
+      "focus": "Today: <neon>{focus}</neon>",
+      "fromCalendar": "From your gym calendar",
+      "restDay": "Today: scheduled rest",
+      "restBody": "Gentle mobility and recovery",
+      "nothing": "Nothing planned for today",
+      "nothingBody": "Log a workout or plan your week",
+      "logOnly": "You can keep logging your workouts",
+      "logOnlyBody": "No plan or load suggestions until a doctor reviews it"
+    },
+    "weightReminder": {
+      "title": "Want to log your weight?",
+      "body": "It's been {days} days since your last weight · we remind you every 2 weeks."
+    },
+    "weight": {
+      "label": "Weight · {when}",
+      "today": "today",
+      "yesterday": "yesterday",
+      "daysAgo": "{days} days ago",
+      "kg": "kg",
+      "toGoal": "<neon>{kg} kg</neon> from your goal ({target} kg)",
+      "reached": "Weight goal reached ✓ ({target} kg)",
+      "history": "See history and trend →",
+      "emptyTitle": "No measurements yet",
+      "emptyBody": "Log your first measurement to start seeing your progress.",
+      "emptyCta": "Log measurement"
+    },
+    "metrics": {
+      "rhr": "Resting HR",
+      "bpm": "bpm",
+      "hrv": "HRV",
+      "ms": "ms",
+      "fat": "% Fat",
+      "vsAvg": "{delta} vs your average",
+      "activateTitle": "Turn on your recovery metrics",
+      "activateBody": "Add resting HR and HRV to see your daily status and trends."
+    },
+    "week": {
+      "title": "Your week",
+      "sub": "measurement or training",
+      "mon": "M",
+      "tue": "T",
+      "wed": "W",
+      "thu": "T",
+      "fri": "F",
+      "sat": "S",
+      "sun": "S"
+    },
+    "load": {
+      "title": "Training load (ACWR)",
+      "soon": "It will turn on once you log sessions with RPE",
+      "week": "Week",
+      "au": "AU",
+      "acwr": "ACWR",
+      "provisional": "*Provisional ACWR until 4 weeks of history build up"
+    },
+    "cta": {
+      "update": "Update biometrics",
+      "register": "Log biometrics"
+    },
+    "zones": {
+      "title": "Your effort zones",
+      "names": {
+        "light": "Light",
+        "moderate": "Moderate",
+        "vigorous": "Vigorous"
+      },
+      "bpm": "{low}–{high} bpm",
+      "rpe": "RPE {low}-{high}",
+      "talk": {
+        "light": "you can talk and sing",
+        "moderate": "you can talk, but not sing",
+        "vigorous": "only a few words without pausing for breath"
+      },
+      "hrMaxEstimated": "Estimated max HR: {bpm} bpm",
+      "hrMaxMeasured": "Measured max HR: {bpm} bpm",
+      "hrRest": "Resting HR: {bpm} bpm"
+    }
+  },
+  "meta": {
+    "description": "High-performance platform for combat athletes: training load, nutrition and AI coach.",
+    "manifestDescription": "Training load, nutrition and AI coach for combat athletes."
+  },
+  "nav": {
+    "home": "Home",
+    "training": "Training",
+    "nutrition": "Nutrition",
+    "coach": "Coach",
+    "profile": "Profile",
+    "comingSoon": "Coming soon"
+  },
+  "auth": {
+    "common": {
+      "email": "Email",
+      "emailPlaceholder": "you@email.com",
+      "password": "Password",
+      "emailInvalid": "Invalid email",
+      "passwordMin": "At least 8 characters",
+      "networkError": "Couldn't connect. Check your connection and try again.",
+      "tooManyAttempts": "Too many attempts. Try again in a little while."
+    },
+    "login": {
+      "tagline": "Combat performance, measured and trained.",
+      "badCredentials": "Wrong credentials or unverified account",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "noAccount": "Don't have an account?",
+      "createAccount": "Create account",
+      "sessionExpired": "Your session has expired. Sign in again to carry on.",
+      "forgotPassword": "Forgotten your password?"
+    },
+    "register": {
+      "title": "Create <neon>account</neon>",
+      "checkLength": "At least 8 characters",
+      "checkNotNumeric": "Not only numbers",
+      "checkNotEmail": "Different from your email",
+      "checkRequirements": "Check the password requirements.",
+      "failed": "Could not create your account",
+      "checkEmailTitle": "Check your email",
+      "checkEmailBody": "We sent a verification link to <strong>{email}</strong>. Check your inbox (and your spam folder). The link expires in 24 hours.",
+      "goToLogin": "Go to sign in",
+      "passwordPlaceholder": "at least 8 characters",
+      "show": "Show",
+      "hide": "Hide",
+      "submit": "Create account",
+      "submitting": "Creating…",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "verifyEmail": {
+      "title": "Verification",
+      "loading": "Loading…",
+      "verifying": "Verifying…",
+      "verified": "Email verified! ✅",
+      "signIn": "Sign in",
+      "invalidLink": "Invalid or expired link",
+      "backToRegister": "Back to sign up",
+      "resendLabel": "Resend the verification email",
+      "resend": "Resend email",
+      "resending": "Sending…",
+      "resendSent": "If the account exists and isn't verified yet, we've sent you the link again."
+    },
+    "forgotPassword": {
+      "title": "Reset your <neon>password</neon>",
+      "intro": "Enter your account email and we'll send you a link to choose a new password.",
+      "emailRequired": "Enter your email.",
+      "submit": "Send link",
+      "sending": "Sending…",
+      "sentTitle": "Check your email",
+      "sentBody": "If there's an account for <strong>{email}</strong>, we've sent you a link to choose a new password. Check your spam folder too.",
+      "backToLogin": "Back to sign in"
+    },
+    "resetPassword": {
+      "titleCreate": "Create your <neon>password</neon>",
+      "titleReset": "Choose a <neon>new password</neon>",
+      "loading": "Loading…",
+      "newPassword": "New password",
+      "confirm": "Repeat the password",
+      "invalidLinkError": "The link isn't valid. Ask for a new one.",
+      "tooShort": "The password must be at least 8 characters long.",
+      "mismatch": "The passwords don't match.",
+      "expired": "The link isn't valid or has expired.",
+      "saving": "Saving…",
+      "submitCreate": "Create password",
+      "submitReset": "Save password",
+      "doneTitle": "Password updated ✅",
+      "doneBody": "You can now sign in with your new password.",
+      "signIn": "Sign in",
+      "invalidLinkTitle": "Invalid link",
+      "invalidLinkBody": "Request a password reset again and use the link in your email.",
+      "requestNew": "Request a new link"
+    }
+  },
+  "biometrics": {
+    "back": "← Home",
+    "title": "Biometrics",
+    "addMeasurement": "+ Measurement",
+    "confirmDelete": "Delete?",
+    "ranges": {
+      "all": "All"
+    },
+    "empty": {
+      "titleRange": "No weight data in this range",
+      "titleNone": "No weight data yet",
+      "bodyRange": "Try a wider range or log a measurement.",
+      "bodyNone": "Log your first measurement and your trend will show up here.",
+      "cta": "Log measurement"
+    },
+    "trend": {
+      "title": "Weight trend",
+      "infoAria": "What is the trend",
+      "info": "The trend is a smoothed average of your logged weights: it ignores daily water and glycogen swings and shows where your weight is really heading. Trust the line, not the dot from today.",
+      "rate": "{n} kg/week",
+      "toGoal": "Trend is <hl>{n} kg</hl> from your goal ({goal} kg)",
+      "atGoal": "Trend is at your goal ✓ ({goal} kg)"
+    },
+    "bmi": {
+      "label": "BMI <hl>{n}</hl>",
+      "infoAria": "What is BMI",
+      "info": "BMI = weight / height². General reference: 18.5–24.9 is considered \"normal\". Note: in athletes with muscle mass it overestimates body fat — use it only as a guide."
+    },
+    "chart": {
+      "aria": "Weight and trend chart",
+      "range": "{max}–{min} kg",
+      "needDistinctDays": "Log measurements on different days to see the chart.",
+      "needMore": "Your chart will appear after a couple more measurements.",
+      "legend": "Dots = logged weights · line = trend"
+    },
+    "history": {
+      "title": "History",
+      "rhr": "{n} bpm",
+      "hrv": "HRV {n}",
+      "fat": "{n}% fat",
+      "waist": "waist {n} cm",
+      "weight": "{n} kg",
+      "recovery": "Recovery",
+      "unknownDate": "Unknown date",
+      "deleteAria": "Delete entry"
+    },
+    "photos": {
+      "title": "Progress photos",
+      "add": "+ Photo",
+      "uploading": "Uploading…",
+      "empty": "Take a photo every now and then (same light, same pose) and you'll see progress the scale doesn't show. Later on, AI will also be able to analyse them.",
+      "alt": "Progress photo {date}",
+      "deleteAria": "Delete photo",
+      "tooLarge": "The photo is too large to upload without compressing it. Try another photo or a different browser."
+    },
+    "new": {
+      "title": "New <hl>measurement</hl>",
+      "subtitle": "Weight is enough. The rest is optional.",
+      "typical": "Typical measurement",
+      "weight": "Weight",
+      "advancedToggle": "Advanced measurements · optional",
+      "girthsToggle": "Tape measurements · optional",
+      "girthsHint": "Waist is the most useful one for tracking progress the scale doesn't show.",
+      "whatIs": "What is {name}",
+      "errorEmpty": "Enter at least one measurement.",
+      "save": "Save",
+      "saving": "Saving…",
+      "advanced": {
+        "body_fat_pct": {
+          "label": "Body fat %",
+          "info": "The percentage of your weight that is fat. If you don't know it, leave it blank. It is measured with bioimpedance scales or skinfold calipers."
+        },
+        "resting_heart_rate": {
+          "label": "Resting HR",
+          "info": "Beats per minute at complete rest, ideally on waking and lying down. The lower it is, the better your cardiovascular fitness usually is."
+        },
+        "hrv_ms": {
+          "label": "HRV",
+          "info": "Heart rate variability: how much the time between heartbeats varies. Higher = better recovery and less stress. Measured by watches and bands (Garmin, Whoop, Oura)."
+        }
+      },
+      "girths": {
+        "waist_cm": "Waist",
+        "hip_cm": "Hips",
+        "chest_cm": "Chest",
+        "arm_cm": "Arm",
+        "thigh_cm": "Thigh",
+        "neck_cm": "Neck"
+      },
+      "back": "← Biometrics"
+    }
+  },
+  "training": {
+    "activities": {
+      "sports": {
+        "run": "Running",
+        "walk": "Walking",
+        "bike": "Cycling",
+        "swim": "Swimming",
+        "football": "Football",
+        "rope": "Skipping",
+        "hike": "Hiking",
+        "elliptical": "Elliptical"
+      }
+    },
+    "sports": {
+      "back": "← Training",
+      "title": "Sports",
+      "subtitle": "Pick your activity, time it and track kcal.",
+      "weightNote": "Kcal estimated from your weight.",
+      "rpeInfo": "RPE = Rating of Perceived Exertion (1-10 scale): how hard it felt. 1 = very easy, 10 = maximum effort (you couldn't do more).",
+      "rpeWhat": "What is RPE",
+      "kcalPer30": "~{kcal} kcal / 30 min",
+      "tabs": {
+        "sport": "Sport",
+        "activity": "Activity"
+      },
+      "intensity": {
+        "light": "Light",
+        "moderate": "Moderate",
+        "intense": "Vigorous"
+      },
+      "effort": {
+        "light": "RPE 3-4 · you can talk",
+        "moderate": "RPE 5-7 · breathing hard",
+        "intense": "RPE 8-10 · close to your limit"
+      },
+      "date": {
+        "today": "Today · {time}",
+        "dateTime": "{date} · {time}"
+      },
+      "resume": {
+        "title": "Unfinished session",
+        "discardAria": "Discard session"
+      },
+      "live": {
+        "backToList": "← Sports",
+        "inProgress": "Session in progress",
+        "start": "Start",
+        "cancel": "Cancel",
+        "pause": "Pause",
+        "resume": "Resume",
+        "holdToStop": "Hold to stop",
+        "wakeNote": "The screen won't turn off during the session. If you close the app, you can pick it back up."
+      },
+      "summary": {
+        "title": "How did it go?",
+        "time": "time",
+        "kcal": "kcal",
+        "rpeLabel": "Perceived exertion (RPE)",
+        "load": "Session load: <b>{n} AU</b> (min × RPE)",
+        "discard": "Discard",
+        "save": "Save",
+        "saveNoRpe": "You can save without RPE, but with it we calculate your load."
+      },
+      "activity": {
+        "title": "Your activity",
+        "delete": "Delete",
+        "empty": "You haven't logged any activity yet. Time a sport and it will show up here.",
+        "rpe": "RPE {n}",
+        "au": "{n} AU",
+        "deleteConfirm": "Delete everything?",
+        "untitled": "Sport"
+      },
+      "weightNoteMissing": "Enter your weight to estimate kcal.",
+      "weightNoteNone": "Kcal aren't estimated without a logged weight.",
+      "weightPrompt": {
+        "session": "the kcal for this session",
+        "list": "the kcal for each sport"
+      }
+    },
+    "mma": {
+      "back": "← Training",
+      "rpeInfo": "RPE = Rating of Perceived Exertion (1-10 scale): how hard the session feels. 1 = very easy, 10 = maximum effort (you can't do more).",
+      "rpeWhat": "What is RPE",
+      "rpe": "RPE {n}",
+      "au": "AU",
+      "martialArt": "Martial art",
+      "workType": "Type of work",
+      "arts": {
+        "boxing": "Boxing",
+        "kickboxing": "Kickboxing",
+        "muayThai": "Muay Thai",
+        "bjj": "BJJ",
+        "wrestling": "Wrestling",
+        "taekwondo": "Taekwondo",
+        "karate": "Karate",
+        "mma": "MMA"
+      },
+      "workTypes": {
+        "sparring": "Sparring",
+        "drilling": "Drilling",
+        "pads": "Pads",
+        "bag": "Bag work",
+        "technique": "Technique",
+        "conditioning": "Conditioning"
+      },
+      "hints": {
+        "sparring": "Live rounds. High RPE — control the intensity with your partner.",
+        "drilling": "Technique repetition with a partner, at low intensity. Quality over fatigue.",
+        "pads": "Pad work: combinations at a medium-high pace, with feedback from your trainer.",
+        "bag": "Bag work: power, volume or cardio depending on the day.",
+        "technique": "Shadowboxing and form without opposition. Low RPE — precision.",
+        "conditioning": "HIIT/combat-specific strength. High RPE."
+      },
+      "plan": {
+        "title": "Suggested plan",
+        "note": "For now it's based only on the martial art and the type of work. Coming soon: <ai>AI-personalised</ai> from your history and your load.",
+        "sparring": "{art} · sparring {minutes}': split it into rounds (e.g. {rounds}×3' with 1' rest), start at 60% and build up. Finish with 5' easy.",
+        "drilling": "{art} · drilling {minutes}': pick 1-2 {kind, select, grappling {positions or transitions} other {combinations}} and repeat them cleanly in rounds, switching with your partner.",
+        "pads": "{art} · pads {minutes}': rounds of pad work with called combinations; technique first, pace after.",
+        "bag": "{art} · bag work {minutes}': alternate technique rounds (precision) with power or pace rounds. Use the round timer in Tools.",
+        "technique": "{art} · technique {minutes}': shadowboxing in front of a mirror, working on your guard, footwork and 2-3 specific movements. No rush.",
+        "conditioning": "{art} · conditioning {minutes}': specific intervals (skipping, burpees, clinch, sprawls). Keep your form even when fatigue hits."
+      },
+      "reply": {
+        "ack": "Got it.",
+        "stretch": "Finish with 5-8 min of gentle stretching (hips, hamstrings, shoulders, neck), 20-30 s each, no bouncing.",
+        "warmup": "Warm up for 8-10 min: mobility, skipping or an easy jog, and progressive sets of today's technique. Don't go into sparring cold.",
+        "hydration": "Sip water throughout the session; at high intensity add electrolytes. Arrive already hydrated."
+      },
+      "date": {
+        "today": "Today · {time}",
+        "dateTime": "{date} · {time}"
+      },
+      "log": {
+        "title": "Log session",
+        "duration": "Duration",
+        "minUnit": "min",
+        "partnerPlaceholder": "Partner (optional)",
+        "notesPlaceholder": "Notes: techniques worked, how it felt, hits taken… (optional)",
+        "estimatedLoad": "Estimated load",
+        "loadFormula": "(min × RPE)",
+        "save": "Save session",
+        "saved": "Saved ✓",
+        "repeatLast": "↻ Repeat last"
+      },
+      "month": {
+        "title": "This month",
+        "sessions": "sessions",
+        "time": "time",
+        "hours": "{n} h",
+        "minShort": "{n}'"
+      },
+      "history": {
+        "title": "Your MMA sessions",
+        "delete": "Delete",
+        "session": "Session",
+        "withPartner": "with {partner}",
+        "deleteConfirm": "Delete everything?"
+      },
+      "chat": {
+        "open": "Open coach chat",
+        "title": "AI coach",
+        "simulated": "simulated",
+        "close": "Close ✕",
+        "greeting": "Ready to train! Tell me what you want to do (or use the mic) and I'll prepare your session.",
+        "typing": "The coach is typing…",
+        "quick": {
+          "today": "What should I do today?",
+          "thirtyMin": "I have 30 min",
+          "stretch": "Remind me to stretch"
+        },
+        "speak": "Speak",
+        "listening": "Listening…",
+        "placeholder": "Type or tap the mic…",
+        "send": "Send"
+      }
+    },
+    "index": {
+      "title": "Training",
+      "week": "Week",
+      "au": "AU",
+      "acwr": "ACWR",
+      "cards": {
+        "sports": {
+          "title": "Sports",
+          "sub": "Run, swim, cycle… and track kcal"
+        },
+        "mma": {
+          "title": "MMA training",
+          "sub": "Sparring, technique and intensity"
+        },
+        "gym": {
+          "title": "Gym",
+          "sub": "In-session logging and weekly calendar"
+        },
+        "myRoutine": {
+          "title": "My routine",
+          "sub": "Your active plan for the week"
+        },
+        "tools": {
+          "title": "Tools",
+          "sub": "Stopwatch and round timer"
+        },
+        "plan": {
+          "title": "Weekly plan",
+          "sub": "Built by the coach from rules and evidence"
+        },
+        "review": {
+          "title": "Weekly review",
+          "sub": "Adherence, weight, calories and deload, with their rules"
+        }
+      }
+    },
+    "tools": {
+      "back": "← Training",
+      "title": "Tools",
+      "tabs": {
+        "rounds": "Rounds",
+        "chrono": "Stopwatch"
+      },
+      "presets": "Presets",
+      "presetNames": {
+        "boxing": "Boxing",
+        "mma": "MMA",
+        "tabata": "Tabata",
+        "hiit": "HIIT"
+      },
+      "rounds": "Rounds",
+      "prep": "Get ready",
+      "work": "Work",
+      "rest": "Rest",
+      "warnLabel": "End-of-round warning",
+      "warnOff": "Off",
+      "warnSeconds": "{n} s",
+      "start": "Start · {rounds, plural, one {# round} other {# rounds}}",
+      "phase": {
+        "prep": "Get ready",
+        "work": "Work",
+        "rest": "Rest"
+      },
+      "completed": "Done",
+      "roundsDone": "{rounds, plural, one {# round} other {# rounds}} ✓",
+      "roundOf": "Round {round} / {rounds}",
+      "resume": "Resume",
+      "pause": "Pause",
+      "skip": "Skip",
+      "new": "New",
+      "exit": "Exit",
+      "startStopwatch": "Start",
+      "lap": "Lap",
+      "reset": "Reset",
+      "lapN": "Lap {n}"
+    },
+    "gym": {
+      "back": "← Training",
+      "title": "Gym",
+      "today": "Today",
+      "unfinished": "Unfinished workout",
+      "exerciseCount": "{n, plural, one {# exercise} other {# exercises}}",
+      "setCount": "{n, plural, one {# set} other {# sets}}",
+      "resume": "Resume",
+      "discard": "Discard",
+      "start": "▶ Start workout",
+      "startWithFocus": "▶ Start workout · {focus}",
+      "yourWeek": "Your week",
+      "days": {
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat",
+        "sun": "Sun"
+      },
+      "weekHint": "Note what's planned for each day. It's saved to your account and synced across your devices.",
+      "recent": "Recent workouts",
+      "workout": "Workout",
+      "level": "Level",
+      "goal": "Goal",
+      "goals": {
+        "strength": {
+          "label": "Strength",
+          "reps": "4-6 reps · long rests"
+        },
+        "hypertrophy": {
+          "label": "Hypertrophy",
+          "reps": "8-12 reps"
+        },
+        "fatLoss": {
+          "label": "Fat loss",
+          "reps": "12-15 reps + cardio"
+        },
+        "maintenance": {
+          "label": "Maintenance",
+          "reps": "8-10 reps"
+        }
+      },
+      "generate": "Generate routine with AI",
+      "generating": "Generating…",
+      "foci": {
+        "rest": "Rest",
+        "fullBody": "Full body",
+        "push": "Push",
+        "pull": "Pull",
+        "legs": "Legs",
+        "upper": "Upper body",
+        "chest": "Chest",
+        "back": "Back",
+        "shoulders": "Shoulders",
+        "arms": "Arms",
+        "cardio": "Cardio",
+        "core": "Core"
+      },
+      "exercises": {
+        "benchPress": "Bench press",
+        "inclinePress": "Incline press",
+        "dumbbellPress": "Dumbbell press",
+        "flyes": "Chest flyes",
+        "dips": "Dips",
+        "pullUps": "Pull-ups",
+        "latPulldown": "Lat pulldown",
+        "barbellRow": "Barbell row",
+        "machineRow": "Machine row",
+        "deadlift": "Deadlift",
+        "facePull": "Face pull",
+        "squat": "Squat",
+        "legPress": "Leg press",
+        "romanianDeadlift": "Romanian deadlift",
+        "lunges": "Lunges",
+        "legExtension": "Leg extension",
+        "legCurl": "Leg curl",
+        "calfRaises": "Calf raises",
+        "overheadPress": "Overhead press",
+        "lateralRaises": "Lateral raises",
+        "rearDeltFlyes": "Rear delt flyes",
+        "arnoldPress": "Arnold press",
+        "bicepsCurl": "Biceps curl",
+        "hammerCurl": "Hammer curl",
+        "tricepsExtension": "Triceps extension",
+        "skullCrushers": "Skull crushers",
+        "plank": "Plank",
+        "cableCrunch": "Cable crunch",
+        "abWheel": "Ab wheel",
+        "legRaises": "Leg raises",
+        "row": "Row",
+        "tricepsExtensionShort": "Triceps extension"
+      }
+    },
+    "gymSession": {
+      "loading": "Loading…",
+      "howWasIt": "How did it go?",
+      "workoutFocus": "Workout · {focus}",
+      "gymWorkout": "Gym workout",
+      "workout": "Workout",
+      "duration": "duration",
+      "sets": "sets",
+      "totalKg": "total kg",
+      "setCount": "{n, plural, one {# set} other {# sets}}",
+      "sessionEffort": "Session effort (RPE)",
+      "whatIsRpe": "What is RPE",
+      "rpeInfo": "RPE = Rating of Perceived Exertion for the WHOLE session (1-10). We use it to calculate your load (min × RPE).",
+      "loadLine": "Load: <neon>{au} AU</neon> (min × RPE)",
+      "back": "Back",
+      "save": "Save",
+      "saveHint": "Tick ✓ at least one set with reps to save.",
+      "discard": "Discard workout",
+      "backToGym": "← Gym",
+      "restBetweenSets": "Rest between sets",
+      "lastTime": "Last time: {last}",
+      "firstTime": "First time — fresh start",
+      "pr": "PR {kg} kg",
+      "removeExercise": "Remove {name}",
+      "reps": "reps",
+      "addSet": "+ Set",
+      "addExercise": "Add exercise",
+      "close": "Close ✕",
+      "searchPlaceholder": "Search: press, row, squat…",
+      "noResults": "No results.",
+      "addExerciseBtn": "+ Add exercise",
+      "finish": "Finish workout",
+      "rest": "Rest",
+      "skip": "Skip",
+      "setDone": "Set {n} done",
+      "setsLabel": "{n, plural, one {set} other {sets}}",
+      "weightAria": "Weight, set {n}",
+      "repsAria": "Reps, set {n}",
+      "previous": "previous: {preview} · tap to copy",
+      "previousAria": "Copy previous set: {preview}",
+      "previewKg": "{kg} kg × {reps}",
+      "previewReps": "{reps} reps",
+      "breakdownLocalOnly": "Breakdown on this device only: the workout is too big to sync the per-exercise detail.",
+      "discardConfirm": "Discard the workout? All sets will be lost.",
+      "discardConfirmBtn": "Discard",
+      "cancel": "Cancel",
+      "removed": "{more, plural, =0 {Removed: {name}} other {Removed: {name} (+#)}}",
+      "undo": "Undo",
+      "incompleteTicked": "{n, plural, one {# set ticked ✓ without reps won't be saved.} other {# sets ticked ✓ without reps won't be saved.}}",
+      "incompleteUnticked": "{n, plural, one {# set with data but no ✓ won't be saved.} other {# sets with data but no ✓ won't be saved.}}",
+      "finishAnyway": "Finish anyway",
+      "keepEditing": "Keep editing"
+    },
+    "myRoutine": {
+      "back": "← Training",
+      "title": "My routine",
+      "days": {
+        "mon": "Monday",
+        "tue": "Tuesday",
+        "wed": "Wednesday",
+        "thu": "Thursday",
+        "fri": "Friday",
+        "sat": "Saturday",
+        "sun": "Sunday"
+      },
+      "plan": {
+        "mon": {
+          "focus": "Push"
+        },
+        "tue": {
+          "focus": "Boxing · Technique",
+          "items": {
+            "0": "Warm-up 10'",
+            "1": "Shadowboxing 3×3'",
+            "2": "Technical bag work 5×3'",
+            "3": "Stretching"
+          }
+        },
+        "wed": {
+          "focus": "Pull"
+        },
+        "thu": {
+          "focus": "Muay Thai · Intensity",
+          "items": {
+            "0": "Warm-up",
+            "1": "Pad work 5×3'",
+            "2": "Clinch 4×2'",
+            "3": "Conditioning"
+          }
+        },
+        "fri": {
+          "focus": "Legs"
+        },
+        "sat": {
+          "focus": "Sparring",
+          "items": {
+            "0": "Warm-up",
+            "1": "Sparring 5×3'",
+            "2": "Cool-down"
+          }
+        },
+        "sun": {
+          "focus": "Rest",
+          "items": {
+            "0": "Mobility and active recovery"
+          }
+        }
+      },
+      "footer": "This routine is assigned and edited by your trainer. The trainer panel is coming later."
+    },
+    "load": {
+      "back": "← Training",
+      "title": "Load and status",
+      "subtitle": "Calculated from your real sessions and measurements.",
+      "moreInfo": "More info",
+      "todayState": "Today's status",
+      "recoveryState": {
+        "listo": "Ready to train",
+        "normal": "Normal day",
+        "cuidado": "Take it easy"
+      },
+      "chipRhr": "Resting HR {delta} vs your average",
+      "chipHrv": "HRV {pct}% vs your average",
+      "recoveryEmpty": "Log resting HR and HRV for a few days in Biometrics and your recovery status will show up here.",
+      "addMeasures": "Add measurements",
+      "weeklyLoad": "Weekly load",
+      "au": "{n} AU",
+      "weekEmpty": "No sessions this week. Your workouts with RPE will show up here.",
+      "monotony": "Monotony",
+      "max": "max",
+      "noVariation": "No variation between days: alternate hard and easy",
+      "strain": "Strain",
+      "footer": "Calculated from the sessions saved to your account plus any this device has not uploaded yet.",
+      "dayInitials": {
+        "0": "S",
+        "1": "M",
+        "2": "T",
+        "3": "W",
+        "4": "T",
+        "5": "F",
+        "6": "S"
+      },
+      "info": {
+        "state": "Your readiness to train today, based on your recovery signals (resting HR and HRV) compared with your own average.",
+        "acwr": "Acute (7-day) to chronic (up to 28 days) load ratio. Between 0.8 and 1.3 = safe zone; above that, injury risk goes up. It needs history: it's marked provisional until you reach 4 weeks.",
+        "load": "Load per session = duration × RPE (arbitrary units, AU). Your Sports, MMA and Gym sessions logged with RPE are added up here.",
+        "monotony": "How similar your daily loads are (mean/deviation over the last 7 days). Very high = little variation, more risk; alternate hard and easy days.",
+        "strain": "Strain = weekly load × monotony. It measures your total accumulated stress for the week."
+      }
+    }
+  },
+  "coach": {
+    "title": "Coach",
+    "badges": {
+      "week": "Week {au} AU",
+      "weighIn": "Weigh-in in {days} d"
+    },
+    "recovery": {
+      "cuidado": {
+        "label": "Take it easy",
+        "phrase": "Your recovery signals are below your average. Today: light technique or active rest."
+      },
+      "listo": {
+        "label": "Ready to train",
+        "phrase": "Recovery above your average. A good day for demanding work."
+      },
+      "normal": {
+        "label": "Normal day",
+        "phrase": "Signals around your average. Train according to your plan."
+      },
+      "chipRhr": "Resting HR {delta} vs your average",
+      "chipHrv": "HRV {delta}% vs your average"
+    },
+    "briefing": {
+      "eyebrow": "Today's briefing",
+      "withData": "from your data",
+      "care": "Your recovery signals are low: today, easy technique or active rest comes first.",
+      "ready": "Recovery above your average: a good day for a demanding session.",
+      "week": "Week under way: {au} AU so far. Keep the pace and log every session.",
+      "unknown": "I don't know you well yet: log your workouts (with RPE) and your measurements, and this briefing will become truly yours.",
+      "weigh": "Weigh-in in {days} days and you're {over} kg over: gentle deficit, no aggressive cuts yet.",
+      "train": "Go train",
+      "nutrition": "View nutrition"
+    },
+    "recs": {
+      "heading": "Recommendations",
+      "dismiss": "Dismiss",
+      "useful": "Helpful",
+      "notUseful": "Not helpful",
+      "thanks": "Thanks! 👍",
+      "noted": "Noted 👎",
+      "recovery": {
+        "title": "Low recovery signals",
+        "why": "{chips}. Prioritise 8 h of sleep; if tomorrow is the same, cut the volume."
+      },
+      "weigh": {
+        "title": "{over} kg over target · weigh-in in {days} d",
+        "whyFar": "Reasonable margin: keep the deficit and don't touch water or sodium yet.",
+        "whyNear": "Not much time left: review the plan and check with your team before any aggressive cut.",
+        "action": "Weigh-in plan"
+      },
+      "oldWeight": {
+        "title": "No weight logged for {days, plural, one {# day} other {# days}}",
+        "why": "Logging your weight every 1-2 weeks keeps your trend and your macros reliable.",
+        "action": "Log weight"
+      },
+      "start": {
+        "title": "Log your first session of the week",
+        "why": "With your workouts (duration + RPE) I calculate your load and your ACWR, and warn you before you overdo it or fall short.",
+        "action": "Go train"
+      },
+      "ok": {
+        "title": "No alerts: all good 👊",
+        "whyNoData": "No alerts for now. The more workouts and measurements you log, the sharper I get."
+      }
+    },
+    "chat": {
+      "heading": "Talk to your coach",
+      "modeAi": "Real AI",
+      "modeRules": "rule-based",
+      "modeDefault": "AI",
+      "greeting": "Hi. Ask me about your training, load, weight or recovery: I'll answer with your numbers.",
+      "typing": "The coach is typing…",
+      "placeholder": "Ask your coach…",
+      "send": "Send",
+      "quick": {
+        "how": "How am I doing?",
+        "hard": "Train hard today?",
+        "weight": "How's my weight?"
+      },
+      "rulesNotice": "AI isn't available right now: I'm answering by rules with your data.",
+      "moreData": "The more data you log, the better I can advise you.",
+      "disclaimer": "The coach is for guidance only and is not medical advice."
+    },
+    "reply": {
+      "acwr": "ACWR {value}",
+      "weightNone": "I don't have your weight yet. Log it under Biometrics and I'll track the trend.",
+      "weightAt": "You're already at your target weight ({target} kg) with {days} days to go. Maintain and arrive fresh.",
+      "weightLast": "Your latest weight is {weight} kg. If you have a fight, set up the weigh-in under Nutrition and I'll handle the plan.",
+      "hardCare": "Today is not the day to run yourself into the ground: {chips}. Quality technique (RPE 5-6) and get some sleep.",
+      "hardReady": "Recovery above your average and {acwr}: go hard today, you have room. Warm up well.",
+      "hardNormal": "From what I see ({acwr}), a normal plan day. Log the session when you finish and I'll adjust the advice.",
+      "fatigue": "Your signals: {chips}. {phrase}",
+      "fatigueNone": "I don't have your recovery signals yet: log resting HR and HRV for a few days and I'll read them to you every morning.",
+      "load": "Week: {au} AU. {acwr}. Monotony {mono}. Safe zone: 0.8–1.3; avoid two spikes in a row.",
+      "summaryWeek": "week {au} AU, {acwr}",
+      "summaryRecovery": "recovery: {label}",
+      "summaryWeight": "weight {weight} kg",
+      "summaryWeightTarget": "weight {weight} kg (target {target})",
+      "summary": "Your snapshot today: {parts}. Want today's plan?",
+      "summaryNone": "I don't have any data on you yet. Start by logging a workout or your weight and we'll talk.",
+      "thanks": "Get to work. Log the session when you finish and I'll add it to your load. 🥊",
+      "default": "I'm listening. Ask me about today's training, your load, your weight or your recovery — I'll answer with your real numbers."
+    },
+    "advanced": {
+      "title": "Advanced"
+    },
+    "memory": {
+      "title": "What your coach knows about you",
+      "tell": "Tell my coach",
+      "edit": "Edit",
+      "injury": {
+        "label": "Current injury or niggle",
+        "placeholder": "E.g. sore right shoulder"
+      },
+      "phase": {
+        "label": "Camp or season phase",
+        "placeholder": "E.g. base, peak, off-season…"
+      },
+      "fightDate": {
+        "label": "Fight or competition date"
+      },
+      "weightGoal": {
+        "label": "Target weight (kg)",
+        "placeholder": "E.g. 77.5"
+      },
+      "tone": {
+        "label": "How you'd like me to talk to you"
+      },
+      "frequency": {
+        "label": "How often you want alerts"
+      },
+      "noPreference": "No preference",
+      "tones": {
+        "directo": "Straight-talking",
+        "motivador": "Motivating",
+        "tecnico": "Technical"
+      },
+      "frequencies": {
+        "alta": "Frequent",
+        "media": "Normal",
+        "baja": "Essentials only"
+      },
+      "privacy": "This is saved to your account so the coach remembers it between conversations and tailors its alerts. It isn't medical information and it's shared with no one but your AI coach: delete it whenever you like.",
+      "save": "Save",
+      "cancel": "Cancel",
+      "empty": "You haven't told me anything yet. Tell me about your injury, your phase, your next fight, your target weight or how you'd like me to talk to you, and I'll bear it in mind in the chat.",
+      "chips": {
+        "injury": "Injury: {value}",
+        "phase": "Phase: {value}",
+        "fight": "Fight: {value}",
+        "weightGoal": "Target: {kg} kg",
+        "tone": "Tone: {value}",
+        "alerts": "Alerts: {value}"
+      }
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "dob": "Date of birth",
+    "gender": "Sex",
+    "height": "Height",
+    "stance": "Stance",
+    "edit": {
+      "link": "Edit profile",
+      "back": "← Profile",
+      "title": "Edit <neon>profile</neon>",
+      "save": "Save changes"
+    },
+    "logout": "Sign out",
+    "heightValue": "{cm} cm",
+    "options": {
+      "gender": {
+        "MALE": "Male",
+        "FEMALE": "Female",
+        "OTHER": "Other"
+      },
+      "stance": {
+        "ORTHODOX": "Orthodox",
+        "SOUTHPAW": "Southpaw",
+        "SWITCH": "Switch"
+      }
+    },
+    "form": {
+      "dob": "Date of birth",
+      "day": "Day",
+      "month": "Month",
+      "year": "Year",
+      "dd": "DD",
+      "mm": "MM",
+      "yyyy": "YYYY",
+      "dobErrors": {
+        "incomplete": "Complete the date (day, month and 4-digit year).",
+        "invalid": "That date doesn't exist. Check the day and month.",
+        "year": "Check the year.",
+        "future": "Your date of birth can't be in the future."
+      },
+      "gender": "Sex",
+      "select": "Select…",
+      "height": "Height (cm)",
+      "stance": "Stance",
+      "language": "Language",
+      "saved": "Saved ✓",
+      "saving": "Saving…"
+    }
+  },
+  "load": {
+    "title": "Training load",
+    "week": "Week",
+    "au": "AU",
+    "auValue": "{n} AU",
+    "weeklyLoad": "Weekly load",
+    "comparisonTitle": "Your week against your average",
+    "up": "{pct}% above your 4-week average",
+    "down": "{pct}% below your 4-week average",
+    "equal": "At your 4-week average",
+    "short": {
+      "up": "+{pct}% vs your average",
+      "down": "−{pct}% vs your average",
+      "equal": "= your average",
+      "daysLeft": "{days} d to go"
+    },
+    "ratio": "Week/average ratio: {value}",
+    "daysLeft": "{days, plural, one {# more day} other {# more days}} of history before your week can be compared with your average: it takes 28 and you have {have}.",
+    "paused": "No sessions in the last 7 days: the comparison comes back as soon as you log a workout.",
+    "empty": "Log your workouts with RPE (Sports, MMA or Gym) and your load will show here.",
+    "soon": "It turns on once you log sessions with RPE",
+    "gaps": "Your history has weeks with no sessions (a layoff, an injury or a deload): this number may mislead.",
+    "context": "This is a descriptive number: it is not a safety threshold and it does not predict injury. Read it next to how you sleep, soreness, fatigue and what your plan intended; if you jump well above your average, talk it over with your trainer or physio.",
+    "combatNote": "The comparison comes from team-sport research and has barely been studied in combat sports.",
+    "loadInfo": "Load of each session = minutes × RPE (CR10 scale), in arbitrary units (AU). It is perceived effort, not a physiological measurement, and it is not compared between athletes. Your Sports, MMA and Gym sessions with RPE add up here.",
+    "comparisonInfo": "Daily average of your last 7 days against that of your last 28 (this week included). It needs a month of history: the 28 days are a FightLab convention, not an evidence-based minimum.",
+    "monotony": "Monotony",
+    "strain": "Strain",
+    "max": "max",
+    "noVariation": "All 7 daily loads are the same",
+    "monotonyInfo": "How similar your daily loads are (mean divided by standard deviation over the last 7 days). It sums up the week's pattern; it is not a risk score.",
+    "strainInfo": "Strain = weekly load × monotony: how much and how uniform the week was. It is descriptive and has no thresholds.",
+    "bigJump": "Big jump: 30% or more above your average.",
+    "coach": {
+      "badgeNone": "Load —",
+      "badgeDays": "Load: {days} d to go",
+      "briefingUp": "Your week is {pct}% above your 4-week average. It is not an injury warning: check how you feel and, if it is a big jump, talk it over with your trainer.",
+      "recUp": {
+        "title": "Week {pct}% above your average",
+        "why": "It is a descriptive number, not an injury warning. Compare it with how you sleep and recover and with what your plan intended; if it is a big jump, talk it over with your trainer or physio.",
+        "action": "See load"
+      },
+      "start": "With your workouts (duration + RPE) I work out your load and, after a month of history, compare it with your average.",
+      "okWhy": "Your week is close to your average and your recovery shows no warnings. Follow your plan and see you tomorrow.",
+      "comparisonUp": "+{pct}% above your 4-week average",
+      "comparisonDown": "−{pct}% below your 4-week average",
+      "comparisonEqual": "at your 4-week average",
+      "daysLeft": "{days, plural, one {# more day} other {# more days}} of history before it can be compared with your average",
+      "paused": "no sessions in the last 7 days",
+      "pending": "no load history yet",
+      "replyLoad": "Week: {au} AU, {comparison}. Monotony {mono}. It is a descriptive number and does not predict injury: read it next to how you feel.",
+      "replyNone": "No sessions this week yet. Log your workouts with RPE and I'll work out your load.",
+      "replyHigh": "Your week is {comparison}. It is not an injury warning, but check how you feel: if you are worn out, go for technique today; if you feel good, follow your plan."
+    },
+    "band": {
+      "title": "Your week against your usual range",
+      "moreInfo": "More info",
+      "status": {
+        "descarga": "Below your range",
+        "sostenible": "Within your range",
+        "elevada": "Above your range",
+        "alta": "Well above your range"
+      },
+      "calibrating": "Range still calibrating: {days}/28 days of history.",
+      "axis": {
+        "below": "below",
+        "range": "your range",
+        "above": "above"
+      },
+      "info": "This week's load compared with your own range from the previous 3 weeks. It is a descriptive number: it is not a safety threshold and it does not predict injury. It calibrates until you have 4 weeks of history."
+    }
+  },
+  "combat": {
+    "cut": {
+      "title": "Making weight: information, not a protocol",
+      "intro": "FightLab gives no cutting or rehydration protocols. This is what the evidence says:",
+      "planned": "Sports-medicine consensus (ACSM, 2021) prefers gradual, planned weight management, and choosing a weight class you can reach without undue physical, nutritional or psychological stress.",
+      "common": "Losing a lot of weight in a few days is common in combat sports, most of all in MMA, but being common does not make it safe.",
+      "noSafePct": "Its effects on performance are mixed and no percentage of loss is safe.",
+      "regain": "Getting the weight back on the scale after the weigh-in does not prove that you are rehydrated or ready to compete.",
+      "deaths": "Sauna, sweat suits and training in hot rooms to force the loss are the methods linked to deaths.",
+      "noWater": "Water loading, diuretics, laxatives, vomiting or IV fluids are not options FightLab puts forward: diuretics and IV fluids are banned in most sports. If someone suggests them, talk to a doctor or a sports dietitian.",
+      "rules": "Passing the weigh-in or a hydration test does not mean you are fine. Check the rules of your event and your federation.",
+      "recovery": "For recovery after the weigh-in, consensus gives only general guidance, largely from other sports; any individual plan belongs with a sports dietitian.",
+      "emergency": "If someone collapses or is confused during a cut, it is an emergency: call emergency services. Also stop and seek medical care with chest pain or an irregular heartbeat, severe dizziness or fainting on standing, vomiting that does not stop, severe cramps, very dark or scant urine, or if you cannot keep fluids down.",
+      "refer": "For your plan: a sports dietitian or a sports physician.",
+      "minor": "Sports-medicine consensus discourages making weight in young athletes, so FightLab shows no weight-cut information to under-18s. Talk to your doctor or a sports dietitian.",
+      "footer": "Weigh-in: target and countdown. FightLab gives no cutting or rehydration protocols.",
+      "briefing": "Weigh-in in {days} days and you are {over} kg from your target. To get there, consensus prefers gradual, planned weight management: ask a sports dietitian for your plan.",
+      "recTitle": "{over} kg above target · weigh-in in {days} d",
+      "recWhy": "FightLab gives no cutting protocols. Consensus (ACSM) prefers making weight gradually and with a plan, and dehydration cuts carry health and performance costs. For a plan, a sports dietitian or your doctor.",
+      "recAction": "See weigh-in",
+      "replyOver": "You are {over} kg from your target with {days} days to go. I won't give you a cutting protocol: consensus prefers a gradual, planned loss, and a sports dietitian is the right person for your plan."
+    },
+    "head": {
+      "title": "Blow to the head",
+      "intro": "If you took a blow to the head (or a hard blow that jolted your head), report it here.",
+      "report": "Report a blow to the head",
+      "symptomsQ": "Do you have any symptom, or has someone seen signs in you?",
+      "symptomsHint": "Headache, dizziness, nausea, blurred vision, balance problems, feeling off, confusion, memory gaps, fatigue or irritability; or lying still, being slow to get up, unsteady or dazed.",
+      "redFlagsQ": "Any warning sign?",
+      "redFlagsHint": "Neck pain, a seizure, passing out, vision problems, worsening confusion or headache, or repeated vomiting.",
+      "yes": "Yes",
+      "no": "No",
+      "send": "Save report",
+      "cancel": "Cancel",
+      "sending": "Saving…",
+      "error": "The report could not be saved. Please try again.",
+      "emergencyNow": "Get emergency care now. Do not stay alone, do not drive and do not go home alone.",
+      "call": "Call {number}",
+      "noSymptoms": "Saved. Feeling fine after sparring does not rule out a head injury: if any symptom shows up in the next hours or days, stop training and report it here.",
+      "crt6": "Full list of warning signs: Concussion Recognition Tool 6 (CRT6), official document",
+      "blockedTitle": "Contact blocked",
+      "blockedBody": "You reported a blow to the head with symptoms. A doctor needs to check it and decides whether it is a concussion. Until a clinician clears you: no sparring, clinch, partner drills or live grappling. Walking and everyday activity are fine if they do not clearly worsen your symptoms.",
+      "stepsTitle": "How the return to contact works",
+      "steps": {
+        "1": "Symptom-limited activity",
+        "2": "Light, then moderate aerobic exercise",
+        "3": "Individual technical work, no partner",
+        "4": "Non-contact drills",
+        "5": "Full-contact practice",
+        "6": "Return to competition"
+      },
+      "stepsNote": "Each step takes at least 24 hours, so a full return takes at least about a week and is usually done within a month. A clinician supervises and authorises the contact steps; FightLab computes no dates. If your symptoms are not clearly improving after 2-4 weeks, ask for a fuller evaluation.",
+      "stepsMap": "In FightLab, solo technical work counts as step 3, cooperative drills without head contact as step 4, and sparring or live rolling as step 5.",
+      "clearTitle": "Has a clinician cleared you?",
+      "clearConfirm": "I confirm that a doctor or other clinician has cleared me to return to contact",
+      "clearWho": "Who cleared you (optional)",
+      "clear": "Lift the block",
+      "clearNote": "This is the only way to lift the block: FightLab never lifts it on a timer.",
+      "contactNote": "Contact is blocked because of a blow to the head: you can log what you already did, but do not do this work until a clinician clears you.",
+      "headgear": "Headgear mainly prevents cuts; it has not been shown to prevent concussion."
+    },
+    "kcal": {
+      "title": "Estimated expenditure",
+      "range": "≈ {low}–{high} kcal",
+      "entry": "2024 Compendium of Physical Activities, entry {entry}: {met} MET",
+      "approx": "No entry of its own for this work: this is an approximation with a general entry.",
+      "estimated": "The Compendium marks this value as estimated.",
+      "none": "No Compendium entry for this work: expenditure is not estimated.",
+      "band": "A ±20% range around the estimate.",
+      "needWeight": "With your weight in Biometrics it uses your data; for now it uses 70 kg.",
+      "note": "It is an estimate for the kind of session, not your real expenditure, and it is not for adjusting calories."
+    },
+    "tracker": {
+      "estimate": "Rough estimate: ≈ {low}–{high} kcal",
+      "mets": "Tracker METs per sport and intensity factors"
+    }
+  },
+  "checkin": {
+    "title": "Check-in for <hl>today</hl>",
+    "subtitle": "One morning form: how you feel, your numbers and anything that worries you. Short and often.",
+    "loading": "Loading…",
+    "alreadyDone": "You already checked in today. Anything you add fills in or replaces what you gave; notes are added together.",
+    "wellness": {
+      "title": "How you feel today",
+      "hint": "From 1 to 5, where 5 is best. You are compared with yourself, not with anyone else.",
+      "scores": {
+        "sleep_quality": {
+          "label": "Sleep",
+          "low": "slept badly",
+          "high": "slept well"
+        },
+        "energy": {
+          "label": "Energy",
+          "low": "drained",
+          "high": "full of energy"
+        },
+        "soreness": {
+          "label": "Soreness",
+          "low": "very sore",
+          "high": "none"
+        },
+        "stress": {
+          "label": "Stress",
+          "low": "very stressed",
+          "high": "calm"
+        },
+        "mood": {
+          "label": "Mood",
+          "low": "low",
+          "high": "high"
+        }
+      },
+      "zonesLabel": "Where are you sore?",
+      "zones": {
+        "legs": "Legs",
+        "glutes": "Glutes",
+        "back": "Back",
+        "chest": "Chest",
+        "shoulders": "Shoulders",
+        "arms": "Arms",
+        "core": "Core",
+        "neck": "Neck"
+      },
+      "scoreAria": "{name}: {n} of 5"
+    },
+    "data": {
+      "title": "Your numbers",
+      "sleepHours": "Hours slept last night",
+      "intake": "Yesterday's calories (if you track them)",
+      "weight": "This morning's weight",
+      "weightHint": "On waking, after the toilet and before eating. What counts is the weekly average, not today's weigh-in.",
+      "waist": "Waist",
+      "waistHint": "Once a week is enough.",
+      "optionalToggle": "With a watch or chest strap · optional",
+      "rhr": "Resting heart rate",
+      "hrv": "HRV",
+      "hrvNote": "HRV is optional: if you measure it, only your own 7-day trend counts, never a single reading, and alongside how you feel.",
+      "blocked": "Weight, waist and calories are switched off for you. We only ask about sleep, how you feel and symptoms.",
+      "missedDays": "Days you did not log are not filled in afterwards."
+    },
+    "signs": {
+      "title": "Warning signs",
+      "intro": "Tick only what is happening. If you are unsure, read the description again; if it is still unclear, do not tick it and act on it as soon as it appears.",
+      "cardiac": "Chest, neck, jaw or arm pain or pressure, breathlessness, dizziness or fainting, or palpitations (during exercise or at rest)",
+      "cardiacEmergency": "It is chest pain at rest, fainting, or chest pain with breathlessness and sweating",
+      "systemic_illness": "Fever, aches all over, or feeling unwell below the neck",
+      "head_cold": "Just a head cold (runny nose or sore throat, no fever or aches)",
+      "disordered_eating": "Vomiting, laxatives or diet pills, exercising to make up for food, bingeing with loss of control, or a marked fear of gaining weight",
+      "disorderedUrgent": "Also: fainting, confusion, eating almost nothing for 2 days or more, or vomiting several times a day",
+      "rhabdo": "Very sore, weak or swollen muscles with dark urine after training",
+      "injury": "New pain or an injury in some area",
+      "injuryArea": "Area (in your own words)",
+      "injuryExercises": "Exercises it affects (comma-separated)",
+      "injuryProfessional": "Who has assessed it? (optional)",
+      "injurySevere": "The pain is sharp or getting worse, or I have numbness or weakness"
+    },
+    "weekly": {
+      "title": "This week's questions",
+      "intro": "We only ask these if you have not answered them in the last 7 days.",
+      "menstrual": {
+        "question": "Any new change in your period: delays, missed periods or irregularity?",
+        "normal": "Normal",
+        "irregular_new": "New delays or changes",
+        "absent": "No period for 3 months or more",
+        "contraception": "I use hormonal contraception (it masks the cycle)"
+      },
+      "bp": {
+        "question": "Your latest resting blood pressure, seated after 5 minutes of rest",
+        "systolic": "Top number (systolic)",
+        "diastolic": "Bottom number (diastolic)"
+      }
+    },
+    "notes": {
+      "label": "Notes",
+      "placeholder": "How training went, symptoms, anything you want to note"
+    },
+    "submit": "Save check-in",
+    "saving": "Saving…",
+    "errors": {
+      "generic": "Could not save. Check the values and try again.",
+      "blocked": "This value cannot be saved with your current safety profile.",
+      "invalid": "Some values are out of range: {fields}."
+    },
+    "result": {
+      "title": "Check-in saved",
+      "recorded": "Recorded: {items}.",
+      "items": {
+        "weight": "weight",
+        "waist": "waist",
+        "intake": "calories",
+        "sleep": "sleep",
+        "wellness": "wellness",
+        "rhr": "resting heart rate",
+        "hrv": "HRV",
+        "notes": "notes",
+        "weekly": "weekly questions",
+        "signs": "warning signs"
+      },
+      "refused": "Not saved: {fields}.",
+      "nothing": "There was nothing to record.",
+      "again": "Add something else",
+      "home": "Back to home",
+      "alertsTitle": "Important",
+      "newReasons": "Safety notices",
+      "professional": "Who to see: {name}"
+    },
+    "urgent": {
+      "eyebrow": "Urgent, now",
+      "call": "Call {number}",
+      "understood": "Understood, back to home",
+      "stopTraining": "Do not train. The app will not suggest training until a clinician clears it."
+    },
+    "alertLevel": {
+      "emergency": "Emergency",
+      "urgent": "Urgent",
+      "stop": "Stop",
+      "refer": "See someone",
+      "rest": "Rest",
+      "info": "Notice"
+    },
+    "readiness": {
+      "title": "How ready you are",
+      "no_data": "Not enough data yet to compare you with yourself. A few days of check-ins will fix that.",
+      "ok": "No sustained drops against your own baseline. Train as planned.",
+      "easy": "Your HRV has been below your range for a week and you feel worse today: keep the session easy.",
+      "reduce": "You have had 3 days of drops on 2 or more signals against your baseline: hold or reduce the load.",
+      "drops": "Below your average today: {items}.",
+      "pragmatic": "The rule itself warns that these thresholds are pragmatic, not validated. The 14-day baseline and the 1-point drop are FightLab conventions. A guide, not a diagnosis."
+    },
+    "homeCard": {
+      "title": "Today's check-in",
+      "todo": "Tell the coach how you are: two minutes.",
+      "done": "Done today",
+      "cta": "Do the check-in",
+      "update": "Add something"
+    }
+  },
+  "weightTrend": {
+    "title": "Weight trend",
+    "ok": "{rate} kg per week ({pct} %)",
+    "okNow": "Average of the last week: {kg} kg",
+    "okBasis": "It compares the average of the first week with the last, never a single weigh-in.",
+    "insufficient": "No trend yet. It needs at least {min_points} weigh-ins covering {min_days} days; you have {points} over {days, plural, one {# day} other {# days}}.",
+    "insufficientMore": "You need {missing} more weigh-ins.",
+    "empty": "No weigh-ins yet. With 7 weigh-ins spread over 14 days you will see your trend.",
+    "blocked": "Weight tracking is switched off for you.",
+    "chartNote": "The chart line is visual only: a smoothed average of your weigh-ins. The weekly rate comes from the coach's trend."
+  },
+  "bodyFat": {
+    "method": "How was it measured?",
+    "hint": "With DXA, BodPod, lab-grade BIA or skinfolds the coach can use your lean mass to estimate your energy use (Cunningham equation). With a smart scale or another method it cannot: the measurement error would go straight into the calculation.",
+    "unknown": "I don't know",
+    "methods": {
+      "dxa": "DXA",
+      "bodpod": "BodPod",
+      "bia_lab": "Lab-grade or octopolar BIA",
+      "skinfolds": "Skinfolds",
+      "smart_scale": "Smart scale",
+      "other": "Another method"
+    },
+    "blocked": "With your current safety profile weight, body fat and girths are not saved; resting heart rate and HRV are."
+  },
+  "weeklyPlan": {
+    "title": "Weekly plan",
+    "back": "← Training",
+    "intro": "The coach builds it from rules: every number comes from the engine and every line carries its rule.",
+    "weekOf": "Week of {date}",
+    "loading": "Loading…",
+    "error": "Couldn't load the plan.",
+    "blocked": {
+      "title": "No plan until a doctor reviews it",
+      "body": "From what you've told us, no training plan is built until a doctor reviews it. You can keep logging what you do."
+    },
+    "incomplete": "To build the plan, finish the screening in onboarding.",
+    "completeOnboarding": "Finish the screening",
+    "form": {
+      "gymDays": "Gym days",
+      "gymHint": "At least {min}: two full-body sessions a week.",
+      "mmaDays": "MMA days",
+      "mmaHint": "The ones you've logged over the last 4 weeks. Change them if that's not right.",
+      "generate": "Build plan",
+      "regenerate": "Build again",
+      "generating": "Building…"
+    },
+    "errors": {
+      "too_few_gym_days": "Choose at least 2 gym days.",
+      "too_many_gym_days": "At most 6 gym days: keep one rest day.",
+      "no_training": "No plan until a doctor reviews it.",
+      "profile_incomplete": "The onboarding screening isn't finished.",
+      "generic": "Couldn't build the plan. Please try again."
+    },
+    "status": {
+      "draft": "Draft",
+      "active": "In My routine",
+      "superseded": "Replaced"
+    },
+    "apply": "Apply to My routine",
+    "applying": "Applying…",
+    "applied": "Applied: it's now in My routine.",
+    "goRoutine": "See My routine",
+    "sections": {
+      "week": "The week",
+      "sessions": "Gym sessions",
+      "cardio": "Cardio",
+      "nutrition": "Nutrition",
+      "safety": "Safety notes",
+      "rules": "Rules used",
+      "narrative": "Summary",
+      "strength": "Hard sets per muscle"
+    },
+    "narrativeNote": "Written by the AI from the plan; the numbers are the plan's own.",
+    "day": {
+      "gym": "Gym · Session {session}",
+      "mma": "MMA",
+      "cardio": "Moderate cardio · {minutes} min",
+      "rest": "Rest",
+      "at": "at {time}"
+    },
+    "session": "Session {key}",
+    "effort": "Stop each set {low}-{high} reps short of failure",
+    "rotation": "A, B rotation: if you miss a session, carry on with the next one without making it up.",
+    "item": {
+      "scheme": "{sets} × {low}-{high}",
+      "load": "{kg} kg",
+      "noLoad": "Load: one you could lift 2-3 more times",
+      "pausedNoLoad": "No load until a professional has assessed it",
+      "ceiling": "At most {kg} kg",
+      "swapped": "Instead of {name} (paused)"
+    },
+    "actions": {
+      "no_data": "First time",
+      "add_reps": "Same load, more reps",
+      "increase_load": "Increase the load",
+      "too_easy": "Too easy: increase the load",
+      "stalled": "Stalled",
+      "restart": "Back after a break",
+      "hold": "Keep load and reps",
+      "paused": "Paused for an injury",
+      "no_training": "No training",
+      "deload": "Deload: same loads"
+    },
+    "setsBasis": {
+      "log": "Sets from your log",
+      "coach_convention": "No log yet: 2-3 sets",
+      "weekly_sets": "One more set, towards 10 per muscle",
+      "deload": "Sets cut for the deload"
+    },
+    "conventionCoach": "Coach convention",
+    "patterns": {
+      "legs": "Legs",
+      "push": "Push",
+      "pull": "Pull"
+    },
+    "mma": {
+      "allowed": "You can do",
+      "excluded": "Out this week"
+    },
+    "modalities": {
+      "walking_brisk": "Brisk walking",
+      "continuous_moderate": "Continuous moderate cardio",
+      "hiit": "HIIT",
+      "sprints": "All-out sprints",
+      "sit": "SIT (all-out sprints)",
+      "rehit": "REHIT",
+      "jump_rope": "Skipping rope",
+      "one_rm_test": "1RM test",
+      "plyometrics": "Plyometric jumps",
+      "near_maximal_lift": "Near-maximal lifts",
+      "sparring_hard": "Hard sparring",
+      "sparring_light": "Light sparring",
+      "competition": "Competition",
+      "pads_hard": "Fast-paced pad work",
+      "bag_slow": "Slow-paced bag work",
+      "technical_drilling": "Technique and drilling",
+      "drills_all_out": "All-out drills",
+      "rolling_hard": "Hard rolling",
+      "rolling_flow": "Flow rolling"
+    },
+    "intensity": {
+      "light": "Light",
+      "moderate": "Moderate",
+      "vigorous": "Vigorous",
+      "maximal": "Maximal"
+    },
+    "blockedBy": {
+      "review_before_vigorous": "until a professional reviews vigorous work",
+      "cap_moderate": "light or moderate intensity only",
+      "no_all_out_sprints": "SIT and REHIT need every PAR-Q+ answer to be NO",
+      "no_contact": "no contact until a clinician clears you",
+      "no_training": "no training until a doctor reviews it",
+      "prerequisites": "they need 4 weeks of regular moderate cardio without symptoms"
+    },
+    "cardio": {
+      "dose": "{minutes} min a week of moderate cardio",
+      "mma": "Your MMA sessions add up to {minutes} min a week and count as moderate cardio",
+      "remaining": "{minutes} min to go: {perDay} min × {days, plural, one {# day} other {# days}}",
+      "covered": "Your MMA sessions already cover the minimum.",
+      "zone": "Effort RPE {low}-{high}",
+      "zoneBpm": "{low}-{high} bpm",
+      "options": "Options",
+      "excluded": "Not in your plan"
+    },
+    "nutrition": {
+      "kcal": "{kcal} kcal a day",
+      "deficit": "in a deficit",
+      "protein": "Protein {g} g",
+      "fat": "Fat {g} g",
+      "carbs": "Carbohydrate {g} g",
+      "fibre": "Fibre {g} g",
+      "missing": "No calorie targets: a profile detail is missing.",
+      "blocked": "No calorie targets, for safety."
+    },
+    "safetyNone": "No safety flags are active.",
+    "strength": {
+      "week": "Week from {start} to {end}",
+      "reference": "Reference: about {n} hard sets a week per muscle",
+      "unmapped": "Not mapped (they don't count): {names}",
+      "empty": "No sets logged yet."
+    },
+    "muscles": {
+      "chest": "Chest",
+      "back": "Back",
+      "front_delts": "Front delts",
+      "side_delts": "Side delts",
+      "rear_delts": "Rear delts",
+      "biceps": "Biceps",
+      "triceps": "Triceps",
+      "quads": "Quads",
+      "hamstrings": "Hamstrings",
+      "glutes": "Glutes",
+      "adductors": "Adductors",
+      "calves": "Calves"
+    },
+    "startSession": "Start session {key}",
+    "routineCta": "Build your weekly plan with the coach",
+    "routineActive": "Coach's plan · week of {date}",
+    "routineEdit": "Change the plan",
+    "deload": {
+      "title": "Deload week",
+      "body": "You accepted it in the weekly review: sets cut by {low}-{high} %, the same loads and every set {rir} or more reps short of failure.",
+      "rest": "Add {low}-{high} rest days this week.",
+      "effort": "Stop every set {rir} or more reps short of failure"
+    }
+  },
+  "weeklyReview": {
+    "title": "Weekly review",
+    "back": "← Training",
+    "intro": "What your data for the week says and whether anything should change. Every number comes from the coach's engine and every proposal carries its rule.",
+    "loading": "Loading…",
+    "error": "The review could not be loaded.",
+    "weekEnding": "Week from {start} to {end}",
+    "form": {
+      "title": "How it went",
+      "weekEnd": "Last day of the reviewed week",
+      "signsQuestion": "Which of these have been with you for 1-2 weeks?",
+      "signsHint": "If the coach sees a stalled lift, it counts as a performance stall even if you do not tick it.",
+      "run": "Run the review",
+      "rerun": "Run the review again",
+      "running": "Reviewing…"
+    },
+    "signs": {
+      "performance_stall": "My performance has stalled",
+      "joint_aches": "Aching joints",
+      "poor_sleep": "Poor sleep",
+      "low_motivation": "Low motivation",
+      "drop_despite_rest": "Performance drops even after rest",
+      "low_mood": "Low mood"
+    },
+    "errors": {
+      "profile_incomplete": "You still need to finish the onboarding screening.",
+      "week_end_future": "The week cannot end after today.",
+      "week_end_too_old": "Only the last 8 weeks can be reviewed.",
+      "already_accepted": "This review has already been accepted.",
+      "superseded": "There is a newer review: accept that one.",
+      "calories_blocked": "For safety, calories are not changed.",
+      "no_training": "No training until a doctor reviews it: no deload and no plan.",
+      "generic": "That did not work. Please try again."
+    },
+    "completeOnboarding": "Finish the screening",
+    "status": {
+      "pending": "Waiting for you to accept",
+      "accepted": "Accepted"
+    },
+    "sections": {
+      "adherence": "Adherence",
+      "weight": "Weight",
+      "calories": "Calories",
+      "training": "Training",
+      "recovery": "Recovery",
+      "proposals": "Proposals",
+      "narrative": "Summary",
+      "safety": "Safety notes",
+      "rules": "Rules used"
+    },
+    "adherence": {
+      "planned": "{done} of {planned} planned sessions",
+      "noPlan": "No plan applied this week: only what you logged counts.",
+      "kinds": {
+        "gym": "Gym",
+        "mma": "MMA",
+        "cardio": "Cardio"
+      },
+      "count": "{kind}: {done} of {planned}",
+      "countNoPlan": "{kind}: {done}",
+      "done": "Done",
+      "missed": "Not logged",
+      "rotation": "If you missed a session, carry on with the next one in the plan; do not catch up.",
+      "intake": "You ate {mean} kcal on average over {days, plural, one {# logged day} other {# logged days}}; your target is {target} kcal ({diff} kcal).",
+      "intakeNoTarget": "You ate {mean} kcal on average over {days, plural, one {# logged day} other {# logged days}}.",
+      "intakeNone": "No intake logged this week: add it in the check-in to compare it with your target.",
+      "intakeBlocked": "For safety, what you eat is not compared with a calorie target."
+    },
+    "weight": {
+      "ok": "Trend: {kg} kg average over the last week; {rate} kg a week ({pct} % a week) over {days} days.",
+      "insufficient": "No trend yet: it needs {minPoints} weigh-ins over {minDays} days (you have {points}). Without a trend, no conclusion is drawn.",
+      "disabled": "No weight data, for safety."
+    },
+    "calories": {
+      "range": "The range for your goal is {low} to {high} % of body weight a week.",
+      "inRange": "Your rate is inside the range: no calorie change is proposed.",
+      "outOfRange": "Your rate is outside the range.",
+      "noRateRule": "No rule gives a rate for your goal, so no calorie change is proposed.",
+      "insufficient": "Without a trend, calories are not changed.",
+      "blocked": "For safety, there are no calorie targets.",
+      "tdee": "Maintenance measured from your trend: {kcal} kcal a day.",
+      "tdeeWait": "With under 4 weeks of weigh-ins only the direction is checked: maintenance is not recalculated yet.",
+      "tdeeNoIntake": "Recalculating maintenance needs the intake logged in the check-in.",
+      "noChange": "Outside the range, but the engine does not change your target with your current safety notes.",
+      "current": "Your current target: {kcal} kcal a day."
+    },
+    "training": {
+      "sets": "Hard sets per muscle ({start} – {end}); the reference of {ref} a week is for muscle gain, not a minimum.",
+      "lifts": "Progression per exercise",
+      "stalled": "Stalled: counts as a performance stall.",
+      "load": "{kg} kg",
+      "noLifts": "No sets logged in the last 4 weeks.",
+      "blocked": "No training advice until a doctor clears it."
+    },
+    "recovery": {
+      "no_signs": "No recovery signs: no deload needed.",
+      "not_indicated": "One sign on its own does not call for a deload.",
+      "indicated": "Several signs together: a deload week is proposed.",
+      "no_training": "No training until a doctor reviews it: no deload advice.",
+      "derived": "Counted by the coach: {signs}.",
+      "ache": "If an ache persists after the deload week, see your GP or a physiotherapist."
+    },
+    "proposals": {
+      "none": "No changes to propose this week.",
+      "calories": "Calories: from {current} to {kcal} kcal a day ({change} kcal).",
+      "caloriesStep": "One step of {step} kcal down; the rest is reviewed in 2-4 weeks.",
+      "caloriesDeficit": "With a {deficit} kcal deficit below your maintenance.",
+      "deload": "Deload week: cut your sets by {low}-{high} %, keep the loads and stop every set at least {rir} reps short of failure.",
+      "rest": "Add {low}-{high} rest days.",
+      "accept": "Accept what is ticked",
+      "acceptNone": "Accept without changes",
+      "accepting": "Accepting…",
+      "acceptedNote": "Accepted. What you accepted now counts towards your calorie targets.",
+      "planReady": "You have a new plan for the week of {date}: check it and apply it.",
+      "goPlan": "See the new plan",
+      "noPlan": "With no changes accepted, the plan stays the same.",
+      "accepted": "Accepted",
+      "declined": "Not accepted"
+    },
+    "narrativeNote": "Written by the AI from the review; the numbers are the review's.",
+    "safetyNone": "No safety notes.",
+    "stale": {
+      "title": "Evidence to re-check (admin only)",
+      "body": "These evidence files had their sources checked more than {months} months ago.",
+      "checked": "checked on {date}",
+      "never": "no check date",
+      "origin": {
+        "upstream": "coach",
+        "fightlab": "FightLab annex"
+      }
+    }
+  },
+  "weightPrompt": {
+    "title": "Add your weight to calculate {what}",
+    "invalid": "Enter a valid weight in kg (30–300).",
+    "saveError": "Couldn't save. Please try again.",
+    "placeholder": "Weight (kg)",
+    "label": "Weight in kg",
+    "save": "Save",
+    "saving": "Saving…"
+  },
+  "shell": {
+    "serverWarmup": "Waking the server up…",
+    "stateRejected": {
+      "body": "A change couldn't be saved to your account (invalid data or limit reached). It's still on this device.",
+      "close": "Close"
+    },
+    "gate": {
+      "slow": "The server is taking a while to respond.",
+      "error": "Couldn't load your profile.",
+      "retry": "Try again"
+    }
+  }
+}

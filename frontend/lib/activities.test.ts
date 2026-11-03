@@ -126,7 +126,8 @@ describe("fetchServerMetrics: mapeo de band", () => {
 
   test("band con datos: mapea snake_case del backend a LoadBand", async () => {
     stubFetch({
-      week_au: 700, daily7: [100, 100, 100, 100, 100, 100, 100], acwr: 1.0, provisional: false,
+      week_au: 700, daily7: [100, 100, 100, 100, 100, 100, 100], acwr: 1.0,
+      week_vs_avg_pct: 0, ratio_days_left: 0, gaps: false,
       monotonia: 2.5, tension: 1750, sin_variacion: false, history_days: 28,
       band: { week_au: 700, low: 630, high: 770, overreach: 840, status: "sostenible", provisional: false },
     });
@@ -134,15 +135,20 @@ describe("fetchServerMetrics: mapeo de band", () => {
     expect(m?.band).toEqual({
       weekAU: 700, low: 630, high: 770, overreach: 840, status: "sostenible", provisional: false,
     });
+    // Forma E.5: la semana frente a la media y los días que faltan, sin `provisional` de primer nivel
+    expect(m).toMatchObject({ acwr: 1.0, weekVsAvgPct: 0, ratioDaysLeft: 0, gaps: false, historyDays: 28 });
+    expect(m).not.toHaveProperty("provisional");
   });
 
   test("band null pasa tal cual (no se mezcla con la banda local)", async () => {
     stubFetch({
-      week_au: 0, daily7: [0, 0, 0, 0, 0, 0, 0], acwr: null, provisional: true,
+      week_au: 0, daily7: [0, 0, 0, 0, 0, 0, 0], acwr: null,
+      week_vs_avg_pct: null, ratio_days_left: 28, gaps: false,
       monotonia: null, tension: null, sin_variacion: false, history_days: 0, band: null,
     });
     const m = await fetchServerMetrics();
     expect(m?.band).toBeNull();
+    expect(m).toMatchObject({ acwr: null, weekVsAvgPct: null, ratioDaysLeft: 28 });
   });
 
   test("si el endpoint de métricas falla, devuelve null (fallback a lo local)", async () => {

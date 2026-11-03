@@ -1,9 +1,12 @@
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
+from core.messages import msg
+
 from .constants import MAX_ACTIVITIES_PER_DAY
 from .models import Activity
 from .serializers import SyncItemSerializer
+from .sets import set_logs_for_new_activity
 
 MAX_SYNC_ITEMS = 500
 
@@ -17,6 +20,7 @@ def activities_sync(*, user, items: list) -> list[dict]:
     - invalid: no pasa validación — TERMINAL: el cliente debe sacarlo de su cola
     El choque de la constraint única se captura con savepoint por item para no
     envenenar la transacción (Postgres aborta la transacción tras un IntegrityError).
+    Las series de gimnasio (`sets` o `detail.exercises`) se guardan en `SetLog` (Task 6.1).
     """
     results: list[dict] = []
     for raw in items:
@@ -27,6 +31,7 @@ def activities_sync(*, user, items: list) -> list[dict]:
             continue
         data = dict(ser.validated_data)
         cid = data.pop("client_id")
+        sets = data.pop("sets", None)
         already = Activity.objects.filter(
             profile=user.profile, source=Activity.Source.MANUAL, external_id=cid
         ).exists()
@@ -39,7 +44,7 @@ def activities_sync(*, user, items: list) -> list[dict]:
             results.append({
                 "client_id": cid,
                 "status": "invalid",
-                "errors": {"started_at": [f"Máximo {MAX_ACTIVITIES_PER_DAY} actividades por día."]},
+                "errors": {"started_at": [msg("activities_max_per_day", n=MAX_ACTIVITIES_PER_DAY)]},
             })
             continue
         try:
@@ -50,6 +55,7 @@ def activities_sync(*, user, items: list) -> list[dict]:
                     external_id=cid,
                     **data,
                 )
+                set_logs_for_new_activity(act, sets)
             results.append({"client_id": cid, "status": "created", "id": act.id})
         except IntegrityError:
             existing = (

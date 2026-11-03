@@ -17,10 +17,9 @@ export type Item = {
 
 export const MEALS = ["Desayuno", "Comida", "Cena", "Snack"];
 
+// Los valores de siempre del selector de la pantalla de Nutrición. Los objetivos ya no se
+// calculan aquí: salen de `GET /coach/targets` (fase 4).
 export type Goal = "perder" | "mantener" | "ganar";
-export const GOAL_LABEL: Record<Goal, string> = { perder: "Perder", mantener: "Mantener", ganar: "Ganar" };
-
-export type Macros = { kcal: number; p: number; c: number; f: number };
 
 // Alimentos de ejemplo, valores por 100 g
 export const FOODS: { name: string; kcal: number; p: number; c: number; f: number }[] = [
@@ -41,6 +40,37 @@ export const FOODS: { name: string; kcal: number; p: number; c: number; f: numbe
   { name: "Queso fresco batido", kcal: 72, p: 12, c: 4, f: 0.2 },
 ];
 
+// Nombres en inglés de los alimentos de ejemplo y de los platos simulados de la foto. Lo que
+// se guarda es el nombre que vio el usuario. (Fase 8: la tabla del motor ya trae los dos idiomas.)
+const EN_NAMES: Record<string, string> = {
+  "Pechuga de pollo": "Chicken breast",
+  "Arroz blanco cocido": "Cooked white rice",
+  "Huevo": "Egg",
+  "Avena": "Oats",
+  "Plátano": "Banana",
+  "Atún en lata": "Tinned tuna",
+  "Pan integral": "Wholemeal bread",
+  "Yogur natural": "Natural yoghurt",
+  "Almendras": "Almonds",
+  "Lentejas cocidas": "Cooked lentils",
+  "Salmón": "Salmon",
+  "Patata cocida": "Boiled potato",
+  "Boniato": "Sweet potato",
+  "Aguacate": "Avocado",
+  "Queso fresco batido": "Quark",
+  "Verduras salteadas": "Stir-fried vegetables",
+  "Ensalada mixta": "Mixed salad",
+  "Aceite de oliva": "Olive oil",
+  "Pollo con arroz y verduras": "Chicken with rice and vegetables",
+  "Ensalada con atún": "Tuna salad",
+  "Tostada de aguacate y huevo": "Avocado and egg toast",
+  "Bol de avena con plátano": "Oat bowl with banana",
+};
+
+export function foodName(name: string, locale: string): string {
+  return locale === "en" ? (EN_NAMES[name] ?? name) : name;
+}
+
 export function scale(food: { kcal: number; p: number; c: number; f: number }, grams: number) {
   const k = grams / 100;
   return {
@@ -49,16 +79,6 @@ export function scale(food: { kcal: number; p: number; c: number; f: number }, g
     c: Math.round(food.c * k),
     f: Math.round(food.f * k),
   };
-}
-
-export function targets(weightKg: number, heightCm: number, age: number, gender: string | null, goal: Goal): Macros {
-  const bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + (gender === "FEMALE" ? -161 : 5);
-  const tdee = bmr * 1.55;
-  const kcal = Math.round(goal === "perder" ? tdee - 500 : goal === "ganar" ? tdee + 300 : tdee);
-  const p = Math.round(weightKg * 2);
-  const f = Math.round((kcal * 0.25) / 9);
-  const c = Math.max(0, Math.round((kcal - p * 4 - f * 9) / 4));
-  return { kcal, p, c, f };
 }
 
 function isoDate(d: Date) {
@@ -207,5 +227,15 @@ export function photoErrorForStatus(status: number): string | null {
   if (status === 503) return "La IA no está disponible ahora mismo. Añade la comida a mano mientras tanto.";
   if (status === 429) return "Has llegado al límite diario de fotos con IA. Añade la comida a mano mientras tanto.";
   if (status === 502) return "La IA no ha podido analizar la foto. Añade la comida a mano mientras tanto.";
+  return null;
+}
+
+/** Lo mismo que `photoErrorForStatus`, pero como clave estable para el
+ *  catálogo de textos (`nutrition.add.photo.errors.<clave>`). */
+export type PhotoErrorKind = "unavailable" | "quota" | "failed";
+export function photoErrorKind(status: number): PhotoErrorKind | null {
+  if (status === 503) return "unavailable";
+  if (status === 429) return "quota";
+  if (status === 502) return "failed";
   return null;
 }

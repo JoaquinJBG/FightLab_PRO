@@ -55,9 +55,9 @@ describe("loadMetrics", () => {
     expect(m.historyDays).toBe(0);
   });
 
-  test("ACWR sigue null por debajo de 10 días de historial (umbral)", () => {
+  test("ACWR sigue null por debajo de 28 días de historial (umbral E.5)", () => {
     const now = Date.now();
-    // 7 días de sesiones: hay carga pero historial < 10
+    // 7 días de sesiones: hay carga pero historial < 28
     const sessions = Array.from({ length: 7 }, (_, i) => ({ ts: now - i * DAY, load: 100 }));
     seedActivities(sessions);
     const m = loadMetrics();
@@ -74,14 +74,31 @@ describe("loadMetrics", () => {
     expect(m.sinVariacion).toBe(true);
   });
 
-  test("con 14 días de carga estable, ACWR ~1.0 y provisional", () => {
+  // E.5: ya no hay "ACWR provisional" con 14 días; el ratio solo aparece con 28 días y,
+  // mientras tanto, se dice cuántos faltan. Lo provisional es solo la banda (band.provisional).
+  test("con 14 días de carga estable: sin ratio, faltan 14 días y banda provisional", () => {
     const now = Date.now();
     const sessions = Array.from({ length: 14 }, (_, i) => ({ ts: now - i * DAY, load: 100 }));
     seedActivities(sessions);
     const m = loadMetrics();
     expect(m.historyDays).toBe(14);
+    expect(m.acwr).toBeNull();
+    expect(m.weekVsAvgPct).toBeNull();
+    expect(m.ratioDaysLeft).toBe(14);
+    expect(m.band!.provisional).toBe(true);
+    expect(m).not.toHaveProperty("provisional");
+  });
+
+  test("con 28 días de carga estable: ratio ~1.0, en tu media y sin huecos", () => {
+    const now = Date.now();
+    const sessions = Array.from({ length: 28 }, (_, i) => ({ ts: now - i * DAY, load: 100 }));
+    seedActivities(sessions);
+    const m = loadMetrics();
+    expect(m.historyDays).toBe(28);
     expect(m.acwr).toBeCloseTo(1.0, 1);
-    expect(m.provisional).toBe(true);
+    expect(m.weekVsAvgPct).toBe(0);
+    expect(m.ratioDaysLeft).toBe(0);
+    expect(m.gaps).toBe(false);
   });
 });
 
@@ -146,18 +163,16 @@ describe("loadMetrics().band", () => {
   });
 });
 
-// P0.1b: el semáforo pasa de la zona fija de ACWR (0.8–1.3) a la banda
-// personal. Estos tests fijan el contrato que consumen las 3 vistas (mini-
-// resumen de Entreno, Home y "Carga vs tu rango"): mismo lenguaje (label/
-// color) y mismos umbrales de historial para el mensaje de "faltan X días".
+// La banda es un dato secundario (manda el anexo de combate): sin semáforo ni consejos. Las
+// etiquetas viven en el catálogo (`load.band.status.*`); aquí solo queda un color, el mismo
+// para todos los estados. Los umbrales de historial siguen siendo el contrato de las 3 vistas.
 describe("LOAD_BAND_META", () => {
-  test("define label, color y hint para cada estado de la banda", () => {
+  test("un único color neutro para todos los estados y ningún texto", () => {
     const statuses: LoadBandStatus[] = ["descarga", "sostenible", "elevada", "alta"];
-    for (const s of statuses) {
-      expect(LOAD_BAND_META[s].label.length).toBeGreaterThan(0);
-      expect(LOAD_BAND_META[s].color.length).toBeGreaterThan(0);
-      expect(LOAD_BAND_META[s].hint.length).toBeGreaterThan(0);
-    }
+    const colors = new Set(statuses.map((s) => LOAD_BAND_META[s].color));
+    expect(colors.size).toBe(1);
+    expect([...colors][0]).not.toMatch(/good|warn|bad/);
+    for (const s of statuses) expect(Object.keys(LOAD_BAND_META[s])).toEqual(["color"]);
   });
 });
 

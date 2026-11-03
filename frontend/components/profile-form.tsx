@@ -1,27 +1,30 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useProfile, useUpdateProfile } from "@/lib/hooks";
-import { DobInput, validateDob, dobToIso, type Dob } from "./dob-input";
+import { useLocale, useTranslations } from "next-intl";
+import { LANGUAGE_SELECTOR_ENABLED, LOCALES, type Locale } from "@/lib/locale";
+import { DobInput, dobErrorCode, dobToIso, type Dob, type DobLabels } from "./dob-input";
 
-const genders: [string, string][] = [
-  ["MALE", "Hombre"],
-  ["FEMALE", "Mujer"],
-  ["OTHER", "Otro"],
-];
-const stances: [string, string][] = [
-  ["ORTHODOX", "Ortodoxo"],
-  ["SOUTHPAW", "Zurdo"],
-  ["SWITCH", "Switch"],
-];
+const GENDERS = ["MALE", "FEMALE", "OTHER"] as const;
+const STANCES = ["ORTHODOX", "SOUTHPAW", "SWITCH"] as const;
 
+const LANGUAGE_NAMES: Record<Locale, string> = { es: "Español", en: "English" };
+
+/** El idioma solo se puede cambiar con `selectorEnabled` (spec §7.5, apagado hasta la fase I). */
 export function ProfileForm({
   submitLabel,
   onSaved,
+  selectorEnabled = LANGUAGE_SELECTOR_ENABLED,
 }: {
   submitLabel: string;
   onSaved: () => void;
+  selectorEnabled?: boolean;
 }) {
+  const t = useTranslations("profile");
+  const router = useRouter();
+  const uiLocale = useLocale();
   const { data: profile } = useProfile();
   const update = useUpdateProfile();
   const [loaded, setLoaded] = useState(false);
@@ -29,6 +32,7 @@ export function ProfileForm({
   const [gender, setGender] = useState("");
   const [heightCm, setHeightCm] = useState("");
   const [stance, setStance] = useState("");
+  const [language, setLanguage] = useState<Locale>("es");
   const [formError, setFormError] = useState<string | null>(null);
 
   // Precarga el formulario la primera vez que llega el perfil (los datos
@@ -41,6 +45,7 @@ export function ProfileForm({
     setGender(profile.gender ?? "");
     setHeightCm(profile.height_cm != null ? String(profile.height_cm) : "");
     setStance(profile.dominant_stance ?? "");
+    setLanguage(profile.language);
     setLoaded(true);
   }
 
@@ -51,9 +56,9 @@ export function ProfileForm({
 
     const dobEmpty = !dob.day && !dob.month && !dob.year;
     if (!dobEmpty) {
-      const err = validateDob(dob);
-      if (err) {
-        setFormError(err);
+      const code = dobErrorCode(dob);
+      if (code) {
+        setFormError(t(`form.dobErrors.${code}`));
         return;
       }
     }
@@ -63,34 +68,41 @@ export function ProfileForm({
       gender: gender || null,
       height_cm: heightCm ? Number(heightCm) : null,
       dominant_stance: stance || null,
+      ...(selectorEnabled ? { language } : {}),
     };
     try {
       await update.mutateAsync(payload);
       onSaved();
+      // El BFF ha copiado el idioma a la cookie flp_lang: se recargan los catálogos del servidor.
+      if (selectorEnabled && language !== uiLocale) router.refresh();
     } catch {
       /* error mostrado abajo via update.isError */
     }
   }
 
   const selectCls = "field appearance-none px-3 py-3 text-sm";
+  const dobLabels: DobLabels = {
+    day: t("form.day"), month: t("form.month"), year: t("form.year"),
+    dd: t("form.dd"), mm: t("form.mm"), yyyy: t("form.yyyy"),
+  };
 
   return (
     <form className="flex flex-col gap-3" onSubmit={onSubmit}>
       <div className="flex flex-col gap-1.5">
-        <span className="t-label text-muted">Fecha de nacimiento</span>
-        <DobInput value={dob} onChange={setDob} />
+        <span className="t-label text-muted">{t("form.dob")}</span>
+        <DobInput value={dob} onChange={setDob} labels={dobLabels} />
       </div>
 
       <label className="flex flex-col gap-1.5">
-        <span className="t-label text-muted">Sexo</span>
+        <span className="t-label text-muted">{t("form.gender")}</span>
         <select value={gender} onChange={(e) => setGender(e.target.value)} className={selectCls}>
-          <option value="">Selecciona…</option>
-          {genders.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          <option value="">{t("form.select")}</option>
+          {GENDERS.map((v) => <option key={v} value={v}>{t(`options.gender.${v}`)}</option>)}
         </select>
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className="t-label text-muted">Altura (cm)</span>
+        <span className="t-label text-muted">{t("form.height")}</span>
         <input
           type="number"
           inputMode="numeric"
@@ -103,18 +115,27 @@ export function ProfileForm({
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className="t-label text-muted">Guardia (stance)</span>
+        <span className="t-label text-muted">{t("form.stance")}</span>
         <select value={stance} onChange={(e) => setStance(e.target.value)} className={selectCls}>
-          <option value="">Selecciona…</option>
-          {stances.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          <option value="">{t("form.select")}</option>
+          {STANCES.map((v) => <option key={v} value={v}>{t(`options.stance.${v}`)}</option>)}
         </select>
       </label>
 
+      {selectorEnabled && (
+        <label className="flex flex-col gap-1.5">
+          <span className="t-label text-muted">{t("form.language")}</span>
+          <select value={language} onChange={(e) => setLanguage(e.target.value as Locale)} className={selectCls} data-testid="profile-language">
+            {LOCALES.map((v) => <option key={v} value={v}>{LANGUAGE_NAMES[v]}</option>)}
+          </select>
+        </label>
+      )}
+
       {formError && <p className="text-xs text-bad">{formError}</p>}
       {update.isError && !formError && <p className="text-xs text-bad">{(update.error as Error).message}</p>}
-      {update.isSuccess && <p className="text-xs text-good">Guardado ✓</p>}
+      {update.isSuccess && <p className="text-xs text-good">{t("form.saved")}</p>}
       <button type="submit" disabled={update.isPending} className="btn btn-primary mt-2 disabled:opacity-60">
-        {update.isPending ? "Guardando…" : submitLabel}
+        {update.isPending ? t("form.saving") : submitLabel}
       </button>
     </form>
   );

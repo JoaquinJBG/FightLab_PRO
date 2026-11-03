@@ -1,5 +1,8 @@
+from coach import profile as coach_profile
+from coach import regions as coach_regions
 from django.conf import settings
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 
 from . import constants as limits
@@ -7,6 +10,65 @@ from . import constants as limits
 
 def _range(bounds):
     return [MinValueValidator(bounds[0]), MaxValueValidator(bounds[1])]
+
+
+# Los valores del perfil del coach, con la misma semántica (spec §6.1-6.2).
+EQUATION_SEXES = [(s, s) for s in coach_profile.SEXES]
+GOALS = [(g, g) for g in coach_profile.GOALS]
+EXPERIENCE = [(e, e) for e in coach_profile.EXPERIENCE]
+ACTIVITY_LEVELS = [(a, a) for a in coach_profile.ACTIVITY_LEVELS]
+LANGUAGES = [(lang, lang) for lang in coach_profile.LANGUAGES]
+DEFAULT_LANGUAGE = "es"
+# Cómo se midió la grasa corporal (U04). Solo los cuatro primeros valen para una ecuación con
+# masa magra (`coaching.bridge.energy_athletes.RELIABLE_BODY_FAT_METHODS`).
+BODY_FAT_METHODS = [
+    ("dxa", "DXA"),
+    ("bodpod", "BodPod"),
+    ("bia_lab", "BIA de laboratorio u octopolar"),
+    ("skinfolds", "Pliegues cutáneos"),
+    ("smart_scale", "Báscula doméstica"),
+    ("other", "Otro método"),
+]
+# convention (FightLab): hasta 14 sesiones a la semana (dos al día), solo control de entrada.
+MAX_TRAINING_FREQUENCY = 14
+
+
+def validate_region(code: str) -> None:
+    """Solo regiones con carpeta en el motor (`regions/<code>/region.yaml`)."""
+    try:
+        coach_regions.region_dir(code)
+    except ValueError as exc:
+        raise ValidationError(str(exc)) from None
+
+
+def _validate_tokens(value, allowed: tuple[str, ...]) -> None:
+    if not isinstance(value, list) or not all(isinstance(v, str) for v in value):
+        raise ValidationError("must be a list of strings")
+    unknown = sorted(set(value) - set(allowed))
+    if unknown:
+        raise ValidationError(f"unknown tokens: {', '.join(unknown)}; allowed: {', '.join(allowed)}")
+
+
+def validate_medications(value) -> None:
+    _validate_tokens(value, coach_profile.MEDICATION_TOKENS)
+
+
+def validate_conditions(value) -> None:
+    _validate_tokens(value, coach_profile.CONDITION_TOKENS)
+
+
+def validate_text_list(value) -> None:
+    if not isinstance(value, list) or not all(isinstance(v, str) and v.strip() for v in value):
+        raise ValidationError("must be a list of non-empty strings")
+
+
+# Campos editables del perfil ampliado (spec §6.2)
+PROFILE_COACH_FIELDS = (
+    "equation_sex", "goal", "experience", "activity_level", "language", "region",
+    "emergency_number", "medications", "medications_other", "conditions", "conditions_other",
+    "disciplines", "training_frequency", "goal_weight_kg", "goal_date", "weight_class",
+    "weigh_in_at",
+)
 
 
 class UserProfile(models.Model):
@@ -38,6 +100,38 @@ class UserProfile(models.Model):
     )
     timezone = models.CharField(max_length=64, default="UTC")
 
+    # --- Perfil del coach (spec §6.2) ---
+    # Se pregunta solo si `gender` es OTHER o nulo: las ecuaciones existen para female y male.
+    equation_sex = models.CharField(max_length=6, choices=EQUATION_SEXES, null=True, blank=True)
+    goal = models.CharField(max_length=13, choices=GOALS, null=True, blank=True)
+    experience = models.CharField(max_length=12, choices=EXPERIENCE, null=True, blank=True)
+    activity_level = models.CharField(max_length=13, choices=ACTIVITY_LEVELS, null=True, blank=True)
+    # Idioma de la UI, la API y el chat. Al registrarse sale de `Accept-Language`.
+    language = models.CharField(max_length=2, choices=LANGUAGES, default=DEFAULT_LANGUAGE)
+    region = models.CharField(max_length=8, null=True, blank=True, validators=[validate_region])
+    # El del usuario; si es nulo, el de su región (lo resuelve `coach.safety`).
+    emergency_number = models.CharField(
+        max_length=6,
+        null=True,
+        blank=True,
+        validators=[RegexValidator(coach_profile.EMERGENCY_NUMBER, "2 to 6 digits")],
+    )
+    # Solo los tokens de `docs/safety.md` cambian algo; lo demás se guarda sin clasificar.
+    medications = models.JSONField(default=list, blank=True, validators=[validate_medications])
+    medications_other = models.JSONField(default=list, blank=True, validators=[validate_text_list])
+    conditions = models.JSONField(default=list, blank=True, validators=[validate_conditions])
+    conditions_other = models.JSONField(default=list, blank=True, validators=[validate_text_list])
+
+    # --- Propios de FightLab (plan v1 §1; pesaje que hoy está en localStorage) ---
+    disciplines = models.JSONField(default=list, blank=True, validators=[validate_text_list])
+    training_frequency = models.PositiveSmallIntegerField(
+        null=True, blank=True, validators=[MaxValueValidator(MAX_TRAINING_FREQUENCY)]
+    )
+    goal_weight_kg = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    goal_date = models.DateField(null=True, blank=True)
+    weight_class = models.CharField(max_length=60, null=True, blank=True)
+    weigh_in_at = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return f"Profile<{self.user.email}>"
 
@@ -62,6 +156,8 @@ class BiometricsLog(models.Model):
         max_digits=4, decimal_places=1, null=True, blank=True,
         validators=_range(limits.BODY_FAT_PCT),
     )
+    # Vacío: no se sabe cómo se midió. Sin método fiable, la grasa no entra en el RMR (U04).
+    body_fat_method = models.CharField(max_length=12, choices=BODY_FAT_METHODS, blank=True, default="")
     resting_heart_rate = models.PositiveSmallIntegerField(
         null=True, blank=True, validators=_range(limits.RESTING_HEART_RATE),
     )

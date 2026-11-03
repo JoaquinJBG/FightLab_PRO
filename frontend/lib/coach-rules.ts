@@ -1,5 +1,21 @@
-import { LOAD_BAND_META, type LoadMetrics } from "@/lib/load";
+// Reglas del coach (briefing, recomendaciones y respuestas del chat sin IA), fuera de la página
+// para poder probarlas solas. Todos los textos salen del catálogo (`coach.*`, `load.*` y
+// `combat.*`): las funciones reciben los traductores de la página.
+//
+// La carga sigue el anexo de combate (E.5): la semana frente a la media de 4 semanas en palabras
+// neutras, con su regla. La banda personal (P0.1) solo se dibuja en la vista de Carga: aquí no
+// genera avisos ni consejos de volumen.
+
+import type { useTranslations } from "next-intl";
+import type { LoadMetrics } from "@/lib/load";
 import type { Recovery } from "@/lib/recovery";
+import { COMBAT_RULES, type RuleRef } from "@/lib/combat-rules";
+import { cite, comparisonPhrase, comparisonRule, isBigJump } from "@/lib/load-texts";
+
+export type Tr = ReturnType<typeof useTranslations>;
+
+/** Traductores que usan las reglas: `coach`, `load` y `combat`. */
+export type CoachTr = { t: Tr; tl: Tr; tc: Tr };
 
 /* ------------------- contexto real del atleta (local) -------------------- */
 
@@ -10,6 +26,9 @@ export type Ctx = {
   lastWeightDays: number | null;
   weighTarget: number | null;
   weighDays: number | null;
+  // Contenido de corte (anexo de combate): nunca para menores ni con los bloqueos de la fase 4
+  cutAllowed: boolean;
+  minor: boolean;
 };
 
 export function num(v: string | number | null): number | null {
@@ -18,28 +37,41 @@ export function num(v: string | number | null): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/* --------------------- traducción de datos de recuperación ---------------- */
+
+/** Etiqueta, frase y chips de recuperación en el idioma activo (computeRecovery los da en español). */
+export function recoveryText(r: Recovery, t: Tr) {
+  const chips: string[] = [];
+  if (r.rhrDelta !== undefined) chips.push(t("recovery.chipRhr", { delta: (r.rhrDelta > 0 ? "+" : "") + r.rhrDelta }));
+  if (r.hrvPct !== undefined) chips.push(t("recovery.chipHrv", { delta: (r.hrvPct > 0 ? "+" : "") + r.hrvPct }));
+  return { label: t(`recovery.${r.state}.label`), phrase: t(`recovery.${r.state}.phrase`), chips };
+}
+
 /* --------------------- briefing y recomendaciones por reglas -------------- */
 
-export function buildBriefing(ctx: Ctx): string {
+export function buildBriefing(ctx: Ctx, { t, tl, tc }: CoachTr): { text: string; rules: RuleRef[] } {
   const bits: string[] = [];
+  const rules: RuleRef[] = [];
   if (ctx.recovery?.state === "cuidado") {
-    bits.push("Tus señales de recuperación están bajas: hoy manda la técnica suave o el descanso activo.");
-  } else if (ctx.metrics?.band && (ctx.metrics.band.status === "elevada" || ctx.metrics.band.status === "alta")) {
-    bits.push(`Tu carga de la semana está ${LOAD_BAND_META[ctx.metrics.band.status].label.toLowerCase()}: ${LOAD_BAND_META[ctx.metrics.band.status].hint} Baja el volumen unos días.`);
+    bits.push(t("briefing.care"));
+  } else if (isBigJump(ctx.metrics)) {
+    bits.push(tl("coach.briefingUp", { pct: ctx.metrics!.weekVsAvgPct! }));
+    rules.push(COMBAT_RULES.comparison);
   } else if (ctx.recovery?.state === "listo") {
-    bits.push("Recuperación por encima de tu media: buen día para una sesión exigente.");
+    bits.push(t("briefing.ready"));
   } else if (ctx.metrics && ctx.metrics.weekAU > 0) {
-    bits.push(`Semana en marcha: ${ctx.metrics.weekAU} AU acumuladas. Mantén el ritmo y registra cada sesión.`);
+    bits.push(t("briefing.week", { au: ctx.metrics.weekAU }));
   } else {
-    bits.push("Aún no te conozco del todo: registra tus entrenos (con RPE) y tus mediciones, y este briefing se volverá tuyo de verdad.");
+    bits.push(t("briefing.unknown"));
   }
-  if (ctx.weighTarget != null && ctx.weighDays != null && ctx.weight != null) {
+  if (ctx.cutAllowed && ctx.weighTarget != null && ctx.weighDays != null && ctx.weight != null) {
     const over = ctx.weight - ctx.weighTarget;
     if (over > 0.3 && ctx.weighDays <= 10) {
-      bits.push(`Pesaje en ${ctx.weighDays} días y vas ${over.toFixed(1)} kg por encima: déficit suave, sin recortes agresivos todavía.`);
+      bits.push(tc("cut.briefing", { days: ctx.weighDays, over: over.toFixed(1) }));
+      rules.push(COMBAT_RULES.plannedWeight);
     }
   }
-  return bits.join(" ");
+  return { text: bits.join(" "), rules };
 }
 
 export type Rec = {
@@ -49,30 +81,24 @@ export type Rec = {
   title: string;
   why: string;
   action?: { label: string; href: string };
+  rule?: RuleRef | null; // la regla del número o del consejo; null = convención de FightLab
 };
 
-export function buildRecs(ctx: Ctx): Rec[] {
+export function buildRecs(ctx: Ctx, { t, tl, tc }: CoachTr): Rec[] {
   const recs: Rec[] = [];
   const m = ctx.metrics;
 
-  const band = m?.band ?? null;
-  if (band && (band.status === "elevada" || band.status === "alta")) {
+  // Anexo de combate: la semana frente a la media, en palabras neutras. El "salto grande"
+  // (30 %) es una convención de FightLab; no hay aviso por quedarse por debajo.
+  if (isBigJump(m)) {
     recs.push({
-      id: "carga-alta",
-      icon: "load",
-      tone: "warn",
-      title: `Carga ${LOAD_BAND_META[band.status].label.toLowerCase()} esta semana`,
-      why: `${LOAD_BAND_META[band.status].hint} Mete un día de técnica o descanso para volver a tu rango habitual.`,
-      action: { label: "Ver carga", href: "/training/load" },
-    });
-  } else if (band && band.status === "descarga" && m && m.weekAU > 0 && ctx.recovery?.state !== "cuidado") {
-    recs.push({
-      id: "carga-baja",
+      id: "carga-salto",
       icon: "load",
       tone: "info",
-      title: "Semana por debajo de tu rango",
-      why: `${LOAD_BAND_META[band.status].hint} Si te encuentras bien, tienes margen para sumar una sesión.`,
-      action: { label: "Ir a entrenar", href: "/training" },
+      title: tl("coach.recUp.title", { pct: m!.weekVsAvgPct! }),
+      why: tl("coach.recUp.why"),
+      action: { label: tl("coach.recUp.action"), href: "/training/load" },
+      rule: COMBAT_RULES.comparison,
     });
   }
 
@@ -81,21 +107,20 @@ export function buildRecs(ctx: Ctx): Rec[] {
       id: "recuperacion",
       icon: "rest",
       tone: "warn",
-      title: "Señales de recuperación bajas",
-      why: `${ctx.recovery.chips.join(" · ")}. Prioriza dormir 8 h; si mañana sigue igual, recorta el volumen.`,
+      title: t("recs.recovery.title"),
+      why: t("recs.recovery.why", { chips: recoveryText(ctx.recovery, t).chips.join(" · ") }),
     });
   }
 
-  if (ctx.weighTarget != null && ctx.weighDays != null && ctx.weight != null && ctx.weight - ctx.weighTarget > 0.3) {
+  if (ctx.cutAllowed && ctx.weighTarget != null && ctx.weighDays != null && ctx.weight != null && ctx.weight - ctx.weighTarget > 0.3) {
     recs.push({
       id: "pesaje",
       icon: "weigh",
       tone: ctx.weighDays <= 5 ? "warn" : "info",
-      title: `${(ctx.weight - ctx.weighTarget).toFixed(1)} kg sobre el objetivo · pesaje en ${ctx.weighDays} d`,
-      why: ctx.weighDays > 5
-        ? "Margen razonable: mantén un déficit moderado. No recortes agua ni sodio por tu cuenta."
-        : "Queda poco: revisa el plan con tu entrenador o un médico antes de cualquier corte agresivo.",
-      action: { label: "Plan de pesaje", href: "/nutrition/weigh-in" },
+      title: tc("cut.recTitle", { over: (ctx.weight - ctx.weighTarget).toFixed(1), days: ctx.weighDays }),
+      why: tc("cut.recWhy"),
+      action: { label: tc("cut.recAction"), href: "/nutrition/weigh-in" },
+      rule: COMBAT_RULES.plannedWeight,
     });
   }
 
@@ -104,9 +129,9 @@ export function buildRecs(ctx: Ctx): Rec[] {
       id: "peso-viejo",
       icon: "weigh",
       tone: "info",
-      title: `Sin pesarte desde hace ${ctx.lastWeightDays} días`,
-      why: "Con un pesaje cada 1-2 semanas tu tendencia y tus macros se mantienen fiables.",
-      action: { label: "Apuntar peso", href: "/biometrics/new" },
+      title: t("recs.oldWeight.title", { days: ctx.lastWeightDays }),
+      why: t("recs.oldWeight.why"),
+      action: { label: t("recs.oldWeight.action"), href: "/biometrics/new" },
     });
   }
 
@@ -115,9 +140,9 @@ export function buildRecs(ctx: Ctx): Rec[] {
       id: "empieza",
       icon: "log",
       tone: "info",
-      title: "Registra tu primera sesión de la semana",
-      why: "Con tus entrenos (duración + RPE) calculo tu carga frente a tu rango y te aviso antes de que te pases o te quedes corto.",
-      action: { label: "Ir a entrenar", href: "/training" },
+      title: t("recs.start.title"),
+      why: tl("coach.start"),
+      action: { label: t("recs.start.action"), href: "/training" },
     });
   }
 
@@ -126,57 +151,61 @@ export function buildRecs(ctx: Ctx): Rec[] {
       id: "ok",
       icon: "load",
       tone: "good",
-      title: "Sin avisos: todo en orden 👊",
-      // Solo afirma carga sostenible y recuperación si de verdad hay datos de ambas
-      why: band?.status === "sostenible" && ctx.recovery
-        ? "Carga sostenible y recuperación correcta. Sigue tu plan y nos vemos mañana."
-        : "Sin avisos por ahora. Cuantos más entrenos y mediciones registres, más fino seré.",
+      title: t("recs.ok.title"),
+      // Solo dice "cerca de tu media y recuperación sin avisos" si de verdad hay datos de ambas
+      why: m?.acwr != null && ctx.recovery ? tl("coach.okWhy") : t("recs.ok.whyNoData"),
+      rule: m?.acwr != null && ctx.recovery ? COMBAT_RULES.comparison : undefined,
     });
   }
   return recs;
 }
 
-export function coachReply(text: string, ctx: Ctx): string {
+/* ------------------------- chat sin IA (por reglas) ------------------------ */
+
+export function coachReply(text: string, ctx: Ctx, { t, tl, tc }: CoachTr, listFmt: Intl.ListFormat): string {
   const low = text.toLowerCase();
   const m = ctx.metrics;
-  const band = m?.band ?? null;
-  const bandTxt = band
-    ? `carga ${LOAD_BAND_META[band.status].label.toLowerCase()}${band.provisional ? " (provisional)" : ""}`
-    : "carga aún sin rango (necesito ~14 días de sesiones)";
-  if (/peso|pesaje|corte/.test(low)) {
-    if (ctx.weight == null) return "Aún no tengo tu peso. Regístralo en Biometría y te sigo la tendencia.";
-    if (ctx.weighTarget != null && ctx.weighDays != null) {
+  // La semana frente a la media (o cuántos días faltan), con su regla del anexo de combate
+  const rule = comparisonRule(m);
+  const acwrTxt = comparisonPhrase(m, tl) + (rule ? cite(rule) : "");
+  const rec = ctx.recovery ? recoveryText(ctx.recovery, t) : null;
+  // Las palabras clave cubren es y en: el texto del usuario puede estar en cualquiera.
+  if (/peso|pesaje|corte|weight|weigh|cut/.test(low)) {
+    if (ctx.minor) return tc("cut.minor") + cite(COMBAT_RULES.minorsCut);
+    if (ctx.weight == null) return t("reply.weightNone");
+    if (ctx.cutAllowed && ctx.weighTarget != null && ctx.weighDays != null) {
       const over = ctx.weight - ctx.weighTarget;
       return over > 0
-        ? `Estás a ${over.toFixed(1)} kg del objetivo con ${ctx.weighDays} días de margen. Ritmo razonable: déficit moderado, sin recortar agua ni sodio por tu cuenta. Si hace falta un corte, que lo supervise tu entrenador o un médico.`
-        : `Ya estás en el peso objetivo (${ctx.weighTarget} kg) con ${ctx.weighDays} días de margen. Mantén y llega fresco.`;
+        ? tc("cut.replyOver", { over: over.toFixed(1), days: ctx.weighDays }) + cite(COMBAT_RULES.plannedWeight)
+        : t("reply.weightAt", { target: ctx.weighTarget, days: ctx.weighDays });
     }
-    return `Tu último peso es ${ctx.weight.toFixed(1)} kg. Si tienes combate, configura el pesaje en Nutrición y te llevo el plan.`;
+    return t("reply.weightLast", { weight: ctx.weight.toFixed(1) });
   }
-  if (/fuerte|intens|sparring|entren|hoy/.test(low)) {
-    if (ctx.recovery?.state === "cuidado") return `Hoy no es el día de matarte: ${ctx.recovery.chips.join(" y ")}. Técnica de calidad (RPE 5-6) y a dormir.`;
-    if (band && (band.status === "elevada" || band.status === "alta")) return `Tu ${bandTxt} dice que llevas una subida fuerte. Mi llamada: sesión técnica hoy y la dura dentro de 2 días.`;
-    if (ctx.recovery?.state === "listo") return `Recuperación por encima de tu media y ${bandTxt}: dale duro hoy, tienes margen. Calienta bien.`;
-    return `Con lo que veo (${bandTxt}), un día normal de plan. Registra la sesión al acabar y ajusto el consejo.`;
+  if (/fuerte|intens|sparring|entren|hoy|hard|train|today/.test(low)) {
+    if (rec && ctx.recovery?.state === "cuidado") return t("reply.hardCare", { chips: listFmt.format(rec.chips) });
+    if (isBigJump(m)) return tl("coach.replyHigh", { comparison: acwrTxt });
+    if (ctx.recovery?.state === "listo") return t("reply.hardReady", { acwr: acwrTxt });
+    return t("reply.hardNormal", { acwr: acwrTxt });
   }
-  if (/fatiga|cansad|dolor|recuper/.test(low)) {
-    return ctx.recovery
-      ? `Tus señales: ${ctx.recovery.chips.join(" · ")}. ${ctx.recovery.phrase}`
-      : "No tengo tus señales de recuperación aún: registra FC en reposo y HRV unos días y te las leo cada mañana.";
+  if (/fatiga|cansad|dolor|recuper|fatigue|tired|sore|pain|recover/.test(low)) {
+    return rec ? t("reply.fatigue", { chips: rec.chips.join(" · "), phrase: rec.phrase }) : t("reply.fatigueNone");
   }
-  if (/carga|acwr|riesgo/.test(low)) {
+  if (/carga|acwr|riesgo|load|risk/.test(low)) {
     return m && m.weekAU > 0
-      ? `Semana: ${m.weekAU} AU, ${bandTxt}. ${band ? `${LOAD_BAND_META[band.status].hint} ` : ""}Míralo frente a tu rango habitual, no como un umbral fijo, y evita dos picos seguidos.`
-      : "Aún no hay sesiones esta semana. Registra tus entrenos con RPE y te calculo carga y avisos.";
+      ? tl("coach.replyLoad", { au: m.weekAU, comparison: acwrTxt, mono: m.monotonia != null ? m.monotonia.toFixed(1) : "—" })
+      : tl("coach.replyNone");
   }
-  if (/cómo voy|como voy|resumen/.test(low)) {
+  if (/cómo voy|como voy|resumen|how am i|summary/.test(low)) {
     const parts: string[] = [];
-    if (m && m.weekAU > 0) parts.push(`semana ${m.weekAU} AU, ${bandTxt}`);
-    if (ctx.recovery) parts.push(`recuperación: ${ctx.recovery.label.toLowerCase()}`);
-    if (ctx.weight != null) parts.push(`peso ${ctx.weight.toFixed(1)} kg${ctx.weighTarget != null ? ` (objetivo ${ctx.weighTarget})` : ""}`);
-    return parts.length > 0 ? `Tu foto de hoy: ${parts.join(" · ")}. ¿Quieres el plan del día?` : "Aún no tengo datos tuyos. Empieza registrando un entreno o tu peso y hablamos.";
+    if (m && m.weekAU > 0) parts.push(t("reply.summaryWeek", { au: m.weekAU, acwr: acwrTxt }));
+    if (rec) parts.push(t("reply.summaryRecovery", { label: rec.label.toLowerCase() }));
+    if (ctx.weight != null) {
+      parts.push(ctx.weighTarget != null
+        ? t("reply.summaryWeightTarget", { weight: ctx.weight.toFixed(1), target: ctx.weighTarget })
+        : t("reply.summaryWeight", { weight: ctx.weight.toFixed(1) }));
+    }
+    return parts.length > 0 ? t("reply.summary", { parts: parts.join(" · ") }) : t("reply.summaryNone");
   }
-  if (/gracias|ok|vale|genial/.test(low)) return "A trabajar. Registra la sesión cuando acabes y la cuento en tu carga. 🥊";
-  return `Te leo. Pregúntame por el entreno de hoy, tu carga, tu peso o tu recuperación — te contesto con tus números reales.`;
+  if (/gracias|ok|vale|genial|thanks|great/.test(low)) return t("reply.thanks");
+  return t("reply.default");
 }
-

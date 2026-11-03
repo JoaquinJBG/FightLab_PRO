@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 const SLOW_AFTER_MS = 3000;
 const WARMUP_PATH = "/api/proxy/health";
@@ -12,6 +13,7 @@ const WARMUP_PATH = "/api/proxy/health";
  * discreto que desaparece solo en cuanto el ping responde.
  */
 export function ServerWarmup() {
+  const t = useTranslations("shell");
   const [slow, setSlow] = useState(false);
 
   useEffect(() => {
@@ -41,7 +43,7 @@ export function ServerWarmup() {
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-[calc(env(safe-area-inset-top)+0.5rem)]">
       <p className="t-body pointer-events-auto rounded-full border border-white/10 bg-black/60 px-4 py-1.5 text-xs text-muted shadow-lg backdrop-blur">
-        Despertando el servidor…
+        {t("serverWarmup")}
       </p>
     </div>
   );

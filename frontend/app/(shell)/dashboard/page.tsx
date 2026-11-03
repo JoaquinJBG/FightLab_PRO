@@ -2,20 +2,25 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useBiometrics, useMe } from "@/lib/hooks";
+import { useFormatter, useTranslations } from "next-intl";
+import { useBiometrics, useCheckin, useMe, useSafety, useTrend, useWeighIn } from "@/lib/hooks";
+import { TrendLine } from "@/components/trend/TrendLine";
+import { SafetyBanner } from "@/components/safety/SafetyBanner";
+import { LoadSummary } from "@/components/load/LoadSummary";
+import { ZonesCard } from "@/components/zones/ZonesCard";
 import type { Biometrics } from "@/lib/schemas";
 import { computeRecovery } from "@/lib/recovery";
-import { loadMetrics, LOAD_BAND_META, LOAD_BAND_MIN_DAYS, type LoadMetrics } from "@/lib/load";
+import { loadMetrics, type LoadMetrics } from "@/lib/load";
 import { fetchServerMetrics, fetchServerActivities, serverActivityTs, mergeByClientId, type ActivityKind } from "@/lib/activities";
 import {
   ScaleIcon,
   HeartIcon,
   PulseIcon,
-  BoltIcon,
   ArrowUpRight,
   ChevronRight,
   TrainingIcon,
   GloveIcon,
+  ClipboardIcon,
 } from "@/components/icons";
 
 /* ----------------------------- helpers ----------------------------------- */
@@ -38,8 +43,11 @@ function daysSince(iso: string): number {
 }
 
 /* Estado de hoy: estimación con señales reales de recuperación (lib/recovery).
-   La carga (banda vs tu rango / AU) sale de las sesiones registradas
-   (lib/load). Nada de números inventados. */
+   La carga (AU y la semana frente a tu media, anexo de combate) sale de las
+   sesiones registradas (lib/load). Nada de números inventados. */
+
+const DAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+type Greeting = "hello" | "morning" | "afternoon" | "evening";
 
 /* ----------------------------- subcomponentes ----------------------------- */
 
@@ -86,6 +94,8 @@ function DeltaCard({
   goodWhenDown: boolean;
   delay: number;
 }) {
+  const t = useTranslations("dashboard.metrics");
+  const format = useFormatter();
   const improving = delta != null && (goodWhenDown ? delta < 0 : delta > 0);
   return (
     <div className="glass rise p-3.5" style={{ animationDelay: `${delay}ms` }}>
@@ -99,7 +109,7 @@ function DeltaCard({
       </div>
       {delta != null && delta !== 0 && (
         <p className={`t-body mt-1 text-[11px] ${improving ? "text-good" : "text-warn"}`}>
-          {delta > 0 ? "↑" : "↓"} {Math.abs(delta)} vs tu media
+          {delta > 0 ? "↑" : "↓"} {t("vsAvg", { delta: format.number(Math.abs(delta)) })}
         </p>
       )}
     </div>
@@ -109,7 +119,6 @@ function DeltaCard({
 /* --------------------------------- página --------------------------------- */
 
 type LocalData = {
-  weighTarget: number | null;
   gymWeek: string[] | null;
   trainedTs: number[];
   metrics: LoadMetrics | null;
@@ -143,25 +152,31 @@ function readLocalByKind(): Record<ActivityKind, TsItem[]> {
 }
 
 function readLocalData(): LocalData {
-  const weigh = parseLocalJSON("flp_weigh") as { target?: unknown } | null;
   const week = parseLocalJSON("flp_gym_week");
   const localByKind = readLocalByKind();
   return {
-    weighTarget: weigh && typeof weigh.target === "number" ? weigh.target : null,
     gymWeek: Array.isArray(week) && week.length === 7 ? (week as string[]) : null,
     trainedTs: Object.values(localByKind).flatMap((items) => items.map((i) => i.ts)),
     metrics: loadMetrics(),
   };
 }
 
-function computeGreeting(): string {
+function computeGreeting(): Greeting {
   const h = new Date().getHours();
-  return h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches";
+  return h < 12 ? "morning" : h < 20 ? "afternoon" : "evening";
 }
 
 export default function DashboardPage() {
+  const t = useTranslations("dashboard");
+  const format = useFormatter();
   const { data: me } = useMe();
   const { data: logs = [], isLoading } = useBiometrics();
+  const { data: safety } = useSafety();
+  const { data: weighIn } = useWeighIn();
+  // La tendencia es la del coach (`/coach/trend`), no una diferencia entre pesajes sueltos.
+  const { data: trend } = useTrend(!!weighIn && !weighIn.blocked);
+  const { data: checkin } = useCheckin();
+  const tCheckin = useTranslations("checkin");
 
   // Perezosos: ambos solo dependen del reloj/localStorage al montar, así que
   // se calculan en la inicialización de useState (primera pintura ya real)
@@ -200,17 +215,17 @@ export default function DashboardPage() {
     return () => { alive = false; };
   }, []);
 
-  const name = me?.email ? me.email.split("@")[0] : "atleta";
+  const name = me?.email ? me.email.split("@")[0] : t("athlete");
 
   const Header = (
     <header className="rise flex items-center justify-between" style={{ animationDelay: "0ms" }}>
       <div>
-        <p className="t-label text-muted">{greeting},</p>
+        <p className="t-label text-muted">{t(`greeting.${greeting}`)},</p>
         <h1 className="t-display text-2xl text-ink">{name}</h1>
       </div>
       <Link
         href="/profile"
-        aria-label="Perfil"
+        aria-label={t("profileAria")}
         className="flex h-11 w-11 items-center justify-center rounded-full glass font-display text-sm text-neon"
       >
         {name[0]?.toUpperCase() ?? "?"}
@@ -233,6 +248,13 @@ export default function DashboardPage() {
     );
   }
 
+  /* ---------- bloqueos del servidor (spec §8.3) ---------- */
+  // `no_training`: sin plan ni sugerencias de carga, pero se puede seguir registrando.
+  const noTraining = !!safety?.flags.no_training;
+  // `no_weight_targets`: ni pesaje, ni tendencia de peso, ni recordatorios de pesarse. Si aún no
+  // se sabe (carga), se oculta: es lo seguro.
+  const weightHidden = !weighIn || weighIn.blocked;
+
   /* ---------- datos derivados (todos reales) ---------- */
   const recovery = computeRecovery(logs);
   const latest: Biometrics | undefined = logs[0];
@@ -249,18 +271,17 @@ export default function DashboardPage() {
     .map((l) => num(l.weight_kg))
     .filter((n): n is number => n !== null)
     .slice(-7);
-  const weightDelta = spark.length >= 2 ? spark[spark.length - 1] - spark[0] : null;
 
   const rhrs = logs.map((l) => l.resting_heart_rate).filter((v): v is number => v != null);
   const hrvs = logs.map((l) => l.hrv_ms).filter((v): v is number => v != null);
-  const fats = logs.map((l) => num(l.body_fat_pct ?? null)).filter((v): v is number => v !== null);
+  const fats = weightHidden ? [] : logs.map((l) => num(l.body_fat_pct ?? null)).filter((v): v is number => v !== null);
   const deltaOf = (xs: number[]) =>
     xs.length >= 4 ? Math.round((xs[0] - mean(xs.slice(1, 31))) * 10) / 10 : null;
 
   /* próxima acción de hoy */
   const todayIdx = (new Date().getDay() + 6) % 7; // 0 = lunes
   const todayFocus = local.gymWeek?.[todayIdx] ?? null;
-  const trainedToday = local.trainedTs.filter((t) => sameDay(new Date(t), new Date())).length;
+  const trainedToday = local.trainedTs.filter((ts) => sameDay(new Date(ts), new Date())).length;
 
   /* consistencia semanal: medición o entreno por día */
   const eventTs = [...logs.map((l) => new Date(l.timestamp).getTime()), ...local.trainedTs];
@@ -270,82 +291,127 @@ export default function DashboardPage() {
     d.setHours(0, 0, 0, 0);
     return d;
   });
-  const DAY_LABELS = ["L", "M", "X", "J", "V", "S", "D"];
 
-  const stale = lastWeightDays !== null && lastWeightDays >= 14;
+  const stale = !weightHidden && lastWeightDays !== null && lastWeightDays >= 14;
+  // Distancia al peso objetivo: solo si el servidor la devuelve (con el déficit bloqueado, no).
+  const toGo = weighIn && !weighIn.blocked && weighIn.goal_weight_kg != null && weighIn.to_go_kg != null ? weighIn : null;
+
+  const signed = (n: number) => `${n > 0 ? "+" : ""}${format.number(n)}`;
+  const recoveryChips = recovery
+    ? [
+        recovery.signals.rhrDelta !== null ? t("recovery.chipRhr", { value: signed(recovery.signals.rhrDelta) }) : null,
+        recovery.signals.hrvPct !== null ? t("recovery.chipHrv", { value: signed(recovery.signals.hrvPct) }) : null,
+      ].filter((c): c is string => c !== null)
+    : [];
+  const when = lastWeightDays === 0 ? t("weight.today") : lastWeightDays === 1 ? t("weight.yesterday") : t("weight.daysAgo", { days: lastWeightDays ?? 0 });
 
   return (
     <div className="pt-3">
       {Header}
 
+      {/* Avisos de seguridad del motor (flags calculados en el servidor) */}
+      <SafetyBanner />
+
       {/* ---------- Estado de hoy (readiness-first, sin datos inventados) ---------- */}
-      {recovery ? (
+      {noTraining ? (
+        <section data-testid="state-no-training" className="glass neon-edge rise mt-5 p-5" style={{ animationDelay: "40ms" }}>
+          <p className="t-eyebrow text-muted">{t("state.eyebrow")}</p>
+          <p className="t-display mt-2 text-2xl" style={{ color: "#ff5a6e" }}>{t("state.noTraining")}</p>
+          <p className="t-body mt-2 text-sm text-muted">{t("state.noTrainingBody")}</p>
+        </section>
+      ) : recovery ? (
         <section className="glass neon-edge rise mt-5 p-5" style={{ animationDelay: "40ms" }}>
-          <p className="t-eyebrow text-muted">Estado de hoy · según tu recuperación</p>
+          <p className="t-eyebrow text-muted">{t("state.eyebrowRecovery")}</p>
           <div className="mt-2 flex items-center gap-3">
             <span
               className="h-3.5 w-3.5 shrink-0 rounded-full"
               style={{ background: recovery.color, boxShadow: `0 0 12px ${recovery.color}` }}
             />
-            <p className="t-display text-2xl" style={{ color: recovery.color }}>{recovery.label}</p>
+            <p className="t-display text-2xl" style={{ color: recovery.color }}>{t(`recovery.${recovery.state}.label`)}</p>
           </div>
-          <p className="t-body mt-2 text-sm text-muted">{recovery.phrase}</p>
+          <p className="t-body mt-2 text-sm text-muted">{t(`recovery.${recovery.state}.phrase`)}</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {recovery.chips.map((c) => (
+            {recoveryChips.map((c) => (
               <span key={c} className="badge">{c}</span>
             ))}
           </div>
         </section>
       ) : (
         <section className="glass neon-edge rise mt-5 p-5" style={{ animationDelay: "40ms" }}>
-          <p className="t-eyebrow text-muted">Estado de hoy</p>
-          <p className="t-title mt-2 text-ink">Activa tu readiness</p>
-          <p className="t-body mt-1.5 text-sm text-muted">
-            Registra FC en reposo y HRV durante unos días y te diré cada mañana cómo venir a entrenar.
-          </p>
+          <p className="t-eyebrow text-muted">{t("state.eyebrow")}</p>
+          <p className="t-title mt-2 text-ink">{t("state.activate")}</p>
+          <p className="t-body mt-1.5 text-sm text-muted">{t("state.activateBody")}</p>
           <Link href="/biometrics/new" className="btn btn-tonal btn-sm mt-3">
-            Añadir medidas <ArrowUpRight className="h-3.5 w-3.5" />
+            {t("state.addMeasures")} <ArrowUpRight className="h-3.5 w-3.5" />
           </Link>
         </section>
       )}
 
       {/* ---------- Hoy / próxima acción ---------- */}
       <Link
-        href={trainedToday > 0 ? "/training" : todayFocus && todayFocus !== "Descanso" ? "/training/gym" : "/training"}
+        href={noTraining || trainedToday > 0 ? "/training" : todayFocus && todayFocus !== "Descanso" ? "/training/gym" : "/training"}
         className="glass rise mt-4 flex items-center gap-3 p-4"
         style={{ animationDelay: "90ms" }}
       >
         <span className="text-neon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(69,233,255,0.07)]">
-          {trainedToday > 0 ? <GloveIcon className="h-5 w-5" /> : <TrainingIcon className="h-5 w-5" />}
+          {!noTraining && trainedToday > 0 ? <GloveIcon className="h-5 w-5" /> : <TrainingIcon className="h-5 w-5" />}
         </span>
         <div className="min-w-0 flex-1">
-          {trainedToday > 0 ? (
+          {noTraining ? (
             <>
-              <p className="t-label text-ink">Entreno de hoy hecho ✓</p>
-              <p className="t-body text-xs text-muted">
-                {trainedToday} {trainedToday === 1 ? "sesión registrada" : "sesiones registradas"} · buen trabajo
-              </p>
+              <p className="t-label text-ink">{t("today.logOnly")}</p>
+              <p className="t-body text-xs text-muted">{t("today.logOnlyBody")}</p>
+            </>
+          ) : trainedToday > 0 ? (
+            <>
+              <p className="t-label text-ink">{t("today.done")}</p>
+              <p className="t-body text-xs text-muted">{t("today.sessions", { count: trainedToday })}</p>
             </>
           ) : todayFocus && todayFocus !== "Descanso" ? (
             <>
               <p className="t-label text-ink">
-                Hoy toca: <span className="text-neon">{todayFocus}</span>
+                {t.rich("today.focus", { focus: todayFocus, neon: (c) => <span className="text-neon">{c}</span> })}
               </p>
-              <p className="t-body text-xs text-muted">De tu calendario de gimnasio</p>
+              <p className="t-body text-xs text-muted">{t("today.fromCalendar")}</p>
             </>
           ) : todayFocus === "Descanso" ? (
             <>
-              <p className="t-label text-ink">Hoy: descanso programado</p>
-              <p className="t-body text-xs text-muted">Movilidad suave y a recuperar</p>
+              <p className="t-label text-ink">{t("today.restDay")}</p>
+              <p className="t-body text-xs text-muted">{t("today.restBody")}</p>
             </>
           ) : (
             <>
-              <p className="t-label text-ink">Nada planificado para hoy</p>
-              <p className="t-body text-xs text-muted">Registra un entreno o planifica tu semana</p>
+              <p className="t-label text-ink">{t("today.nothing")}</p>
+              <p className="t-body text-xs text-muted">{t("today.nothingBody")}</p>
             </>
           )}
         </div>
         <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
+      </Link>
+
+      {/* ---------- Check-in de hoy (un solo formulario matinal) ---------- */}
+      <Link
+        href="/checkin"
+        data-testid="checkin-card"
+        className="glass rise mt-4 flex items-center gap-3 p-4"
+        style={{ animationDelay: "105ms" }}
+      >
+        <span className="text-neon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(69,233,255,0.07)]">
+          <ClipboardIcon className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="t-label text-ink">
+            {checkin?.checkin ? tCheckin("homeCard.done") : tCheckin("homeCard.title")}
+          </p>
+          <p className="t-body text-xs text-muted">
+            {checkin?.checkin && checkin.readiness.status !== "no_data"
+              ? tCheckin(`readiness.${checkin.readiness.status}`)
+              : tCheckin("homeCard.todo")}
+          </p>
+        </div>
+        <span className="t-label shrink-0 text-neon">
+          {checkin?.checkin ? tCheckin("homeCard.update") : tCheckin("homeCard.cta")}
+        </span>
       </Link>
 
       {/* ---------- Recordatorio quincenal ---------- */}
@@ -357,50 +423,48 @@ export default function DashboardPage() {
         >
           <span className="text-neon"><ScaleIcon className="h-5 w-5" /></span>
           <div className="flex-1">
-            <p className="t-label text-ink">¿Apuntamos tu peso?</p>
-            <p className="t-body text-xs text-muted">
-              Hace {lastWeightDays} días de tu último peso · recordatorio cada 2 semanas.
-            </p>
+            <p className="t-label text-ink">{t("weightReminder.title")}</p>
+            <p className="t-body text-xs text-muted">{t("weightReminder.body", { days: lastWeightDays ?? 0 })}</p>
           </div>
           <ArrowUpRight className="h-4 w-4 text-neon" />
         </Link>
       )}
 
-      {/* ---------- Peso ---------- */}
-      {weight !== null ? (
-        <Link href="/biometrics" className="glass rise mt-4 block p-5" style={{ animationDelay: "150ms" }}>
+      {/* ---------- Peso (sin nada de peso con `no_weight_targets`) ---------- */}
+      {weightHidden ? null : weight !== null ? (
+        <Link href="/biometrics" data-testid="weight-card" className="glass rise mt-4 block p-5" style={{ animationDelay: "150ms" }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-muted">
               <span className="text-neon"><ScaleIcon className="h-[18px] w-[18px]" /></span>
-              <span className="t-label">
-                Peso · {lastWeightDays === 0 ? "hoy" : lastWeightDays === 1 ? "ayer" : `hace ${lastWeightDays} días`}
-              </span>
+              <span className="t-label">{t("weight.label", { when })}</span>
             </div>
-            {weightDelta !== null && weightDelta !== 0 && (
-              <span className={`t-label ${weightDelta < 0 ? "text-good" : "text-warn"}`}>
-                {weightDelta > 0 ? "+" : ""}{weightDelta.toFixed(1)} kg
-              </span>
-            )}
           </div>
           <div className="mt-2 flex items-end justify-between gap-4">
             <div className="flex items-end gap-1">
-              <span className="stat text-4xl text-ink">{weight.toFixed(1)}</span>
-              <span className="mb-1 text-xs text-muted">kg</span>
+              <span className="stat text-4xl text-ink">{format.number(weight, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
+              <span className="mb-1 text-xs text-muted">{t("weight.kg")}</span>
             </div>
             <div className="w-36"><Sparkline points={spark} /></div>
           </div>
-          {local.weighTarget !== null && (
-            <p className="t-body mt-2 text-xs text-muted">
-              {weight - local.weighTarget > 0 ? (
-                <>
-                  A <span className="text-neon">{(weight - local.weighTarget).toFixed(1)} kg</span> de tu objetivo ({local.weighTarget} kg)
-                </>
+          {trend && (
+            <div data-testid="weight-trend" className="mt-2">
+              <TrendLine trend={trend} compact chip={false} />
+            </div>
+          )}
+          {toGo && (
+            <p data-testid="weight-to-goal" className="t-body mt-2 text-xs text-muted">
+              {weight - toGo.goal_weight_kg! > 0 ? (
+                t.rich("weight.toGoal", {
+                  kg: format.number(weight - toGo.goal_weight_kg!, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+                  target: format.number(toGo.goal_weight_kg!),
+                  neon: (c) => <span className="text-neon">{c}</span>,
+                })
               ) : (
-                <span className="text-good">Objetivo de peso alcanzado ✓ ({local.weighTarget} kg)</span>
+                <span className="text-good">{t("weight.reached", { target: format.number(toGo.goal_weight_kg!) })}</span>
               )}
             </p>
           )}
-          <p className="t-body mt-2 text-[11px] text-neon">Ver historial y tendencia →</p>
+          <p className="t-body mt-2 text-[11px] text-neon">{t("weight.history")}</p>
         </Link>
       ) : (
         <section
@@ -411,11 +475,11 @@ export default function DashboardPage() {
             <ScaleIcon className="h-7 w-7" />
           </span>
           <div>
-            <p className="t-title text-ink">Aún no hay mediciones</p>
-            <p className="t-body mt-1 text-xs text-muted">Registra tu primera medición para empezar a ver tu evolución.</p>
+            <p className="t-title text-ink">{t("weight.emptyTitle")}</p>
+            <p className="t-body mt-1 text-xs text-muted">{t("weight.emptyBody")}</p>
           </div>
           <Link href="/biometrics/new" className="btn btn-primary btn-sm">
-            Registrar medición <ArrowUpRight className="h-4 w-4" />
+            {t("weight.emptyCta")} <ArrowUpRight className="h-4 w-4" />
           </Link>
         </section>
       )}
@@ -427,9 +491,9 @@ export default function DashboardPage() {
             <DeltaCard
               delay={190}
               icon={<HeartIcon className="h-[18px] w-[18px]" />}
-              label="FC reposo"
+              label={t("metrics.rhr")}
               value={`${rhrs[0]}`}
-              unit="bpm"
+              unit={t("metrics.bpm")}
               delta={deltaOf(rhrs)}
               goodWhenDown
             />
@@ -438,9 +502,9 @@ export default function DashboardPage() {
             <DeltaCard
               delay={230}
               icon={<PulseIcon className="h-[18px] w-[18px]" />}
-              label="HRV"
+              label={t("metrics.hrv")}
               value={`${hrvs[0]}`}
-              unit="ms"
+              unit={t("metrics.ms")}
               delta={deltaOf(hrvs)}
               goodWhenDown={false}
             />
@@ -449,8 +513,8 @@ export default function DashboardPage() {
             <DeltaCard
               delay={270}
               icon={<ScaleIcon className="h-[18px] w-[18px]" />}
-              label="% Grasa"
-              value={fats[0].toFixed(1)}
+              label={t("metrics.fat")}
+              value={format.number(fats[0], { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
               unit="%"
               delta={deltaOf(fats)}
               goodWhenDown
@@ -466,8 +530,8 @@ export default function DashboardPage() {
           >
             <span className="text-neon"><PulseIcon className="h-5 w-5" /></span>
             <div className="flex-1">
-              <p className="t-label text-ink">Activa tus métricas de recuperación</p>
-              <p className="t-body text-xs text-muted">Añade FC en reposo y HRV para ver tu estado diario y tendencias.</p>
+              <p className="t-label text-ink">{t("metrics.activateTitle")}</p>
+              <p className="t-body text-xs text-muted">{t("metrics.activateBody")}</p>
             </div>
             <ChevronRight className="h-5 w-5 text-muted" />
           </Link>
@@ -477,12 +541,12 @@ export default function DashboardPage() {
       {/* ---------- Consistencia semanal ---------- */}
       <section className="glass rise mt-4 p-4" style={{ animationDelay: "310ms" }}>
         <div className="flex items-center justify-between">
-          <span className="t-label text-ink">Tu semana</span>
-          <span className="t-body text-[11px] text-muted">medición o entreno</span>
+          <span className="t-label text-ink">{t("week.title")}</span>
+          <span className="t-body text-[11px] text-muted">{t("week.sub")}</span>
         </div>
         <div className="mt-3 flex justify-between">
           {weekDays.map((d, i) => {
-            const active = eventTs.some((t) => sameDay(new Date(t), d));
+            const active = eventTs.some((ts) => sameDay(new Date(ts), d));
             const isToday = i === todayIdx;
             const future = i > todayIdx;
             return (
@@ -497,62 +561,22 @@ export default function DashboardPage() {
                     opacity: future ? 0.35 : 1,
                   }}
                 />
-                <span className={`text-[10px] ${isToday ? "text-neon" : "text-muted"}`}>{DAY_LABELS[i]}</span>
+                <span className={`text-[10px] ${isToday ? "text-neon" : "text-muted"}`}>{t(`week.${DAY_KEYS[i]}`)}</span>
               </div>
             );
           })}
         </div>
       </section>
 
-      {/* ---------- Carga real (de tus sesiones registradas) ---------- */}
-      <Link
-        href="/training/load"
-        className="glass rise mt-4 flex items-center gap-3 p-4"
-        style={{ animationDelay: "350ms" }}
-      >
-        <span className={local.metrics && local.metrics.weekAU > 0 ? "text-neon" : "text-muted"}>
-          <BoltIcon className="h-5 w-5" />
-        </span>
-        {local.metrics && local.metrics.weekAU > 0 ? (
-          <div className="flex flex-1 items-center gap-5">
-            <div>
-              <p className="t-label text-muted">Semana</p>
-              <p className="stat text-xl text-ink">{local.metrics.weekAU}<span className="text-xs text-muted"> AU</span></p>
-            </div>
-            <div>
-              <p className="t-label text-muted">Tu rango</p>
-              {local.metrics.band ? (
-                <p className="stat text-xl" style={{ color: LOAD_BAND_META[local.metrics.band.status].color }}>
-                  {LOAD_BAND_META[local.metrics.band.status].label}
-                </p>
-              ) : (
-                <p className="stat text-xl text-muted">—</p>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="flex-1">
-            <p className="t-label text-ink">Carga de entreno</p>
-            <p className="t-body text-xs text-muted">Se activará cuando registres sesiones con RPE</p>
-          </div>
-        )}
-        <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
-      </Link>
-      {local.metrics && local.metrics.weekAU > 0 && (
-        local.metrics.band ? (
-          local.metrics.band.provisional && (
-            <p className="t-body mt-1.5 text-[10px] text-muted">*Rango calibrándose: {local.metrics.historyDays}/28 días de historial</p>
-          )
-        ) : (
-          <p className="t-body mt-1.5 text-[10px] text-muted">
-            Necesitamos {Math.max(0, LOAD_BAND_MIN_DAYS - local.metrics.historyDays)} días más para calcular tu rango personal
-          </p>
-        )
-      )}
+      {/* ---------- Carga real (de tus sesiones registradas), según el anexo de combate ---------- */}
+      <LoadSummary metrics={local.metrics} style={{ animationDelay: "350ms" }} />
+
+      {/* ---------- Zonas de esfuerzo (motor del coach, calculadas en el servidor) ---------- */}
+      <ZonesCard />
 
       {/* ---------- CTA ---------- */}
       <Link href="/biometrics/new" className="btn btn-primary rise mt-5 w-full" style={{ animationDelay: "390ms" }}>
-        {latest ? "Actualizar biometría" : "Registrar biometría"} <ArrowUpRight className="h-4 w-4" />
+        {latest ? t("cta.update") : t("cta.register")} <ArrowUpRight className="h-4 w-4" />
       </Link>
     </div>
   );

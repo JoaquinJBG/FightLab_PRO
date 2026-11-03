@@ -5,8 +5,13 @@ Invariantes del port (¡no romper la paridad con el motor local!):
 - Carga por sesión = round(duration_sec/60 × rpe), redondeada ANTES de sumar.
 - Bucket por día LOCAL del tz pedido (el frontend usa el día local del navegador).
 - history_days = días desde la primera actividad con rpe (toda la historia), +1, cap 28.
-- ACWR solo con history_days ≥ 10 y semana > 0; ventana crónica = últimos
-  history_days días (incluida la semana aguda); provisional hasta 28 días.
+- Ratio (ACWR) solo con history_days ≥ 28 y semana > 0; ventana crónica = los 28 días
+  (incluida la semana aguda). Antes, `ratio_days_left` dice cuántos faltan. Los 28 días
+  son una convención de FightLab (combat-sports "Show the load ratio only after 28 days
+  of history"); no hay ratio "provisional".
+- `week_vs_avg_pct`: la semana frente a la media semanal de 4 semanas, en % (lo que se
+  muestra, combat-sports "Present load as a neutral comparison with the recent average").
+- `gaps`: alguna de las 4 semanas sin carga (parón, lesión): el número puede engañar.
 - Monotonía con history_days ≥ 7 y carga en la semana; SD=0 → sin_variacion.
 - band: port 1:1 de computeLoadBand (frontend/lib/load.ts) — mismas ventanas
   móviles de 7 días, mismo suelo de anchura (10% de mu) y mismos umbrales.
@@ -22,12 +27,19 @@ from .models import Activity
 
 LoadBandStatus = str  # "descarga" | "sostenible" | "elevada" | "alta"
 
+# Convención de FightLab: días de historial antes de mostrar el ratio
+RATIO_MIN_DAYS = 28
+
 
 # Math.round de JS = floor(x + 0.5) para CUALQUIER real (round() de Python es
 # half-even y además redondea negativos hacia cero, no hacia +∞: diverge en
 # ambos casos de Math.round).
 def _js_round(x: float) -> int:
     return math.floor(x + 0.5)
+
+
+# Mismo redondeo; nombre propio donde el valor puede ser negativo (−42.5 → −42)
+_js_round_signed = _js_round
 
 
 def activity_list(*, user, kind: str | None = None, limit: int = 50):
@@ -113,8 +125,8 @@ def load_metrics(*, user, tzname: str | None = None) -> dict:
 
     first_started = base.order_by("started_at").values_list("started_at", flat=True).first()
     empty = {
-        "week_au": 0, "daily7": [0] * 7, "acwr": None, "provisional": True,
-        "monotonia": None, "tension": None, "sin_variacion": False, "history_days": 0,
+        "week_au": 0, "daily7": [0] * 7, "acwr": None, "week_vs_avg_pct": None,
+        "ratio_days_left": RATIO_MIN_DAYS, "gaps": False, "monotonia": None, "tension": None, "sin_variacion": False, "history_days": 0,
         "band": None,
     }
     if first_started is None:
@@ -138,13 +150,14 @@ def load_metrics(*, user, tzname: str | None = None) -> dict:
     week_au = sum(daily7)
 
     acwr = None
-    provisional = True
-    if history_days >= 10 and week_au > 0:
-        chronic_window = daily28[-history_days:]
-        chronic_avg = sum(chronic_window) / history_days
-        if chronic_avg > 0:
-            acwr = round(week_au / 7 / chronic_avg, 3)
-            provisional = history_days < 28
+    week_vs_avg_pct = None
+    gaps = False
+    if history_days >= RATIO_MIN_DAYS and week_au > 0:
+        chronic_avg = sum(daily28) / 28
+        ratio = week_au / 7 / chronic_avg
+        acwr = round(ratio, 3)
+        week_vs_avg_pct = _js_round_signed((ratio - 1) * 100)
+        gaps = any(sum(daily28[i:i + 7]) == 0 for i in range(0, 28, 7))
 
     monotonia = None
     tension = None
@@ -156,12 +169,12 @@ def load_metrics(*, user, tzname: str | None = None) -> dict:
             monotonia = round(mean_daily / sd, 2)
             tension = _js_round(week_au * mean_daily / sd)
         else:
-            sin_variacion = True  # cero variación = monotonía máxima (riesgo), no "sin datos"
+            sin_variacion = True  # cero variación = monotonía máxima, no "sin datos"
 
     band = compute_load_band(daily28, week_au, history_days)
 
     return {
-        "week_au": week_au, "daily7": daily7, "acwr": acwr, "provisional": provisional,
-        "monotonia": monotonia, "tension": tension, "sin_variacion": sin_variacion,
+        "week_au": week_au, "daily7": daily7, "acwr": acwr, "week_vs_avg_pct": week_vs_avg_pct,
+        "ratio_days_left": max(0, RATIO_MIN_DAYS - history_days), "gaps": gaps, "monotonia": monotonia, "tension": tension, "sin_variacion": sin_variacion,
         "history_days": history_days, "band": band,
     }

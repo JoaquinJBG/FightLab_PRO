@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
+from core.messages import msg
 from profiles.image_processing import UnsupportedImageError, UnsupportedImageFormatError, load_bounded
 from userstate.selectors import state_get_many
 
@@ -28,7 +29,8 @@ MAX_MESSAGE_CHARS = 2000
 MAX_CONTEXT_CHARS = 2000  # el contexto legítimo ocupa ~300; esto frena el abuso de tokens
 # Solo las claves que el frontend envía de verdad: lo demás no entra al prompt
 CONTEXT_KEYS = {
-    "semana_au", "acwr", "acwr_provisional", "dias_historial_carga", "monotonia",
+    "semana_au", "acwr", "semana_vs_media_pct", "dias_para_ratio", "historial_con_huecos",
+    "dias_historial_carga", "monotonia",
     "recuperacion", "peso_kg", "dias_desde_ultimo_peso", "pesaje",
 }
 # Formatos de imagen que acepta la API de Anthropic
@@ -42,16 +44,16 @@ _PROVIDER_ERRORS = (services.AIUnavailable, services.AIBadResponse, anthropic.AP
 def _quota_exceeded_response(kind: str) -> Response:
     limit = quota.limit_for(kind)
     if kind == AIUsage.Kind.CHAT:
-        detail = f"Has alcanzado tu límite diario de {limit} mensajes al coach. Vuelve a intentarlo mañana."
+        detail = msg("ai_quota_chat", limit=limit)
     else:
-        detail = f"Has alcanzado tu límite diario de {limit} fotos de comida analizadas. Vuelve a intentarlo mañana."
+        detail = msg("ai_quota_food", limit=limit)
     return Response({"detail": detail, "code": "quota_daily"}, status=status.HTTP_429_TOO_MANY_REQUESTS)
 
 
 def _budget_exceeded_response() -> Response:
     return Response(
         {
-            "detail": "Se ha alcanzado el límite diario del servicio de IA. Vuelve a intentarlo mañana.",
+            "detail": msg("ai_budget_daily"),
             "code": "budget_daily",
         },
         status=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -67,18 +69,18 @@ def _token_recorder(reservation: quota.Reservation) -> services.UsageSink:
 
 def _provider_error_response(exc: Exception, *, bad_response_detail: str, saturated_detail: str, log_msg: str) -> Response:
     if isinstance(exc, services.AIUnavailable):
-        return Response({"detail": "IA no configurada."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        return Response({"detail": msg("ai_not_configured")}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
     if isinstance(exc, services.AIBadResponse):
         return Response({"detail": bad_response_detail}, status=status.HTTP_502_BAD_GATEWAY)
     if isinstance(exc, anthropic.RateLimitError):
         return Response({"detail": saturated_detail}, status=status.HTTP_429_TOO_MANY_REQUESTS)
     if isinstance(exc, anthropic.APITimeoutError):
         return Response(
-            {"detail": "El servicio de IA ha tardado demasiado. Inténtalo de nuevo."},
+            {"detail": msg("ai_timeout")},
             status=status.HTTP_504_GATEWAY_TIMEOUT,
         )
     logger.exception("%s: %s", log_msg, exc)
-    return Response({"detail": "Error del servicio de IA."}, status=status.HTTP_502_BAD_GATEWAY)
+    return Response({"detail": msg("ai_service_error")}, status=status.HTTP_502_BAD_GATEWAY)
 
 
 def _coach_memory_for(profile) -> dict:
@@ -91,7 +93,15 @@ def _coach_memory_for(profile) -> dict:
     entry = state_get_many(profile=profile, keys=["coach_memory"]).first()
     if entry is None:
         return {}
-    return services.sanitize_coach_memory(entry.value)
+    memory = services.sanitize_coach_memory(entry.value)
+    if "objetivo_peso_kg" in memory:
+        # Con el pesaje bloqueado (`no_weight_targets`, spec §8.3) el objetivo de peso no llega al modelo.
+        from coaching import weigh_in
+        from coaching.safety_views import _today
+
+        if weigh_in.policy_for(profile.user, _today(profile)).blocked:
+            memory.pop("objetivo_peso_kg")
+    return memory
 
 
 class LiveScopedRateThrottle(ScopedRateThrottle):
@@ -114,6 +124,28 @@ class LiveScopedRateThrottle(ScopedRateThrottle):
         return rates.get(self.scope)
 
 
+def _safety(user) -> tuple[bool, tuple[str, ...]]:
+    """`refer_gp` de los flags del motor (o un `no_contact` de combate) y las notas de seguridad
+    de combate para el prompt. Si el motor no puede evaluar el perfil, no hay línea por su parte:
+    el chat no debe caerse por eso."""
+    from coach.profile import ProfileIncomplete
+
+    from coaching.combat import combat_flags
+    from coaching.safety_views import _today
+    from coaching.services import safety_for
+
+    today = _today(user.profile)
+    try:
+        refer_gp = safety_for(user, today).refer_gp
+    except (ProfileIncomplete, ValueError):
+        refer_gp = False
+    fight = combat_flags(user.profile, today)
+    notes = tuple(
+        note for on, note in ((fight.no_contact, services.NO_CONTACT_NOTE), (fight.no_cut_content, services.NO_CUT_NOTE)) if on
+    )
+    return refer_gp or fight.no_contact, notes
+
+
 class CoachChatView(APIView):
     permission_classes = [IsAuthenticated]
     throttle_classes = [LiveScopedRateThrottle]
@@ -123,7 +155,7 @@ class CoachChatView(APIView):
         messages = request.data.get("messages")
         context = request.data.get("context") or {}
         if not isinstance(messages, list) or not messages or len(messages) > MAX_MESSAGES:
-            return Response({"detail": "Formato de mensajes inválido."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("chat_bad_messages")}, status=status.HTTP_400_BAD_REQUEST)
         for m in messages:
             if (
                 not isinstance(m, dict)
@@ -131,17 +163,18 @@ class CoachChatView(APIView):
                 or not isinstance(m.get("content"), str)
                 or len(m["content"]) > MAX_MESSAGE_CHARS
             ):
-                return Response({"detail": "Formato de mensajes inválido."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"detail": msg("chat_bad_messages")}, status=status.HTTP_400_BAD_REQUEST)
         if not isinstance(context, dict):
-            return Response({"detail": "Contexto inválido."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("chat_bad_context")}, status=status.HTTP_400_BAD_REQUEST)
         context = {k: v for k, v in context.items() if k in CONTEXT_KEYS}
         if len(json.dumps(context)) > MAX_CONTEXT_CHARS:
-            return Response({"detail": "Contexto demasiado grande."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("chat_context_too_large")}, status=status.HTTP_400_BAD_REQUEST)
 
         user = request.user
         if quota.global_budget_exceeded():
             return _budget_exceeded_response()
         memory = _coach_memory_for(user.profile)
+        refer_gp, safety_notes = _safety(user)
 
         reservation = quota.reserve(user=user, kind=AIUsage.Kind.CHAT)
         if reservation is None:
@@ -149,15 +182,21 @@ class CoachChatView(APIView):
         succeeded = False
         try:
             reply = services.coach_chat(
-                messages=messages, context=context, memory=memory, on_usage=_token_recorder(reservation)
+                messages=messages,
+                context=context,
+                language=user.profile.language,
+                refer_gp=refer_gp,
+                safety_notes=safety_notes,
+                memory=memory,
+                on_usage=_token_recorder(reservation),
             )
             succeeded = True
-            return Response({"reply": reply})
+            return Response({"reply": reply.text, "citations": reply.citations})
         except _PROVIDER_ERRORS as exc:
             return _provider_error_response(
                 exc,
-                bad_response_detail="La IA no devolvió una respuesta válida.",
-                saturated_detail="El coach está saturado ahora mismo. Inténtalo de nuevo en unos minutos.",
+                bad_response_detail=msg("ai_bad_chat_reply"),
+                saturated_detail=msg("ai_saturated_chat"),
                 log_msg="Fallo del SDK de Anthropic en el chat del coach",
             )
         finally:
@@ -173,9 +212,9 @@ class FoodPhotoView(APIView):
     def post(self, request):
         image = request.FILES.get("image")
         if image is None:
-            return Response({"detail": "Falta el archivo 'image'."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("image_missing")}, status=status.HTTP_400_BAD_REQUEST)
         if image.size > MAX_PHOTO_BYTES:
-            return Response({"detail": "La imagen supera los 4 MB."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("image_too_large", mb=MAX_PHOTO_BYTES // (1024 * 1024))}, status=status.HTTP_400_BAD_REQUEST)
 
         user = request.user
         # Sin reservar aún: una petición sin cupo no debe pagar el coste de Pillow.
@@ -191,16 +230,16 @@ class FoodPhotoView(APIView):
             photo_bytes = buf.getvalue()
         except UnsupportedImageFormatError:
             return Response(
-                {"detail": f"Formato no soportado: usa {FORMATOS_ACEPTADOS_TXT}."},
+                {"detail": msg("image_unsupported_formats")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except UnsupportedImageError:
             return Response(
-                {"detail": "La imagen tiene demasiados píxeles: hazle una captura o redúcela."},
+                {"detail": msg("image_too_many_pixels")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception:  # los plugins de Pillow lanzan de todo con bytes malformados (struct.error, IndexError...)
-            return Response({"detail": "El archivo no es una imagen válida."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("image_invalid")}, status=status.HTTP_400_BAD_REQUEST)
 
         reservation = quota.reserve(user=user, kind=AIUsage.Kind.FOOD)
         if reservation is None:
@@ -215,8 +254,8 @@ class FoodPhotoView(APIView):
         except _PROVIDER_ERRORS as exc:
             return _provider_error_response(
                 exc,
-                bad_response_detail="La IA no devolvió un análisis válido. Prueba con otra foto.",
-                saturated_detail="El análisis de fotos está saturado ahora mismo. Inténtalo de nuevo en unos minutos.",
+                bad_response_detail=msg("ai_bad_analysis"),
+                saturated_detail=msg("ai_saturated_food"),
                 log_msg="Fallo del SDK de Anthropic en el análisis de comida",
             )
         finally:

@@ -1,3 +1,5 @@
+import type { SyncSet } from "./activities";
+
 // Tipos, biblioteca de ejercicios y persistencia local del gimnasio.
 // (localStorage por ahora; pasa al backend con Exercise/WorkoutSession en fase 3)
 
@@ -23,6 +25,7 @@ export type LiveGym = {
   focus: string | null;
   exercises: ExerciseEntry[];
   savedAt: number;
+  plan?: string | null; // sesión del plan de la semana ("A", "B")
 };
 
 export const GYM_SESS_KEY = "flp_gym_sessions";
@@ -49,6 +52,58 @@ export const FOCUS_EXERCISES: Record<string, string[]> = {
   Espalda: ["Dominadas", "Remo con barra", "Jalón al pecho", "Peso muerto"],
   Hombro: ["Press militar", "Elevaciones laterales", "Pájaros", "Face pull"],
   Brazo: ["Curl bíceps", "Extensión de tríceps", "Curl martillo", "Fondos"],
+};
+
+/* Claves i18n de los textos de dominio. Los ids guardados (localStorage/servidor)
+   siguen siendo los nombres en español: aquí solo se mapean a claves de catálogo. */
+export const EXERCISE_KEYS: Record<string, string> = {
+  "Press banca": "benchPress",
+  "Press inclinado": "inclinePress",
+  "Press con mancuernas": "dumbbellPress",
+  Aperturas: "flyes",
+  Fondos: "dips",
+  Dominadas: "pullUps",
+  "Jalón al pecho": "latPulldown",
+  "Remo con barra": "barbellRow",
+  "Remo en máquina": "machineRow",
+  "Peso muerto": "deadlift",
+  "Face pull": "facePull",
+  Sentadilla: "squat",
+  Prensa: "legPress",
+  "Peso muerto rumano": "romanianDeadlift",
+  Zancadas: "lunges",
+  "Extensión de cuádriceps": "legExtension",
+  "Curl femoral": "legCurl",
+  Gemelos: "calfRaises",
+  "Press militar": "overheadPress",
+  "Elevaciones laterales": "lateralRaises",
+  Pájaros: "rearDeltFlyes",
+  "Press Arnold": "arnoldPress",
+  "Curl bíceps": "bicepsCurl",
+  "Curl martillo": "hammerCurl",
+  "Extensión de tríceps": "tricepsExtension",
+  "Press francés": "skullCrushers",
+  Plancha: "plank",
+  "Crunch en polea": "cableCrunch",
+  "Rueda abdominal": "abWheel",
+  "Elevaciones de piernas": "legRaises",
+  Remo: "row",
+  "Extensión tríceps": "tricepsExtensionShort",
+};
+
+export const FOCUS_KEYS: Record<string, string> = {
+  Descanso: "rest",
+  "Full body": "fullBody",
+  Empuje: "push",
+  Tirón: "pull",
+  Pierna: "legs",
+  Torso: "upper",
+  Pecho: "chest",
+  Espalda: "back",
+  Hombro: "shoulders",
+  Brazo: "arms",
+  Cardio: "cardio",
+  Core: "core",
 };
 
 export function loadGymSessions(): GymSession[] {
@@ -238,4 +293,28 @@ export function buildActivityDetail(
   const compact = { focus, volume_kg: volume, ex: saved.map((x) => ({ n: x.name, s: x.sets.map((s) => [s.kg, s.reps]) })) };
   if (fits(compact)) return { detail: compact, breakdown: true };
   return { detail: { focus, volume_kg: volume }, breakdown: false };
+}
+
+const MAX_SYNC_SETS = 300;
+
+/** Series de una sesión para `SetLog` (Task 6.1). 0 kg es una serie con el peso corporal
+ * (`weight_kg: null`, como en el coach); las series sin repeticiones o con carga ilegible se
+ * descartan, no se adivinan. */
+export function gymSets(exercises: unknown[]): SyncSet[] {
+  const out: SyncSet[] = [];
+  exercises.forEach((raw, ei) => {
+    const ex = raw as { name?: unknown; sets?: unknown } | null;
+    const name = ex?.name;
+    const sets = ex?.sets;
+    if (typeof name !== "string" || !name.trim() || !Array.isArray(sets)) return;
+    sets.forEach((rawSet, si) => {
+      const s = rawSet as { kg?: unknown; reps?: unknown };
+      const kg = typeof s?.kg === "number" ? s.kg : Number.NaN;
+      const reps = typeof s?.reps === "number" ? s.reps : Number.NaN;
+      if (!Number.isInteger(reps) || reps <= 0 || reps > 1000) return;
+      if (!Number.isFinite(kg) || kg < 0 || kg > 1000) return;
+      out.push({ exercise: name.trim().slice(0, 120), exercise_index: ei, set_index: si, weight_kg: kg > 0 ? kg : null, reps });
+    });
+  });
+  return out.slice(0, MAX_SYNC_SETS);
 }

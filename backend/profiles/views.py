@@ -6,6 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.messages import msg
+
 from . import selectors, services
 from .constants import MAX_PHOTOS_PER_USER
 from .image_processing import process_progress_photo
@@ -16,15 +18,35 @@ from .serializers import BiometricsSerializer, ProfileSerializer, ProgressPhotoS
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def _payload(self, request, profile):
+        # Los datos de pesaje no salen si `no_weight_targets` lo bloquea (spec §8.3).
+        from coaching import weigh_in
+        from coaching.safety_views import _today
+
+        return weigh_in.hide_if_blocked(request.user, _today(profile), ProfileSerializer(profile).data)
+
     def get(self, request):
         profile = selectors.profile_get(user=request.user)
-        return Response(ProfileSerializer(profile).data)
+        return Response(self._payload(request, profile))
 
     def patch(self, request):
+        from coaching import weigh_in
+        from coaching.safety_views import _today
+
         serializer = ProfileSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
+        refused = weigh_in.check_write(request.user, _today(request.user.profile), serializer.validated_data)
+        if refused:
+            return Response(refused[1], status=refused[0])
         profile = services.profile_update(user=request.user, **serializer.validated_data)
-        return Response(ProfileSerializer(profile).data)
+        return Response(self._payload(request, profile))
+
+
+# Lo que el motor no registra con `no_weight_targets` (peso, grasa y perímetros). La FC en reposo,
+# la VFC y el sueño sí.
+BODY_FIELDS = (
+    "weight_kg", "body_fat_pct", "waist_cm", "hip_cm", "chest_cm", "arm_cm", "thigh_cm", "neck_cm",
+)
 
 
 class BiometricsListCreateView(APIView):
@@ -32,11 +54,25 @@ class BiometricsListCreateView(APIView):
 
     def get(self, request):
         logs = selectors.biometrics_list(user=request.user)
-        return Response(BiometricsSerializer(logs, many=True).data)
+        data = BiometricsSerializer(logs, many=True).data
+        from coaching import checkin
+        from coaching.safety_views import _today
+
+        # Con `no_weight_targets` el servidor no devuelve datos corporales (spec §8.3).
+        if checkin.weight_tracking_blocked(request.user, _today(request.user.profile)):
+            data = [{**row, **dict.fromkeys(BODY_FIELDS)} for row in data]
+        return Response(data)
 
     def post(self, request):
         serializer = BiometricsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        # Con `no_weight_targets` el servidor no guarda datos corporales (spec §8.3).
+        from coaching import checkin
+        from coaching.safety_views import _today
+
+        body = [n for n in BODY_FIELDS if serializer.validated_data.get(n) is not None]
+        if body and checkin.weight_tracking_blocked(request.user, _today(request.user.profile)):
+            return Response({"code": "weight_targets_blocked", "fields": body}, status=status.HTTP_403_FORBIDDEN)
         try:
             log = services.biometrics_create(user=request.user, **serializer.validated_data)
         except DjangoValidationError as exc:
@@ -77,20 +113,20 @@ class PhotoListCreateView(APIView):
     def post(self, request):
         image = request.FILES.get("image")
         if image is None:
-            return Response({"detail": "Falta el archivo 'image'."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("image_missing")}, status=status.HTTP_400_BAD_REQUEST)
         if request.user.profile.photos.count() >= MAX_PHOTOS_PER_USER:
             return Response(
-                {"detail": f"Máximo {MAX_PHOTOS_PER_USER} fotos: borra alguna antes de subir otra."},
+                {"detail": msg("photos_max", n=MAX_PHOTOS_PER_USER)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if image.size > MAX_PHOTO_BYTES:
-            return Response({"detail": "La imagen supera los 6 MB."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("image_too_large", mb=MAX_PHOTO_BYTES // (1024 * 1024))}, status=status.HTTP_400_BAD_REQUEST)
         # process_progress_photo valida el CONTENIDO real (no solo la extensión)
         # al abrirlo con Pillow: nada de archivos disfrazados.
         try:
             data, content_type, width, height = process_progress_photo(image)
         except Exception:
-            return Response({"detail": "El archivo no es una imagen válida."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("image_invalid")}, status=status.HTTP_400_BAD_REQUEST)
 
         from django.utils import timezone
 

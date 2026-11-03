@@ -40,6 +40,9 @@ class Activity(models.Model):
     detail = models.JSONField(null=True, blank=True)
     source = models.CharField(max_length=12, choices=Source.choices, default=Source.MANUAL)
     external_id = models.CharField(max_length=128, null=True, blank=True)
+    # Sesión de gimnasio cuyo desglose de series no llegó (el cliente lo quitó de `detail` porque
+    # no cabía): no tiene `SetLog` y no se inventan.
+    sets_truncated = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -64,3 +67,42 @@ class Activity(models.Model):
 
     def __str__(self):
         return f"Activity<{self.profile.user.email} {self.kind} @ {self.started_at:%Y-%m-%d}>"
+
+
+class SetLog(models.Model):
+    """Una serie de una sesión de gimnasio (spec §6.5): lo mismo que guarda `ExerciseSet` del
+    coach, para que `coach.strength` lea las series sin pasar por `Activity.detail`.
+
+    `weight_kg` es nulo en los ejercicios con el peso corporal (como en el coach).
+    """
+
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name="sets")
+    exercise = models.CharField(max_length=120)
+    exercise_index = models.PositiveSmallIntegerField()
+    set_index = models.PositiveSmallIntegerField()
+    set_type = models.CharField(max_length=16, default="normal")
+    weight_kg = models.DecimalField(
+        max_digits=6, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)]
+    )
+    reps = models.PositiveSmallIntegerField(null=True, blank=True)
+    rir = models.DecimalField(
+        max_digits=3, decimal_places=1, null=True, blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(10)],
+    )
+    rpe = models.DecimalField(
+        max_digits=3, decimal_places=1, null=True, blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+    )
+    distance_km = models.DecimalField(max_digits=7, decimal_places=3, null=True, blank=True)
+    duration_s = models.PositiveIntegerField(null=True, blank=True)
+
+    class Meta:
+        ordering = ("activity", "exercise_index", "set_index")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["activity", "exercise_index", "set_index"], name="unique_set_per_activity"
+            )
+        ]
+
+    def __str__(self):
+        return f"SetLog<{self.exercise} {self.weight_kg}x{self.reps}>"

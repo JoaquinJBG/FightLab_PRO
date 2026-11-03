@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { photoErrorForStatus, scale, targets } from "./nutrition";
+import { photoErrorForStatus, photoErrorKind, scale } from "./nutrition";
 
 describe("scale", () => {
   test("escala los macros por gramos (valores por 100 g)", () => {
@@ -14,31 +14,8 @@ describe("scale", () => {
   });
 });
 
-describe("targets", () => {
-  test("calcula kcal y macros (hombre, mantener) con Mifflin-St Jeor × 1.55", () => {
-    const r = targets(80, 180, 30, "MALE", "mantener");
-    // BMR = 1780, TDEE = 2759
-    expect(r.kcal).toBe(2759);
-    expect(r.p).toBe(160); // 2 g/kg
-    expect(r.f).toBe(77); // 25% de kcal / 9
-    expect(r.c).toBe(357); // resto de kcal / 4
-  });
-
-  test("mujer usa el término -161 del BMR y 'perder' resta 500 kcal", () => {
-    const r = targets(60, 165, 28, "FEMALE", "perder");
-    expect(r.kcal).toBe(1562);
-    expect(r.p).toBe(120);
-  });
-
-  test("'ganar' > 'mantener' > 'perder' con los mismos datos", () => {
-    const base = [80, 180, 30, "MALE"] as const;
-    const ganar = targets(...base, "ganar").kcal;
-    const mantener = targets(...base, "mantener").kcal;
-    const perder = targets(...base, "perder").kcal;
-    expect(ganar).toBeGreaterThan(mantener);
-    expect(mantener).toBeGreaterThan(perder);
-  });
-});
+// Los objetivos de kcal/macros ya no se calculan en el cliente: los da el servidor
+// (`/coach/targets`, ver tests/nutrition/nutrition-page.test.tsx).
 
 describe("photoErrorForStatus", () => {
   test("503 (IA no configurada/caída): mensaje de no disponible, no un plato inventado", () => {
@@ -57,5 +34,18 @@ describe("photoErrorForStatus", () => {
     expect(photoErrorForStatus(200)).toBeNull();
     expect(photoErrorForStatus(500)).toBeNull();
     expect(photoErrorForStatus(400)).toBeNull();
+  });
+});
+
+describe("photoErrorKind", () => {
+  test("da la clave de catálogo de cada fallo conocido de la IA de visión", () => {
+    expect(photoErrorKind(503)).toBe("unavailable");
+    expect(photoErrorKind(429)).toBe("quota");
+    expect(photoErrorKind(502)).toBe("failed");
+  });
+
+  test("200/otros códigos: null", () => {
+    expect(photoErrorKind(200)).toBeNull();
+    expect(photoErrorKind(500)).toBeNull();
   });
 });

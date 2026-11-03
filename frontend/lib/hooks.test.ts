@@ -188,6 +188,11 @@ describe("applyProfileUpdate", () => {
       dominant_stance: null,
       preferred_units: "metric",
       timezone: "Europe/Madrid",
+      // Perfil ampliado del coach: el servidor lo devuelve siempre
+      equation_sex: null, goal: null, experience: null, activity_level: null, language: "es",
+      region: null, emergency_number: null, medications: [], medications_other: [], conditions: [],
+      conditions_other: [], disciplines: [], training_frequency: null, goal_weight_kg: null,
+      goal_date: null, weight_class: null, weigh_in_at: null,
     };
     applyProfileUpdate(qc, saved);
     const cached = qc.getQueryData<{ date_of_birth: string | null; height_cm: number | null }>(["profile"]);

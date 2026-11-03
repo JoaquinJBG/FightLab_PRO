@@ -83,3 +83,6 @@ export async function compressImage(file: File, options: CompressImageOptions = 
 
   return new File([blob], withJpegExtension(file.name), { type: "image/jpeg" });
 }
+
+/** Error de subida de una foto sin comprimir que no cabe en el BFF: la pantalla lo traduce. */
+export const PHOTO_TOO_LARGE = "photo_too_large";

@@ -2,6 +2,8 @@ FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+# Motor de cálculo vendorizado (paquete `coach`); no se instala con pip
+ENV PYTHONPATH=/app/vendor/ai-personal-coach
 
 WORKDIR /app
 
@@ -32,4 +34,5 @@ USER app
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py createcachetable && gunicorn core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 90"]
+# La base de evidencia se carga solo si cambió (rápido si no); si falla, se registra y se arranca igual.
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py createcachetable && (python manage.py sync_knowledge --on-start || echo 'sync_knowledge ha fallado: se arranca sin recargar la base de evidencia') && gunicorn core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 90"]

@@ -9,10 +9,14 @@ import json
 import math
 import re
 from collections.abc import Callable
+from dataclasses import dataclass, field
 
 import anthropic
 import httpx
 from django.conf import settings
+
+from coaching import citations as chat_tools
+from coaching.bridge import reason_texts
 
 
 class AIUnavailable(Exception):
@@ -54,48 +58,96 @@ def _report_usage(resp, on_usage: UsageSink | None) -> None:
     on_usage(int(getattr(usage, "input_tokens", 0) or 0), int(getattr(usage, "output_tokens", 0) or 0))
 
 
-COACH_SYSTEM = """Eres el coach de FightLab Pro, un entrenador de alto rendimiento para \
-atletas de MMA y deportes de combate. Hablas en español, de tú, directo y cercano, \
-como un coach de esquina: frases cortas, sin relleno, máximo ~120 palabras.
+# El prompt base se escribe una vez, en inglés, y lleva la instrucción de idioma.
+COACH_SYSTEM = """You are the coach of FightLab Pro, a high-performance coach for MMA and combat-sport athletes. Talk like a corner coach: direct, close, short sentences, no filler, about 120 words at most. {language_instruction}
 
-Reglas estrictas:
-- Usa SOLO los datos del "Contexto del atleta". Si un dato no está, dilo y sugiere \
-registrarlo en la app. NUNCA inventes números ni tendencias.
-- ACWR: no hay una zona segura universal igual para todos; interprétalo SIEMPRE frente \
-al rango habitual de ESTE atleta (su propia media/tendencia reciente), nunca frente a un \
-umbral fijo válido para toda la población. Si sube muy por encima de su rango habitual, hay \
-más riesgo de lesión (recomienda bajar volumen); si está claramente por debajo con semana \
-activa, hay margen para apretar.
-- Si la recuperación está en "cuidado", prioriza técnica suave o descanso aunque la \
-carga dé margen.
-- Cortes de peso: prudencia siempre; nada de cortes agresivos de agua/sodio sin equipo \
-profesional. No eres médico y no das consejo médico: ante dolor o síntomas, recomienda \
-profesional sanitario.
-- No uses markdown ni listas: responde en texto corrido, 1–3 frases por idea."""
+Strict rules:
+- Use ONLY the data in the "Athlete context" and what the tools return. If a piece of data is missing, say so and suggest logging it in the app. NEVER invent numbers or trends, and never do your own arithmetic: quote numbers only from the context or from a tool result.
+- Every claim or recommendation about training, nutrition, recovery or health must rest on a rule of the evidence base. Look for it with search_rules, read it with get_rule, and cite it in the text as [[regla:key]], using exactly the key a tool returned this turn. Never cite a key the tools did not return, and never write a threshold, dose or "safe range" from memory. If no rule covers the question, say so plainly instead of improvising.
+- The training-load figures in the context (weekly load, the week against the 4-week average, ACWR, monotony...) are descriptive FightLab data. Report the week as a percentage above or below the athlete's own 4-week average, next to how they feel. Do not call a value safe or risky, do not give thresholds and do not claim they predict injury: load-ratio research comes from team sports and has barely been tested in combat sports. With under 28 days of history there is no ratio yet: say how many days are missing.
+- You are not a doctor and you give no medical advice: with pain or symptoms, recommend a health professional. For weight cuts before a weigh-in give only general information, never a prescription, and point to a professional team.
+- No markdown and no lists: plain prose, one to three sentences per idea."""
+
+LANGUAGE_NAMES = {"es": "Spanish", "en": "English"}
+DEFAULT_LANGUAGE = "es"
+# Vueltas máximas de herramientas por respuesta (cada una es una llamada más al modelo)
+MAX_TOOL_ROUNDS = 4
 
 # Preferencias de tono (memoria persistente del atleta, ver `sanitize_coach_memory`):
 # instrucción breve que se añade al system prompt para cada valor.
 _TONE_INSTRUCTIONS = {
-    "directo": "El atleta prefiere que le hables DIRECTO: frases muy cortas, sin rodeos ni adornos, ve al grano.",
-    "motivador": "El atleta prefiere un tono MOTIVADOR: cercano, que anime explícitamente, sin dejar de ser honesto con los datos.",
-    "tecnico": "El atleta prefiere un tono TÉCNICO: cuando aporte algo, explica brevemente el porqué fisiológico (carga, recuperación) detrás del consejo.",
+    "directo": "The athlete wants you to be DIRECT: very short sentences, no beating around the bush, no frills, get to the point.",
+    "motivador": "The athlete wants a MOTIVATING tone: warm, openly encouraging, while staying honest with the data.",
+    "tecnico": "The athlete wants a TECHNICAL tone: when it helps, briefly explain the physiological why (load, recovery) behind the advice.",
 }
 _FREQUENCY_INSTRUCTIONS = {
-    "alta": "El atleta quiere avisos frecuentes: no te cortes en señalar cualquier cosa relevante, aunque sea menor.",
-    "media": "El atleta quiere una frecuencia de avisos normal: señala lo relevante sin saturar.",
-    "baja": "El atleta quiere que le molestes lo mínimo: menciona SOLO lo que de verdad importa (riesgo, lesión, pesaje próximo); omite avisos menores.",
+    "alta": "The athlete wants frequent warnings: do not hold back from pointing out anything relevant, even if minor.",
+    "media": "The athlete wants a normal frequency of warnings: point out what matters without overwhelming them.",
+    "baja": "The athlete wants to be bothered as little as possible: mention ONLY what really matters (injury, symptoms, an upcoming weigh-in); skip minor warnings.",
 }
+
+def language_instruction(language: str | None) -> str:
+    name = LANGUAGE_NAMES.get((language or "").split("-")[0], LANGUAGE_NAMES[DEFAULT_LANGUAGE])
+    return f"Reply in {name}, whatever language the athlete writes in."
+
+
+@dataclass
+class CoachReply:
+    text: str
+    citations: list[dict] = field(default_factory=list)
+
+
+def _block_to_param(block) -> dict:
+    if block.type == "tool_use":
+        return {"type": "tool_use", "id": block.id, "name": block.name, "input": block.input}
+    return {"type": "text", "text": block.text}
+
+
+def with_deferral_line(text: str, language: str | None) -> str:
+    """Termina la respuesta con la línea de derivación de `docs/safety.md`, literal, en el idioma
+    del usuario. La añade el backend, no el modelo (spec §7.4)."""
+    code = (language or "").split("-")[0]
+    line = reason_texts.DEFERRAL_LINE[code if code in reason_texts.LANGUAGES else reason_texts.DEFAULT_LANGUAGE]
+    return text if line in text else f"{text}\n\n{line}"
+
+
+# Bloqueos de combate que pone el servidor (`coaching/combat.py`, E.5), con la regla del anexo.
+NO_CONTACT_NOTE = (
+    "The athlete reported a blow to the head with symptoms and has not confirmed a clinician's "
+    "clearance (no_contact). Do not suggest sparring, clinch, partner drills, live grappling or any "
+    "contact work; say that a clinician decides the return to contact; never state a diagnosis, a "
+    "number of days or that they are probably fine. For the warning signs, point to the official "
+    "Concussion Recognition Tool 6. Cite combat-sports/a-head-blow-with-symptoms-sets-no-contact-and-refers."
+)
+NO_CUT_NOTE = (
+    "The athlete is under 18. Give no weight-cut or rapid weight-loss information; say that "
+    "sports-medicine consensus discourages weight making in young athletes and suggest a doctor or "
+    "sports dietitian."
+)
 
 
 def coach_chat(
-    *, messages: list[dict], context: dict, memory: dict | None = None, on_usage: UsageSink | None = None
-) -> str:
-    """Chat del coach con el contexto real del atleta. Devuelve el texto de respuesta.
+    *,
+    messages: list[dict],
+    context: dict,
+    language: str | None = None,
+    refer_gp: bool = False,
+    safety_notes: tuple[str, ...] = (),
+    memory: dict | None = None,
+    on_usage: UsageSink | None = None,
+) -> CoachReply:
+    """Chat del coach con el contexto real del atleta y herramientas de evidencia.
+
+    `language`: el idioma del perfil del usuario (`profile.language`). Las citas `[[regla:clave]]`
+    se validan aquí: las que no existen o no salieron en una herramienta se quitan. Con `refer_gp`
+    (flag del motor), la respuesta termina con la línea de derivación. `safety_notes`: los bloqueos
+    que calcula el servidor (no los manda el cliente).
 
     `memory` es la memoria persistente del atleta (P0.3), ya sanitizada por
     `sanitize_coach_memory` — lesión activa, fase, fecha de la pelea, objetivo
     de peso y preferencias de tono/frecuencia. Se lee en el servidor a partir
     de `UserState` (clave `coach_memory`), no del cuerpo que manda el cliente.
+    `on_usage` recibe los tokens de cada llamada al modelo (una por vuelta de herramientas).
     """
     client = _client(timeout=settings.AI_CHAT_TIMEOUT_S)
 
@@ -111,15 +163,15 @@ def coach_chat(
         raise AIBadResponse("Sin mensajes de usuario")
 
     system = (
-        COACH_SYSTEM
-        + "\n\nContexto del atleta (datos reales de la app, hoy):\n"
+        COACH_SYSTEM.format(language_instruction=language_instruction(language))
+        + "\n\nAthlete context (real app data, today):\n"
         + json.dumps(context, ensure_ascii=False)
     )
     if memory:
         system += (
-            "\n\nLo que el atleta te ha contado de sí mismo, para que lo recuerdes entre "
-            "conversaciones (puede estar incompleto o desactualizado; no lo repitas literal, "
-            "úsalo para adaptar tus avisos y tu tono):\n" + json.dumps(memory, ensure_ascii=False)
+            "\n\nWhat the athlete has told you about themselves, to remember between conversations "
+            "(it may be incomplete or out of date; do not repeat it word for word, use it to adapt your "
+            "warnings and your tone):\n" + json.dumps(memory, ensure_ascii=False)
         )
         tone_note = _TONE_INSTRUCTIONS.get(memory.get("tono"))
         if tone_note:
@@ -127,18 +179,47 @@ def coach_chat(
         freq_note = _FREQUENCY_INSTRUCTIONS.get(memory.get("frecuencia_avisos"))
         if freq_note:
             system += "\n" + freq_note
-
-    resp = client.messages.create(
-        model=settings.AI_MODEL_CHAT,
-        max_tokens=500,
-        system=system,
-        messages=cleaned,
-    )
-    _report_usage(resp, on_usage)
+    if safety_notes:
+        system += "\n\nSafety (set by the server, always applies):\n" + "\n".join(f"- {n}" for n in safety_notes)
+    retrieved: set[str] = set()
+    convo = list(cleaned)
+    for round_ in range(MAX_TOOL_ROUNDS + 1):
+        resp = client.messages.create(
+            model=settings.AI_MODEL_CHAT,
+            max_tokens=500,
+            system=system,
+            messages=list(convo),
+            tools=chat_tools.TOOLS,
+        )
+        _report_usage(resp, on_usage)
+        if getattr(resp, "stop_reason", None) != "tool_use":
+            break
+        if round_ == MAX_TOOL_ROUNDS:
+            raise AIBadResponse("Demasiadas vueltas de herramientas")
+        convo.append({"role": "assistant", "content": [_block_to_param(b) for b in resp.content]})
+        convo.append(
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "tool_result",
+                        "tool_use_id": b.id,
+                        "content": chat_tools.run_tool(b.name, b.input, retrieved),
+                    }
+                    for b in resp.content
+                    if b.type == "tool_use"
+                ],
+            }
+        )
     text = _clean_text("".join(block.text for block in resp.content if block.type == "text")).strip()
     if not text:
         raise AIBadResponse("Respuesta vacía del modelo")
-    return text
+    text, citations = chat_tools.validate_citations(text, retrieved)
+    if not text:
+        raise AIBadResponse("Respuesta vacía tras quitar las citas inválidas")
+    if refer_gp:
+        text = with_deferral_line(text, language)
+    return CoachReply(text=text, citations=citations)
 
 
 # --- Memoria persistente del coach (P0.3) ---

@@ -79,7 +79,7 @@ vive en la raíz del repo (`runtime: docker`, `rootDir: backend`,
    proyecto de Vercel) — se corrige en el paso 4 de más abajo.
 5. Despliega. La primera build tarda unos minutos (instala dependencias,
    compila la imagen Docker). Al arrancar, el contenedor aplica las
-   migraciones y crea la tabla de caché solas.
+   migraciones, crea la tabla de caché y carga la base de evidencia del coach si cambió (ver 6b) solas.
 6. Comprueba `https://<tu-servicio>.onrender.com/health` → debe dar `200`.
 
 ### Variables de entorno de Render
@@ -110,6 +110,12 @@ Salvo que se diga lo contrario, el valor es texto plano (no secreto) y va como
 | `AI_DAILY_QUOTA_CHAT` | No | No | `50` (mensajes al coach por usuario y día; por defecto) |
 | `AI_DAILY_QUOTA_FOOD` | No | No | `20` (fotos de comida analizadas por usuario y día; por defecto) |
 | `DJANGO_LOG_LEVEL` | No | No | `INFO` |
+| `KNOWLEDGE_SYNC_ON_START` | No | No | `True` por defecto: al arrancar se carga la base de evidencia del coach si cambiaron sus archivos (sección 6b). `False` lo desactiva |
+| `LANGUAGE_SELECTOR_ENABLED` | No | No | `True` por defecto (selector es/en encendido). `False` deja toda la app en español; va a juego con `NEXT_PUBLIC_LANGUAGE_SELECTOR_ENABLED` de Vercel |
+| `AI_MODEL_TRANSLATE` | No | No | Modelo de `manage.py translate_rules` (traducción de las reglas de evidencia). Por defecto, el de `AI_MODEL_CHAT` |
+| `PARQ_URL_ES` / `PARQ_URL_EN` | No | No | Enlaces al formulario oficial PAR-Q+ (eparmedx.com) del cribado. Por defecto, los oficiales en español e inglés; solo se cambian si eparmedx mueve los PDF |
+| `CRT6_URL` | No | No | Enlace al Concussion Recognition Tool 6 oficial (BJSM) que se muestra tras un golpe en la cabeza. Por defecto `https://doi.org/10.1136/bjsports-2023-107021` |
+| `COACH_OFF_CONTACT` | No | No | Solo si llega con la Fase 8 del coach (menús y alimentos): contacto de Open Food Facts. Opcional y con valor por defecto |
 | `SECURE_HSTS_SECONDS` | No | No | `3600` por defecto |
 | `EMAIL_VERIFICATION_TIMEOUT` | No | No | `86400` (24 h) por defecto |
 | `DATA_UPLOAD_MAX_MEMORY_SIZE` / `FILE_UPLOAD_MAX_MEMORY_SIZE` | No | No | `10485760` (10 MB) por defecto — límite de subida de fotos |
@@ -143,6 +149,7 @@ Salvo que se diga lo contrario, el valor es texto plano (no secreto) y va como
 |---|---|---|---|
 | `DJANGO_API_URL` | Sí | No | `https://<tu-servicio>.onrender.com/api/v1` — sin ella el BFF falla en cada petición en vez de hablar en silencio con `localhost` |
 | `BFF_SHARED_SECRET` | Sí | **Sí** | El mismo valor exacto que pusiste en Render. Nunca con prefijo `NEXT_PUBLIC_` (eso lo expondría al navegador) |
+| `NEXT_PUBLIC_LANGUAGE_SELECTOR_ENABLED` | No | No | Selector de idioma de la UI, **en el build**: encendido salvo que valga `false` (entonces toda la UI en español). Si la cambias, hay que redesplegar. Pon el mismo valor que `LANGUAGE_SELECTOR_ENABLED` en Render |
 | `NODE_ENV` | — | — | La pone Vercel sola (`production`); no la definas a mano |
 
 ---
@@ -192,6 +199,41 @@ funciona:
 - [ ] Si hay `ANTHROPIC_API_KEY`: el chat del coach responde de verdad
       ("IA real"); si no la hay, responde `503` limpio (no un error 500).
 - [ ] Entrar en `/<ADMIN_URL>` con el superusuario del paso 5.
+
+---
+
+## 6b. Base de evidencia del coach (tras desplegar `feat/beta-coach`)
+
+El coach integrado (`backend/vendor/ai-personal-coach`, app `coaching`) lee sus reglas y fuentes
+de evidencia de la base de datos. **Se cargan solas al arrancar el contenedor**: el `CMD` del
+`Dockerfile` lanza `python manage.py sync_knowledge --on-start` después de `migrate` y
+`createcachetable`. No hay que hacer nada a mano.
+
+- Guarda una huella (sha256) de los archivos de cada conjunto (`upstream`: el `knowledge/` del
+  coach; `fightlab`: `backend/knowledge_fightlab/`) en la tabla `coaching_knowledgesync`. Si no
+  cambió, no carga nada: la comprobación tarda unos 30 ms (más lo que tarda Django en arrancar un
+  proceso). Si cambió (el primer arranque de `feat/beta-coach`, o un despliegue que toca la
+  evidencia), la carga entera tarda unos 20 s en local y algo más en Render; solo pasa en ese
+  arranque.
+- Si falla, lo deja en el log de Render (`No se pudo cargar la base de evidencia ...` o
+  `sync_knowledge ha fallado`), no guarda la huella (se reintenta en el siguiente arranque) y
+  gunicorn arranca igual: la app funciona, pero los chips del coach salen sin grado de evidencia y
+  las citas `[[regla:…]]` del chat no encuentran reglas hasta que se cargue.
+- `KNOWLEDGE_SYNC_ON_START=False` en Render la desactiva (por defecto está encendida; no hace falta
+  definir la variable).
+- Para forzarla a mano (por ejemplo desde tu PC contra Neon, con la `DATABASE_URL` solo en esa
+  terminal): `cd backend && PYTHONPATH=vendor/ai-personal-coach python manage.py sync_knowledge --force`.
+  `load_knowledge` (con `--dir knowledge_fightlab --origin fightlab` para el anexo) sigue existiendo
+  para cargas sueltas.
+- Las traducciones de las reglas (`manage.py translate_rules`) llaman a la API de Anthropic, cuestan
+  dinero y no se lanzan solas. El mecanismo está pensado para cargar también, más adelante, archivos
+  de traducción al arrancar: basta con añadir su conjunto en `coaching/knowledge_sync.py`
+  (`knowledge_sets()`), detrás de los de reglas. Sin traducciones, cada regla se muestra en su
+  idioma original.
+
+**Antes del primer despliegue de `feat/beta-coach`:** el ensayo de la migración con el esquema de
+producción está en `backend/scripts/migration_rehearsal/` (README). Conviene hacer una copia de
+Neon (*Branches → Create branch*) justo antes, para poder volver atrás.
 
 ---
 
@@ -325,13 +367,20 @@ y esta guía. Si se sube de versión, se cambian los tres a la vez.
 `ERR_PNPM_NO_PKG_MANIFEST` porque el `package.json` está en `frontend/`. Usa
 `pnpm --dir frontend lint` (o `cd frontend`); los objetivos del `Makefile` ya lo hacen.
 
-**E2E móvil (Playwright):** `frontend/e2e/`, proyectos a 320, 360 y 390 px. No
-necesita backend: `e2e/fixtures.ts` (`loginAsTestUser`) siembra las cookies
+**E2E móvil (Playwright):** `frontend/e2e/mock/` (`pnpm test:e2e`,
+`playwright.config.ts`), proyectos a 320, 360 y 390 px. No
+necesita backend: `e2e/mock/fixtures.ts` (`loginAsTestUser`) siembra las cookies
 `fl_refresh`/`fl_access` y `flp_owner_uid` en localStorage, y mockea `/api/proxy/*`.
 Primera vez: `pnpm --dir frontend exec playwright install chromium`. En local
 arranca `next dev` en el 3100; con `CI=1` usa `next start` (hace falta `next build` antes).
 
-**GitHub Actions** (`.github/workflows/ci.yml`, en push a `main`/`staging` y en
+**E2E del coach contra Django de verdad:** `frontend/e2e/*.spec.ts` (`pnpm e2e`,
+`playwright.real.config.ts`): onboarding con cribado, objetivos y pesaje, check-in, plan y
+revisión semanal, combate. Necesitan el backend migrado y arrancado, `next build && next start`
+y el Chrome o Edge instalados (`E2E_CHANNEL=msedge`); los pasos están en `frontend/e2e/README.md`.
+No van en el CI.
+
+**GitHub Actions** (`.github/workflows/ci.yml`, en push a `main`/`staging`/`feat/beta-cloud`/`feat/beta-coach` y en
 cada PR): job `backend` (Postgres 15 como servicio, `pytest -q`,
 `makemigrations --check --dry-run`, `check --deploy`) y job `frontend` (eslint,
 `tsc`, vitest, `next build`, Playwright). No usa secretos.

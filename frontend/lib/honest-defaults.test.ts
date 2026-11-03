@@ -45,12 +45,18 @@ describe("sin funciones simuladas ni valores inventados", () => {
 describe("ajustes tras QA ronda 1", () => {
   test("deportes guarda kcal null sin peso y no pinta 0 kcal", () => {
     const sports = read(path.join(ROOT, "app/(shell)/training/sports/page.tsx"));
-    expect(sports).toMatch(/kcal: latestWeight != null \? Math\.round\(kcalAcc\) : null/);
+    expect(sports).toMatch(/hasWeight = latestWeight != null/);
+    expect(sports).toMatch(/kcal: hasWeight \? Math\.round\(kcalAcc\) : null/);
     expect(sports).not.toMatch(/kcal \?\? 0/);
-    expect(sports).toMatch(/logsLoaded && latestWeight == null/);
+    // Con `no_weight_targets` tampoco se pide (integración)
+    expect(sports).toMatch(/logsLoaded && !hasWeight && !noWeightTargets/);
   });
-  test("nutrición solo pide el peso cuando las biometrías han cargado", () => {
-    expect(read(path.join(ROOT, "app/(shell)/nutrition/page.tsx"))).toMatch(/logsLoaded && weight == null/);
+  test("nutrición solo pide el peso cuando el servidor ha dicho que falta", () => {
+    // Los objetivos los da `/coach/targets`: el peso se pide (WeightPrompt) solo tras cargar,
+    // cuando responde 409 con `field: weight_kg` (ver tests/nutrition/nutrition-page.test.tsx).
+    const nutri = read(path.join(ROOT, "app/(shell)/nutrition/page.tsx"));
+    expect(nutri).toMatch(/if \(loading\) return/);
+    expect(nutri).toMatch(/kind === "weight"[\s\S]*<WeightPrompt/);
   });
   test("el coach no muestra la etiqueta 'IA real próximamente'", () => {
     expect(read(path.join(ROOT, "app/(shell)/coach/page.tsx"))).not.toMatch(/IA real próximamente/);

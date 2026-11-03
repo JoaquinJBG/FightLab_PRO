@@ -1,8 +1,11 @@
+from django.utils.translation import get_language
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
+
+from core.messages import msg
 
 from . import services
 from .serializers import (
@@ -38,10 +41,10 @@ class RegisterView(APIView):
         email = serializer.validated_data["email"]
         if not services.is_beta_email_allowed(email):
             return Response(
-                {"detail": "Registro solo por invitación"},
+                {"detail": msg("register_invite_only")},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        services.user_create(**serializer.validated_data)
+        services.user_create(**serializer.validated_data, language=get_language())
         return Response(status=status.HTTP_201_CREATED)
 
 

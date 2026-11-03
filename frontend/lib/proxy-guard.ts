@@ -34,7 +34,8 @@ export function isPathSafe(segments: string[]): boolean {
 // (app/api/proxy/health/route.ts) que Next resuelve antes que este catch-all,
 // y /api/v1/health/* no existe en Django, así que incluirlo solo añadía
 // superficie sin ningún uso real.
-export const ALLOWED_PREFIXES = ["me", "activities", "ai"] as const;
+// "coach" y "knowledge": endpoints del coach (coaching/urls.py).
+export const ALLOWED_PREFIXES = ["me", "activities", "ai", "coach", "knowledge"] as const;
 
 export function isPrefixAllowed(segments: string[]): boolean {
   return segments.length > 0 && (ALLOWED_PREFIXES as readonly string[]).includes(segments[0]);

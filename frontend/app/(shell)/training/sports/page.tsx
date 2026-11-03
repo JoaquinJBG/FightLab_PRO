@@ -2,20 +2,22 @@
 
 import { useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
 import Link from "next/link";
-import { useBiometrics } from "@/lib/hooks";
+import { useLocale, useTranslations } from "next-intl";
+import { intlLocale } from "@/lib/locale";
+import { useBiometrics, useSafety } from "@/lib/hooks";
 import {
   deleteServerActivities, enqueueActivity, fetchServerActivities, pendingQueueItems, mergeByClientId,
   type ServerActivity, type SyncItem,
 } from "@/lib/activities";
+import { EvidenceChip } from "@/components/evidence/EvidenceChip";
+import { COMBAT_RULES } from "@/lib/combat-rules";
+import { KCAL_BAND } from "@/lib/combat-mets";
 import {
   RunIcon, WalkIcon, BikeIcon, SwimIcon, BallIcon, RopeIcon, PulseIcon, ChevronRight, InfoIcon,
 } from "@/components/icons";
 import { LIVE_KEY, readLiveSession, type LiveSession } from "@/lib/sports";
 import { latestWeightKg } from "@/lib/body-inputs";
 import { WeightPrompt } from "@/components/weight-prompt";
-
-const RPE_INFO =
-  "RPE = Esfuerzo Percibido (escala 1-10): cómo de duro ha sido. 1 = muy suave, 10 = máximo esfuerzo (no podías más).";
 
 type Icon = ComponentType<SVGProps<SVGSVGElement>>;
 type Sport = { key: string; name: string; met: number; Icon: Icon; speeds?: [string, string, string] };
@@ -30,10 +32,16 @@ const SPORTS: Sport[] = [
   { key: "hike", name: "Senderismo", met: 6.0, Icon: WalkIcon, speeds: ["3–4 km/h", "4–5.5 km/h", "5.5–7 km/h"] },
   { key: "elliptical", name: "Elíptica", met: 5.0, Icon: PulseIcon },
 ];
+// E.5: estos METs y los factores de intensidad no están en el anexo de combate (solo cubre las
+// sesiones de combate): se etiquetan como convención de FightLab, sin revisar, y las kcal se
+// muestran como estimación con un rango (combat-sports "METs classify intensity but do not give
+// individual kcal").
 const SPORT_BY_KEY: Record<string, Sport> = Object.fromEntries(SPORTS.map((s) => [s.key, s]));
 
+// El primer valor es el id canónico que se guarda (local + servidor); la etiqueta visible sale de i18n.
 const INTENSITIES: [string, number][] = [["Suave", 0.85], ["Moderado", 1], ["Intenso", 1.2]];
-const EFFORT = ["RPE 3-4 · puedes hablar", "RPE 5-7 · respiración agitada", "RPE 8-10 · casi al límite"];
+const INTENSITY_ID: Record<string, string> = { Suave: "light", Moderado: "moderate", Intenso: "intense" };
+const EFFORT_IDS = ["light", "moderate", "intense"] as const;
 
 const kcalOf = (met: number, factor: number, weight: number, minutes: number) =>
   Math.round(((met * factor * 3.5 * weight) / 200) * minutes);
@@ -76,13 +84,14 @@ function pushActivity(a: Activity) {
 /* ---- historial fusionado: local + cola pendiente + servidor (otro dispositivo) ---- */
 type SportDetail = { sport_key?: string; intensity?: string };
 
+// Sin título, el nombre visible sale de i18n (`activity.untitled`), no de un literal guardado.
 function activityFromServer(a: ServerActivity): Activity {
   const detail = a.detail as SportDetail | null;
   return {
     id: a.client_id ?? `srv-${a.id}`,
     client_id: a.client_id ?? undefined,
     sportKey: detail?.sport_key ?? "",
-    sportName: a.title || "Deporte",
+    sportName: a.title || "",
     durationSec: a.duration_sec,
     kcal: a.kcal ?? null,
     intensity: detail?.intensity ?? "",
@@ -97,7 +106,7 @@ function activityFromPending(item: SyncItem): Activity {
     id: item.client_id,
     client_id: item.client_id,
     sportKey: detail?.sport_key ?? "",
-    sportName: item.title || "Deporte",
+    sportName: item.title || "",
     durationSec: item.duration_sec,
     kcal: item.kcal ?? null,
     intensity: detail?.intensity ?? "",
@@ -106,19 +115,32 @@ function activityFromPending(item: SyncItem): Activity {
     ts: new Date(item.started_at).getTime() + item.duration_sec * 1000,
   };
 }
-function fmtDate(ts: number) {
+function fmtDate(ts: number, locale: string, t: (k: string, v?: Record<string, string>) => string) {
   const d = new Date(ts);
   const today = new Date();
   const sameDay = d.toDateString() === today.toDateString();
-  const time = d.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
-  return sameDay ? `Hoy · ${time}` : `${d.toLocaleDateString("es", { day: "2-digit", month: "short" })} · ${time}`;
+  const time = d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  return sameDay
+    ? t("date.today", { time })
+    : t("date.dateTime", { date: d.toLocaleDateString(locale, { day: "2-digit", month: "short" }), time });
 }
 
 export default function SportsPage() {
+  const t = useTranslations("training.sports");
+  const tk = useTranslations("combat.tracker");
+  const tAct = useTranslations("training.activities.sports");
+  const locale = intlLocale(useLocale());
+  const sportLabel = (s: { key: string; name: string }) => (tAct.has(s.key) ? tAct(s.key) : s.name);
+  const intensityLabel = (canon: string) => (INTENSITY_ID[canon] ? t(`intensity.${INTENSITY_ID[canon]}`) : canon);
   const { data: logs = [], isSuccess: logsLoaded } = useBiometrics();
+  // Con `no_weight_targets` no se pide el peso (spec §8.3): sin peso, las kcal quedan sin estimar.
+  const { data: safety } = useSafety();
+  const noWeightTargets = !!safety?.flags.no_weight_targets;
   const latestWeight = latestWeightKg(logs);
   const weight = latestWeight ?? 0;
-  const weightNote = latestWeight != null ? "Kcal estimadas según tu peso." : "Pon tu peso para estimar las kcal.";
+  const hasWeight = latestWeight != null;
+  const weightNote = hasWeight ? t("weightNote") : noWeightTargets ? t("weightNoteNone") : t("weightNoteMissing");
+  const askWeight = logsLoaded && !hasWeight && !noWeightTargets;
 
   const [view, setView] = useState<"deporte" | "actividad">("deporte");
   // Inicialización perezosa: se lee localStorage una sola vez, en el primer
@@ -250,7 +272,7 @@ export default function SportsPage() {
       sportKey: sel.key,
       sportName: sel.name,
       durationSec: elapsed,
-      kcal: latestWeight != null ? Math.round(kcalAcc) : null,
+      kcal: hasWeight ? Math.round(kcalAcc) : null,
       intensity: INTENSITIES[intIdx][0],
       rpe,
       load: rpe ? Math.round(minutes * rpe) : null,
@@ -264,7 +286,7 @@ export default function SportsPage() {
       started_at: new Date(ts - elapsed * 1000).toISOString(),
       duration_sec: Math.min(86_400, Math.max(1, Math.round(elapsed))),
       rpe,
-      kcal: latestWeight != null ? Math.min(20_000, Math.max(0, Math.round(kcalAcc))) : null,
+      kcal: hasWeight ? Math.min(20_000, Math.max(0, Math.round(kcalAcc))) : null,
       detail: { sport_key: sel.key, intensity: INTENSITIES[intIdx][0] },
     });
     localStorage.removeItem(LIVE_KEY);
@@ -308,36 +330,43 @@ export default function SportsPage() {
   /* ---------------- vistas del tracker ---------------- */
   if (sel) {
     const Icon = sel.Icon;
-    const detail = sel.speeds ? sel.speeds[intIdx] : EFFORT[intIdx];
+    const detail = sel.speeds ? sel.speeds[intIdx] : t(`effort.${EFFORT_IDS[intIdx]}`);
 
     /* resumen + RPE antes de guardar */
     if (phase === "summary") {
       const minutes = elapsed / 60;
       return (
         <div className="pt-4">
-          <h1 className="t-display text-2xl text-ink">¿Cómo ha ido?</h1>
+          <h1 className="t-display text-2xl text-ink">{t("summary.title")}</h1>
           <div className="glass neon-edge mt-4 flex flex-col items-center gap-3 p-6 text-center">
             <span className="text-neon glow flex h-14 w-14 items-center justify-center rounded-2xl bg-[rgba(69,233,255,0.07)]">
               <Icon className="h-7 w-7" />
             </span>
-            <p className="t-title text-ink">{sel.name}</p>
+            <p className="t-title text-ink">{sportLabel(sel)}</p>
             <div className="flex gap-8">
-              <div><p className="stat text-3xl text-ink">{fmtClock(elapsed)}</p><p className="t-label text-muted">tiempo</p></div>
-              <div><p className="stat text-3xl neon-text">{latestWeight != null ? Math.round(kcalAcc) : "—"}</p><p className="t-label text-muted">kcal</p></div>
+              <div><p className="stat text-3xl text-ink">{fmtClock(elapsed)}</p><p className="t-label text-muted">{t("summary.time")}</p></div>
+              <div><p className="stat text-3xl neon-text">{hasWeight ? `≈ ${Math.round(kcalAcc)}` : "—"}</p><p className="t-label text-muted">{t("summary.kcal")}</p></div>
             </div>
+            {hasWeight && <p data-testid="sports-kcal-estimate" className="t-body text-xs text-muted">
+              {tk("estimate", {
+                low: Math.round((kcalAcc * (1 - KCAL_BAND)) / 10) * 10,
+                high: Math.round((kcalAcc * (1 + KCAL_BAND)) / 10) * 10,
+              })}{" "}
+              <EvidenceChip ruleKey={COMBAT_RULES.metsRange.key} grade={COMBAT_RULES.metsRange.grade} />
+            </p>}
           </div>
 
           <div className="glass mt-4 p-4">
             <div className="flex items-center gap-1.5">
-              <p className="t-label text-ink">Esfuerzo percibido (RPE)</p>
-              <button type="button" onClick={() => setRpeInfo((v) => !v)} aria-label="Qué es RPE"
+              <p className="t-label text-ink">{t("summary.rpeLabel")}</p>
+              <button type="button" onClick={() => setRpeInfo((v) => !v)} aria-label={t("rpeWhat")}
                 className={rpeInfo ? "text-neon" : "text-muted hover:text-neon"}>
                 <InfoIcon className="h-3.5 w-3.5" />
               </button>
             </div>
             {rpeInfo && (
               <p className="t-body mt-2 rounded-xl border border-[rgba(150,190,255,0.12)] bg-[rgba(255,255,255,0.04)] p-2.5 text-xs text-[#cdd9ef]">
-                {RPE_INFO}
+                {t("rpeInfo")}
               </p>
             )}
             <div className="mt-3 grid grid-cols-5 gap-1.5">
@@ -353,18 +382,18 @@ export default function SportsPage() {
             </div>
             {rpe && (
               <p className="t-body mt-2.5 text-center text-xs text-muted">
-                Carga de la sesión: <span className="text-neon">{Math.round(minutes * rpe)} AU</span> (min × RPE)
+                {t.rich("summary.load", { n: Math.round(minutes * rpe), b: (c) => <span className="text-neon">{c}</span> })}
               </p>
             )}
           </div>
 
           <div className="mt-4 flex gap-3">
-            <button onClick={discardSession} className="btn btn-outline flex-1">Descartar</button>
-            <button onClick={save} disabled={elapsed === 0} className="btn btn-primary flex-1 disabled:opacity-60">Guardar</button>
+            <button onClick={discardSession} className="btn btn-outline flex-1">{t("summary.discard")}</button>
+            <button onClick={save} disabled={elapsed === 0} className="btn btn-primary flex-1 disabled:opacity-60">{t("summary.save")}</button>
           </div>
           {!rpe && (
             <p className="t-body mt-2 text-center text-[11px] text-muted">
-              Puedes guardar sin RPE, pero con él calculamos tu carga.
+              {t("summary.saveNoRpe")}
             </p>
           )}
         </div>
@@ -375,18 +404,18 @@ export default function SportsPage() {
     return (
       <div className="pt-4">
         {phase === "idle" ? (
-          <button onClick={() => setSel(null)} className="t-label text-muted">← Deportes</button>
+          <button onClick={() => setSel(null)} className="t-label text-muted">{t("live.backToList")}</button>
         ) : (
-          <span className="t-label text-muted">Sesión en curso</span>
+          <span className="t-label text-muted">{t("live.inProgress")}</span>
         )}
         <div className="mt-3 flex items-center gap-3">
           <span className="text-neon glow flex h-12 w-12 items-center justify-center rounded-2xl bg-[rgba(69,233,255,0.07)]">
             <Icon className="h-6 w-6" />
           </span>
-          <h1 className="t-display text-2xl text-ink">{sel.name}</h1>
+          <h1 className="t-display text-2xl text-ink">{sportLabel(sel)}</h1>
         </div>
         <p className="t-body mt-2 text-xs text-muted">{weightNote}</p>
-        {logsLoaded && latestWeight == null && <WeightPrompt what="las kcal de esta sesión" />}
+        {askWeight && <WeightPrompt what={t("weightPrompt.session")} />}
 
         <div className="glass neon-edge mt-4 flex flex-col items-center gap-2 p-6">
           {phase === "countdown" ? (
@@ -394,40 +423,40 @@ export default function SportsPage() {
           ) : (
             <>
               <span className="stat text-6xl text-ink tabular-nums">{fmtClock(elapsed)}</span>
-              <span className="stat text-2xl neon-text">{latestWeight != null ? Math.round(kcalAcc) : "—"} <span className="text-sm text-muted">kcal</span></span>
+              <span className="stat text-2xl neon-text">{hasWeight ? Math.round(kcalAcc) : "—"} <span className="text-sm text-muted">{t("summary.kcal")}</span></span>
             </>
           )}
         </div>
 
         <div className="mt-3">
           <div className="glass grid grid-cols-3 gap-1 rounded-2xl p-1">
-            {INTENSITIES.map(([label], i) => (
-              <button key={label} onClick={() => setIntIdx(i)} className="rounded-xl py-2.5 text-sm font-medium transition-colors"
+            {INTENSITIES.map(([canon], i) => (
+              <button key={canon} onClick={() => setIntIdx(i)} className="rounded-xl py-2.5 text-sm font-medium transition-colors"
                 style={intIdx === i
                   ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)", color: "#03101c" }
                   : { background: "transparent", color: "var(--color-muted)" }}>
-                {label}
+                {intensityLabel(canon)}
               </button>
             ))}
           </div>
           <p className="t-body mt-2 text-center text-xs text-muted">
-            {INTENSITIES[intIdx][0]} · <span className="text-ink">{detail}</span>
+            {intensityLabel(INTENSITIES[intIdx][0])} · <span className="text-ink">{detail}</span>
           </p>
         </div>
 
         <div className="mt-4 flex gap-3">
           {phase === "idle" && (
-            <button className="btn btn-primary flex-1" onClick={start}>Iniciar</button>
+            <button className="btn btn-primary flex-1" onClick={start}>{t("live.start")}</button>
           )}
           {phase === "countdown" && (
-            <button className="btn btn-outline flex-1" onClick={() => setPhase("idle")}>Cancelar</button>
+            <button className="btn btn-outline flex-1" onClick={() => setPhase("idle")}>{t("live.cancel")}</button>
           )}
           {phase === "live" && (
             <>
               {running ? (
-                <button className="btn btn-tonal flex-1" onClick={() => setRunning(false)}>Pausar</button>
+                <button className="btn btn-tonal flex-1" onClick={() => setRunning(false)}>{t("live.pause")}</button>
               ) : (
-                <button className="btn btn-primary flex-1" onClick={() => setRunning(true)}>Reanudar</button>
+                <button className="btn btn-primary flex-1" onClick={() => setRunning(true)}>{t("live.resume")}</button>
               )}
               <button
                 className="btn btn-outline relative flex-1 touch-none select-none overflow-hidden"
@@ -440,14 +469,14 @@ export default function SportsPage() {
                   className="absolute inset-y-0 left-0"
                   style={{ width: `${holdPct}%`, background: "rgba(255,93,128,0.25)" }}
                 />
-                <span className="relative">Mantén para parar</span>
+                <span className="relative">{t("live.holdToStop")}</span>
               </button>
             </>
           )}
         </div>
         {phase === "live" && (
           <p className="t-body mt-2 text-center text-[11px] text-muted">
-            La pantalla no se apagará durante la sesión. Si cierras la app, podrás retomarla.
+            {t("live.wakeNote")}
           </p>
         )}
       </div>
@@ -457,27 +486,27 @@ export default function SportsPage() {
   /* ---------------- lista + registro ---------------- */
   return (
     <div className="pt-4">
-      <Link href="/training" className="t-label text-muted">← Entreno</Link>
-      <h1 className="t-display mt-2 text-2xl text-ink">Deportes</h1>
-      <p className="t-body mt-1 text-muted">Elige tu actividad, cronométrala y cuenta kcal.</p>
+      <Link href="/training" className="t-label text-muted">{t("back")}</Link>
+      <h1 className="t-display mt-2 text-2xl text-ink">{t("title")}</h1>
+      <p className="t-body mt-1 text-muted">{t("subtitle")}</p>
 
       {/* sesión sin terminar (recuperación) */}
       {resume && (
         <div className="glass neon-edge mt-3 flex items-center gap-3 p-4">
           <span className="text-warn"><PulseIcon className="h-5 w-5" /></span>
           <div className="min-w-0 flex-1">
-            <p className="t-label text-ink">Sesión sin terminar</p>
+            <p className="t-label text-ink">{t("resume.title")}</p>
             <p className="t-body text-xs text-muted">
-              {SPORT_BY_KEY[resume.sportKey]?.name} · {fmtClock(resume.elapsed)} · {latestWeight != null ? `${Math.round(resume.kcal)} kcal` : "kcal —"}
+              {SPORT_BY_KEY[resume.sportKey] ? sportLabel(SPORT_BY_KEY[resume.sportKey]) : ""} · {fmtClock(resume.elapsed)} · {hasWeight ? `${Math.round(resume.kcal)} ${t("summary.kcal")}` : `${t("summary.kcal")} —`}
             </p>
           </div>
-          <button onClick={() => resumeSession(resume)} className="btn btn-tonal btn-sm shrink-0">Reanudar</button>
-          <button onClick={discardLive} aria-label="Descartar sesión" className="t-label shrink-0 text-muted">✕</button>
+          <button onClick={() => resumeSession(resume)} className="btn btn-tonal btn-sm shrink-0">{t("live.resume")}</button>
+          <button onClick={discardLive} aria-label={t("resume.discardAria")} className="t-label shrink-0 text-muted">✕</button>
         </div>
       )}
 
       <div className="glass mt-3 grid grid-cols-2 gap-1 rounded-2xl p-1">
-        {([["deporte", "Deporte"], ["actividad", "Actividad"]] as const).map(([k, label]) => (
+        {([["deporte", t("tabs.sport")], ["actividad", t("tabs.activity")]] as const).map(([k, label]) => (
           <button key={k} onClick={() => { setView(k); setConfirmDelete(false); }} className="rounded-xl py-2.5 text-sm font-medium transition-colors"
             style={view === k ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)", color: "#03101c" } : { background: "transparent", color: "var(--color-muted)" }}>
             {label}
@@ -491,14 +520,17 @@ export default function SportsPage() {
             <PulseIcon className="h-4 w-4 shrink-0 text-neon" />
             <p className="t-body text-xs text-muted">{weightNote}</p>
           </div>
-          {logsLoaded && latestWeight == null && <WeightPrompt what="las kcal de cada deporte" />}
+          {askWeight && <WeightPrompt what={t("weightPrompt.list")} />}
+          <p data-testid="sports-mets-convention" className="t-body mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
+            {tk("mets")} <EvidenceChip />
+          </p>
           <div className="mt-4 flex flex-col gap-3">
             {SPORTS.map((s, i) => (
               <button key={s.key} onClick={() => openSport(s)} className="glass rise flex items-center gap-4 p-4 text-left" style={{ animationDelay: `${i * 35}ms` }}>
                 <span className="text-neon flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[rgba(69,233,255,0.07)]"><s.Icon className="h-6 w-6" /></span>
                 <span className="min-w-0 flex-1">
-                  <span className="t-title block text-lg text-ink">{s.name}</span>
-                  {latestWeight != null && <span className="t-body text-xs text-muted">~{kcalOf(s.met, 1, weight, 30)} kcal / 30 min</span>}
+                  <span className="t-title block text-lg text-ink">{sportLabel(s)}</span>
+                  {hasWeight && <span className="t-body text-xs text-muted">{t("kcalPer30", { kcal: kcalOf(s.met, 1, weight, 30) })}</span>}
                 </span>
                 <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
               </button>
@@ -508,23 +540,23 @@ export default function SportsPage() {
       ) : (
         <div className="mt-4">
           <div className="flex items-center justify-between">
-            <p className="t-eyebrow text-muted">Tu actividad</p>
+            <p className="t-eyebrow text-muted">{t("activity.title")}</p>
             {activities.length > 0 && (
               confirmDelete ? (
                 <button
                   onClick={() => { localStorage.removeItem(KEY); setActivities([]); void deleteServerActivities("SPORT"); setConfirmDelete(false); }}
                   className="t-label text-bad"
                 >
-                  ¿Borrar todo?
+                  {t("activity.deleteConfirm")}
                 </button>
               ) : (
-                <button onClick={() => setConfirmDelete(true)} className="t-label text-muted">Borrar</button>
+                <button onClick={() => setConfirmDelete(true)} className="t-label text-muted">{t("activity.delete")}</button>
               )
             )}
           </div>
           {activities.length === 0 ? (
             <div className="glass mt-2 p-4">
-              <p className="t-body text-xs text-muted">Aún no has registrado ninguna actividad. Cronometra un deporte y aparecerá aquí.</p>
+              <p className="t-body text-xs text-muted">{t("activity.empty")}</p>
             </div>
           ) : (
             <div className="mt-2 flex flex-col gap-2">
@@ -534,14 +566,14 @@ export default function SportsPage() {
                   <div key={a.id} className="glass flex items-center gap-3 p-3.5">
                     <span className="text-neon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(69,233,255,0.07)]"><Icon className="h-5 w-5" /></span>
                     <div className="min-w-0 flex-1">
-                      <p className="t-label text-ink">{a.sportName} <span className="text-muted">· {a.intensity}</span></p>
+                      <p className="t-label text-ink">{SPORT_BY_KEY[a.sportKey] ? sportLabel(SPORT_BY_KEY[a.sportKey]) : a.sportName || t("activity.untitled")}{a.intensity && <span className="text-muted"> · {intensityLabel(a.intensity)}</span>}</p>
                       <p className="t-body text-[11px] text-muted">
-                        {fmtDate(a.ts)}{a.rpe ? ` · RPE ${a.rpe}` : ""}{a.load ? ` · ${a.load} AU` : ""}
+                        {fmtDate(a.ts, locale, t)}{a.rpe ? ` · ${t("activity.rpe", { n: a.rpe })}` : ""}{a.load ? ` · ${t("activity.au", { n: a.load })}` : ""}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="stat text-ink">{fmtClock(a.durationSec)}</p>
-                      <p className="t-body text-[11px] text-neon">{a.kcal != null ? `${a.kcal} kcal` : "— kcal"}</p>
+                      <p className="t-body text-[11px] text-neon">{a.kcal != null ? `${a.kcal} ${t("summary.kcal")}` : `— ${t("summary.kcal")}`}</p>
                     </div>
                   </div>
                 );

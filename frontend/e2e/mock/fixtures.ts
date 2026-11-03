@@ -9,6 +9,30 @@ const PROFILE = {
   dominant_stance: "orthodox",
   preferred_units: "metric",
   timezone: "Europe/Madrid",
+  // Perfil ampliado del coach, con el onboarding hecho
+  equation_sex: null, goal: "maintenance", experience: "intermediate", activity_level: "desk_training",
+  language: "es", region: "es", emergency_number: null, medications: [], medications_other: [],
+  conditions: [], conditions_other: [], disciplines: [], training_frequency: null, goal_weight_kg: null,
+  goal_date: null, weight_class: null, weigh_in_at: null,
+};
+
+// Respuestas del coach con el cribado contestado y sin bloqueos. Sin pesos en la biometría
+// (`me/biometrics` vacío), los objetivos dan el 409 del motor que pide el peso.
+const SCREENING = {
+  values: {
+    scoff_yes_count: 0, scoff_positive: false, parq_any_yes: false, parq_followup_yes: null,
+    vigorous_reviewed: null, cardiac_symptoms: false, menstrual: null, bp_systolic: null, bp_diastolic: null,
+  },
+  parq_url: "https://eparmedx.com/", parq_native_form: false,
+};
+const SAFETY = {
+  screened: true, flags: {}, reasons: [], paused_exercises: {}, refer_gp: false, deferral_line: null,
+  disclaimer: "Esto es orientación general de un entrenador automatizado, no consejo médico.",
+  emergency_number: "112", parq_pending: false, weight: null, crt6_url: null,
+};
+const WEIGH_IN = {
+  blocked: false, deficit_blocked: false, reasons: [], goal_weight_kg: null, goal_date: null,
+  weigh_in_at: null, weight_class: null, days_left: null, current_kg: null, to_go_kg: null,
 };
 
 const ME = { id: 1, email: "e2e@example.test", role: "athlete", is_email_verified: true };
@@ -48,6 +72,10 @@ export async function loginAsTestUser(page: Page, extraState: Seed = {}) {
 
     if (path.startsWith("health")) return json({ status: "ok" });
     if (path.startsWith("me/profile")) return json(PROFILE);
+    if (path.startsWith("coach/screening")) return json(SCREENING);
+    if (path.startsWith("coach/safety")) return json(SAFETY);
+    if (path.startsWith("coach/weigh-in")) return json(WEIGH_IN);
+    if (path.startsWith("coach/targets")) return json({ code: "profile_incomplete", field: "weight_kg" }, 409);
     if (path.startsWith("me/biometrics")) return json([]);
     if (path.startsWith("me/state")) return json({});
     if (path.startsWith("activities")) return json([]);

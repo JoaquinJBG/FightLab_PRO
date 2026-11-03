@@ -1,3 +1,6 @@
+import { cookies, headers as reqHeaders } from "next/headers";
+import { LANG_COOKIE, appLocale } from "./locale";
+
 const DEV_FALLBACK_BASE = "http://127.0.0.1:8001/api/v1";
 
 // Se calcula de forma perezosa (nunca al importar el módulo): Next importa
@@ -23,6 +26,20 @@ export function assertDjangoConfigured(): void {
     throw new Error(
       "Falta la variable de entorno DJANGO_API_URL en producción: el BFF no sabe a qué backend de Django conectarse.",
     );
+  }
+}
+
+/** Idioma de la petición (cookie `flp_lang`, luego `Accept-Language`) para que
+ * Django devuelva sus mensajes en el mismo idioma que la UI. Fuera de una
+ * petición (tests, build) no hay cookies ni cabeceras: idioma por defecto. */
+async function acceptLanguage(): Promise<string> {
+  try {
+    return appLocale(
+      (await cookies()).get(LANG_COOKIE)?.value,
+      (await reqHeaders()).get("accept-language"),
+    );
+  } catch {
+    return appLocale(undefined, null);
   }
 }
 
@@ -55,7 +72,7 @@ export type RequestOpts = {
  */
 export async function djangoRequest(path: string, opts: RequestOpts = {}): Promise<Response> {
   assertDjangoConfigured();
-  const headers: Record<string, string> = { ...opts.headers };
+  const headers: Record<string, string> = { "Accept-Language": await acceptLanguage(), ...opts.headers };
   if (opts.access) headers.Authorization = `Bearer ${opts.access}`;
   if (opts.forwardedFor) headers["X-Forwarded-For"] = opts.forwardedFor;
   return fetch(`${BASE}${path}`, {

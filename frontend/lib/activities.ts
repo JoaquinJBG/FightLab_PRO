@@ -14,6 +14,7 @@
 // por dispositivo (flp_acts_legacy_owner) para no copiar datos de A a B.
 
 import type { LoadMetrics, LoadBandStatus } from "@/lib/load";
+import { gymSets } from "@/lib/gym";
 
 export type ActivityKind = "SPORT" | "MMA" | "GYM";
 
@@ -27,6 +28,16 @@ export type SyncItem = {
   kcal?: number | null;
   note?: string;
   detail?: Record<string, unknown> | null;
+  /** Series de gimnasio (Task 6.1): van aparte para que no las corte el tope de `detail`. */
+  sets?: SyncSet[];
+};
+
+export type SyncSet = {
+  exercise: string;
+  exercise_index: number;
+  set_index: number;
+  weight_kg: number | null; // null: con el peso corporal
+  reps: number;
 };
 
 const UID_CACHE_KEY = "flp_uid";
@@ -307,6 +318,7 @@ function legacyItems(): SyncItem[] {
       duration_sec: dur,
       rpe: rpeOf(g.rpe),
       detail,
+      sets: gymSets(Array.isArray(g.exercises) ? g.exercises : []),
     });
   }
 
@@ -406,7 +418,8 @@ export async function fetchServerMetrics(): Promise<LoadMetrics | null> {
     const res = await fetch(`/api/proxy/activities/metrics?tz=${encodeURIComponent(tz)}`);
     if (!res.ok) return null;
     const d = (await res.json()) as {
-      week_au: number; daily7: number[]; acwr: number | null; provisional: boolean;
+      week_au: number; daily7: number[]; acwr: number | null; week_vs_avg_pct: number | null;
+      ratio_days_left: number; gaps: boolean;
       monotonia: number | null; tension: number | null; sin_variacion: boolean; history_days: number;
       band: { week_au: number; low: number; high: number; overreach: number; status: string; provisional: boolean } | null;
     };
@@ -415,7 +428,9 @@ export async function fetchServerMetrics(): Promise<LoadMetrics | null> {
       weekAU: d.week_au,
       daily7: d.daily7,
       acwr: d.acwr,
-      provisional: d.provisional,
+      weekVsAvgPct: d.week_vs_avg_pct ?? null,
+      ratioDaysLeft: d.ratio_days_left ?? 0,
+      gaps: d.gaps ?? false,
       monotonia: d.monotonia,
       tension: d.tension,
       sinVariacion: d.sin_variacion,
