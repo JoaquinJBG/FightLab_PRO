@@ -1,0 +1,256 @@
+"use client";
+
+import { useState, type ReactNode } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { EvidenceChip } from "@/components/evidence/EvidenceChip";
+import { intlLocale } from "@/lib/locale";
+import {
+  RATINGS,
+  useRateDish,
+  type DayCheck,
+  type Menu,
+  type MenuDay,
+  type MenuDish,
+  type MenuItem,
+  type Rating,
+} from "@/lib/menu";
+
+const CHECK_KEYS = ["kcal", "protein_g", "fat_g", "fibre_g"] as const;
+type CheckKey = (typeof CHECK_KEYS)[number];
+const STATUS_COLOR: Record<string, string> = {
+  ok: "var(--color-good)",
+  under: "var(--color-warn)",
+  over: "var(--color-warn)",
+  missing: "var(--color-muted)",
+};
+
+function useFormat() {
+  const locale = intlLocale(useLocale());
+  return {
+    n: (v: number, digits = 0) => v.toLocaleString(locale, { maximumFractionDigits: digits }),
+    date: (iso: string) =>
+      new Date(`${iso}T12:00:00`).toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" }),
+  };
+}
+
+function Section({ title, children, testId }: { title: string; children: ReactNode; testId: string }) {
+  return (
+    <section data-testid={testId} className="glass mt-4 p-4">
+      <p className="t-eyebrow text-muted">{title}</p>
+      <div className="mt-3 flex flex-col gap-2">{children}</div>
+    </section>
+  );
+}
+
+/** El primer chip de las reglas de un objetivo (kcal, proteína, grasa o fibra). */
+function RuleChip({ menu, name }: { menu: Menu; name: string }) {
+  const rule = menu.rules[name]?.[0];
+  return <EvidenceChip ruleKey={rule?.key ?? null} grade={rule?.grade ?? null} />;
+}
+
+function Amount({ item }: { item: MenuItem }) {
+  const t = useTranslations("menu");
+  const f = useFormat();
+  return <>{t(`amount.${item.unit}`, { n: f.n(item.amount) })}</>;
+}
+
+function Targets({ menu }: { menu: Menu }) {
+  const t = useTranslations("menu.targets");
+  const f = useFormat();
+  const tg = menu.targets;
+  const row = (key: string, text: string, rule: string | null) => (
+    <p key={key} data-testid="menu-target" data-key={key} className="t-body flex flex-wrap items-center gap-2 text-sm text-ink">
+      <span>{text}</span>
+      {rule ? <RuleChip menu={menu} name={rule} /> : <EvidenceChip ruleKey={null} />}
+    </p>
+  );
+  return (
+    <Section title={t("title")} testId="menu-targets">
+      {row("kcal", t("kcal", { kcal: f.n(tg.kcal) }), "kcal")}
+      {row("protein_g", t("protein", { g: f.n(tg.protein_g) }), "protein_g")}
+      {row("fat_g", t("fat", { g: f.n(tg.fat_min_g) }), "fat_g")}
+      {row("fibre_g", t("fibre", { g: f.n(tg.fibre_g) }), "fibre_g")}
+      {row("margin", t("margin", { pct: f.n(menu.conventions.kcal_margin * 100) }), null)}
+      {row("repeat", t("noRepeat", { days: menu.conventions.no_repeat_days }), null)}
+    </Section>
+  );
+}
+
+function CheckLine({ check, menu }: { check: DayCheck; menu: Menu }) {
+  const t = useTranslations("menu");
+  return (
+    <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1.5">
+      {CHECK_KEYS.map((k: CheckKey) => (
+        <li key={k} data-testid="menu-check" data-key={k} data-status={check[k]} className="inline-flex items-center gap-1.5">
+          <span className="t-label" style={{ color: STATUS_COLOR[check[k]] }}>
+            {t(`checkLabels.${k}`)}: {t(`status.${check[k]}`)}
+          </span>
+          <RuleChip menu={menu} name={k} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function RateButtons({ dish }: { dish: string }) {
+  const t = useTranslations("menu.rate");
+  const rate = useRateDish();
+  const [done, setDone] = useState<Rating | null>(null);
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-1.5" data-testid="menu-rate">
+      <span className="t-label text-muted">{t("label")}</span>
+      {RATINGS.map((r) => (
+        <button key={r} type="button" disabled={rate.isPending} aria-pressed={done === r}
+          onClick={() => rate.mutate({ dish, rating: r }, { onSuccess: () => setDone(r) })}
+          className={`badge ${done === r ? "badge-neon" : ""}`}>
+          {t(r)}
+        </button>
+      ))}
+      {done && <span role="status" className="t-label text-good">{t("saved")}</span>}
+    </div>
+  );
+}
+
+function Dish({ dish }: { dish: MenuDish }) {
+  const t = useTranslations("menu.day");
+  const [open, setOpen] = useState(false);
+  return (
+    <div data-testid="menu-dish" data-dish={dish.dish} className="mt-1">
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="t-body text-left text-sm text-ink underline-offset-2 hover:underline">
+        {dish.dish}
+      </button>
+      <ul className="t-body mt-0.5 text-[11px] text-muted">
+        {dish.items.map((i, n) => (
+          <li key={`${i.name}-${n}`} data-testid="menu-item">
+            {i.name} · <Amount item={i} />
+            {i.product && i.url && (
+              <> · <a href={i.url} target="_blank" rel="noopener noreferrer" className="text-neon underline">{t("offProduct")}</a></>
+            )}
+          </li>
+        ))}
+      </ul>
+      {dish.seasoning.length > 0 && <p className="t-body mt-0.5 text-[11px] text-muted">{t("seasoning", { list: dish.seasoning.join(", ") })}</p>}
+      {dish.source && (
+        <a href={dish.source} target="_blank" rel="noopener noreferrer" className="t-label text-neon underline">{t("source")}</a>
+      )}
+      {open && <RateButtons dish={dish.dish} />}
+    </div>
+  );
+}
+
+function Day({ day, menu }: { day: MenuDay; menu: Menu }) {
+  const t = useTranslations("menu");
+  const f = useFormat();
+  const tot = day.check?.totals;
+  return (
+    <article data-testid="menu-day" data-date={day.date} data-ok={day.check?.ok ? "true" : "false"} className="glass mt-3 p-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="t-title text-ink first-letter:uppercase">{f.date(day.date)}</p>
+        {day.check?.ok && <span className="badge badge-neon">{t("day.ok")}</span>}
+      </div>
+      {day.meals.map((meal, i) => (
+        <div key={`${meal.meal}-${i}`} className="mt-3">
+          <p className="t-label text-muted">
+            {t.has(`meals.${meal.meal}`) ? t(`meals.${meal.meal}`) : meal.meal}
+            {meal.tupper && <span className="badge ml-2">{t("day.tupper")}</span>}
+          </p>
+          {meal.dishes.map((d) => <Dish key={d.dish} dish={d} />)}
+        </div>
+      ))}
+      {tot && day.check && (
+        <div className="mt-3 border-t border-[rgba(150,190,255,0.1)] pt-2">
+          <p data-testid="menu-totals" className="stat text-sm text-ink">
+            {t("day.totals", { kcal: f.n(tot.kcal), p: f.n(tot.protein_g), f: f.n(tot.fat_g), c: f.n(tot.carbs_g), fib: f.n(tot.fibre_g) })}
+          </p>
+          <CheckLine check={day.check.check} menu={menu} />
+        </div>
+      )}
+    </article>
+  );
+}
+
+function Rejected({ menu }: { menu: Menu }) {
+  const t = useTranslations("menu.rejected");
+  const tm = useTranslations("menu");
+  const tk = useTranslations("menu.flags.kinds");
+  const f = useFormat();
+  if (menu.rejected.length === 0) return null;
+  return (
+    <Section title={t("title")} testId="menu-rejected">
+      {menu.rejected.map((r) => {
+        const why: string[] = [];
+        if (r.empty) why.push(t("empty"));
+        if (r.check) {
+          for (const k of CHECK_KEYS) if (r.check[k] !== "ok") why.push(`${tm(`checkLabels.${k}`)}: ${tm(`status.${r.check[k]}`)}`);
+        }
+        if (r.repeats) why.push(t("repeats"));
+        for (const b of r.blocking) why.push(t("blocking", { kind: tk.has(b.kind) ? tk(b.kind) : b.kind, entry: b.entry }));
+        if (r.unknown.length) why.push(t("unknown", { list: r.unknown.join(", ") }));
+        return (
+          <p key={r.date} data-testid="menu-rejected-day" data-date={r.date} className="t-body text-sm text-ink">
+            <span className="first-letter:uppercase">{f.date(r.date)}</span>: <span className="text-warn">{why.join(" · ")}</span>
+          </p>
+        );
+      })}
+    </Section>
+  );
+}
+
+function TasteFlags({ menu }: { menu: Menu }) {
+  const t = useTranslations("menu.flags");
+  if (menu.taste_flags.length === 0) return null;
+  return (
+    <Section title={t("title")} testId="menu-taste-flags">
+      {menu.taste_flags.map((fl, i) => (
+        <p key={`${fl.date}-${fl.dish}-${i}`} className="t-body flex flex-wrap items-center gap-2 text-xs text-ink">
+          <span>{t("line", { dish: fl.dish, kind: t.has(`kinds.${fl.kind}`) ? t(`kinds.${fl.kind}`) : fl.kind, entry: fl.entry })}</span>
+          <EvidenceChip ruleKey={null} />
+        </p>
+      ))}
+      <p className="t-body text-[11px] text-muted">{t("net")}</p>
+    </Section>
+  );
+}
+
+function Shopping({ menu }: { menu: Menu }) {
+  const t = useTranslations("menu.shopping");
+  const f = useFormat();
+  const s = menu.shopping;
+  return (
+    <Section title={t("title")} testId="shopping-list">
+      {s.chains.map((c) => (
+        <div key={c.chain} data-testid="shopping-chain" data-chain={c.chain}>
+          <p className="t-label text-muted">{c.chain === "any" ? t("any") : c.chain}</p>
+          <ul className="mt-1 flex flex-col gap-0.5">
+            {c.items.map((i) => (
+              <li key={i.name} data-testid="shopping-item" className="t-body flex justify-between gap-2 text-sm text-ink">
+                <span>{i.name}</span>
+                <span className="text-muted">{i.ml != null ? t("ml", { n: f.n(i.ml) }) : t("g", { n: f.n(i.grams ?? 0) })}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      {s.pantry_skipped.length > 0 && <p className="t-body text-xs text-muted">{t("pantry", { list: s.pantry_skipped.join(", ") })}</p>}
+      {s.unknown.length > 0 && <p className="t-body text-xs text-warn">{t("unknown", { list: s.unknown.join(", ") })}</p>}
+      <p className="t-body text-[11px] text-muted">{t("note")}</p>
+    </Section>
+  );
+}
+
+/** El menú guardado: objetivos, días comprobados por el motor, rechazos, avisos y la compra. */
+export function MenuView({ menu }: { menu: Menu }) {
+  const t = useTranslations("menu");
+  return (
+    <div data-testid="menu" data-provider={menu.provider}>
+      {menu.provider === "fake" && <p data-testid="menu-simulated" className="t-body mt-3 text-[11px] text-muted">{t("simulated")}</p>}
+      <Targets menu={menu} />
+      {menu.days.map((d) => <Day key={d.date} day={d} menu={menu} />)}
+      <p className="t-body mt-2 text-[11px] text-muted">{t("rateHint")}</p>
+      <Rejected menu={menu} />
+      <TasteFlags menu={menu} />
+      <Shopping menu={menu} />
+      <p className="t-label mt-3 text-muted">{t("engine", { sha: menu.engine_sha })}</p>
+    </div>
+  );
+}

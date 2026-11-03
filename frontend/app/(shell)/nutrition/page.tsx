@@ -342,6 +342,16 @@ export default function NutritionPage() {
         })}
       </div>
 
+      {/* Menú de varios días y lista de la compra (fase 8) */}
+      <Link href="/nutrition/menu" data-testid="menu-card" className="glass rise mt-5 flex items-center gap-3 p-4">
+        <span className="text-neon"><NutritionIcon className="h-5 w-5" /></span>
+        <div className="flex-1">
+          <p className="t-label text-ink">{t("menuCard.title")}</p>
+          <p className="t-body text-xs text-muted">{t("menuCard.body")}</p>
+        </div>
+        <ChevronRight className="h-5 w-5 text-muted" />
+      </Link>
+
       {/* Pesaje: el servidor no devuelve nada de esto con `no_weight_targets` (spec §8.3) */}
       {showWeigh && (
         <Link href="/nutrition/weigh-in" data-testid="weigh-card" className="glass rise mt-5 flex items-center gap-3 p-4">

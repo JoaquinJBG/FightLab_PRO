@@ -375,6 +375,154 @@ class WeeklyReview(models.Model):
         return f"WeeklyReview<{self.profile_id} {self.week_end} {self.status}>"
 
 
+class Tastes(models.Model):
+    """Los gustos del atleta para los menús (spec §6.6, Task 8.2): `coach.tastes.Tastes` en BD.
+
+    Como en el coach, un campo nulo es "sin preguntar" y una lista vacía es "preguntado, sin
+    respuesta". Las alergias e intolerancias bloquean un plato y lo demás solo avisa
+    (`mealplan.taste_flags`). No se guarda el código postal: en el coach solo sirve para buscar
+    supermercados en la web, y FightLab no lo hace. Las valoraciones de platos van en `Recipe`.
+    """
+
+    profile = models.OneToOneField("profiles.UserProfile", on_delete=models.CASCADE, related_name="tastes")
+    loved_foods = models.JSONField(null=True, blank=True)
+    disliked_foods = models.JSONField(null=True, blank=True)
+    allergies = models.JSONField(null=True, blank=True)
+    intolerances = models.JSONField(null=True, blank=True)
+    cuisines = models.JSONField(null=True, blank=True)
+    flavours = models.JSONField(null=True, blank=True)
+    cooking_minutes = models.PositiveSmallIntegerField(null=True, blank=True)
+    cooking_skill = models.CharField(max_length=12, null=True, blank=True)
+    equipment = models.JSONField(null=True, blank=True)
+    budget = models.CharField(max_length=6, null=True, blank=True)
+    chains = models.JSONField(null=True, blank=True)
+    pantry = models.JSONField(null=True, blank=True)
+    untried = models.JSONField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"Tastes<{self.profile_id}>"
+
+
+class Recipe(models.Model):
+    """Un plato valorado (spec §6.6): el recetario del coach (`coach.recipes`) y sus valoraciones
+    (`tastes.ratings`) en una tabla. `source_url` es la atribución de la receta de origen; sin
+    ella el plato es de FightLab. Los `items` van como en un borrador (`NAME=GRAMOS`) y no guardan
+    kcal: cada vez que el plato entra en un menú, el motor lo vuelve a comprobar."""
+
+    class Rating(models.TextChoices):
+        LOVED = "loved", "loved"
+        LIKED = "liked", "liked"
+        DISLIKED = "disliked", "disliked"
+        NEVER_AGAIN = "never_again", "never_again"
+
+    profile = models.ForeignKey("profiles.UserProfile", on_delete=models.CASCADE, related_name="recipes")
+    dish = models.CharField(max_length=160)
+    dish_key = models.CharField(max_length=160)  # `coach.text.fold(dish)`: sin mayúsculas ni tildes
+    source_url = models.URLField(max_length=500, blank=True, default="")
+    meal = models.CharField(max_length=20, blank=True, default="")  # la comida del menú donde salió
+    servings = models.PositiveSmallIntegerField(default=1)
+    steps = models.JSONField(default=list, blank=True)
+    seasoning = models.JSONField(default=list, blank=True)
+    items = models.JSONField(default=list, blank=True)
+    rating = models.CharField(max_length=11, choices=Rating.choices)
+    rated_on = models.DateField()
+    note = models.CharField(max_length=300, blank=True, default="")
+
+    class Meta:
+        ordering = ["dish"]
+        constraints = [models.UniqueConstraint(fields=["profile", "dish_key"], name="uniq_recipe_per_dish")]
+
+    def __str__(self) -> str:
+        return f"Recipe<{self.profile_id} {self.dish} {self.rating}>"
+
+
+class CatalogueProduct(models.Model):
+    """Un producto del súper leído de Open Food Facts (`coach.catalogue.CatalogueProduct`).
+
+    OFF es colaborativo: todo producto va `unverified` y con su URL de OFF (atribución ODbL). Un
+    valor vacío es "sin dato", nunca cero. Por 100 g o por 100 ml, sin convertir uno en otro."""
+
+    class Per(models.TextChoices):
+        G100 = "100 g", "100 g"
+        ML100 = "100 ml", "100 ml"
+
+    profile = models.ForeignKey("profiles.UserProfile", on_delete=models.CASCADE, related_name="catalogue")
+    barcode = models.CharField(max_length=14)
+    product_name = models.CharField(max_length=200)
+    brand = models.CharField(max_length=200, blank=True, default="")
+    chain = models.CharField(max_length=80, blank=True, default="")
+    per = models.CharField(max_length=6, choices=Per.choices)
+    kcal = models.FloatField(null=True, blank=True)
+    protein_g = models.FloatField(null=True, blank=True)
+    carbs_g = models.FloatField(null=True, blank=True)
+    fat_g = models.FloatField(null=True, blank=True)
+    fibre_g = models.FloatField(null=True, blank=True)
+    allergens = models.JSONField(default=list, blank=True)
+    url = models.URLField(max_length=300)
+    fetched_on = models.DateField()
+    source = models.CharField(max_length=60, default="Open Food Facts (unverified)")
+    unverified = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["product_name"]
+        constraints = [models.UniqueConstraint(fields=["profile", "barcode"], name="uniq_product_per_profile")]
+
+    def __str__(self) -> str:
+        return f"CatalogueProduct<{self.profile_id} {self.barcode}>"
+
+
+class MealPlan(models.Model):
+    """Un menú guardado (spec §6.6, Task 8.4): lo que el coach guarda en `data/menus/`.
+
+    `days` va en el formato de borrador de `coach.mealplan` (fechas ISO); solo entran los días que
+    el motor ha dado por buenos (`checks`: totales y estado de cada objetivo). `rejected` dice qué
+    días rechazó y por qué, sin sus platos. `targets` es la copia de los objetivos con los que se
+    comprobó. La lista de la compra se calcula al leerlo (`mealplan.shopping`), en el idioma de
+    quien lo lee.
+    """
+
+    profile = models.ForeignKey("profiles.UserProfile", on_delete=models.CASCADE, related_name="meal_plans")
+    start_date = models.DateField()
+    days = models.JSONField(default=list)
+    checks = models.JSONField(default=list)
+    rejected = models.JSONField(default=list)
+    targets = models.JSONField(default=dict)
+    taste_flags = models.JSONField(default=list)
+    provider = models.CharField(max_length=20, default="fake")
+    engine_sha = models.CharField(max_length=40, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-start_date", "-created_at"]
+        constraints = [models.UniqueConstraint(fields=["profile", "start_date"], name="uniq_meal_plan_per_start")]
+
+    def __str__(self) -> str:
+        return f"MealPlan<{self.profile_id} {self.start_date}>"
+
+
+class OffLookup(models.Model):
+    """Caché del proxy de Open Food Facts (Task 8.3), compartida por todos los usuarios: OFF pide
+    no repetir lecturas y limita las peticiones por IP, y la IP es la del servidor. Cada lectura
+    real deja aquí su `fetched_at`, que es lo que cuenta el límite por minuto."""
+
+    class Kind(models.TextChoices):
+        PRODUCT = "product", "product"
+        SEARCH = "search", "search"
+
+    kind = models.CharField(max_length=7, choices=Kind.choices)
+    key = models.CharField(max_length=300)
+    payload = models.JSONField(null=True, blank=True)  # nulo: OFF no tiene el producto
+    fetched_at = models.DateTimeField(db_index=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["kind", "key"], name="uniq_off_lookup")]
+
+    def __str__(self) -> str:
+        return f"OffLookup<{self.kind} {self.key}>"
+
+
+
 class KnowledgeSync(models.Model):
     """Huella del contenido de cada conjunto de evidencia ya cargado (`manage.py sync_knowledge`).
 

@@ -102,6 +102,16 @@ fightlab-pro/
 > `http://localhost:8010/`, configurable con `FL_BACKEND_PORT`). El contenedor
 > backend usa `POSTGRES_HOST=db` automáticamente.
 
+**Productos del súper (Open Food Facts).** Open Food Facts pide que cada app se identifique
+con un contacto en el `User-Agent`. FightLab lo lee de `COACH_OFF_CONTACT` (la misma variable
+que usa el motor del coach), que por defecto está vacía: así la búsqueda y la lectura de
+productos quedan apagadas, no se hace ninguna petición a OFF y la app explica que no está
+configurado. Para encenderla, pon ahí un contacto del equipo de la app, nunca el de un usuario.
+
+**Menús.** Los platos los propone un proveedor simulado y determinista
+(`MENU_LLM_PROVIDER = "fake"`); los menús no llaman a la API de Anthropic aunque haya
+`ANTHROPIC_API_KEY`. El motor del coach comprueba cada día contra los objetivos.
+
 ### Tests
 
 ```bash

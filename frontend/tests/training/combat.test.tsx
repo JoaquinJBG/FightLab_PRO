@@ -20,6 +20,8 @@ vi.mock("@/lib/activities", () => ({
   // historial del servidor (beta): sin respuesta, se queda el local
   fetchServerActivities: vi.fn(async () => null), pendingQueueItems: () => [], mergeByClientId: (...xs: unknown[][]) => xs.flat(),
 }));
+// El aviso de sesión vigorosa (F9) tiene su propio test (vigorousWarning.test.tsx)
+vi.mock("@/lib/session-check", async (orig) => ({ ...(await orig<typeof import("@/lib/session-check")>()), useSessionCheck: () => ({ data: undefined }) }));
 vi.mock("@/lib/hooks", () => ({ useSafety: () => ({ data: state.safety }), useBiometrics: () => ({ data: state.logs }) }));
 vi.mock("@/lib/combat", async (orig) => ({
   ...(await orig<typeof import("@/lib/combat")>()),

@@ -15,6 +15,10 @@ vi.mock("@/lib/activities", () => ({
   // historial del servidor (beta): sin respuesta, "Última vez"/PR salen del local
   fetchServerActivities: vi.fn(async () => null), pendingQueueItems: () => [], mergeByClientId: (...xs: unknown[][]) => xs.flat(),
 }));
+// El aviso de sesión vigorosa (F9) tiene su propio test (vigorousWarning.test.tsx)
+vi.mock("@/lib/session-check", async (orig) => ({ ...(await orig<typeof import("@/lib/session-check")>()), useSessionCheck: () => ({ data: undefined }) }));
+// Sin datos del servidor: "Última vez" sale del navegador (F9 tiene su propio test, gymStats.test.tsx)
+vi.mock("@/lib/strength", async (orig) => ({ ...(await orig<typeof import("@/lib/strength")>()), useLastStats: () => ({ data: undefined }) }));
 vi.mock("@/lib/plan", () => ({ useWeeklyPlan: () => ({ data: undefined }) }));
 
 beforeEach(() => { localStorage.clear(); nav.focus = null; nav.push.mockClear(); });

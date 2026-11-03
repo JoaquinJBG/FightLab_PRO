@@ -33,6 +33,9 @@ import {
 } from "@/lib/gym";
 import { enqueueActivity, fetchServerActivities, pendingQueueItems, mergeByClientId } from "@/lib/activities";
 import { useWeeklyPlan } from "@/lib/plan";
+import { gymStats, useLastStats } from "@/lib/strength";
+import { GYM_INCLUDES, type GymInclude } from "@/lib/session-check";
+import { VigorousWarning } from "@/components/safety/VigorousWarning";
 
 function fmtClock(sec: number) {
   const h = Math.floor(sec / 3600);
@@ -91,6 +94,8 @@ function SessionInner() {
   const [confirm, setConfirm] = useState<"finish" | "discard" | null>(null);
   const [undos, setUndos] = useState<{ ex: ExerciseEntry; index: number }[]>([]);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Test de 1RM o pliometría: trabajo vigoroso que pide el aviso (spec §8.2)
+  const [includes, setIncludes] = useState<GymInclude[]>([]);
 
   // descanso entre series
   const [restDur, setRestDur] = useState(90);
@@ -186,6 +191,9 @@ function SessionInner() {
     return () => clearInterval(id);
   }, []);
   const elapsed = startedAt ? Math.max(0, Math.floor((now - startedAt) / 1000)) : 0;
+
+  /* ---------- "Última vez" y récords: del servidor (`SetLog`), o del navegador si aún no están ---------- */
+  const { data: serverStats } = useLastStats(exercises.map((x) => x.name));
 
   /* ---------- persistencia de la sesión viva ---------- */
   useEffect(() => {
@@ -301,9 +309,13 @@ function SessionInner() {
   const parsedExercises = savedExercises(exercises);
   const { totalSets, volume } = sessionTotals(parsedExercises);
   const incomplete = incompleteSets(exercises);
-  // `plan_session` va en el detail: se le reserva su sitio para no pasar del tope del backend.
-  const planned: Record<string, string> = planSession ? { plan_session: planSession } : {};
-  const detailMax = MAX_DETAIL_CHARS - (planSession ? JSON.stringify(planned).length : 0);
+  // `plan_session` e `includes` (aviso de sesión vigorosa) van en el detail: se les reserva su
+  // sitio para no pasar del tope del backend.
+  const planned: Record<string, unknown> = {
+    ...(planSession ? { plan_session: planSession } : {}),
+    ...(includes.length > 0 ? { includes } : {}),
+  };
+  const detailMax = MAX_DETAIL_CHARS - (Object.keys(planned).length > 0 ? JSON.stringify(planned).length : 0);
   const breakdownFits = buildActivityDetail(focus, volume, parsedExercises, detailMax).breakdown;
 
   function finish() {
@@ -408,6 +420,20 @@ function SessionInner() {
           )}
         </div>
 
+        <div className="glass mt-4 p-4">
+          <p className="t-label text-ink">{t("includesTitle")}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {GYM_INCLUDES.map((i) => (
+              <button key={i} type="button" aria-pressed={includes.includes(i)}
+                onClick={() => setIncludes((xs) => (xs.includes(i) ? xs.filter((x) => x !== i) : [...xs, i]))}
+                className={`badge ${includes.includes(i) ? "badge-neon" : ""}`}>
+                {t(`includes.${i}`)}
+              </button>
+            ))}
+          </div>
+          <VigorousWarning params={includes.length > 0 ? { kind: "GYM", includes } : null} />
+        </div>
+
         <div className="mt-4 flex gap-3">
           <button onClick={() => { setConfirm(null); setPhase("live"); }} className="btn btn-outline min-h-11 flex-1">{t("back")}</button>
           <button onClick={save} disabled={totalSets === 0} className="btn btn-primary flex-1 min-h-11 disabled:opacity-60">{t("save")}</button>
@@ -465,7 +491,13 @@ function SessionInner() {
       {/* ejercicios */}
       <div className="mt-4 flex flex-col gap-3">
         {exercises.map((x, ei) => {
-          const stats = exerciseStats(x.name, gymHistory);
+          // "Última vez" y récord: del servidor (`SetLog`) si tiene el ejercicio; si no, del
+          // historial de sesiones (servidor + este navegador).
+          const fromHistory = exerciseStats(x.name, gymHistory);
+          const fromSets = gymStats(x.name, serverStats);
+          const stats = fromSets.fromServer
+            ? { ...fromSets, prKg: [fromSets.prKg, fromHistory.prKg].reduce<number | null>((a, b) => (b === null ? a : a === null ? b : Math.max(a, b)), null) }
+            : { ...fromHistory, e1rmKg: null };
           const name = exLabel(x.name);
           return (
             <Fragment key={x.name}>
@@ -478,6 +510,13 @@ function SessionInner() {
                     {stats.last ? t("lastTime", { last: stats.last }) : historyReady ? t("firstTime") : " "}
                     {stats.prKg !== null ? ` · ${t("pr", { kg: stats.prKg })}` : ""}
                   </p>
+                  {stats.e1rmKg !== null && (
+                    // Epley con las repeticiones en reserva: convención del coach, sin regla
+                    <p data-testid="gym-e1rm" className="t-body mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
+                      {t("e1rm", { kg: stats.e1rmKg })}
+                      <span className="t-label inline-flex rounded-full border border-white/20 px-2 py-0.5 text-[10px] text-muted">{tp("conventionCoach")}</span>
+                    </p>
+                  )}
                 </div>
                 <button onClick={() => removeExercise(ei)} aria-label={t("removeExercise", { name })} className="t-label flex h-11 w-11 shrink-0 items-center justify-center text-muted hover:text-bad">✕</button>
               </div>

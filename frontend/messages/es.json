@@ -460,7 +460,12 @@
         "amount": "Cantidad",
         "less": "Quitar 10 g",
         "more": "Añadir 10 g",
-        "back": "Volver"
+        "back": "Volver",
+        "perHundredMl": "{kcal} kcal/100 ml",
+        "noData": "sin dato de kcal",
+        "typeMore": "Escribe al menos 2 letras.",
+        "searching": "Buscando…",
+        "source": "Alimentos de la tabla del coach (USDA FoodData Central) y tus productos."
       },
       "quick": {
         "intro": "¿Sabes las kcal pero no quieres buscar? Apúntalas directas.",
@@ -472,7 +477,11 @@
         "defaultName": "Comida rápida"
       }
     },
-    "noTargetsNote": "Sin tus datos no calculamos objetivos: lo que registres sí se suma."
+    "noTargetsNote": "Sin tus datos no calculamos objetivos: lo que registres sí se suma.",
+    "menuCard": {
+      "title": "Menú y lista de la compra",
+      "body": "Platos para varios días, comprobados por el coach contra tus objetivos."
+    }
   },
   "dashboard": {
     "greeting": {
@@ -852,6 +861,12 @@
       "weightPrompt": {
         "session": "las kcal de esta sesión",
         "list": "las kcal de cada deporte"
+      },
+      "format": {
+        "title": "Formato",
+        "continuous": "Continuo",
+        "hiit": "Intervalos (HIIT)",
+        "sprints": "Sprints a tope"
       }
     },
     "mma": {
@@ -1121,7 +1136,8 @@
         "legRaises": "Elevaciones de piernas",
         "row": "Remo",
         "tricepsExtensionShort": "Extensión tríceps"
-      }
+      },
+      "importLink": "Importar de Hevy o CSV"
     },
     "gymSession": {
       "loading": "Cargando…",
@@ -1174,7 +1190,13 @@
       "incompleteTicked": "{n} serie(s) marcadas ✓ sin reps no se guardarán.",
       "incompleteUnticked": "{n} serie(s) con datos sin marcar ✓ no se guardarán.",
       "finishAnyway": "Terminar igualmente",
-      "keepEditing": "Seguir editando"
+      "keepEditing": "Seguir editando",
+      "e1rm": "e1RM ≈ {kg} kg",
+      "includesTitle": "¿Ha incluido algo de esto?",
+      "includes": {
+        "one_rm_test": "Un test de 1RM",
+        "plyometrics": "Pliometría (saltos)"
+      }
     },
     "myRoutine": {
       "back": "← Entreno",
@@ -2147,5 +2169,228 @@
       "error": "No se pudo cargar tu perfil.",
       "retry": "Reintentar"
     }
+  },
+  "menu": {
+    "back": "← Nutrición",
+    "title": "Menú y compra",
+    "intro": "El coach propone los platos y su motor comprueba cada día contra tus objetivos de kcal, proteína, grasa y fibra. Los días que no pasan no se guardan.",
+    "loading": "Cargando…",
+    "error": "No se pudo cargar el menú.",
+    "simulated": "Platos de ejemplo de FightLab elegidos por un proponedor simulado (sin IA). Los números son del motor del coach.",
+    "engine": "Motor del coach {sha}",
+    "rateHint": "Toca un plato para valorarlo: los que te gustan vuelven en próximos menús y los que no repetirías no salen más.",
+    "blocked": {
+      "title": "Sin menú por ahora",
+      "body": "Con tus avisos de seguridad, el coach no calcula objetivos de kcal, así que no hay menú que comprobar."
+    },
+    "missing": {
+      "body": "Al coach le falta un dato para calcular tus objetivos. Complétalo en Nutrición y vuelve.",
+      "cta": "Ir a Nutrición",
+      "weight": "Registrar mi peso"
+    },
+    "form": {
+      "days": "Días",
+      "dayCount": "{n, plural, one {# día} other {# días}}",
+      "meals": "Comidas del día",
+      "tupper": "Para llevar en tupper",
+      "generate": "Preparar menú",
+      "regenerate": "Preparar otro menú",
+      "generating": "Preparando…"
+    },
+    "meals": {
+      "breakfast": "Desayuno",
+      "lunch": "Comida",
+      "dinner": "Cena",
+      "snack": "Merienda"
+    },
+    "errors": {
+      "menu_rejected": "El coach ha rechazado todos los días: no encaja ningún plato con tus objetivos o tus gustos. Revisa los gustos y prueba otra vez.",
+      "days_invalid": "Elige de 1 a 7 días.",
+      "meals_invalid": "Elige al menos una comida.",
+      "start_invalid": "Fecha de inicio no válida.",
+      "profile_incomplete": "Falta un dato de tu perfil para calcular los objetivos.",
+      "no_calorie_targets": "Con tus avisos de seguridad no hay objetivos de kcal ni menú.",
+      "generic": "No se ha podido preparar el menú."
+    },
+    "targets": {
+      "title": "Objetivos de cada día",
+      "kcal": "{kcal} kcal",
+      "protein": "Proteína: al menos {g} g",
+      "fat": "Grasa: al menos {g} g",
+      "fibre": "Fibra: al menos {g} g",
+      "margin": "Un día vale desde tu objetivo de kcal hasta un {pct} % más",
+      "noRepeat": "Ningún plato se repite en {days} días"
+    },
+    "day": {
+      "ok": "Comprobado",
+      "tupper": "tupper",
+      "totals": "{kcal} kcal · proteína {p} g · grasa {f} g · hidratos {c} g · fibra {fib} g",
+      "seasoning": "Para aliñar: {list}",
+      "source": "Receta original",
+      "offProduct": "Open Food Facts"
+    },
+    "status": {
+      "ok": "bien",
+      "under": "por debajo",
+      "over": "por encima",
+      "missing": "sin dato"
+    },
+    "checkLabels": {
+      "kcal": "kcal",
+      "protein_g": "Proteína",
+      "fat_g": "Grasa",
+      "fibre_g": "Fibra"
+    },
+    "amount": {
+      "g": "{n} g",
+      "ml": "{n} ml"
+    },
+    "rejected": {
+      "title": "Días rechazados por el coach (no se han guardado)",
+      "empty": "no había platos que encajen con tus gustos",
+      "repeats": "repetía un plato",
+      "blocking": "{kind}: {entry}",
+      "unknown": "alimentos desconocidos: {list}"
+    },
+    "flags": {
+      "title": "Avisos por tus gustos",
+      "line": "{dish}: {kind} ({entry})",
+      "kinds": {
+        "allergy": "alergia",
+        "intolerance": "intolerancia",
+        "disliked": "no te gusta",
+        "untried": "no lo has probado",
+        "never_again": "no lo repetirías"
+      },
+      "net": "El coach compara por nombre: no conoce sinónimos ni ingredientes ocultos. Lee siempre las etiquetas."
+    },
+    "rate": {
+      "label": "¿Qué tal?",
+      "loved": "Me encantó",
+      "liked": "Bien",
+      "disliked": "No me gustó",
+      "never_again": "No lo repetiría",
+      "saved": "Guardado"
+    },
+    "shopping": {
+      "title": "Lista de la compra",
+      "any": "Cualquier tienda",
+      "g": "{n} g",
+      "ml": "{n} ml",
+      "pantry": "En casa (no se compra): {list}",
+      "unknown": "Sin datos en la tabla: {list}",
+      "note": "Las cantidades son para la forma que dice cada nombre (crudo, cocido, escurrido)."
+    },
+    "tastes": {
+      "title": "Tus gustos",
+      "intro": "Las alergias e intolerancias dejan fuera un plato; lo demás solo avisa. Lo que tienes siempre en casa no entra en la compra.",
+      "allergies": "Alergias",
+      "intolerances": "Intolerancias",
+      "disliked_foods": "No te gusta",
+      "loved_foods": "Te encanta",
+      "pantry": "Siempre en casa",
+      "chains": "Supermercados",
+      "hint": "Separa con comas (vacío: nada)",
+      "notAsked": "sin contestar",
+      "save": "Guardar gustos",
+      "saved": "Gustos guardados.",
+      "error": "No se han podido guardar."
+    },
+    "products": {
+      "title": "Productos del súper",
+      "intro": "Busca un producto en Open Food Facts y añádelo a tus productos para usarlo en los menús.",
+      "placeholder": "Producto o marca",
+      "search": "Buscar",
+      "searching": "Buscando…",
+      "notConfigured": "La búsqueda de productos no está configurada en este servidor. Los menús siguen funcionando con los alimentos del coach.",
+      "none": "Sin resultados.",
+      "add": "Añadir",
+      "unverified": "Sin verificar · ver en Open Food Facts",
+      "catalogue": "Tus productos",
+      "empty": "Aún no has añadido ninguno.",
+      "remove": "Quitar {name}",
+      "attribution": "Datos de Open Food Facts, colaborativos y sin verificar, bajo licencia ODbL.",
+      "errors": {
+        "off_not_configured": "La búsqueda de productos no está configurada.",
+        "off_rate_limited": "Demasiadas búsquedas: espera un minuto.",
+        "off_busy": "Open Food Facts está ocupado: espera un minuto.",
+        "off_unavailable": "No se ha podido consultar Open Food Facts.",
+        "search_empty": "Escribe al menos una palabra.",
+        "generic": "No se ha podido completar."
+      }
+    }
+  },
+  "sessionCheck": {
+    "title": "Sesión vigorosa: mejor con revisión",
+    "modality": "{modality}: intensidad {intensity}",
+    "intensity": {
+      "light": "ligera",
+      "moderate": "moderada",
+      "vigorous": "vigorosa",
+      "maximal": "máxima"
+    },
+    "rpeBasis": "Con RPE {n} o más cuenta como dura",
+    "because": "Tu perfil pide: {flags}.",
+    "canSave": "Puedes guardarla igualmente: lo que ya has hecho siempre se registra. Antes de la próxima, consúltalo con un profesional."
+  },
+  "gymImport": {
+    "back": "← Gimnasio",
+    "title": "Importar entrenos",
+    "subtitle": "Sube el CSV que exporta tu app de gimnasio. Las series pasan a tu historial y cuentan para la fuerza y el plan.",
+    "format": "Formato",
+    "formats": {
+      "auto": "Detectar",
+      "hevy_csv": "Hevy",
+      "generic_csv": "CSV genérico"
+    },
+    "help": {
+      "hevy": "Hevy: Ajustes › Exportar datos. Sirve en kg o en libras.",
+      "generic": "CSV genérico: columnas date (AAAA-MM-DD, o AAAA-MM-DD HH:MM si hay dos sesiones el mismo día) y exercise. Opcionales: weight_kg o weight_lbs, reps, rir, rpe, set_type, distance_km, duration_s, session y notes. Decimales con punto (12.5).",
+      "lyfta": "Lyfta: todavía no hay importador. Para traerlo: exporta tus entrenos de Lyfta a CSV, deja una fila por serie, renombra las columnas a date (AAAA-MM-DD), exercise, weight_kg y reps (las demás del CSV genérico son opcionales), borra las que sobren y súbelo como «CSV genérico»."
+    },
+    "file": "Archivo CSV (máx. {mb} MB)",
+    "chosen": "Elegido: {name}",
+    "check": "Revisar archivo",
+    "import": "Importar",
+    "reading": "Leyendo…",
+    "preview": "Esto es lo que se importaría",
+    "done": "Importado",
+    "summary": {
+      "sets": "{n, plural, one {# serie nueva} other {# series nuevas}}",
+      "duplicates": "{n, plural, one {# ya estaba y no se duplica} other {# ya estaban y no se duplican}}",
+      "sessionsNew": "{n, plural, one {# sesión nueva} other {# sesiones nuevas}}",
+      "sessionsUpdated": "{n, plural, one {# sesión ampliada} other {# sesiones ampliadas}}",
+      "range": "Del {first} al {last}",
+      "importer": "Leído como {name}",
+      "nothingNew": "No hay nada nuevo: todo lo del archivo ya estaba."
+    },
+    "warnings": {
+      "template_rows": "{n, plural, one {# fila vacía} other {# filas vacías}} de plantilla (series que nunca se rellenaron): no se importan.",
+      "set_out_of_range": "{n, plural, one {# serie} other {# series}} con un peso o unas repeticiones imposibles: no se importan.",
+      "value_dropped": "{n, plural, one {# serie} other {# series}} con un RPE, RIR, distancia o duración fuera de rango: se importan sin ese dato.",
+      "session_out_of_range": "{n, plural, one {# sesión} other {# sesiones}} con fecha anterior a 2000 o futura: no se importan.",
+      "session_truncated": "{n, plural, one {# sesión} other {# sesiones}} con más de 300 series: solo se importan las 300 primeras.",
+      "set_invalid": "{n, plural, one {# serie} other {# series}} sin ejercicio: no se importan."
+    },
+    "errors": {
+      "missing_file": "Elige un archivo.",
+      "too_large": "El archivo pasa de {mb} MB.",
+      "not_csv": "No es un archivo CSV.",
+      "empty_file": "El archivo está vacío.",
+      "encoding": "El archivo no está en UTF-8. Guárdalo como «CSV UTF-8» y vuelve a probar.",
+      "unknown_format": "No reconozco las columnas: no es un export de Hevy ni un CSV genérico.",
+      "ambiguous_format": "Encaja con más de un formato: elige cuál es.",
+      "missing_columns": "Faltan columnas: {columns}.",
+      "decimal_comma": "La línea {line} tiene más campos que la cabecera. ¿Un decimal con coma (12,5)? Usa punto (12.5).",
+      "not_a_number": "Línea {line}: {column} «{value}» no es un número.",
+      "not_whole": "Línea {line}: {column} «{value}» tiene que ser un número entero.",
+      "bad_date": "Hay una fecha que no se entiende ({value}). Usa AAAA-MM-DD.",
+      "no_sets": "El archivo no tiene ninguna serie hecha.",
+      "too_many_sets": "Demasiadas series en un archivo (máx. {max}). Divídelo en varios.",
+      "invalid": "No se ha podido leer el archivo.",
+      "throttled": "Demasiados intentos seguidos. Espera un minuto.",
+      "server": "No se ha podido subir. Prueba otra vez."
+    },
+    "noLoad": "Las sesiones importadas no traen el esfuerzo de la sesión (RPE), así que no suman a tu carga."
   }
 }

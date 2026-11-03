@@ -77,7 +77,8 @@ def main(dsn: str, before_path: str) -> None:
     check(("profiles", "0003_profile_coach_fields") not in applied, "sin el nombre viejo profiles.0003_profile_coach_fields")
     for app, name in [("ai", "0001_initial"), ("userstate", "0001_initial"), ("userstate", "0002_clamp_future_updated_at"),
                       ("activities", "0002_setlog"), ("activities", "0003_setlog_from_detail"),
-                      ("coaching", "0006_weeklyreview")]:
+                      ("activities", "0004_activity_source_import"), ("coaching", "0007_menus"),
+                      ("coaching", "0008_knowledgesync")]:
         check((app, name) in applied, f"{app}.{name} aplicada")
 
     # 2b. SetLog desde detail

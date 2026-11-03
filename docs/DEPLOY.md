@@ -115,7 +115,7 @@ Salvo que se diga lo contrario, el valor es texto plano (no secreto) y va como
 | `AI_MODEL_TRANSLATE` | No | No | Modelo de `manage.py translate_rules` (traducción de las reglas de evidencia). Por defecto, el de `AI_MODEL_CHAT` |
 | `PARQ_URL_ES` / `PARQ_URL_EN` | No | No | Enlaces al formulario oficial PAR-Q+ (eparmedx.com) del cribado. Por defecto, los oficiales en español e inglés; solo se cambian si eparmedx mueve los PDF |
 | `CRT6_URL` | No | No | Enlace al Concussion Recognition Tool 6 oficial (BJSM) que se muestra tras un golpe en la cabeza. Por defecto `https://doi.org/10.1136/bjsports-2023-107021` |
-| `COACH_OFF_CONTACT` | No | No | Solo si llega con la Fase 8 del coach (menús y alimentos): contacto de Open Food Facts. Opcional y con valor por defecto |
+| `COACH_OFF_CONTACT` | No | No | Contacto que Open Food Facts pide en el User-Agent (un correo del equipo de la app, nunca el de un usuario). Vacía por defecto: FightLab no llama nunca a OFF y la búsqueda de productos del súper sale apagada con su explicación; los menús y la tabla de alimentos del motor funcionan igual |
 | `SECURE_HSTS_SECONDS` | No | No | `3600` por defecto |
 | `EMAIL_VERIFICATION_TIMEOUT` | No | No | `86400` (24 h) por defecto |
 | `DATA_UPLOAD_MAX_MEMORY_SIZE` / `FILE_UPLOAD_MAX_MEMORY_SIZE` | No | No | `10485760` (10 MB) por defecto — límite de subida de fotos |

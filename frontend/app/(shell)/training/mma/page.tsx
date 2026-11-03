@@ -14,6 +14,7 @@ import { COMBAT_RULES } from "@/lib/combat-rules";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { ContactBlockNote, HeadBlowCard } from "@/components/combat/HeadBlowCard";
 import { CombatKcal } from "@/components/combat/CombatKcal";
+import { VigorousWarning } from "@/components/safety/VigorousWarning";
 
 // Los valores en español son los ids canónicos que se guardan (local + servidor); lo visible sale de i18n.
 const ARTS = ["Boxeo", "Kickboxing", "Muay Thai", "BJJ", "Lucha", "Taekwondo", "Karate", "MMA"] as const;
@@ -278,6 +279,7 @@ export default function MmaPage() {
         </div>
         <div className="mt-1.5"><EvidenceChip ruleKey={COMBAT_RULES.sessionRpe.key} grade={COMBAT_RULES.sessionRpe.grade} /></div>
         <CombatKcal art={art} workType={workType} minutes={minutes} />
+        <VigorousWarning params={{ kind: "MMA", work_type: workType, art, rpe }} />
         <button className="btn btn-primary mt-3 w-full" onClick={saveSession}>{savedFlash ? t("log.saved") : t("log.save")}</button>
       </div>
 

@@ -85,6 +85,7 @@ export default function GymPage() {
           {todayFocus && todayFocus !== "Descanso" ? t("startWithFocus", { focus: focusLabel(todayFocus) }) : t("start")}
         </Link>
       )}
+      <Link href="/training/gym/import" className="btn btn-tonal btn-sm mt-2 w-full">{t("importLink")}</Link>
 
       <div className="mt-4">
         <p className="t-eyebrow text-muted">{t("yourWeek")}</p>

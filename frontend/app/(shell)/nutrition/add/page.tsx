@@ -3,10 +3,9 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useFoodSearch, type Food } from "@/lib/menu";
 import {
-  FOODS,
-  foodName,
   MEALS,
   addItem,
   recentFoods,
@@ -24,12 +23,17 @@ import { compressImage } from "@/lib/compress-image";
    y se deja la entrada manual disponible. */
 type Detected = { name: string; grams: number | null; kcal: number; p: number; c: number; f: number };
 
+/** Valores por 100 g (o 100 ml) de la tabla del motor; un dato que falta cuenta 0 en el diario,
+ * pero sin kcal no se puede añadir. */
+function per100(food: Food) {
+  return { kcal: food.kcal ?? 0, p: food.protein_g ?? 0, c: food.carbs_g ?? 0, f: food.fat_g ?? 0 };
+}
+
 type Mode = "recientes" | "buscar" | "rapido";
 
 function AddInner() {
   const t = useTranslations("nutrition.add");
   const tm = useTranslations("nutrition.meals");
-  const locale = useLocale();
   const router = useRouter();
   const qpMeal = useSearchParams().get("meal");
   const meal = MEALS.includes(qpMeal ?? "") ? (qpMeal as string) : "Comida";
@@ -56,13 +60,14 @@ function AddInner() {
     setTimeout(() => setAddedFlash((cur) => (cur === name ? null : cur)), 1200);
   }
 
-  /* ---- buscar ---- */
+  /* ---- buscar: tabla del motor del coach y productos propios (`/coach/foods`) ---- */
   const [q, setQ] = useState("");
-  const [sel, setSel] = useState<(typeof FOODS)[number] | null>(null);
+  const [sel, setSel] = useState<Food | null>(null);
   const [grams, setGrams] = useState(100);
-  const foods = FOODS.map((f) => ({ ...f, name: foodName(f.name, locale) }));
-  const results = foods.filter((f) => f.name.toLocaleLowerCase(locale).includes(q.toLocaleLowerCase(locale))).slice(0, 8);
-  const scaled = sel ? scale(sel, grams) : null;
+  const search = useFoodSearch(q);
+  const results = (search.data ?? []).slice(0, 8);
+  const scaled = sel && sel.kcal != null ? scale(per100(sel), grams) : null;
+  const unit = sel?.per === "100 ml" ? "ml" : "g";
 
   function addFood() {
     if (!sel || !scaled || saving) return;
@@ -311,28 +316,33 @@ function AddInner() {
           {!sel ? (
             <div className="mt-3 flex flex-col gap-2">
               {results.map((f) => (
-                <button key={f.name} onClick={() => { setSel(f); setGrams(100); }} className="glass flex items-center justify-between p-3.5 text-left">
-                  <span className="t-body text-ink">{f.name}</span>
-                  <span className="t-body text-xs text-muted">{t("search.perHundred", { kcal: f.kcal })}</span>
+                <button key={`${f.kind}-${f.barcode ?? f.name}`} data-testid="food-hit" onClick={() => { setSel(f); setGrams(100); }} className="glass flex items-center justify-between gap-2 p-3.5 text-left">
+                  <span className="t-body text-ink first-letter:uppercase">{f.name}{f.chain ? ` · ${f.chain}` : ""}</span>
+                  <span className="t-body shrink-0 text-xs text-muted">
+                    {f.kcal == null ? t("search.noData") : t(f.per === "100 ml" ? "search.perHundredMl" : "search.perHundred", { kcal: Math.round(f.kcal) })}
+                  </span>
                 </button>
               ))}
-              {results.length === 0 && <p className="t-body mt-2 text-xs text-muted">{t("search.none")}</p>}
+              {q.trim().length < 2 && <p className="t-body mt-2 text-xs text-muted">{t("search.typeMore")}</p>}
+              {q.trim().length >= 2 && search.isFetching && <p className="t-body mt-2 text-xs text-muted">{t("search.searching")}</p>}
+              {q.trim().length >= 2 && !search.isFetching && results.length === 0 && <p className="t-body mt-2 text-xs text-muted">{t("search.none")}</p>}
+              <p className="t-body mt-1 text-[11px] text-muted">{t("search.source")}</p>
             </div>
           ) : (
             <div className="glass mt-3 p-4">
-              <p className="t-title text-ink">{sel.name}</p>
+              <p className="t-title text-ink first-letter:uppercase">{sel.name}</p>
               <div className="mt-3 flex items-center justify-between">
                 <span className="t-label text-muted">{t("search.amount")}</span>
                 <div className="flex items-center gap-3">
                   <button onClick={() => setGrams((g) => Math.max(10, g - 10))} aria-label={t("search.less")} className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">−</button>
-                  <span className="stat w-20 text-center text-lg text-ink">{grams} g</span>
+                  <span className="stat w-20 text-center text-lg text-ink">{grams} {unit}</span>
                   <button onClick={() => setGrams((g) => Math.min(1000, g + 10))} aria-label={t("search.more")} className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">+</button>
                 </div>
               </div>
-              <p className="t-body mt-3 text-center text-sm text-neon">{scaled && t("macros", { kcal: scaled.kcal, p: scaled.p, c: scaled.c, f: scaled.f })}</p>
+              <p className="t-body mt-3 text-center text-sm text-neon">{scaled ? t("macros", { kcal: scaled.kcal, p: scaled.p, c: scaled.c, f: scaled.f }) : t("search.noData")}</p>
               <div className="mt-3 flex gap-2">
                 <button onClick={() => setSel(null)} className="btn btn-outline btn-sm flex-1">{t("search.back")}</button>
-                <button onClick={addFood} disabled={saving} className="btn btn-primary btn-sm flex-1 disabled:opacity-60">{t("addTo", { meal: tm(meal) })}</button>
+                <button onClick={addFood} disabled={saving || !scaled} className="btn btn-primary btn-sm flex-1 disabled:opacity-60">{t("addTo", { meal: tm(meal) })}</button>
               </div>
             </div>
           )}

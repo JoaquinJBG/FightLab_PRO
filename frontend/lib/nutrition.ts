@@ -21,27 +21,10 @@ export const MEALS = ["Desayuno", "Comida", "Cena", "Snack"];
 // calculan aquí: salen de `GET /coach/targets` (fase 4).
 export type Goal = "perder" | "mantener" | "ganar";
 
-// Alimentos de ejemplo, valores por 100 g
-export const FOODS: { name: string; kcal: number; p: number; c: number; f: number }[] = [
-  { name: "Pechuga de pollo", kcal: 165, p: 31, c: 0, f: 3.6 },
-  { name: "Arroz blanco cocido", kcal: 130, p: 2.7, c: 28, f: 0.3 },
-  { name: "Huevo", kcal: 155, p: 13, c: 1.1, f: 11 },
-  { name: "Avena", kcal: 389, p: 17, c: 66, f: 7 },
-  { name: "Plátano", kcal: 89, p: 1.1, c: 23, f: 0.3 },
-  { name: "Atún en lata", kcal: 132, p: 28, c: 0, f: 1 },
-  { name: "Pan integral", kcal: 247, p: 13, c: 41, f: 3.4 },
-  { name: "Yogur natural", kcal: 61, p: 3.5, c: 4.7, f: 3.3 },
-  { name: "Almendras", kcal: 579, p: 21, c: 22, f: 50 },
-  { name: "Lentejas cocidas", kcal: 116, p: 9, c: 20, f: 0.4 },
-  { name: "Salmón", kcal: 208, p: 20, c: 0, f: 13 },
-  { name: "Patata cocida", kcal: 87, p: 2, c: 20, f: 0.1 },
-  { name: "Boniato", kcal: 86, p: 1.6, c: 20, f: 0.1 },
-  { name: "Aguacate", kcal: 160, p: 2, c: 9, f: 15 },
-  { name: "Queso fresco batido", kcal: 72, p: 12, c: 4, f: 0.2 },
-];
-
-// Nombres en inglés de los alimentos de ejemplo y de los platos simulados de la foto. Lo que
-// se guarda es el nombre que vio el usuario. (Fase 8: la tabla del motor ya trae los dos idiomas.)
+// Los alimentos ya no están aquí: la búsqueda usa la tabla del motor del coach, con nombre en
+// español y en inglés (`useFoodSearch` en `lib/menu.ts`, fase 8). Solo quedan los nombres en
+// inglés de los platos simulados de la foto (cuando la IA no está configurada). Lo que se guarda
+// es el nombre que vio el usuario.
 const EN_NAMES: Record<string, string> = {
   "Pechuga de pollo": "Chicken breast",
   "Arroz blanco cocido": "Cooked white rice",
@@ -51,13 +34,7 @@ const EN_NAMES: Record<string, string> = {
   "Atún en lata": "Tinned tuna",
   "Pan integral": "Wholemeal bread",
   "Yogur natural": "Natural yoghurt",
-  "Almendras": "Almonds",
-  "Lentejas cocidas": "Cooked lentils",
-  "Salmón": "Salmon",
-  "Patata cocida": "Boiled potato",
-  "Boniato": "Sweet potato",
   "Aguacate": "Avocado",
-  "Queso fresco batido": "Quark",
   "Verduras salteadas": "Stir-fried vegetables",
   "Ensalada mixta": "Mixed salad",
   "Aceite de oliva": "Olive oil",

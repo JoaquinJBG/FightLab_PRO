@@ -14,6 +14,8 @@ vi.mock("@/lib/activities", () => ({
   // historial del servidor (beta): sin respuesta, se queda el local
   fetchServerActivities: vi.fn(async () => null), pendingQueueItems: () => [], mergeByClientId: (...xs: unknown[][]) => xs.flat(),
 }));
+// El aviso de sesión vigorosa (F9) tiene su propio test (vigorousWarning.test.tsx)
+vi.mock("@/lib/session-check", async (orig) => ({ ...(await orig<typeof import("@/lib/session-check")>()), useSessionCheck: () => ({ data: undefined }) }));
 
 beforeEach(() => { localStorage.clear(); hooks.logs = [{ weight_kg: "80" }]; hooks.flags = {}; });
 afterEach(() => { cleanup(); vi.useRealTimers(); });

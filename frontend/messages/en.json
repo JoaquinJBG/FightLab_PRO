@@ -460,7 +460,12 @@
         "amount": "Amount",
         "less": "Remove 10 g",
         "more": "Add 10 g",
-        "back": "Back"
+        "back": "Back",
+        "perHundredMl": "{kcal} kcal/100 ml",
+        "noData": "no kcal data",
+        "typeMore": "Type at least 2 letters.",
+        "searching": "Searching…",
+        "source": "Foods from the coach's table (USDA FoodData Central) and your products."
       },
       "quick": {
         "intro": "Know the kcal but don't want to search? Enter them directly.",
@@ -472,7 +477,11 @@
         "defaultName": "Quick food"
       }
     },
-    "noTargetsNote": "Without your details we don't calculate targets, but everything you log still counts."
+    "noTargetsNote": "Without your details we don't calculate targets, but everything you log still counts.",
+    "menuCard": {
+      "title": "Menu and shopping list",
+      "body": "Meals for several days, checked by the coach against your targets."
+    }
   },
   "dashboard": {
     "greeting": {
@@ -852,6 +861,12 @@
       "weightPrompt": {
         "session": "the kcal for this session",
         "list": "the kcal for each sport"
+      },
+      "format": {
+        "title": "Format",
+        "continuous": "Continuous",
+        "hiit": "Intervals (HIIT)",
+        "sprints": "All-out sprints"
       }
     },
     "mma": {
@@ -1121,7 +1136,8 @@
         "legRaises": "Leg raises",
         "row": "Row",
         "tricepsExtensionShort": "Triceps extension"
-      }
+      },
+      "importLink": "Import from Hevy or CSV"
     },
     "gymSession": {
       "loading": "Loading…",
@@ -1174,7 +1190,13 @@
       "incompleteTicked": "{n, plural, one {# set ticked ✓ without reps won't be saved.} other {# sets ticked ✓ without reps won't be saved.}}",
       "incompleteUnticked": "{n, plural, one {# set with data but no ✓ won't be saved.} other {# sets with data but no ✓ won't be saved.}}",
       "finishAnyway": "Finish anyway",
-      "keepEditing": "Keep editing"
+      "keepEditing": "Keep editing",
+      "e1rm": "e1RM ≈ {kg} kg",
+      "includesTitle": "Did it include any of these?",
+      "includes": {
+        "one_rm_test": "A 1RM test",
+        "plyometrics": "Plyometrics (jumps)"
+      }
     },
     "myRoutine": {
       "back": "← Training",
@@ -2147,5 +2169,228 @@
       "error": "Couldn't load your profile.",
       "retry": "Try again"
     }
+  },
+  "menu": {
+    "back": "← Nutrition",
+    "title": "Menu and shopping",
+    "intro": "The coach suggests the dishes and its engine checks every day against your calorie, protein, fat and fibre targets. Days that do not pass are not saved.",
+    "loading": "Loading…",
+    "error": "Could not load the menu.",
+    "simulated": "Sample FightLab dishes picked by a simulated suggester (no AI). The numbers come from the coach's engine.",
+    "engine": "Coach engine {sha}",
+    "rateHint": "Tap a dish to rate it: the ones you like come back in later menus and the ones you would not repeat are left out.",
+    "blocked": {
+      "title": "No menu for now",
+      "body": "With your safety notes, the coach does not set calorie targets, so there is no menu to check."
+    },
+    "missing": {
+      "body": "The coach needs one more detail to work out your targets. Add it in Nutrition and come back.",
+      "cta": "Go to Nutrition",
+      "weight": "Log my weight"
+    },
+    "form": {
+      "days": "Days",
+      "dayCount": "{n, plural, one {# day} other {# days}}",
+      "meals": "Meals of the day",
+      "tupper": "To take in a lunchbox",
+      "generate": "Prepare menu",
+      "regenerate": "Prepare another menu",
+      "generating": "Preparing…"
+    },
+    "meals": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner",
+      "snack": "Snack"
+    },
+    "errors": {
+      "menu_rejected": "The coach rejected every day: no dish fits your targets or your tastes. Check your tastes and try again.",
+      "days_invalid": "Choose 1 to 7 days.",
+      "meals_invalid": "Choose at least one meal.",
+      "start_invalid": "Invalid start date.",
+      "profile_incomplete": "A profile detail is missing to work out your targets.",
+      "no_calorie_targets": "With your safety notes there are no calorie targets and no menu.",
+      "generic": "Could not prepare the menu."
+    },
+    "targets": {
+      "title": "Targets for each day",
+      "kcal": "{kcal} kcal",
+      "protein": "Protein: at least {g} g",
+      "fat": "Fat: at least {g} g",
+      "fibre": "Fibre: at least {g} g",
+      "margin": "A day passes from your calorie target up to {pct}% above it",
+      "noRepeat": "No dish comes back within {days} days"
+    },
+    "day": {
+      "ok": "Checked",
+      "tupper": "lunchbox",
+      "totals": "{kcal} kcal · protein {p} g · fat {f} g · carbs {c} g · fibre {fib} g",
+      "seasoning": "Seasoning: {list}",
+      "source": "Original recipe",
+      "offProduct": "Open Food Facts"
+    },
+    "status": {
+      "ok": "on target",
+      "under": "below",
+      "over": "above",
+      "missing": "no data"
+    },
+    "checkLabels": {
+      "kcal": "kcal",
+      "protein_g": "Protein",
+      "fat_g": "Fat",
+      "fibre_g": "Fibre"
+    },
+    "amount": {
+      "g": "{n} g",
+      "ml": "{n} ml"
+    },
+    "rejected": {
+      "title": "Days the coach rejected (not saved)",
+      "empty": "no dish fitted your tastes",
+      "repeats": "it repeated a dish",
+      "blocking": "{kind}: {entry}",
+      "unknown": "unknown foods: {list}"
+    },
+    "flags": {
+      "title": "Notes from your tastes",
+      "line": "{dish}: {kind} ({entry})",
+      "kinds": {
+        "allergy": "allergy",
+        "intolerance": "intolerance",
+        "disliked": "you dislike it",
+        "untried": "you have not tried it",
+        "never_again": "you would not repeat it"
+      },
+      "net": "The coach matches by name: it knows no synonyms or hidden ingredients. Always read the labels."
+    },
+    "rate": {
+      "label": "How was it?",
+      "loved": "Loved it",
+      "liked": "Good",
+      "disliked": "Did not like it",
+      "never_again": "Would not repeat",
+      "saved": "Saved"
+    },
+    "shopping": {
+      "title": "Shopping list",
+      "any": "Any shop",
+      "g": "{n} g",
+      "ml": "{n} ml",
+      "pantry": "At home (not bought): {list}",
+      "unknown": "Not in the table: {list}",
+      "note": "Amounts are for the form each name gives (raw, cooked, drained)."
+    },
+    "tastes": {
+      "title": "Your tastes",
+      "intro": "Allergies and intolerances keep a dish out; the rest only warns. What you always have at home stays off the shopping list.",
+      "allergies": "Allergies",
+      "intolerances": "Intolerances",
+      "disliked_foods": "You dislike",
+      "loved_foods": "You love",
+      "pantry": "Always at home",
+      "chains": "Supermarkets",
+      "hint": "Separate with commas (empty: none)",
+      "notAsked": "not answered",
+      "save": "Save tastes",
+      "saved": "Tastes saved.",
+      "error": "Could not save them."
+    },
+    "products": {
+      "title": "Supermarket products",
+      "intro": "Search Open Food Facts for a product and add it to your products to use it in menus.",
+      "placeholder": "Product or brand",
+      "search": "Search",
+      "searching": "Searching…",
+      "notConfigured": "Product search is not set up on this server. Menus still work with the coach's foods.",
+      "none": "No results.",
+      "add": "Add",
+      "unverified": "Unverified · view on Open Food Facts",
+      "catalogue": "Your products",
+      "empty": "You have not added any yet.",
+      "remove": "Remove {name}",
+      "attribution": "Data from Open Food Facts, crowd-sourced and unverified, under the ODbL licence.",
+      "errors": {
+        "off_not_configured": "Product search is not set up.",
+        "off_rate_limited": "Too many searches: wait a minute.",
+        "off_busy": "Open Food Facts is busy: wait a minute.",
+        "off_unavailable": "Could not reach Open Food Facts.",
+        "search_empty": "Type at least one word.",
+        "generic": "Could not complete it."
+      }
+    }
+  },
+  "sessionCheck": {
+    "title": "Vigorous session: best reviewed first",
+    "modality": "{modality}: {intensity} intensity",
+    "intensity": {
+      "light": "light",
+      "moderate": "moderate",
+      "vigorous": "vigorous",
+      "maximal": "maximal"
+    },
+    "rpeBasis": "RPE {n} or above counts as hard",
+    "because": "Your profile says: {flags}.",
+    "canSave": "You can still save it: what you have already done is always logged. Check with a professional before the next one."
+  },
+  "gymImport": {
+    "back": "← Gym",
+    "title": "Import workouts",
+    "subtitle": "Upload the CSV your gym app exports. The sets go into your history and count towards strength and your plan.",
+    "format": "Format",
+    "formats": {
+      "auto": "Detect",
+      "hevy_csv": "Hevy",
+      "generic_csv": "Generic CSV"
+    },
+    "help": {
+      "hevy": "Hevy: Settings › Export Data. Kilograms or pounds both work.",
+      "generic": "Generic CSV: columns date (YYYY-MM-DD, or YYYY-MM-DD HH:MM for two sessions on one day) and exercise. Optional: weight_kg or weight_lbs, reps, rir, rpe, set_type, distance_km, duration_s, session and notes. Use a full stop for decimals (12.5).",
+      "lyfta": "Lyfta: there is no importer yet. To bring it in: export your Lyfta workouts as CSV, keep one row per set, rename the columns to date (YYYY-MM-DD), exercise, weight_kg and reps (the other generic CSV columns are optional), delete the rest and upload it as “Generic CSV”."
+    },
+    "file": "CSV file (max {mb} MB)",
+    "chosen": "Chosen: {name}",
+    "check": "Check file",
+    "import": "Import",
+    "reading": "Reading…",
+    "preview": "This is what would be imported",
+    "done": "Imported",
+    "summary": {
+      "sets": "{n, plural, one {# new set} other {# new sets}}",
+      "duplicates": "{n, plural, one {# was already there and is not duplicated} other {# were already there and are not duplicated}}",
+      "sessionsNew": "{n, plural, one {# new session} other {# new sessions}}",
+      "sessionsUpdated": "{n, plural, one {# session extended} other {# sessions extended}}",
+      "range": "From {first} to {last}",
+      "importer": "Read as {name}",
+      "nothingNew": "Nothing new: everything in the file was already there."
+    },
+    "warnings": {
+      "template_rows": "{n, plural, one {# empty template row} other {# empty template rows}} (sets never filled in): not imported.",
+      "set_out_of_range": "{n, plural, one {# set} other {# sets}} with an impossible weight or rep count: not imported.",
+      "value_dropped": "{n, plural, one {# set} other {# sets}} with an out-of-range RPE, RIR, distance or duration: imported without that value.",
+      "session_out_of_range": "{n, plural, one {# session} other {# sessions}} dated before 2000 or in the future: not imported.",
+      "session_truncated": "{n, plural, one {# session} other {# sessions}} with more than 300 sets: only the first 300 are imported.",
+      "set_invalid": "{n, plural, one {# set} other {# sets}} with no exercise: not imported."
+    },
+    "errors": {
+      "missing_file": "Choose a file.",
+      "too_large": "The file is larger than {mb} MB.",
+      "not_csv": "This is not a CSV file.",
+      "empty_file": "The file is empty.",
+      "encoding": "The file is not UTF-8. Save it as “CSV UTF-8” and try again.",
+      "unknown_format": "The columns are not recognised: this is neither a Hevy export nor a generic CSV.",
+      "ambiguous_format": "It matches more than one format: choose which one it is.",
+      "missing_columns": "Missing columns: {columns}.",
+      "decimal_comma": "Line {line} has more fields than the header. A decimal comma (12,5)? Use a full stop (12.5).",
+      "not_a_number": "Line {line}: {column} “{value}” is not a number.",
+      "not_whole": "Line {line}: {column} “{value}” must be a whole number.",
+      "bad_date": "A date could not be read ({value}). Use YYYY-MM-DD.",
+      "no_sets": "The file has no completed sets.",
+      "too_many_sets": "Too many sets in one file (max {max}). Split it into several.",
+      "invalid": "The file could not be read.",
+      "throttled": "Too many attempts in a row. Wait a minute.",
+      "server": "The upload failed. Try again."
+    },
+    "noLoad": "Imported sessions do not carry a session effort (RPE), so they do not add to your load."
   }
 }

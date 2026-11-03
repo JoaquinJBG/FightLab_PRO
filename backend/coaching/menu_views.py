@@ -1,0 +1,233 @@
+"""API de menús, gustos, recetario, alimentos y productos (fase 8). Solo usuarios autenticados.
+
+- `GET/POST /coach/menu`: el último menú y generar uno nuevo (`coaching.menus`). Sin objetivos de
+  kcal, `409 {"code": "no_calorie_targets", "reasons": …}`; sin un dato, `409 profile_incomplete`.
+- `POST /coach/menu/check`: comprueba un borrador con el motor, sin guardar.
+- `POST /coach/menu/rate`: valora un plato (los `loved` y `liked` van al recetario).
+- `GET/PUT /coach/tastes`, `GET /coach/recipes`.
+- `GET /coach/foods?q=`: alimentos del motor y productos, con el nombre en el idioma del usuario.
+- `GET /coach/products/search?q=&brand=` y `GET /coach/products/lookup/<barcode>`: el proxy de
+  Open Food Facts. Sin contacto configurado, `503 {"code": "off_not_configured"}` sin llamar a OFF.
+- `GET/POST /coach/products` y `DELETE /coach/products/<barcode>`: el catálogo propio.
+"""
+from coach import catalogue, foods
+from coach import tastes as coach_tastes
+from django.http import Http404
+from rest_framework import serializers, status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
+from rest_framework.views import APIView
+
+from core.messages import msg
+
+from . import menus, off_proxy, products
+from .menu_llm import get_proposer
+from .models import CatalogueProduct
+from .safety_views import _lang, _today
+
+OFF_STATUS = {
+    "off_not_configured": status.HTTP_503_SERVICE_UNAVAILABLE,
+    "off_rate_limited": status.HTTP_429_TOO_MANY_REQUESTS,
+    "off_busy": status.HTTP_503_SERVICE_UNAVAILABLE,
+    "off_unavailable": status.HTTP_502_BAD_GATEWAY,
+    "barcode_invalid": status.HTTP_400_BAD_REQUEST,
+    "search_empty": status.HTTP_400_BAD_REQUEST,
+}
+OFF_ATTRIBUTION = {"source": catalogue.SOURCE, "licence": "ODbL", "url": "https://world.openfoodfacts.org/"}
+
+
+def _invalid(exc: menus.MenuInvalid, http=status.HTTP_400_BAD_REQUEST) -> Response:
+    params = {"per": exc.detail} if exc.code == "per_mismatch" else {}
+    return Response({"code": exc.code, "detail": msg(f"menu_{exc.code}", **params), "info": exc.detail}, status=http)
+
+
+def _off_error(exc: off_proxy.OffError) -> Response:
+    return Response({"code": exc.code, "detail": msg(exc.code)}, status=OFF_STATUS.get(exc.code, 502))
+
+
+def _blocked(exc: menus.MenuBlocked) -> Response:
+    return Response(menus.blocked_data(exc, _lang()), status=status.HTTP_409_CONFLICT)
+
+
+class MenuRequestSerializer(serializers.Serializer):
+    start_date = serializers.DateField(required=False)
+    days = serializers.IntegerField(min_value=1, max_value=menus.MAX_DAYS, default=3)
+    meals = serializers.ListField(child=serializers.ChoiceField(menus.MEALS), required=False, max_length=4)
+    tupper_meals = serializers.ListField(child=serializers.ChoiceField(menus.MEALS), required=False, max_length=4)
+
+
+class MenuView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(menus.state(request.user, _today(request.user.profile), _lang()))
+
+    def post(self, request):
+        serializer = MenuRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        user, lang = request.user, _lang()
+        today = _today(user.profile)
+        req = menus.MenuRequest(
+            start_date=data.get("start_date") or today,
+            days=data["days"],
+            meals=data.get("meals") or list(menus.DEFAULT_MEALS),
+            tupper_meals=data.get("tupper_meals") or [],
+        )
+        try:
+            plan, rejected = menus.generate(user, today, req, lang, get_proposer())
+        except menus.MenuBlocked as exc:
+            return _blocked(exc)
+        except menus.MenuRejected as exc:
+            return Response(
+                {"code": "menu_rejected", "detail": msg("menu_menu_rejected"), "rejected": exc.rejected},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        except menus.MenuInvalid as exc:
+            return _invalid(exc)
+        return Response(menus.plan_data(plan, user, lang), status=status.HTTP_201_CREATED)
+
+
+class MenuCheckView(APIView):
+    """Comprueba un borrador (`{"days": [...]}` en el formato de `coach.mealplan`)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        days = request.data.get("days") if isinstance(request.data, dict) else None
+        if not isinstance(days, list) or not 1 <= len(days) <= menus.MAX_DAYS:
+            return _invalid(menus.MenuInvalid("draft_invalid", "days"))
+        try:
+            return Response(menus.check_days(request.user, _today(request.user.profile), days))
+        except menus.MenuBlocked as exc:
+            return _blocked(exc)
+        except menus.MenuInvalid as exc:
+            return _invalid(exc)
+
+
+class RateSerializer(serializers.Serializer):
+    dish = serializers.CharField(max_length=160)
+    rating = serializers.ChoiceField(coach_tastes.RATINGS)
+    source = serializers.URLField(max_length=500, required=False, allow_blank=True, default="")
+    note = serializers.CharField(max_length=300, required=False, allow_blank=True, default="")
+
+
+class MenuRateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = RateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        d = serializer.validated_data
+        try:
+            recipe = menus.rate(request.user, d["dish"], d["rating"], d["source"], _today(request.user.profile), d["note"])
+        except menus.MenuInvalid as exc:
+            return _invalid(exc)
+        return Response({"recipe": menus.recipe_data(recipe), "tastes": menus.tastes_data(request.user)})
+
+
+class TastesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(menus.tastes_data(request.user))
+
+    def put(self, request):
+        if not isinstance(request.data, dict):
+            return _invalid(menus.MenuInvalid("tastes_invalid"))
+        try:
+            menus.tastes_update(request.user, dict(request.data))
+        except menus.MenuInvalid as exc:
+            return _invalid(exc)
+        return Response(menus.tastes_data(request.user))
+
+
+class RecipesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({"recipes": menus.recipes_data(request.user)})
+
+
+class FoodsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        query = request.query_params.get("q", "")[:80]
+        return Response({"foods": products.search_foods(request.user, query, _lang())})
+
+
+class _OffThrottled(APIView):
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "coach-off"
+
+
+class ProductSearchView(_OffThrottled):
+    def get(self, request):
+        words = request.query_params.get("q", "")[:120].split()
+        brand = request.query_params.get("brand", "")[:60] or None
+        try:
+            hits = off_proxy.search(words, brand, _lang())
+        except off_proxy.OffError as exc:
+            return _off_error(exc)
+        return Response({**OFF_ATTRIBUTION, "hits": hits})
+
+
+class ProductLookupView(_OffThrottled):
+    def get(self, request, barcode):
+        try:
+            found = off_proxy.product(barcode)
+        except off_proxy.OffError as exc:
+            return _off_error(exc)
+        if found is None:
+            return Response({"code": "off_not_found", "detail": msg("menu_off_not_found")}, status=status.HTTP_404_NOT_FOUND)
+        return Response({**OFF_ATTRIBUTION, "product": found})
+
+
+class ProductAddSerializer(serializers.Serializer):
+    barcode = serializers.RegexField(r"^\d{8,14}$")
+    chain = serializers.CharField(max_length=80, required=False, allow_blank=True, default="")
+    name = serializers.CharField(max_length=200, required=False, allow_blank=True, default="")
+    per = serializers.ChoiceField(list(foods.PER_UNITS), required=False, allow_null=True, default=None)
+    confirm_per = serializers.BooleanField(required=False, default=False)
+
+
+class ProductsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_throttles(self):
+        if self.request.method == "POST":  # añadir lee de OFF
+            self.throttle_scope = "coach-off"
+            return [ScopedRateThrottle()]
+        return super().get_throttles()
+
+    def get(self, request):
+        rows = CatalogueProduct.objects.filter(profile=request.user.profile)
+        return Response({**OFF_ATTRIBUTION, "products": [products.product_data(p) for p in rows]})
+
+    def post(self, request):
+        serializer = ProductAddSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        d = serializer.validated_data
+        try:
+            product, warnings = products.add_product(
+                request.user, d["barcode"], _today(request.user.profile), d["chain"], d["name"], d["per"], d["confirm_per"]
+            )
+        except off_proxy.OffError as exc:
+            return _off_error(exc)
+        except menus.MenuInvalid as exc:
+            http = status.HTTP_404_NOT_FOUND if exc.code == "off_not_found" else status.HTTP_400_BAD_REQUEST
+            return _invalid(exc, http)
+        return Response({"product": products.product_data(product), "warnings": warnings}, status=status.HTTP_201_CREATED)
+
+
+class ProductDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, barcode):
+        deleted, _ = CatalogueProduct.objects.filter(profile=request.user.profile, barcode=barcode).delete()
+        if not deleted:
+            raise Http404
+        return Response(status=status.HTTP_204_NO_CONTENT)
