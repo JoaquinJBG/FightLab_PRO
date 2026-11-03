@@ -603,6 +603,7 @@
     "manifestDescription": "Training load, nutrition and AI coach for combat athletes."
   },
   "nav": {
+    "today": "Today",
     "home": "Home",
     "training": "Training",
     "nutrition": "Nutrition",
@@ -2554,6 +2555,159 @@
       "target": "Target: {kcal} kcal",
       "deficit": "in deficit",
       "noDeficit": "no deficit"
+    }
+  },
+  "today": {
+    "title": "Today",
+    "loading": "Loading today's log…",
+    "error": "Couldn't load today's log. Try again.",
+    "retry": "Retry",
+    "summaryLink": "Summary",
+    "summaryAria": "Open the summary: status, weight and load",
+    "fullCheckin": "Full check-in (sleep, energy, soreness…)",
+    "saveError": "Not saved. Try again.",
+    "next": {
+      "title": "Next meal",
+      "allDone": "Today's menu: all ticked ✓",
+      "free": "Free",
+      "noMenu": "No menu today.",
+      "makeMenu": "Make a menu"
+    },
+    "plan": {
+      "title": "Today's plan",
+      "none": "You don't have an active weekly plan yet.",
+      "makePlan": "Create the plan",
+      "rest": "No training in the plan today: rest.",
+      "gym": "Gym, session {session}",
+      "cardio": "Cardio, {minutes} min",
+      "mma": "MMA",
+      "at": "at {time}",
+      "openSession": "Start session {session}"
+    },
+    "dayType": {
+      "title": "What's on today",
+      "gym": "Gym",
+      "cardio": "Cardio",
+      "rest": "Rest",
+      "fromPlan": "From the weekly plan.",
+      "changed": "Changed by hand.",
+      "reset": "Back to the plan",
+      "unknown": "No plan: pick what's on."
+    },
+    "done": {
+      "title": "Done today",
+      "trained": "Workout done",
+      "mobility": "Mobility",
+      "yes": "Yes",
+      "notYet": "Not yet"
+    },
+    "weight": {
+      "title": "Weight",
+      "label": "This morning's weight",
+      "hint": "Fasted, after the bathroom.",
+      "save": "Save",
+      "saved": "Saved: {kg} kg",
+      "invalid": "Type a number, e.g. 72.4",
+      "blocked": "Weight isn't logged for now: your screening answers turn it off. Everything else works as usual."
+    },
+    "meals": {
+      "title": "Menu meals",
+      "none": "No menu for today.",
+      "tupper": "Lunchbox",
+      "free": "Free meal",
+      "eve": "The night before: {task}",
+      "states": {
+        "done": "Eaten",
+        "skipped": "Skipped",
+        "changed": "Swapped"
+      },
+      "changeLabel": "What did you eat instead? (optional)",
+      "changePlaceholder": "For example: pizza and a beer",
+      "changeSave": "Save",
+      "changedTo": "Instead: {what}",
+      "clear": "Clear"
+    },
+    "cardio": {
+      "title": "Cardio",
+      "none": "No cardio logged today.",
+      "add": "Add cardio",
+      "minutes": "Minutes",
+      "intensity": "Intensity",
+      "moderate": "Moderate",
+      "vigorous": "Vigorous",
+      "vigorousHint": "One vigorous minute counts as two towards the weekly 150.",
+      "save": "Log it",
+      "delete": "Delete",
+      "deleteAria": "Delete {type}, {minutes} min",
+      "fromSports": "From Sports",
+      "session": "{minutes} min · {intensity}",
+      "invalidMinutes": "Between 1 and 600 minutes.",
+      "types": {
+        "walk": "Walk",
+        "run": "Jog",
+        "bike": "Bike",
+        "swim": "Swim",
+        "elliptical": "Elliptical",
+        "rope": "Jump rope",
+        "hiit": "HIIT",
+        "other": "Other"
+      },
+      "week": "This week: {equivalent} of {goal} min",
+      "weekDetail": "{minutes} actual min; vigorous counts double.",
+      "weekMma": "Includes {minutes} min of MMA, counted as moderate.",
+      "weekDone": "Weekly minimum done!"
+    },
+    "shortcuts": {
+      "today": "Today's log",
+      "weigh": "Weigh in",
+      "nextMeal": "Next meal"
+    }
+  },
+  "reminders": {
+    "title": "Reminders",
+    "back": "Profile",
+    "link": "Reminders",
+    "intro": "Phone reminders, like ParteDiario's. Each one turns on and off on its own.",
+    "loading": "Loading…",
+    "off": {
+      "title": "Reminders are off on this server",
+      "noKey": "The reminder keys (VAPID) aren't set up yet. Until they are, the app can't send reminders; everything else works as usual.",
+      "server": "The server doesn't have the reminder keys, or they don't match the app's. They can't be turned on until that's fixed."
+    },
+    "support": {
+      "title": "Where they work",
+      "android": "Android: in Chrome, with the app installed or open in the browser.",
+      "ios": "iPhone and iPad: only with the app added to the home screen (Share → Add to Home Screen), on iOS 16.4 or later.",
+      "iosNow": "You're on iPhone or iPad in the browser: first add the app to the home screen (Share → Add to Home Screen) and open it from there.",
+      "unsupported": "This browser doesn't support reminders. On Android use Chrome; on iPhone, add the app to the home screen (iOS 16.4+).",
+      "denied": "You've blocked notifications for this site. Allow them in the browser settings (site permissions → Notifications) and come back."
+    },
+    "device": {
+      "title": "This device",
+      "on": "Reminders reach this device.",
+      "offState": "This device doesn't get reminders.",
+      "enable": "Turn on reminders here",
+      "disable": "Turn off on this device",
+      "test": "Send a test one",
+      "testSent": "Sent. If it doesn't arrive within a minute, check that the app's notifications are allowed.",
+      "testFailed": "Couldn't send it. Try turning them off and on again.",
+      "devices": "{count, plural, =0 {No devices turned on} one {# device turned on} other {# devices turned on}} on your account.",
+      "error": "Couldn't turn on reminders. Try again."
+    },
+    "kinds": {
+      "title": "Which reminders",
+      "eve": "The night before",
+      "eveBody": "In the evening, if there's something to get ready for tomorrow from the menu or the plan (take something out of the freezer, the lunchbox, the gym bag).",
+      "review": "Weekly review",
+      "reviewBody": "Tuesday mornings, if last week isn't reviewed yet.",
+      "weigh": "Weigh in",
+      "weighBody": "In the morning, if you haven't logged your weight yet.",
+      "mobility": "Mobility",
+      "mobilityBody": "In the evening, if you haven't ticked it today."
+    },
+    "hours": {
+      "title": "When they arrive",
+      "body": "Reminders go out twice a day and use your profile time zone ({tz}). In Spain, the evening ones arrive between 21:00 and 22:00 in winter and between 22:00 and 23:00 in summer; the morning ones, between 7:00 and 8:00 in winter and between 8:00 and 9:00 in summer. The exact time can't be chosen: the server's free plan allows only two jobs a day, and each can run at any moment within its hour."
     }
   }
 }

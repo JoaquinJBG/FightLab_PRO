@@ -603,6 +603,7 @@
     "manifestDescription": "Carga de entrenamiento, nutrición y coach IA para atletas de combate."
   },
   "nav": {
+    "today": "Hoy",
     "home": "Inicio",
     "training": "Entreno",
     "nutrition": "Nutrición",
@@ -2554,6 +2555,159 @@
       "target": "Objetivo: {kcal} kcal",
       "deficit": "en déficit",
       "noDeficit": "sin déficit"
+    }
+  },
+  "today": {
+    "title": "Hoy",
+    "loading": "Cargando el parte de hoy…",
+    "error": "No se ha podido cargar el parte de hoy. Prueba otra vez.",
+    "retry": "Reintentar",
+    "summaryLink": "Resumen",
+    "summaryAria": "Ver el resumen: estado, peso y carga",
+    "fullCheckin": "Check-in completo (sueño, energía, molestias…)",
+    "saveError": "No se ha guardado. Prueba otra vez.",
+    "next": {
+      "title": "Próxima comida",
+      "allDone": "Menú de hoy: todo marcado ✓",
+      "free": "Libre",
+      "noMenu": "Hoy no hay menú.",
+      "makeMenu": "Preparar menú"
+    },
+    "plan": {
+      "title": "Plan del día",
+      "none": "Aún no tienes un plan de la semana activo.",
+      "makePlan": "Crear el plan",
+      "rest": "Hoy el plan no pone entreno: descanso.",
+      "gym": "Gimnasio, sesión {session}",
+      "cardio": "Cardio, {minutes} min",
+      "mma": "MMA",
+      "at": "a las {time}",
+      "openSession": "Empezar la sesión {session}"
+    },
+    "dayType": {
+      "title": "Qué toca hoy",
+      "gym": "Gimnasio",
+      "cardio": "Cardio",
+      "rest": "Descanso",
+      "fromPlan": "Según el plan de la semana.",
+      "changed": "Cambiado a mano.",
+      "reset": "Volver a lo del plan",
+      "unknown": "Sin plan: marca qué toca."
+    },
+    "done": {
+      "title": "Hecho hoy",
+      "trained": "Entreno hecho",
+      "mobility": "Movilidad",
+      "yes": "Sí",
+      "notYet": "Aún no"
+    },
+    "weight": {
+      "title": "Peso",
+      "label": "Peso de esta mañana",
+      "hint": "En ayunas, después de ir al baño.",
+      "save": "Guardar",
+      "saved": "Guardado: {kg} kg",
+      "invalid": "Escribe un número, p. ej. 72,4",
+      "blocked": "El peso no se apunta por ahora: tus respuestas del cribado lo cierran. Lo demás sigue igual."
+    },
+    "meals": {
+      "title": "Comidas del menú",
+      "none": "No hay menú para hoy.",
+      "tupper": "Táper",
+      "free": "Comida libre",
+      "eve": "Para la víspera: {task}",
+      "states": {
+        "done": "Hecha",
+        "skipped": "No hecha",
+        "changed": "Cambiada"
+      },
+      "changeLabel": "¿Qué comiste en su lugar? (opcional)",
+      "changePlaceholder": "Por ejemplo: pizza y una cerveza",
+      "changeSave": "Guardar",
+      "changedTo": "En su lugar: {what}",
+      "clear": "Quitar la marca"
+    },
+    "cardio": {
+      "title": "Cardio",
+      "none": "Hoy no hay cardio apuntado.",
+      "add": "Añadir cardio",
+      "minutes": "Minutos",
+      "intensity": "Intensidad",
+      "moderate": "Moderado",
+      "vigorous": "Vigoroso",
+      "vigorousHint": "Un minuto vigoroso cuenta como dos para los 150 de la semana.",
+      "save": "Apuntar",
+      "delete": "Borrar",
+      "deleteAria": "Borrar {type}, {minutes} min",
+      "fromSports": "Desde Deportes",
+      "session": "{minutes} min · {intensity}",
+      "invalidMinutes": "Entre 1 y 600 minutos.",
+      "types": {
+        "walk": "Paseo",
+        "run": "Trote",
+        "bike": "Bici",
+        "swim": "Natación",
+        "elliptical": "Elíptica",
+        "rope": "Comba",
+        "hiit": "HIIT",
+        "other": "Otro"
+      },
+      "week": "Esta semana: {equivalent} de {goal} min",
+      "weekDetail": "{minutes} min reales; el vigoroso cuenta doble.",
+      "weekMma": "Incluye {minutes} min de MMA, contados como moderado.",
+      "weekDone": "¡Mínimo de la semana cumplido!"
+    },
+    "shortcuts": {
+      "today": "Parte de hoy",
+      "weigh": "Pesarme",
+      "nextMeal": "Próxima comida"
+    }
+  },
+  "reminders": {
+    "title": "Avisos",
+    "back": "Perfil",
+    "link": "Avisos",
+    "intro": "Avisos en el móvil, como los de ParteDiario. Cada uno se enciende y se apaga por separado.",
+    "loading": "Cargando…",
+    "off": {
+      "title": "Avisos apagados en este servidor",
+      "noKey": "Falta configurar las claves de los avisos (VAPID). Hasta que se pongan, la app no puede mandar avisos; lo demás funciona igual.",
+      "server": "El servidor no tiene las claves de los avisos, o no coinciden con las de la app. Hasta que se arregle no se pueden activar."
+    },
+    "support": {
+      "title": "Dónde funcionan",
+      "android": "Android: en Chrome, con la app instalada o abierta en el navegador.",
+      "ios": "iPhone y iPad: solo con la app añadida a la pantalla de inicio (Compartir → Añadir a pantalla de inicio), con iOS 16.4 o posterior.",
+      "iosNow": "Estás en iPhone o iPad desde el navegador: añade primero la app a la pantalla de inicio (Compartir → Añadir a pantalla de inicio) y ábrela desde ahí.",
+      "unsupported": "Este navegador no admite avisos. En Android usa Chrome; en iPhone, añade la app a la pantalla de inicio (iOS 16.4+).",
+      "denied": "Has bloqueado los avisos para esta web. Actívalos en los ajustes del navegador (permisos del sitio → Notificaciones) y vuelve aquí."
+    },
+    "device": {
+      "title": "Este dispositivo",
+      "on": "Los avisos llegan a este dispositivo.",
+      "offState": "Este dispositivo no recibe avisos.",
+      "enable": "Activar los avisos aquí",
+      "disable": "Desactivar en este dispositivo",
+      "test": "Mandar uno de prueba",
+      "testSent": "Enviado. Si no llega en un minuto, revisa que las notificaciones de la app estén permitidas.",
+      "testFailed": "No se ha podido enviar. Prueba a desactivar y activar otra vez.",
+      "devices": "{count, plural, =0 {Ningún dispositivo activado} one {# dispositivo activado} other {# dispositivos activados}} en tu cuenta.",
+      "error": "No se han podido activar los avisos. Prueba otra vez."
+    },
+    "kinds": {
+      "title": "Qué avisos quieres",
+      "eve": "La víspera",
+      "eveBody": "Por la noche, si mañana hay algo que dejar hecho del menú o del plan (sacar algo del congelador, el táper, la bolsa del gimnasio).",
+      "review": "Revisión de la semana",
+      "reviewBody": "Los martes por la mañana, si la semana pasada aún no está revisada.",
+      "weigh": "Pesarse",
+      "weighBody": "Por la mañana, si aún no has apuntado el peso.",
+      "mobility": "Movilidad",
+      "mobilityBody": "Por la noche, si aún no la has marcado hoy."
+    },
+    "hours": {
+      "title": "A qué hora llegan",
+      "body": "Los avisos salen dos veces al día y se calculan con tu zona horaria del perfil ({tz}). En España, los de la noche llegan entre las 21:00 y las 22:00 en invierno y entre las 22:00 y las 23:00 en verano; los de la mañana, entre las 7:00 y las 8:00 en invierno y entre las 8:00 y las 9:00 en verano. No se puede elegir la hora exacta: el plan gratuito del servidor solo permite dos tareas al día, y cada una puede salir en cualquier momento de su hora."
     }
   }
 }

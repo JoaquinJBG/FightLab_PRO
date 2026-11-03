@@ -65,7 +65,7 @@ function Onboarding() {
   const index = flow.indexOf(step);
   const next = () => setStep(single ? "done" : (flow[index + 1] ?? "done"));
   const back = () => setStep(flow[Math.max(1, index - 1)]);
-  const finish = () => router.replace("/dashboard");
+  const finish = () => router.replace("/today");
   const numbered: Step[] = flow.filter((s) => s !== "welcome" && s !== "done");
   const n = numbered.indexOf(step) + 1;
 

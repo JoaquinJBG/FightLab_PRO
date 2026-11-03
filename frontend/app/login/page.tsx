@@ -40,7 +40,7 @@ export default function LoginPage() {
         await claimDeviceForCurrentUser(); // si los datos locales eran de otra cuenta, se borran antes de entrar
         // Carga completa: el login ha puesto la cookie con el idioma del perfil y el layout raíz
         // tiene que volver a leer los textos (con router.push se quedaría el idioma del navegador).
-        window.location.assign("/dashboard");
+        window.location.assign("/today");
         return;
       }
       setError(t("login.badCredentials"));
