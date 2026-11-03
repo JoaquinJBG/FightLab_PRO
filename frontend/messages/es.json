@@ -2523,7 +2523,8 @@
       "cardio_no_load": "El cardio importado no lleva esfuerzo (RPE), así que no suma a la carga de entrenamiento.",
       "heart_hidden": "Las pulsaciones del reloj se guardan, pero aún no se muestran.",
       "quad_to_soreness": "Las molestias del cuádriceps pasan a «piernas» en las molestias del check-in, con una nota.",
-      "same_day_in_several_files": "{n, plural, one {# día venía en más de un archivo} other {# días venían en más de un archivo}}: gana el último."
+      "same_day_in_several_files": "{n, plural, one {# día venía en más de un archivo} other {# días venían en más de un archivo}}: gana el último.",
+      "reviews_targets_rule": "Las revisiones del coach quedan como historial. Para tus objetivos de kcal solo cuenta la más reciente, y solo si su semana acabó hace 28 días o menos."
     },
     "fileErrors": {
       "title": "Archivos que no se han podido leer",

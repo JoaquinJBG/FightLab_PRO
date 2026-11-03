@@ -108,17 +108,35 @@ def weight_data(user, today: date) -> dict | None:
     return {"kg": kg, "date": day.isoformat(), "stale_days": (today - day).days}
 
 
-def accepted_review(user, flags) -> WeeklyReview | None:
-    """La última revisión semanal aceptada con TDEE recalibrado, si los flags dejan usarla."""
+# convention (FightLab): una revisión importada del coach (fase 10) solo vale para los objetivos de
+# hoy si su semana acabó hace 4 semanas o menos; las más antiguas quedan como historial.
+IMPORTED_REVIEW_MAX_DAYS = 28
+
+
+def accepted_review(user, flags, today: date | None = None) -> WeeklyReview | None:
+    """La última revisión semanal aceptada con TDEE recalibrado, si los flags dejan usarla.
+
+    De las importadas del coach solo cuenta la más reciente, y solo si su semana acabó hace
+    `IMPORTED_REVIEW_MAX_DAYS` días o menos (sin `today`, ninguna)."""
     if flags.no_weight_targets or flags.no_training:
         return None
-    return (
-        WeeklyReview.objects.filter(
-            profile=user.profile, status=WeeklyReview.Status.ACCEPTED, recalibrated_tdee__isnull=False
-        )
+    accepted = WeeklyReview.objects.filter(profile=user.profile, status=WeeklyReview.Status.ACCEPTED)
+    app = (
+        accepted.filter(source=WeeklyReview.Source.APP, recalibrated_tdee__isnull=False)
         .order_by("-accepted_at")
         .first()
     )
+    imported = accepted.filter(source=WeeklyReview.Source.IMPORT).order_by("-week_end", "-accepted_at").first()
+    if (
+        imported is None
+        or imported.recalibrated_tdee is None
+        or today is None
+        or (today - imported.week_end).days > IMPORTED_REVIEW_MAX_DAYS
+    ):
+        return app
+    if app is None or imported.accepted_at > app.accepted_at:
+        return imported
+    return app
 
 
 def held_kcal(review: WeeklyReview) -> int | None:
@@ -173,7 +191,7 @@ def targets_data(user, today: date, lang: str) -> dict:
         notes.append(NO_TRAINING_NOTE)
     choice = energy_athletes.choose_rmr(calc, latest_body_fat(user, today), today)  # U04
     pal = energy.pal(calc)
-    review = accepted_review(user, flags)
+    review = accepted_review(user, flags, today)
     held = False
     if review is None:
         target = energy.calorie_target(calc, flags, today=today, tdee_kcal=choice.rmr_kcal * pal)

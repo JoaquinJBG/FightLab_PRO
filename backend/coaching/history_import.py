@@ -15,8 +15,9 @@ guardan:
 - Cada sesión de cardio → una `Activity` de deporte con `source=IMPORT` y
   `external_id="partediario:cardio:FECHA:N"`. Sin RPE: no suma carga (no se inventa).
 - Las revisiones del coach → `WeeklyReview` con `source=import`, aceptadas en la fecha de fin
-  de su semana: su TDEE es el que usa `coach/targets`, como el `/plan` del coach con
-  `data/reviews/`. Una revisión hecha en la app esa semana no se toca nunca.
+  de su semana, como historial. Para `coach/targets` solo cuenta la más reciente, y solo si su
+  semana acabó hace 28 días o menos (`targets.IMPORTED_REVIEW_MAX_DAYS`). Una revisión hecha en
+  la app esa semana no se toca nunca.
 - `sessions.csv` del coach y los CSV de Hevy o genéricos → `imports.import_sets` (F9).
 
 Lo que ya hay en FightLab no se pisa sin confirmar: con `on_conflict="keep"` (por defecto) un
@@ -583,6 +584,8 @@ def import_history(user, files: list[ParsedFile], *, today: date, on_conflict: s
 
     if items["cardio"]:
         report.notices["cardio_no_load"] = items["cardio"]
+    if reviews["total"]:  # solo la más reciente, de hace 28 días o menos, cuenta para los objetivos
+        report.notices["reviews_targets_rule"] = reviews["total"]
     if items["heart"]:
         report.notices["heart_hidden"] = items["heart"]
     days = [p.clean.date for p in plans]

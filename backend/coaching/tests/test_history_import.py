@@ -11,7 +11,7 @@ from coaching import targets
 from coaching.models import DailyCheckin, DayLog, MealCheck, WeeklyReview
 from profiles.models import BiometricsLog
 
-from .helpers import client_for, fix_today, make_user
+from .helpers import TODAY, client_for, fix_today, make_user
 
 URL = "/api/v1/coach/import/history"
 pytestmark = pytest.mark.django_db
@@ -351,6 +351,7 @@ def test_coach_checkins_csv():
     assert user.profile.biometrics.get(external_id="checkin:2026-10-01").waist_cm == Decimal("84.0")
 
 
+FLAGS = type("Flags", (), {"no_weight_targets": False, "no_training": False})()
 REVIEW = "tdee_kcal: 2650.5\ntarget_kcal: 2300\nin_deficit: true\n\n- Adherencia: 4 de 4 sesiones (inventado).\n- Peso: bajando 0,3 kg por semana.\n"
 
 
@@ -364,9 +365,9 @@ def test_coach_review_becomes_an_imported_accepted_review_used_by_the_targets():
     assert (review.source, review.status, review.week_end) == ("import", "accepted", date(2026, 10, 25))
     assert (review.recalibrated_tdee, review.target_kcal, review.in_deficit, review.accepted) == (2650.5, 2300, True, ["calories"])
     assert review.narrative.startswith("- Adherencia") and "tdee_kcal" not in review.narrative
-    # Como el `/plan` del coach con `data/reviews/`: su TDEE es el mantenimiento de los objetivos.
-    flags = type("F", (), {"no_weight_targets": False, "no_training": False})()
-    assert targets.accepted_review(user, flags) == review
+    # Es la más reciente y acabó hace 4 días: su TDEE es el mantenimiento de los objetivos.
+    assert targets.accepted_review(user, FLAGS, TODAY) == review
+    assert notices(response)["reviews_targets_rule"] == 1
     # No es la "última revisión" de la app (no tiene adherencia ni tendencia): sale aparte.
     state = client.get("/api/v1/coach/review").data
     assert state["latest"] is None
@@ -381,6 +382,24 @@ def test_coach_review_becomes_an_imported_accepted_review_used_by_the_targets():
     assert changed.data["reviews"]["conflict"] == 1 and WeeklyReview.objects.get().target_kcal == 2300
     upload(client, ("2026-10-25.md", REVIEW.replace("2300", "2200")), on_conflict="replace")
     assert WeeklyReview.objects.get().target_kcal == 2200
+
+
+def test_only_the_newest_imported_review_counts_for_the_targets_and_only_for_28_days():
+    user = make_user()
+    client = client_for(user)
+    upload(client, ("2026-09-06.md", REVIEW), ("2026-09-27.md", REVIEW.replace("2650.5", "2500")))
+    # La más reciente acabó hace 32 días: ninguna cambia los objetivos de hoy.
+    assert targets.accepted_review(user, FLAGS, TODAY) is None
+    assert WeeklyReview.objects.filter(profile=user.profile, source="import").count() == 2
+    newest = WeeklyReview.objects.get(profile=user.profile, week_end=date(2026, 9, 27))
+    assert targets.accepted_review(user, FLAGS, date(2026, 10, 25)) == newest  # hace 28 días: sí
+    assert targets.accepted_review(user, FLAGS) is None  # sin fecha de hoy, ninguna
+    # Una revisión aceptada en la app después manda sobre la importada.
+    app = WeeklyReview.objects.create(
+        profile=user.profile, week_end=date(2026, 10, 4), status="accepted", recalibrated_tdee=2400,
+        accepted_at=datetime(2026, 10, 5, 9, 0, tzinfo=timezone.utc),
+    )
+    assert targets.accepted_review(user, FLAGS, date(2026, 10, 25)) == app
 
 
 def test_a_review_made_in_the_app_that_week_is_never_replaced():

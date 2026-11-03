@@ -2523,7 +2523,8 @@
       "cardio_no_load": "Imported cardio has no effort rating (RPE), so it does not add to your training load.",
       "heart_hidden": "Watch heart-rate data is saved but not shown yet.",
       "quad_to_soreness": "Quadriceps aches go to “legs” in the check-in aches, with a note.",
-      "same_day_in_several_files": "{n, plural, one {# day was in more than one file} other {# days were in more than one file}}: the last one wins."
+      "same_day_in_several_files": "{n, plural, one {# day was in more than one file} other {# days were in more than one file}}: the last one wins.",
+      "reviews_targets_rule": "Coach reviews are kept as history. Only the most recent one counts for your kcal targets, and only if its week ended 28 days ago or less."
     },
     "fileErrors": {
       "title": "Files that could not be read",
