@@ -119,6 +119,9 @@ Salvo que se diga lo contrario, el valor es texto plano (no secreto) y va como
 | `SECURE_HSTS_SECONDS` | No | No | `3600` por defecto |
 | `EMAIL_VERIFICATION_TIMEOUT` | No | No | `86400` (24 h) por defecto |
 | `DATA_UPLOAD_MAX_MEMORY_SIZE` / `FILE_UPLOAD_MAX_MEMORY_SIZE` | No | No | `10485760` (10 MB) por defecto — límite de subida de fotos |
+| `VAPID_PUBLIC_KEY` | No | No | Avisos con Web Push (sección 7b). La clave **pública** de `npx web-push generate-vapid-keys`; la misma que `NEXT_PUBLIC_VAPID_PUBLIC_KEY` en Vercel. Sin las tres `VAPID_*`, los avisos quedan apagados y la app lo explica |
+| `VAPID_PRIVATE_KEY` | No | **Sí** | La clave **privada** del mismo par. Solo va en Render, nunca en Vercel ni en git |
+| `VAPID_SUBJECT` | No | No | Contacto del proyecto para los servicios de push: la URL de la app (`https://<tu-proyecto>.vercel.app`) o un `mailto:` del proyecto. Nunca un correo personal (el repo es público y el valor viaja en cada aviso). Tiene que empezar por `https://` o `mailto:` o el backend no arranca |
 | `PORT` | — | — | La pone Render sola; no la definas |
 
 > `render.yaml` de este repo trae ya fijas `DEBUG`, `NUM_PROXIES`, `AI_MODEL_CHAT`,
@@ -150,6 +153,8 @@ Salvo que se diga lo contrario, el valor es texto plano (no secreto) y va como
 | `DJANGO_API_URL` | Sí | No | `https://<tu-servicio>.onrender.com/api/v1` — sin ella el BFF falla en cada petición en vez de hablar en silencio con `localhost` |
 | `BFF_SHARED_SECRET` | Sí | **Sí** | El mismo valor exacto que pusiste en Render. Nunca con prefijo `NEXT_PUBLIC_` (eso lo expondría al navegador) |
 | `NEXT_PUBLIC_LANGUAGE_SELECTOR_ENABLED` | No | No | Selector de idioma de la UI, **en el build**: encendido salvo que valga `false` (entonces toda la UI en español). Si la cambias, hay que redesplegar. Pon el mismo valor que `LANGUAGE_SELECTOR_ENABLED` en Render |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | No | No | Avisos (sección 7b): la misma clave **pública** que `VAPID_PUBLIC_KEY` en Render. Se lee **en el build**: tras ponerla o cambiarla, redespliega. Sin ella, Perfil → Avisos dice que están apagados |
+| `CRON_SECRET` | No | **Sí** | Avisos (sección 7b): cadena aleatoria de 32+ caracteres. Vercel la manda sola a las tareas de `vercel.json` (`Authorization: Bearer …`); sin ella, `/api/cron/*` responde 503 y no sale ningún aviso programado |
 | `NODE_ENV` | — | — | La pone Vercel sola (`production`); no la definas a mano |
 
 ---
@@ -290,6 +295,96 @@ Apple, no de la app).
 
 ---
 
+## 7b. Avisos en el móvil (Web Push, opcional)
+
+Sustituyen a los recordatorios de ParteDiario: la víspera (si mañana hay algo
+que preparar del menú o del plan), la revisión de los martes y, si la persona
+los enciende, pesarse y la movilidad. Todo es opcional: sin las variables de
+abajo los avisos quedan apagados, Perfil → Avisos lo explica y el resto de la
+app funciona igual.
+
+**Cómo funcionan.** El navegador se suscribe con la clave pública VAPID y
+manda su suscripción al backend (`PushSubscription`). Vercel Cron llama a una
+ruta del BFF, `/api/cron/tick`, a unas horas fijas (las 8 tareas de
+`frontend/vercel.json`); la ruta está protegida con `CRON_SECRET` y llama al
+backend (`POST /api/v1/cron/reminders`) con `BFF_SHARED_SECRET`. El backend
+mira, para cada persona y con la zona horaria de su perfil, qué aviso le toca
+en ese tick y lo envía firmado con la clave privada (`pywebpush`). Cada aviso
+se apunta y no se repite el mismo día aunque el cron llegue dos veces.
+
+**Horas.** Cada aviso tiene su hora local, las de ParteDiario: pesarse a las
+8:00, la revisión de la semana los martes a las 10:00, la movilidad a las
+18:00 y la víspera a las 22:00. En el plan Hobby de Vercel cada tarea corre
+como mucho una vez al día, a una hora UTC fija y **en cualquier minuto de esa
+hora** (±59 min, según la documentación de Vercel de julio de 2026). Por eso
+hay una tarea en cada hora UTC que cae en esas horas en España, con y sin
+horario de verano:
+
+| Aviso | Hora local | Tick en invierno (UTC+1) | Tick en verano (UTC+2) |
+|---|---|---|---|
+| Pesarse | 8:00–8:59 | `0 7 * * *` | `0 6 * * *` |
+| Revisión (martes) | 10:00–10:59 | `0 9 * * *` | `0 8 * * *` |
+| Movilidad | 18:00–18:59 | `0 17 * * *` | `0 16 * * *` |
+| Víspera | 22:00–22:59 | `0 21 * * *` | `0 20 * * *` |
+
+Son 8 tareas y no 24 (una por hora) a propósito: cada tick despierta el
+backend de Render free, y sus 750 horas gratis al mes se comparten con el
+servicio de prueba. En los ticks que no le tocan a nadie el backend no envía
+nada. A quien tenga en su perfil otra zona horaria, cada aviso le llega en el
+tick más cercano a su hora de entre los que caen ese día en su zona (antes o
+después), pero no se pierde; Perfil → Avisos también lo explica. Si se lanza
+una tarea a mano fuera de esas horas, no sale ningún aviso.
+
+Las horas UTC de las tareas son las de `TICK_HOURS_UTC` en
+`backend/notifications/reminders.py`; un test comprueba que coinciden con
+`frontend/vercel.json`.
+
+**Dónde funcionan** (también lo explica la app): en Android, con Chrome (la
+PWA instalada o abierta en el navegador); en iPhone y iPad, **solo** con la
+app añadida a la pantalla de inicio y con iOS 16.4 o posterior.
+
+### Pasos (una vez)
+
+1. **Crea las claves en tu PC**, en cualquier carpeta (no hace falta el repo):
+
+   ```bash
+   npx web-push generate-vapid-keys
+   ```
+
+   Saca dos líneas: `Public Key` y `Private Key`. Guárdalas en tu gestor de
+   contraseñas. **No las subas a git**: el repo es público. Si alguna vez se
+   filtra la privada, genera un par nuevo y repite los pasos 2 y 3 (las
+   suscripciones antiguas dejan de valer y cada persona vuelve a activar los
+   avisos en Perfil → Avisos).
+2. **Render** → servicio del backend → *Environment* → añade:
+   - `VAPID_PUBLIC_KEY` = la `Public Key`
+   - `VAPID_PRIVATE_KEY` = la `Private Key`
+   - `VAPID_SUBJECT` = `https://<tu-proyecto>.vercel.app` (o un `mailto:` del
+     proyecto; nunca tu correo personal)
+
+   Guarda: Render redespliega solo.
+3. **Vercel** → proyecto → *Settings* → *Environment Variables* (Production):
+   - `NEXT_PUBLIC_VAPID_PUBLIC_KEY` = la misma `Public Key`
+   - `CRON_SECRET` = una cadena aleatoria, por ejemplo la salida de
+     `python -c "import secrets; print(secrets.token_urlsafe(32))"`
+   - Comprueba que `BFF_SHARED_SECRET` ya está (es la misma que en Render).
+
+   Redespliega (*Deployments* → el último → *Redeploy*): la clave pública se
+   lee en el build y las tareas de `vercel.json` se registran al desplegar.
+4. **Comprueba las tareas:** Vercel → proyecto → *Settings* → *Cron Jobs*
+   tiene que listar 8 tareas a `/api/cron/tick` (a las 6, 7, 8, 9, 16, 17, 20
+   y 21 UTC). Desde ahí se pueden lanzar a mano (*Run*): solo envían algo si
+   es la hora de algún aviso; en *Logs* sale cuántos se enviaron (solo
+   recuentos, sin datos de nadie).
+5. **En el móvil:** abre la app → Perfil → Avisos → *Activar los avisos
+   aquí* → acepta el permiso → *Mandar uno de prueba*.
+
+Variables nuevas, en resumen: en Render `VAPID_PUBLIC_KEY`,
+`VAPID_PRIVATE_KEY` y `VAPID_SUBJECT`; en Vercel
+`NEXT_PUBLIC_VAPID_PUBLIC_KEY` y `CRON_SECRET`. Todas opcionales.
+
+---
+
 ## Límites del plan gratis
 
 - **Render se duerme.** Un web service free de Render se para tras **15
@@ -310,6 +405,11 @@ Apple, no de la app).
   límite de gasto mensual en la consola de Anthropic (Settings → Limits) como
   red de seguridad: las cuotas de arriba acotan el uso normal, pero un límite
   de gasto corta cualquier escenario que no se haya previsto.
+- **Vercel Cron (Hobby): cada tarea, una vez al día como mucho**, y puede
+  salir en cualquier minuto de su hora (sección 7b). Los avisos usan ocho, y
+  cada una despierta el backend de Render. La función de cada tarea tiene 60 s: el primer
+  intento espera hasta 45 s a que Render despierte y, si no llega, se
+  reintenta con lo que quede.
 - **Brevo: 300 emails/día.** De sobra para invitar y verificar a un grupo de
   beta pequeño. El remitente tiene que ser una dirección que hayas verificado
   tú mismo en Brevo (no un dominio propio, salvo que lo verifiques con DNS).

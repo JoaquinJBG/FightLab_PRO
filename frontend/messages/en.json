@@ -603,6 +603,7 @@
     "manifestDescription": "Training load, nutrition and AI coach for combat athletes."
   },
   "nav": {
+    "today": "Today",
     "home": "Home",
     "training": "Training",
     "nutrition": "Nutrition",
@@ -2399,5 +2400,315 @@
       "server": "The upload failed. Try again."
     },
     "noLoad": "Imported sessions do not carry a session effort (RPE), so they do not add to your load."
+  },
+  "historyImport": {
+    "profileLink": "Import history",
+    "back": "← Profile",
+    "title": "Import history",
+    "subtitle": "Bring in your ParteDiario logs and your AI Coach files. First check what is there, then decide whether to import it.",
+    "help": {
+      "title": "What you can upload",
+      "backup": "ParteDiario backup (.json): weights, sleep, kcal, energy, notes, meals done or swapped, cardio and day type.",
+      "weekly": "ParteDiario weekly CSV (.csv): you can upload several weeks at once. Watch heart-rate data is saved but not shown yet.",
+      "coach": "From the AI Coach: checkins.csv (weigh-ins and sleep), the reviews in reviews/ (YYYY-MM-DD.md files) and sessions.csv (gym sets).",
+      "later": "Menus, the shopping list and receipt photos are not imported here: they will come with the full menus."
+    },
+    "files": "Files (up to {max}, {mb} MB each)",
+    "chosen": "{n, plural, one {# file chosen} other {# files chosen}}",
+    "check": "Check files",
+    "import": "Import",
+    "reading": "Reading…",
+    "importing": "Importing…",
+    "preview": "This is what would be imported",
+    "done": "Imported",
+    "checkFirst": "Check the files before importing them.",
+    "nothing": "Nothing new to import: everything in the files was already there.",
+    "kinds": {
+      "parte_diario_json": "ParteDiario backup",
+      "parte_diario_csv": "ParteDiario CSV",
+      "coach_checkins": "coach check-ins",
+      "coach_review": "coach review",
+      "sets": "gym sets"
+    },
+    "fileDays": "{n, plural, one {# day} other {# days}}",
+    "summary": {
+      "range": "From {first} to {last}",
+      "new": "{n, plural, one {# new day} other {# new days}}",
+      "filled": "{n, plural, one {# existing day gets completed} other {# existing days get completed}}",
+      "conflict": "{n, plural, one {# day in conflict} other {# days in conflict}}",
+      "unchanged": "{n, plural, one {# day was already the same} other {# days were already the same}}",
+      "written": "{n, plural, one {# day saved} other {# days saved}}",
+      "toWrite": "{n, plural, one {# day would be saved} other {# days would be saved}}"
+    },
+    "items": {
+      "title": "What gets saved",
+      "checkins": "{n, plural, one {# check-in (sleep, kcal, energy, notes)} other {# check-ins (sleep, kcal, energy, notes)}}",
+      "weights": "{n, plural, one {# weight} other {# weights}}",
+      "waists": "{n, plural, one {# waist measurement} other {# waist measurements}}",
+      "resting_hr": "{n, plural, one {# resting HR} other {# resting HRs}}",
+      "meals": "{n, plural, one {# meal marked} other {# meals marked}}",
+      "cardio": "{n, plural, one {# cardio session} other {# cardio sessions}}",
+      "day_logs": "{n, plural, one {# day with type, workout or mobility} other {# days with type, workout or mobility}}",
+      "heart": "{n, plural, one {# day with watch heart rate} other {# days with watch heart rate}}"
+    },
+    "reviews": {
+      "new": "{n, plural, one {# new coach review} other {# new coach reviews}}",
+      "conflict": "{n, plural, one {# review imported before and different} other {# reviews imported before and different}}",
+      "unchanged": "{n, plural, one {# review was already there} other {# reviews were already there}}",
+      "kept_app": "{n, plural, one {# week already has a review made in FightLab: the FightLab one stays} other {# weeks already have a review made in FightLab: the FightLab ones stay}}"
+    },
+    "sets": {
+      "line": "{name}: {n, plural, one {# new set} other {# new sets}}",
+      "duplicates": "{n, plural, one {# was already there} other {# were already there}}"
+    },
+    "conflicts": {
+      "title": "Days in conflict",
+      "intro": "On these days FightLab already has a value that differs from the file. What should I do?",
+      "keep": "Keep what FightLab has",
+      "keepHint": "Only missing values are filled in. This is the safe choice.",
+      "replace": "Use the file",
+      "replaceHint": "The FightLab values are replaced for those fields. Notes and aches are always added up.",
+      "more": "{n, plural, one {and # more day} other {and # more days}}"
+    },
+    "fields": {
+      "weight_kg": "weight",
+      "waist_cm": "waist",
+      "intake_kcal": "kcal",
+      "sleep_hours": "sleep",
+      "energy": "energy",
+      "resting_heart_rate": "resting HR",
+      "quad": "quadriceps",
+      "trained": "workout done",
+      "mobility": "mobility",
+      "day_type": "day type",
+      "tipo_dia": "day type",
+      "meal": "meal",
+      "meal_state": "meal status",
+      "meal_desayuno": "breakfast",
+      "meal_comida": "lunch",
+      "meal_merienda": "afternoon snack",
+      "meal_cena": "dinner",
+      "cardio": "cardio",
+      "cardio_type": "cardio type",
+      "cardio_sesiones": "cardio sessions",
+      "fc_media": "average HR",
+      "fc_max": "max HR",
+      "min_z1": "minutes in zone 1",
+      "min_z2": "minutes in zone 2",
+      "min_z3": "minutes in zone 3",
+      "date": "date",
+      "review": "review",
+      "tdee_kcal": "TDEE",
+      "target_kcal": "kcal target",
+      "in_deficit": "deficit"
+    },
+    "discarded": {
+      "title": "What is discarded",
+      "out_of_range": "{field}: {n, plural, one {# value out of range} other {# values out of range}}",
+      "not_a_number": "{field}: {n, plural, one {# value that is not a number} other {# values that are not numbers}}",
+      "unknown_value": "{field}: {n, plural, one {# value not recognised} other {# values not recognised}}",
+      "bad_date": "{n, plural, one {# row with a date that does not exist} other {# rows with dates that do not exist}}",
+      "future_date": "{field}: {n, plural, one {# date in the future} other {# dates in the future}}",
+      "too_old": "{field}: {n, plural, one {# date before 2000} other {# dates before 2000}}",
+      "cardio_minutes": "{n, plural, one {# cardio session with impossible minutes} other {# cardio sessions with impossible minutes}}",
+      "cardio_without_detail": "{n, plural, one {# day with “Varios” cardio and no per-session detail} other {# days with “Varios” cardio and no per-session detail}}",
+      "examples": "e.g. {dates}",
+      "generic": "{field}: {n, plural, one {# value discarded} other {# values discarded}}"
+    },
+    "blocked": "Because of your safety profile, FightLab does not save weight, waist or kcal (same as the check-in): {n, plural, one {# value is not imported} other {# values are not imported}}. Everything else is.",
+    "notices": {
+      "menus_later": "{n, plural, one {# menu} other {# menus}} in the backup: not imported now, they will come with the full menus.",
+      "shopping_later": "{n, plural, one {# ticked shopping item} other {# ticked shopping items}}: they will come with the menus.",
+      "tickets_later": "{n, plural, one {# receipt photo} other {# receipt photos}}: the backup does not carry the photos; they will come with the menus.",
+      "cardio_no_load": "Imported cardio has no effort rating (RPE), so it does not add to your training load.",
+      "heart_hidden": "Watch heart-rate data is saved but not shown yet.",
+      "quad_to_soreness": "Quadriceps aches go to “legs” in the check-in aches, with a note.",
+      "same_day_in_several_files": "{n, plural, one {# day was in more than one file} other {# days were in more than one file}}: the last one wins.",
+      "reviews_targets_rule": "Coach reviews are kept as history. Only the most recent one counts for your kcal targets, and only if its week ended 28 days ago or less."
+    },
+    "fileErrors": {
+      "title": "Files that could not be read",
+      "too_large": "It is larger than {mb} MB.",
+      "unknown_format": "Not a recognised format (upload .json, .csv or .md).",
+      "empty_file": "It is empty.",
+      "encoding": "It is not UTF-8.",
+      "not_csv": "It is not a text file.",
+      "not_json": "It is not valid JSON.",
+      "not_backup": "It is not a ParteDiario backup.",
+      "newer_backup": "It comes from a newer ParteDiario version.",
+      "damaged_backup": "The backup is damaged.",
+      "review_name": "A review must be named after its date, e.g. 2026-10-26.md.",
+      "generic": "It could not be read."
+    },
+    "errors": {
+      "missing_file": "Choose at least one file.",
+      "too_many_files": "You can upload up to {max} files at once.",
+      "too_large": "Together they are larger than {mb} MB.",
+      "bad_conflict_mode": "Choose what to do with the days in conflict.",
+      "too_many_days": "There are more than {max} days: upload them in several goes.",
+      "throttled": "Too many attempts in a row. Wait a minute.",
+      "server": "The import failed. Try again."
+    },
+    "review": {
+      "title": "Coach reviews imported",
+      "weekEnd": "Week ending {date}",
+      "tdee": "TDEE: {kcal} kcal",
+      "target": "Target: {kcal} kcal",
+      "deficit": "in deficit",
+      "noDeficit": "no deficit"
+    }
+  },
+  "today": {
+    "title": "Today",
+    "loading": "Loading today's log…",
+    "error": "Couldn't load today's log. Try again.",
+    "retry": "Retry",
+    "summaryLink": "Summary",
+    "summaryAria": "Open the summary: status, weight and load",
+    "fullCheckin": "Full check-in (sleep, energy, soreness…)",
+    "saveError": "Not saved. Try again.",
+    "next": {
+      "title": "Next meal",
+      "allDone": "Today's menu: all ticked ✓",
+      "free": "Free",
+      "noMenu": "No menu today.",
+      "makeMenu": "Make a menu"
+    },
+    "plan": {
+      "title": "Today's plan",
+      "none": "You don't have an active weekly plan yet.",
+      "makePlan": "Create the plan",
+      "rest": "No training in the plan today: rest.",
+      "gym": "Gym, session {session}",
+      "cardio": "Cardio, {minutes} min",
+      "mma": "MMA",
+      "at": "at {time}",
+      "openSession": "Start session {session}"
+    },
+    "dayType": {
+      "title": "What's on today",
+      "gym": "Gym",
+      "cardio": "Cardio",
+      "rest": "Rest",
+      "fromPlan": "From the weekly plan.",
+      "changed": "Changed by hand.",
+      "reset": "Back to the plan",
+      "unknown": "No plan: pick what's on."
+    },
+    "done": {
+      "title": "Done today",
+      "trained": "Workout done",
+      "mobility": "Mobility",
+      "yes": "Yes",
+      "notYet": "Not yet"
+    },
+    "weight": {
+      "title": "Weight",
+      "label": "This morning's weight",
+      "hint": "Fasted, after the bathroom.",
+      "save": "Save",
+      "saved": "Saved: {kg} kg",
+      "invalid": "Type a number, e.g. 72.4",
+      "blocked": "Weight isn't logged for now: your screening answers turn it off. Everything else works as usual."
+    },
+    "meals": {
+      "title": "Menu meals",
+      "none": "No menu for today.",
+      "tupper": "Lunchbox",
+      "free": "Free meal",
+      "eve": "The night before: {task}",
+      "states": {
+        "done": "Eaten",
+        "skipped": "Skipped",
+        "changed": "Swapped"
+      },
+      "changeLabel": "What did you eat instead? (optional)",
+      "changePlaceholder": "For example: pizza and a beer",
+      "changeSave": "Save",
+      "changedTo": "Instead: {what}",
+      "clear": "Clear"
+    },
+    "cardio": {
+      "title": "Cardio",
+      "none": "No cardio logged today.",
+      "add": "Add cardio",
+      "minutes": "Minutes",
+      "intensity": "Intensity",
+      "moderate": "Moderate",
+      "vigorous": "Vigorous",
+      "vigorousHint": "One vigorous minute counts as two towards the weekly 150.",
+      "save": "Log it",
+      "delete": "Delete",
+      "deleteAria": "Delete {type}, {minutes} min",
+      "fromSports": "From Sports",
+      "session": "{minutes} min · {intensity}",
+      "invalidMinutes": "Between 1 and 600 minutes.",
+      "types": {
+        "walk": "Walk",
+        "run": "Jog",
+        "bike": "Bike",
+        "swim": "Swim",
+        "elliptical": "Elliptical",
+        "rope": "Jump rope",
+        "hiit": "HIIT",
+        "other": "Other"
+      },
+      "week": "This week: {equivalent} of {goal} min",
+      "weekDetail": "{minutes} actual min; vigorous counts double.",
+      "weekMma": "Includes {minutes} min of MMA, counted as moderate.",
+      "weekDone": "Weekly minimum done!"
+    },
+    "shortcuts": {
+      "today": "Today's log",
+      "weigh": "Weigh in",
+      "nextMeal": "Next meal"
+    }
+  },
+  "reminders": {
+    "title": "Reminders",
+    "back": "Profile",
+    "link": "Reminders",
+    "intro": "Phone reminders, like ParteDiario's. Each one turns on and off on its own.",
+    "loading": "Loading…",
+    "off": {
+      "title": "Reminders are off on this server",
+      "noKey": "The reminder keys (VAPID) aren't set up yet. Until they are, the app can't send reminders; everything else works as usual.",
+      "server": "The server doesn't have the reminder keys, or they don't match the app's. They can't be turned on until that's fixed."
+    },
+    "support": {
+      "title": "Where they work",
+      "android": "Android: in Chrome, with the app installed or open in the browser.",
+      "ios": "iPhone and iPad: only with the app added to the home screen (Share → Add to Home Screen), on iOS 16.4 or later.",
+      "iosNow": "You're on iPhone or iPad in the browser: first add the app to the home screen (Share → Add to Home Screen) and open it from there.",
+      "unsupported": "This browser doesn't support reminders. On Android use Chrome; on iPhone, add the app to the home screen (iOS 16.4+).",
+      "denied": "You've blocked notifications for this site. Allow them in the browser settings (site permissions → Notifications) and come back."
+    },
+    "device": {
+      "title": "This device",
+      "on": "Reminders reach this device.",
+      "offState": "This device doesn't get reminders.",
+      "enable": "Turn on reminders here",
+      "disable": "Turn off on this device",
+      "test": "Send a test one",
+      "testSent": "Sent. If it doesn't arrive within a minute, check that the app's notifications are allowed.",
+      "testFailed": "Couldn't send it. Try turning them off and on again.",
+      "devices": "{count, plural, =0 {No devices turned on} one {# device turned on} other {# devices turned on}} on your account.",
+      "error": "Couldn't turn on reminders. Try again."
+    },
+    "kinds": {
+      "title": "Which reminders",
+      "eve": "The night before",
+      "eveBody": "At 22:00, if there's something to get ready for tomorrow from the menu or the plan (take something out of the freezer, the lunchbox, the gym bag).",
+      "review": "Weekly review",
+      "reviewBody": "Tuesdays at 10:00, if last week isn't reviewed yet.",
+      "weigh": "Weigh in",
+      "weighBody": "At 8:00, if you haven't logged your weight yet.",
+      "mobility": "Mobility",
+      "mobilityBody": "At 18:00, if you haven't ticked it today."
+    },
+    "hours": {
+      "title": "When they arrive",
+      "body": "Times follow your profile time zone ({tz}), and each reminder arrives at some point within its hour (22:00 to 22:59, for example). The free server only wakes up at fixed hours, chosen for Spain with and without summer time: if you live in another zone, the reminder arrives at the closest of those hours to its own, earlier or later, but it isn't lost."
+    }
   }
 }

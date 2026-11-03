@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .checkin_views import CheckinView
-from .import_views import ImportView
+from .import_views import HistoryImportView, ImportView
 from .menu_views import (
     FoodsView,
     MenuCheckView,
@@ -27,6 +27,7 @@ from .safety_views import (
 )
 from .session_check import SessionCheckView
 from .strength_views import StrengthE1rmView, StrengthLastView, StrengthProgressView, StrengthSetsView
+from .today_views import TodayCardioDetailView, TodayCardioView, TodayMealView, TodayView
 from .targets_views import TargetsView, TrendView, WeighInView, ZonesView
 from .views import EngineView, RuleDetailView, RuleSearchView, SourceDetailView
 
@@ -41,6 +42,10 @@ urlpatterns = [
     path("coach/zones", ZonesView.as_view(), name="coach-zones"),
     path("coach/weigh-in", WeighInView.as_view(), name="coach-weigh-in"),
     path("coach/checkin", CheckinView.as_view(), name="coach-checkin"),
+    path("coach/today", TodayView.as_view(), name="coach-today"),
+    path("coach/today/meal", TodayMealView.as_view(), name="coach-today-meal"),
+    path("coach/today/cardio", TodayCardioView.as_view(), name="coach-today-cardio"),
+    path("coach/today/cardio/<int:pk>", TodayCardioDetailView.as_view(), name="coach-today-cardio-detail"),
     path("coach/plan", PlanView.as_view(), name="coach-plan"),
     path("coach/plan/<int:pk>/apply", PlanApplyView.as_view(), name="coach-plan-apply"),
     path("coach/review", ReviewView.as_view(), name="coach-review"),
@@ -62,6 +67,7 @@ urlpatterns = [
     path("coach/strength/progress", StrengthProgressView.as_view(), name="coach-strength-progress"),
     path("coach/strength/last", StrengthLastView.as_view(), name="coach-strength-last"),
     path("coach/import", ImportView.as_view(), name="coach-import"),
+    path("coach/import/history", HistoryImportView.as_view(), name="coach-import-history"),
     path("coach/session-check", SessionCheckView.as_view(), name="coach-session-check"),
     path("coach/screening", ScreeningView.as_view(), name="coach-screening"),
     path("coach/injuries", InjuryListView.as_view(), name="coach-injuries"),

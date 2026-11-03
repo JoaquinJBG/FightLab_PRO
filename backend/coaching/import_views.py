@@ -12,8 +12,9 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
-from . import imports
-from .bridge import importers
+from . import history_import, imports
+from .bridge import history_files, importers
+from .safety_views import _today
 
 
 def _bad(code: str, params: dict | None = None, detail: str = "") -> Response:
@@ -44,3 +45,63 @@ class ImportView(APIView):
         except importers.ImportFileError as exc:
             return _bad(exc.code, exc.params, exc.detail)
         return Response(result, status=status.HTTP_200_OK if dry_run else status.HTTP_201_CREATED)
+
+
+MAX_HISTORY_FILES = 60  # un año de CSV semanales, la copia JSON y los archivos del coach
+MAX_HISTORY_BYTES = 25 * 1024 * 1024
+HISTORY_EXTENSIONS = (".json", ".csv", ".txt", ".md")
+
+
+class HistoryImportView(APIView):
+    """`POST /coach/import/history` (fase 10): la copia JSON y los CSV de ParteDiario y los
+    archivos del coach (`checkins.csv`, `reviews/FIN.md`, `sessions.csv`), varios a la vez.
+
+    Multipart con `files` (uno o más), `dry_run` (`1`: solo el resumen) y `on_conflict` (`keep`,
+    por defecto: lo que ya hay en FightLab se queda; `replace`: gana el archivo). Un archivo que no
+    se puede leer sale en `files[].error` y no impide importar los demás.
+    """
+
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "coach-import"
+
+    def post(self, request):
+        uploads = request.FILES.getlist("files")
+        if not uploads:
+            return _bad("missing_file")
+        if len(uploads) > MAX_HISTORY_FILES:
+            return _bad("too_many_files", {"max": MAX_HISTORY_FILES})
+        if sum(u.size for u in uploads) > MAX_HISTORY_BYTES:
+            return _bad("too_large", {"mb": MAX_HISTORY_BYTES // (1024 * 1024)})
+        on_conflict = request.data.get("on_conflict") or "keep"
+        if on_conflict not in history_import.ON_CONFLICT:
+            return _bad("bad_conflict_mode")
+        dry_run = request.data.get("dry_run") in ("1", "true")
+
+        files, parsed = [], []
+        for upload in uploads:
+            name = (upload.name or "")[:200]
+            entry = {"name": name, "kind": None, "days": 0, "reviews": 0, "error": None}
+            files.append(entry)
+            if upload.size > importers.MAX_IMPORT_BYTES:
+                entry["error"] = {"code": "too_large", "params": {"mb": importers.MAX_IMPORT_BYTES // (1024 * 1024)}}
+                continue
+            if not name.lower().endswith(HISTORY_EXTENSIONS):
+                entry["error"] = {"code": "unknown_format", "params": {}}
+                continue
+            try:
+                result = history_files.parse_file(name, upload.read())
+            except importers.ImportFileError as exc:
+                entry["error"] = {"code": exc.code, "params": exc.params}
+                continue
+            entry.update(kind=result.kind, days=len(result.days), reviews=len(result.reviews))
+            parsed.append(result)
+        try:
+            body = history_import.import_history(
+                request.user, parsed, today=_today(request.user.profile), on_conflict=on_conflict, dry_run=dry_run
+            )
+        except history_import.HistoryError as exc:
+            return _bad(exc.code, exc.params)
+        body["files"] = files
+        return Response(body, status=status.HTTP_200_OK if dry_run else status.HTTP_201_CREATED)

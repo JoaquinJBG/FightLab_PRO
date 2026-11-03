@@ -11,8 +11,10 @@ import {
   ProfileIcon,
 } from "./icons";
 
+// "Hoy" es la primera pestaña y la pantalla de inicio (fase 11). El resumen de antes
+// (/dashboard) se abre desde Hoy y cuenta como la misma pestaña.
 const tabs = [
-  { href: "/dashboard", key: "home", Icon: HomeIcon },
+  { href: "/today", key: "today", Icon: HomeIcon, also: ["/dashboard"] },
   { href: "/training", key: "training", Icon: TrainingIcon },
   { href: "/nutrition", key: "nutrition", Icon: NutritionIcon },
   { href: "/coach", key: "coach", Icon: CoachIcon },
@@ -26,8 +28,8 @@ export function TabBar() {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 flex justify-center">
       <div className="glass safe-bottom mx-3 mb-3 flex w-full max-w-md items-stretch justify-between gap-1 rounded-2xl px-2 pt-2">
-        {tabs.map(({ href, key, Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
+        {tabs.map(({ href, key, Icon, also }) => {
+          const active = [href, ...(also ?? [])].some((p) => pathname === p || pathname.startsWith(p + "/"));
           return (
             <Link
               key={href}

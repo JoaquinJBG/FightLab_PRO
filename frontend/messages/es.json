@@ -603,6 +603,7 @@
     "manifestDescription": "Carga de entrenamiento, nutrición y coach IA para atletas de combate."
   },
   "nav": {
+    "today": "Hoy",
     "home": "Inicio",
     "training": "Entreno",
     "nutrition": "Nutrición",
@@ -2399,5 +2400,315 @@
       "server": "No se ha podido subir. Prueba otra vez."
     },
     "noLoad": "Las sesiones importadas no traen el esfuerzo de la sesión (RPE), así que no suman a tu carga."
+  },
+  "historyImport": {
+    "profileLink": "Importar historial",
+    "back": "← Perfil",
+    "title": "Importar historial",
+    "subtitle": "Trae tus partes de ParteDiario y los archivos del Entrenador IA. Primero se revisa lo que hay y después decides si importarlo.",
+    "help": {
+      "title": "Qué puedes subir",
+      "backup": "Copia de seguridad de ParteDiario (.json): pesos, sueño, kcal, energía, notas, comidas hechas o cambiadas, cardio y tipo de día.",
+      "weekly": "CSV semanal de ParteDiario (.csv): puedes subir varias semanas a la vez. Las pulsaciones del reloj se guardan, pero aún no se muestran.",
+      "coach": "Del Entrenador IA: checkins.csv (pesajes y sueño), las revisiones de reviews/ (archivos AAAA-MM-DD.md) y sessions.csv (series del gimnasio).",
+      "later": "Los menús, la lista de la compra y las fotos de los tickets no se importan aquí: llegarán con los menús completos."
+    },
+    "files": "Archivos (hasta {max}, {mb} MB cada uno)",
+    "chosen": "{n, plural, one {# archivo elegido} other {# archivos elegidos}}",
+    "check": "Revisar archivos",
+    "import": "Importar",
+    "reading": "Leyendo…",
+    "importing": "Importando…",
+    "preview": "Esto es lo que se importaría",
+    "done": "Importado",
+    "checkFirst": "Revisa los archivos antes de importarlos.",
+    "nothing": "No hay nada nuevo que importar: todo lo de los archivos ya estaba.",
+    "kinds": {
+      "parte_diario_json": "copia de ParteDiario",
+      "parte_diario_csv": "CSV de ParteDiario",
+      "coach_checkins": "check-ins del coach",
+      "coach_review": "revisión del coach",
+      "sets": "series de gimnasio"
+    },
+    "fileDays": "{n, plural, one {# día} other {# días}}",
+    "summary": {
+      "range": "Del {first} al {last}",
+      "new": "{n, plural, one {# día nuevo} other {# días nuevos}}",
+      "filled": "{n, plural, one {# día que ya existía y se completa} other {# días que ya existían y se completan}}",
+      "conflict": "{n, plural, one {# día en conflicto} other {# días en conflicto}}",
+      "unchanged": "{n, plural, one {# día ya estaba igual} other {# días ya estaban igual}}",
+      "written": "{n, plural, one {# día guardado} other {# días guardados}}",
+      "toWrite": "{n, plural, one {# día se guardaría} other {# días se guardarían}}"
+    },
+    "items": {
+      "title": "Qué se guarda",
+      "checkins": "{n, plural, one {# check-in (sueño, kcal, energía, notas)} other {# check-ins (sueño, kcal, energía, notas)}}",
+      "weights": "{n, plural, one {# peso} other {# pesos}}",
+      "waists": "{n, plural, one {# medida de cintura} other {# medidas de cintura}}",
+      "resting_hr": "{n, plural, one {# FC en reposo} other {# FC en reposo}}",
+      "meals": "{n, plural, one {# comida marcada} other {# comidas marcadas}}",
+      "cardio": "{n, plural, one {# sesión de cardio} other {# sesiones de cardio}}",
+      "day_logs": "{n, plural, one {# día con tipo, entreno o movilidad} other {# días con tipo, entreno o movilidad}}",
+      "heart": "{n, plural, one {# día con pulsaciones del reloj} other {# días con pulsaciones del reloj}}"
+    },
+    "reviews": {
+      "new": "{n, plural, one {# revisión del coach nueva} other {# revisiones del coach nuevas}}",
+      "conflict": "{n, plural, one {# revisión importada antes y distinta} other {# revisiones importadas antes y distintas}}",
+      "unchanged": "{n, plural, one {# revisión ya estaba} other {# revisiones ya estaban}}",
+      "kept_app": "{n, plural, one {# semana ya tiene una revisión hecha en FightLab: se queda la de FightLab} other {# semanas ya tienen una revisión hecha en FightLab: se quedan las de FightLab}}"
+    },
+    "sets": {
+      "line": "{name}: {n, plural, one {# serie nueva} other {# series nuevas}}",
+      "duplicates": "{n, plural, one {# ya estaba} other {# ya estaban}}"
+    },
+    "conflicts": {
+      "title": "Días en conflicto",
+      "intro": "En estos días FightLab ya tiene un dato distinto del archivo. ¿Qué hago?",
+      "keep": "Conservar lo de FightLab",
+      "keepHint": "Solo se rellena lo que falta. Es lo seguro.",
+      "replace": "Usar lo del archivo",
+      "replaceHint": "Se sustituye lo de FightLab en esos datos. Las notas y las molestias siempre se suman.",
+      "more": "{n, plural, one {y # día más} other {y # días más}}"
+    },
+    "fields": {
+      "weight_kg": "peso",
+      "waist_cm": "cintura",
+      "intake_kcal": "kcal",
+      "sleep_hours": "sueño",
+      "energy": "energía",
+      "resting_heart_rate": "FC en reposo",
+      "quad": "cuádriceps",
+      "trained": "entreno hecho",
+      "mobility": "movilidad",
+      "day_type": "tipo de día",
+      "tipo_dia": "tipo de día",
+      "meal": "comida",
+      "meal_state": "estado de la comida",
+      "meal_desayuno": "desayuno",
+      "meal_comida": "comida",
+      "meal_merienda": "merienda",
+      "meal_cena": "cena",
+      "cardio": "cardio",
+      "cardio_type": "tipo de cardio",
+      "cardio_sesiones": "sesiones de cardio",
+      "fc_media": "FC media",
+      "fc_max": "FC máxima",
+      "min_z1": "minutos en zona 1",
+      "min_z2": "minutos en zona 2",
+      "min_z3": "minutos en zona 3",
+      "date": "fecha",
+      "review": "revisión",
+      "tdee_kcal": "TDEE",
+      "target_kcal": "objetivo de kcal",
+      "in_deficit": "déficit"
+    },
+    "discarded": {
+      "title": "Lo que se descarta",
+      "out_of_range": "{field}: {n, plural, one {# valor fuera de rango} other {# valores fuera de rango}}",
+      "not_a_number": "{field}: {n, plural, one {# valor que no es un número} other {# valores que no son números}}",
+      "unknown_value": "{field}: {n, plural, one {# valor que no se reconoce} other {# valores que no se reconocen}}",
+      "bad_date": "{n, plural, one {# fila con una fecha que no existe} other {# filas con fechas que no existen}}",
+      "future_date": "{field}: {n, plural, one {# fecha futura} other {# fechas futuras}}",
+      "too_old": "{field}: {n, plural, one {# fecha anterior a 2000} other {# fechas anteriores a 2000}}",
+      "cardio_minutes": "{n, plural, one {# sesión de cardio con minutos imposibles} other {# sesiones de cardio con minutos imposibles}}",
+      "cardio_without_detail": "{n, plural, one {# día con cardio «Varios» sin el detalle de cada sesión} other {# días con cardio «Varios» sin el detalle de cada sesión}}",
+      "examples": "p. ej. {dates}",
+      "generic": "{field}: {n, plural, one {# valor descartado} other {# valores descartados}}"
+    },
+    "blocked": "Por tu perfil de seguridad, FightLab no guarda peso, cintura ni kcal (igual que en el check-in): {n, plural, one {# dato no se importa} other {# datos no se importan}}. El resto, sí.",
+    "notices": {
+      "menus_later": "{n, plural, one {# menú} other {# menús}} de la copia: no se importan ahora, llegarán con los menús completos.",
+      "shopping_later": "{n, plural, one {# artículo tachado} other {# artículos tachados}} de la lista de la compra: llegarán con los menús.",
+      "tickets_later": "{n, plural, one {# foto de ticket} other {# fotos de tickets}}: la copia no trae las fotos; irán con los menús.",
+      "cardio_no_load": "El cardio importado no lleva esfuerzo (RPE), así que no suma a la carga de entrenamiento.",
+      "heart_hidden": "Las pulsaciones del reloj se guardan, pero aún no se muestran.",
+      "quad_to_soreness": "Las molestias del cuádriceps pasan a «piernas» en las molestias del check-in, con una nota.",
+      "same_day_in_several_files": "{n, plural, one {# día venía en más de un archivo} other {# días venían en más de un archivo}}: gana el último.",
+      "reviews_targets_rule": "Las revisiones del coach quedan como historial. Para tus objetivos de kcal solo cuenta la más reciente, y solo si su semana acabó hace 28 días o menos."
+    },
+    "fileErrors": {
+      "title": "Archivos que no se han podido leer",
+      "too_large": "Pesa más de {mb} MB.",
+      "unknown_format": "No es un formato que se reconozca (sube .json, .csv o .md).",
+      "empty_file": "Está vacío.",
+      "encoding": "No está en UTF-8.",
+      "not_csv": "No es un archivo de texto.",
+      "not_json": "No es un JSON válido.",
+      "not_backup": "No es una copia de seguridad de ParteDiario.",
+      "newer_backup": "Es de una versión más nueva de ParteDiario.",
+      "damaged_backup": "La copia está dañada.",
+      "review_name": "Una revisión tiene que llamarse con su fecha, p. ej. 2026-10-26.md.",
+      "generic": "No se ha podido leer."
+    },
+    "errors": {
+      "missing_file": "Elige al menos un archivo.",
+      "too_many_files": "Puedes subir hasta {max} archivos a la vez.",
+      "too_large": "Entre todos pesan más de {mb} MB.",
+      "bad_conflict_mode": "Elige qué hacer con los días en conflicto.",
+      "too_many_days": "Hay más de {max} días: súbelos en varias veces.",
+      "throttled": "Demasiados intentos seguidos. Espera un minuto.",
+      "server": "No se ha podido importar. Inténtalo de nuevo."
+    },
+    "review": {
+      "title": "Revisiones importadas del coach",
+      "weekEnd": "Semana hasta el {date}",
+      "tdee": "TDEE: {kcal} kcal",
+      "target": "Objetivo: {kcal} kcal",
+      "deficit": "en déficit",
+      "noDeficit": "sin déficit"
+    }
+  },
+  "today": {
+    "title": "Hoy",
+    "loading": "Cargando el parte de hoy…",
+    "error": "No se ha podido cargar el parte de hoy. Prueba otra vez.",
+    "retry": "Reintentar",
+    "summaryLink": "Resumen",
+    "summaryAria": "Ver el resumen: estado, peso y carga",
+    "fullCheckin": "Check-in completo (sueño, energía, molestias…)",
+    "saveError": "No se ha guardado. Prueba otra vez.",
+    "next": {
+      "title": "Próxima comida",
+      "allDone": "Menú de hoy: todo marcado ✓",
+      "free": "Libre",
+      "noMenu": "Hoy no hay menú.",
+      "makeMenu": "Preparar menú"
+    },
+    "plan": {
+      "title": "Plan del día",
+      "none": "Aún no tienes un plan de la semana activo.",
+      "makePlan": "Crear el plan",
+      "rest": "Hoy el plan no pone entreno: descanso.",
+      "gym": "Gimnasio, sesión {session}",
+      "cardio": "Cardio, {minutes} min",
+      "mma": "MMA",
+      "at": "a las {time}",
+      "openSession": "Empezar la sesión {session}"
+    },
+    "dayType": {
+      "title": "Qué toca hoy",
+      "gym": "Gimnasio",
+      "cardio": "Cardio",
+      "rest": "Descanso",
+      "fromPlan": "Según el plan de la semana.",
+      "changed": "Cambiado a mano.",
+      "reset": "Volver a lo del plan",
+      "unknown": "Sin plan: marca qué toca."
+    },
+    "done": {
+      "title": "Hecho hoy",
+      "trained": "Entreno hecho",
+      "mobility": "Movilidad",
+      "yes": "Sí",
+      "notYet": "Aún no"
+    },
+    "weight": {
+      "title": "Peso",
+      "label": "Peso de esta mañana",
+      "hint": "En ayunas, después de ir al baño.",
+      "save": "Guardar",
+      "saved": "Guardado: {kg} kg",
+      "invalid": "Escribe un número, p. ej. 72,4",
+      "blocked": "El peso no se apunta por ahora: tus respuestas del cribado lo cierran. Lo demás sigue igual."
+    },
+    "meals": {
+      "title": "Comidas del menú",
+      "none": "No hay menú para hoy.",
+      "tupper": "Táper",
+      "free": "Comida libre",
+      "eve": "Para la víspera: {task}",
+      "states": {
+        "done": "Hecha",
+        "skipped": "No hecha",
+        "changed": "Cambiada"
+      },
+      "changeLabel": "¿Qué comiste en su lugar? (opcional)",
+      "changePlaceholder": "Por ejemplo: pizza y una cerveza",
+      "changeSave": "Guardar",
+      "changedTo": "En su lugar: {what}",
+      "clear": "Quitar la marca"
+    },
+    "cardio": {
+      "title": "Cardio",
+      "none": "Hoy no hay cardio apuntado.",
+      "add": "Añadir cardio",
+      "minutes": "Minutos",
+      "intensity": "Intensidad",
+      "moderate": "Moderado",
+      "vigorous": "Vigoroso",
+      "vigorousHint": "Un minuto vigoroso cuenta como dos para los 150 de la semana.",
+      "save": "Apuntar",
+      "delete": "Borrar",
+      "deleteAria": "Borrar {type}, {minutes} min",
+      "fromSports": "Desde Deportes",
+      "session": "{minutes} min · {intensity}",
+      "invalidMinutes": "Entre 1 y 600 minutos.",
+      "types": {
+        "walk": "Paseo",
+        "run": "Trote",
+        "bike": "Bici",
+        "swim": "Natación",
+        "elliptical": "Elíptica",
+        "rope": "Comba",
+        "hiit": "HIIT",
+        "other": "Otro"
+      },
+      "week": "Esta semana: {equivalent} de {goal} min",
+      "weekDetail": "{minutes} min reales; el vigoroso cuenta doble.",
+      "weekMma": "Incluye {minutes} min de MMA, contados como moderado.",
+      "weekDone": "¡Mínimo de la semana cumplido!"
+    },
+    "shortcuts": {
+      "today": "Parte de hoy",
+      "weigh": "Pesarme",
+      "nextMeal": "Próxima comida"
+    }
+  },
+  "reminders": {
+    "title": "Avisos",
+    "back": "Perfil",
+    "link": "Avisos",
+    "intro": "Avisos en el móvil, como los de ParteDiario. Cada uno se enciende y se apaga por separado.",
+    "loading": "Cargando…",
+    "off": {
+      "title": "Avisos apagados en este servidor",
+      "noKey": "Falta configurar las claves de los avisos (VAPID). Hasta que se pongan, la app no puede mandar avisos; lo demás funciona igual.",
+      "server": "El servidor no tiene las claves de los avisos, o no coinciden con las de la app. Hasta que se arregle no se pueden activar."
+    },
+    "support": {
+      "title": "Dónde funcionan",
+      "android": "Android: en Chrome, con la app instalada o abierta en el navegador.",
+      "ios": "iPhone y iPad: solo con la app añadida a la pantalla de inicio (Compartir → Añadir a pantalla de inicio), con iOS 16.4 o posterior.",
+      "iosNow": "Estás en iPhone o iPad desde el navegador: añade primero la app a la pantalla de inicio (Compartir → Añadir a pantalla de inicio) y ábrela desde ahí.",
+      "unsupported": "Este navegador no admite avisos. En Android usa Chrome; en iPhone, añade la app a la pantalla de inicio (iOS 16.4+).",
+      "denied": "Has bloqueado los avisos para esta web. Actívalos en los ajustes del navegador (permisos del sitio → Notificaciones) y vuelve aquí."
+    },
+    "device": {
+      "title": "Este dispositivo",
+      "on": "Los avisos llegan a este dispositivo.",
+      "offState": "Este dispositivo no recibe avisos.",
+      "enable": "Activar los avisos aquí",
+      "disable": "Desactivar en este dispositivo",
+      "test": "Mandar uno de prueba",
+      "testSent": "Enviado. Si no llega en un minuto, revisa que las notificaciones de la app estén permitidas.",
+      "testFailed": "No se ha podido enviar. Prueba a desactivar y activar otra vez.",
+      "devices": "{count, plural, =0 {Ningún dispositivo activado} one {# dispositivo activado} other {# dispositivos activados}} en tu cuenta.",
+      "error": "No se han podido activar los avisos. Prueba otra vez."
+    },
+    "kinds": {
+      "title": "Qué avisos quieres",
+      "eve": "La víspera",
+      "eveBody": "A las 22:00, si mañana hay algo que dejar hecho del menú o del plan (sacar algo del congelador, el táper, la bolsa del gimnasio).",
+      "review": "Revisión de la semana",
+      "reviewBody": "Los martes a las 10:00, si la semana pasada aún no está revisada.",
+      "weigh": "Pesarse",
+      "weighBody": "A las 8:00, si aún no has apuntado el peso.",
+      "mobility": "Movilidad",
+      "mobilityBody": "A las 18:00, si aún no la has marcado hoy."
+    },
+    "hours": {
+      "title": "A qué hora llegan",
+      "body": "Las horas son las de tu zona horaria del perfil ({tz}), y cada aviso llega en algún momento de su hora (de 22:00 a 22:59, por ejemplo). El servidor gratuito solo se despierta a unas horas fijas, elegidas para España con y sin horario de verano: si vives en otra zona, el aviso llega a la hora más cercana a la suya en que se despierta, antes o después, pero no se pierde."
+    }
   }
 }

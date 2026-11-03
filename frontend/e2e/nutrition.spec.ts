@@ -9,7 +9,7 @@ async function login(page: Page, email: string) {
   await page.locator('input[type="email"]').fill(email);
   await page.locator('input[type="password"]').fill(PASSWORD);
   await page.locator('button[type="submit"]').click();
-  await page.waitForURL("**/dashboard");
+  await page.waitForURL("**/today");
 }
 
 test("perfil completo: objetivos del motor con chips, ecuación usada y sin cálculos en el cliente", async ({ page }) => {
@@ -52,6 +52,7 @@ test("pesaje en la BD: se guarda en el servidor, sobrevive a recargar y ya no us
 
 test("SCOFF positivo: Perder bloqueado y nada de pesaje en Nutrición, pesaje ni Home", async ({ page }) => {
   await login(page, READY_USERS.scoff);
+  await page.goto("/dashboard"); // el resumen (antes, el Inicio)
   await expect(page.getByTestId("weight-card")).toHaveCount(0); // Home sin peso
   await expect(page.getByText(es.dashboard.weightReminder.title)).toHaveCount(0);
 
@@ -96,6 +97,7 @@ test("sin equation_sex no hay objetivos de calorías y se puede elegir sin bloqu
 
 test("no_training: la Home dice 'Sin entrenar hasta revisión médica' y las kcal usan el PAL de desk", async ({ page }) => {
   await login(page, READY_USERS.noTraining);
+  await page.goto("/dashboard");
   await expect(page.getByTestId("state-no-training")).toContainText(es.dashboard.state.noTraining);
   await expect(page.getByTestId("zones-card")).toHaveCount(0); // sin zonas con no_training
   const targets = await page.evaluate(() => fetch("/api/proxy/coach/targets").then((r) => r.json()));

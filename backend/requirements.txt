@@ -12,3 +12,7 @@ whitenoise==6.12.0
 PyYAML==6.0.3
 # PDF del menú y la lista de la compra (fase 8.5). Licencia BSD; rueda Python pura, sin paquetes del sistema.
 reportlab==5.1.0
+# Avisos con Web Push (fase 11). Licencia MPL-2.0 (como py-vapid; http-ece es MIT). Ruedas
+# manylinux para todo salvo http-ece, que es Python puro: python:3.12-slim lo instala sin
+# paquetes del sistema.
+pywebpush==2.5.0

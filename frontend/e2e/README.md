@@ -4,8 +4,15 @@ Prueban el onboarding con cribado (`onboarding.spec.ts`), los objetivos, el pesa
 de la fase 4 (`nutrition.spec.ts`), el check-in diario con la tendencia de la fase 5
 (`checkin.spec.ts`), el plan de la semana de la fase 6 (`plan.spec.ts`), la revisión semanal de la
 fase 7 (`review.spec.ts`), los menús de la fase 8 (`menu.spec.ts`) y los importadores de la fase 9 con
-el aviso de sesión vigorosa (`import.spec.ts`, con CSV inventados) de punta a punta: Next (BFF) + Django + motor del coach.
+el aviso de sesión vigorosa (`import.spec.ts`, con CSV inventados) y la importación del historial de
+ParteDiario y del coach de la fase 10 (`history.spec.ts`, con datos inventados) y la pantalla Hoy
+con los avisos apagados de la fase 11 (`today.spec.ts`) de punta a punta: Next (BFF) + Django + motor del coach.
 Usan el Chrome instalado (`channel: "chrome"`), así que no hace falta `playwright install`.
+Tras el login la app va a `/today` (Hoy); el resumen de antes está en `/dashboard`.
+
+La suite completa hace unos 40 inicios de sesión y el backend admite 10 por minuto desde la misma IP
+(`login` en `DEFAULT_THROTTLE_RATES`): si alguna prueba falla esperando `/today` tras el login con un
+429 en el log de Django, repítela sola.
 
 1. Backend con su base de datos migrada, en el puerto que lee el BFF (por defecto 8001):
 

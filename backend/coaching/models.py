@@ -339,11 +339,18 @@ class WeeklyReview(models.Model):
         PENDING = "pending", "pending"
         ACCEPTED = "accepted", "accepted"
 
+    class Source(models.TextChoices):
+        APP = "app", "app"
+        # Una revisión del coach (`data/reviews/FIN.md`) importada en la fase 10: solo trae el
+        # TDEE, el objetivo aceptado y el texto; el resto de campos queda vacío.
+        IMPORT = "import", "import"
+
     profile = models.ForeignKey(
         "profiles.UserProfile", on_delete=models.CASCADE, related_name="weekly_reviews"
     )
     week_end = models.DateField()
     status = models.CharField(max_length=8, choices=Status.choices, default=Status.PENDING)
+    source = models.CharField(max_length=6, choices=Source.choices, default=Source.APP)
     goal = models.CharField(max_length=13, blank=True, default="")
     adherence = models.JSONField(default=dict)
     trend = models.JSONField(default=dict)
@@ -535,3 +542,76 @@ class KnowledgeSync(models.Model):
 
     def __str__(self) -> str:
         return f"KnowledgeSync<{self.name} {self.content_hash[:12]}>"
+
+
+class DayLog(models.Model):
+    """Lo que el parte diario de ParteDiario apuntaba de un día y no es del check-in (fase 10):
+    qué tocaba (gimnasio, cardio o descanso), si se hizo el entrenamiento y la movilidad, y las
+    pulsaciones del reloj. Una fila por día; todo es opcional (nulo = no apuntado).
+
+    `heart` guarda la FC media y máxima de los entrenamientos y los minutos por zona
+    (`fc_media`, `fc_max`, `min_z1`..`min_z3`) tal como venían, sin mostrarse aún: la fase 15
+    decide cómo leerlos de Health Connect. La FC en reposo va a `BiometricsLog`, como en el
+    check-in.
+    """
+
+    class DayType(models.TextChoices):
+        GYM = "gimnasio", "gimnasio"
+        CARDIO = "cardio", "cardio"
+        REST = "descanso", "descanso"
+
+    profile = models.ForeignKey(
+        "profiles.UserProfile", on_delete=models.CASCADE, related_name="day_logs"
+    )
+    date = models.DateField()
+    day_type = models.CharField(max_length=8, choices=DayType.choices, blank=True, default="")
+    trained = models.BooleanField(null=True, blank=True)
+    mobility = models.BooleanField(null=True, blank=True)
+    heart = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-date"]
+        constraints = [
+            models.UniqueConstraint(fields=["profile", "date"], name="uniq_daylog_profile_date")
+        ]
+
+    def __str__(self) -> str:
+        return f"DayLog<{self.profile_id} {self.date}>"
+
+
+class MealCheck(models.Model):
+    """Cómo fue cada comida del menú un día (fase 10, la usa la pantalla Hoy de la fase 11): hecha,
+    no hecha o cambiada, y qué se comió en su lugar. `dish` es lo que ponía el menú, si se sabe."""
+
+    class Meal(models.TextChoices):
+        BREAKFAST = "desayuno", "desayuno"
+        LUNCH = "comida", "comida"
+        SNACK = "merienda", "merienda"
+        DINNER = "cena", "cena"
+
+    class State(models.TextChoices):
+        DONE = "hecho", "hecho"
+        NOT_DONE = "no_hecho", "no_hecho"
+        CHANGED = "cambiada", "cambiada"
+
+    profile = models.ForeignKey(
+        "profiles.UserProfile", on_delete=models.CASCADE, related_name="meal_checks"
+    )
+    date = models.DateField()
+    meal = models.CharField(max_length=8, choices=Meal.choices)
+    state = models.CharField(max_length=8, choices=State.choices)
+    change = models.CharField(max_length=300, blank=True, default="")
+    dish = models.CharField(max_length=300, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-date", "meal"]
+        constraints = [
+            models.UniqueConstraint(fields=["profile", "date", "meal"], name="uniq_mealcheck_profile_date_meal")
+        ]
+
+    def __str__(self) -> str:
+        return f"MealCheck<{self.profile_id} {self.date} {self.meal} {self.state}>"

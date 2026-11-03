@@ -153,12 +153,24 @@ export const staleKnowledge = z.object({
 });
 export type StaleKnowledge = z.infer<typeof staleKnowledge>;
 
+// Revisiones del coach importadas (fase 10): solo el TDEE, el objetivo aceptado y el texto.
+export const importedReview = z.object({
+  id: z.number(),
+  week_end: z.string(),
+  tdee_kcal: z.number().nullable(),
+  target_kcal: z.number().nullable(),
+  in_deficit: z.boolean().nullable(),
+  text: z.string(),
+});
+export type ImportedReview = z.infer<typeof importedReview>;
+
 export const reviewState = z.object({
   today: z.string(),
   week_end: z.string(),
   max_past_days: z.number(),
   signs: z.array(z.enum(SIGNS)),
   latest: weeklyReview.nullable(),
+  imported: z.array(importedReview).optional(),
   stale: staleKnowledge.optional(),
 });
 export type ReviewState = z.infer<typeof reviewState>;

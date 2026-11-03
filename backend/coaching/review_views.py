@@ -16,6 +16,7 @@ from rest_framework.views import APIView
 
 from core.messages import msg
 
+from . import checkin
 from . import review as reviews
 from .models import WeeklyReview
 from .plan_narrative import write_narrative
@@ -55,6 +56,7 @@ class ReviewView(APIView):
             "max_past_days": reviews.MAX_PAST_DAYS,
             "signs": list(reviews.SIGNS),
             "latest": reviews.review_data(last, lang) if last else None,
+            "imported": reviews.imported_data(user, checkin.weight_tracking_blocked(user, today)),
         }
         if reviews.is_admin(user):
             data["stale"] = reviews.stale_knowledge(today)

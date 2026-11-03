@@ -3,11 +3,22 @@ import { getTranslations } from "next-intl/server";
 
 export default async function manifest(): Promise<MetadataRoute.Manifest> {
   const t = await getTranslations("meta");
+  const tToday = await getTranslations("today.shortcuts");
+  // Sustituto del widget de ParteDiario (fase 11): pulsación larga en el icono de la app.
+  const shortcut = (name: string, url: string, icon: string) => ({
+    name,
+    short_name: name,
+    url,
+    icons: [
+      { src: `/${icon}.png`, sizes: "96x96", type: "image/png" },
+      { src: `/${icon}.svg`, sizes: "any", type: "image/svg+xml" },
+    ],
+  });
   return {
     name: "FightLab Pro",
     short_name: "FightLab",
     description: t("manifestDescription"),
-    start_url: "/dashboard",
+    start_url: "/today",
     scope: "/",
     display: "standalone",
     orientation: "portrait",
@@ -39,6 +50,11 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
         type: "image/png",
         purpose: "any",
       },
+    ],
+    shortcuts: [
+      shortcut(tToday("today"), "/today", "shortcut-today"),
+      shortcut(tToday("weigh"), "/today#weight", "shortcut-weigh"),
+      shortcut(tToday("nextMeal"), "/today#next-meal", "shortcut-meal"),
     ],
   };
 }
