@@ -3,7 +3,7 @@
 Prueban el onboarding con cribado (`onboarding.spec.ts`), los objetivos, el pesaje y los bloqueos
 de la fase 4 (`nutrition.spec.ts`), el check-in diario con la tendencia de la fase 5
 (`checkin.spec.ts`), el plan de la semana de la fase 6 (`plan.spec.ts`) y la revisión semanal de la
-fase 7 (`review.spec.ts`) de punta a punta: Next (BFF) + Django + motor del coach.
+fase 7 (`review.spec.ts`) y los menús de la fase 8 (`menu.spec.ts`) de punta a punta: Next (BFF) + Django + motor del coach.
 Usan el Chrome instalado (`channel: "chrome"`), así que no hace falta `playwright install`.
 
 1. Backend con su base de datos migrada, en el puerto que lee el BFF (por defecto 8001):
@@ -34,6 +34,10 @@ Usan el Chrome instalado (`channel: "chrome"`), así que no hace falta `playwrig
 El selector de idioma está encendido por defecto (`LANGUAGE_SELECTOR_ENABLED` en el backend y
 `NEXT_PUBLIC_LANGUAGE_SELECTOR_ENABLED` en el build del frontend; con `False`/`false` se apaga).
 Una prueba recorre el onboarding con un navegador en inglés eligiendo inglés en el primer paso.
+
+`menu.spec.ts` espera el backend **sin** `COACH_OFF_CONTACT` (comprueba que el proxy de Open Food
+Facts dice que no está configurado y que no se llama a OFF). Los menús usan siempre el proveedor
+simulado: no hace falta `ANTHROPIC_API_KEY` y, aunque la haya, no se llama a Anthropic.
 
 Variables: `E2E_BASE_URL` (por defecto `http://localhost:3000`) y `E2E_CHANNEL`
 (`chrome`; `msedge` también vale).

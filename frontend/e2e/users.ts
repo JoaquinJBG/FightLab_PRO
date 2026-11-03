@@ -26,4 +26,7 @@ export const READY_USERS = {
   // press banca estancado; y el mismo con SCOFF positivo (no_weight_targets).
   review: "e2e-review@fightlab.test",
   reviewScoff: "e2e-review-scoff@fightlab.test",
+  // Fase 8 (menús): uno normal (pone una alergia) y uno con SCOFF positivo (menú a mantenimiento).
+  menu: "e2e-menu@fightlab.test",
+  menuScoff: "e2e-menu-scoff@fightlab.test",
 };
