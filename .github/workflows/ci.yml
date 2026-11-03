@@ -38,6 +38,9 @@ jobs:
       ENV_FILE: /nonexistent
       DEBUG: "True"
       DATABASE_URL: postgres://fightlab:fightlab@127.0.0.1:5432/fightlab_test
+      # Motor del coach vendorizado (paquete `coach`), como en backend/Dockerfile. pytest ya lo
+      # pone en su sys.path (pyproject), pero manage.py y los subprocesos de los tests no.
+      PYTHONPATH: vendor/ai-personal-coach
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

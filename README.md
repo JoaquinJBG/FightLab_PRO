@@ -89,8 +89,10 @@ fightlab-pro/
    python -m venv .venv && source .venv/bin/activate
    pip install -r backend/requirements.txt
    cd backend
+   export PYTHONPATH=vendor/ai-personal-coach   # motor del coach vendorizado (paquete `coach`)
    python manage.py migrate
    python manage.py createcachetable   # los límites de uso viven en la tabla de caché
+   python manage.py sync_knowledge     # base de evidencia del coach (solo si cambió)
    python manage.py runserver 8001
    ```
    La API queda en `http://localhost:8001/api/v1/` (el **8000** se deja libre para

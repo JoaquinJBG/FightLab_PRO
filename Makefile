@@ -14,7 +14,7 @@ PY ?= $(if $(_VENV_PY),$(abspath $(_VENV_PY)),python)
 PNPM := pnpm --dir frontend
 
 # Entorno del backend en tests: sin .env, sin clave de IA, DEBUG para SECRET_KEY de dev.
-BACKEND_ENV = ENV_FILE=/nonexistent DEBUG=True DATABASE_URL=$(TEST_DATABASE_URL) ANTHROPIC_API_KEY=
+BACKEND_ENV = ENV_FILE=/nonexistent DEBUG=True DATABASE_URL=$(TEST_DATABASE_URL) ANTHROPIC_API_KEY= PYTHONPATH=vendor/ai-personal-coach
 
 .PHONY: venv-deps test test-backend test-frontend test-e2e lint db-up db-down venv frontend-deps
 
