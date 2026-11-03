@@ -2237,6 +2237,13 @@
         "search_empty": "Escribe al menos una palabra.",
         "generic": "No se ha podido completar."
       }
+    },
+    "pdf": {
+      "download": "Descargar PDF",
+      "downloading": "Preparando el PDF…",
+      "hint": "El menú, las recetas con su enlace y la lista de la compra, para imprimir o llevar en el móvil.",
+      "error": "No se ha podido preparar el PDF.",
+      "no_calorie_targets": "Con tus avisos de seguridad ya no hay objetivos de kcal, así que no hay PDF del menú."
     }
   },
   "sessionCheck": {

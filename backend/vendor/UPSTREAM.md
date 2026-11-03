@@ -76,8 +76,9 @@ puente, se arregla en el puente y nunca en el prefijo.
 Se pasa desde `backend/` con `pytest vendor/ai-personal-coach/tests -p no:django`
 (Python 3.12). Resultado en `69e5537`: **630 passed**, con estas condiciones:
 
-- **`reportlab`** (extra `pdf` del motor): sin él, 5 tests de `tests/coach/test_export.py`
-  se saltan. FightLab no lo instala hasta que llegue el PDF; con él, pasan.
+- **`reportlab`** (extra `pdf` del motor): desde la fase 8.5 FightLab lo instala
+  (`reportlab==5.1.0` en `requirements.txt`, para su propio PDF en memoria), así que los tests
+  de `tests/coach/test_export.py` ya no se saltan y pasan.
 - **`ruff`**: algunos tests ejecutan `python -m ruff`; hay que tenerlo instalado en el
   entorno de test (grupo `dev` del autor).
 - **Locale `es_ES.UTF-8`** (U08): `test_month_names_do_not_follow_a_spanish_locale` se

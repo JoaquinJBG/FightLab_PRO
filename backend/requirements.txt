@@ -9,3 +9,5 @@ pytest-django
 Pillow
 anthropic
 pyyaml>=6.0
+# PDF del menú y la lista de la compra (fase 8.5). Licencia BSD; rueda Python pura, sin paquetes del sistema.
+reportlab==5.1.0

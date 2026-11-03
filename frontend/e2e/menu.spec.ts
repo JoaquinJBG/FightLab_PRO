@@ -102,3 +102,22 @@ test("sin sexo para la ecuación no hay objetivos ni menú", async ({ page }) =>
   expect(resp.status()).toBe(409);
   expect((await resp.json()).code).toBe("profile_incomplete");
 });
+
+test("descargar el menú en PDF", async ({ page }) => {
+  await login(page, READY_USERS.menu);
+  await openMenu(page);
+  await page.locator('select[name="days"]').selectOption("2");
+  // Este usuario ya tiene un menú del primer test: el botón dice "Preparar otro menú".
+  await page.getByTestId("menu-form").locator('button[type="submit"]').click();
+  await expect(page.getByTestId("menu-day")).toHaveCount(2);
+  const [download] = await Promise.all([page.waitForEvent("download"), page.getByTestId("menu-pdf").click()]);
+  expect(download.suggestedFilename()).toMatch(/^fightlab-menu-\d{4}-\d{2}-\d{2}\.pdf$/);
+  const body = await (await download.createReadStream()).toArray();
+  const pdf = Buffer.concat(body);
+  expect(pdf.subarray(0, 5).toString()).toBe("%PDF-");
+  // La ruta del BFF devuelve el PDF tal cual; un menú que no es tuyo no existe.
+  const { menu } = await (await page.request.get("/api/proxy/coach/menu")).json();
+  const resp = await page.request.get(`/api/menu-pdf/${menu.id}`);
+  expect(resp.headers()["content-type"]).toBe("application/pdf");
+  expect((await page.request.get(`/api/menu-pdf/${menu.id + 100000}`)).status()).toBe(404);
+});
