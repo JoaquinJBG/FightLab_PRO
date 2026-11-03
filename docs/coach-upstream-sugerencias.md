@@ -38,6 +38,8 @@ Leído en el commit `7c2f508` de la copia local del usuario; el código vendoriz
 | U16 | `coach/sessions/importers/base.py` (`read_rows`) | Los CSV se abren con `newline=""` y no se normalizan los saltos de línea: un archivo guardado con CRLF (Excel, un checkout de git en Windows con `core.autocrlf`) deja `
 ` dentro de los campos entre comillas (notas de varias líneas). Por eso `test_hevy_basic` falla en Windows: el fixture `hevy/basic.csv` sale con CRLF del checkout | `coaching/bridge/importers.py` (fase 9) pasa las notas y el título a `
 `, y un test avisa si el motor empieza a hacerlo. El `.gitattributes` de la raíz deja los fixtures del motor siempre en LF, así que la suite del autor pasa también en Windows | Normalizar `
-` y `` a `
+` y `
+` a `
 ` en los campos de texto de `read_rows`, y un `.gitattributes` con `eol=lf` para `tests/fixtures/` | abierta |
 | U17 | `coach/sessions/importers/hevy_csv.py`, `coach/sessions/model.py` | El importador de Hevy lee `end_time` pero no lo pasa a `ExerciseSet`, así que la duración de la sesión se pierde | `coaching/bridge/importers.py` (fase 9) vuelve a leer `end_time` del archivo y la sesión importada lleva fin − inicio; sin esa columna (CSV genérico) se usa la suma de `duration_s` o se marca `duration_known: false` | Un campo `end_time` (o la duración de la sesión) en `ExerciseSet` o `Session` | abierta |
+| U18 | `coach/sessions/importers/` | El importador de CSV de Lyfta no está en el commit publicado (`69e5537`): solo existe en `7c2f508`, un commit de la copia local del usuario sin publicar. FightLab no puede importar Lyfta | Nada en código (fase 9): la pantalla de importar explica cómo pasar el export de Lyfta al CSV genérico. No se escribe un importador propio sin un export real con el que probarlo | Publicar el importador de Lyfta; al llegar con un `subtree pull`, se registra solo en `coach.sessions.importers` y se añade a la pantalla | detectada |

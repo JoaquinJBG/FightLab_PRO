@@ -2106,7 +2106,7 @@
     "help": {
       "hevy": "Hevy: Settings › Export Data. Kilograms or pounds both work.",
       "generic": "Generic CSV: columns date (YYYY-MM-DD, or YYYY-MM-DD HH:MM for two sessions on one day) and exercise. Optional: weight_kg or weight_lbs, reps, rir, rpe, set_type, distance_km, duration_s, session and notes. Use a full stop for decimals (12.5).",
-      "lyfta": "Lyfta: there is no importer yet. You can convert its export to the generic CSV."
+      "lyfta": "Lyfta: there is no importer yet. To bring it in: export your Lyfta workouts as CSV, keep one row per set, rename the columns to date (YYYY-MM-DD), exercise, weight_kg and reps (the other generic CSV columns are optional), delete the rest and upload it as “Generic CSV”."
     },
     "file": "CSV file (max {mb} MB)",
     "chosen": "Chosen: {name}",

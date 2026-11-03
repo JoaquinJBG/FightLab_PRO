@@ -615,7 +615,8 @@ plan; cada línea del plan lleva su regla.
   del coach; reimportar no duplica (la serie guardada gana, como en `store.append`). Tope de 5 MB,
   UTF-8 y sin binarios; los errores del motor llegan como código traducible. Pantalla
   `/training/gym/import`. **Lyfta no está:** el motor vendorizado (`69e5537`) no trae su
-  importador (solo existe en la copia local del usuario, sin publicar); pendiente de decisión.
+  importador (solo existe en la copia local del usuario, sin publicar). **Decidido:** queda abierto
+  hasta que el autor lo publique (U18); la pantalla explica cómo pasarlo al CSV genérico.
   `test_hevy_basic` fallaba en Windows por `core.autocrlf` (fixture con CRLF): `.gitattributes`
   con `eol=lf` para los fixtures del motor y normalización en el puente (U16). Duración de Hevy
   desde `end_time` (U17).
