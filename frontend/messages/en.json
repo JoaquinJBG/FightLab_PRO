@@ -2707,7 +2707,7 @@
     },
     "hours": {
       "title": "When they arrive",
-      "body": "Reminders go out twice a day and use your profile time zone ({tz}). In Spain, the evening ones arrive between 21:00 and 22:00 in winter and between 22:00 and 23:00 in summer; the morning ones, between 7:00 and 8:00 in winter and between 8:00 and 9:00 in summer. The exact time can't be chosen: the server's free plan allows only two jobs a day, and each can run at any moment within its hour."
+      "body": "Reminders go out twice a day and use your profile time zone ({tz}). In Spain, the evening ones arrive between 21:00 and 22:00 in winter and between 22:00 and 23:00 in summer; the morning ones, between 7:00 and 8:00 in winter and between 8:00 and 9:00 in summer. The exact time can't be chosen: on the server's free plan each job runs once a day, at any moment within its hour."
     }
   }
 }

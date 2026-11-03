@@ -1,6 +1,6 @@
-"""Quién recibe cada aviso (F11). Lo llama el cron dos veces al día (Vercel Hobby: dos tareas, una
-vez al día cada una), a una hora UTC fija; aquí se pasa a la hora de cada persona (`timezone`
-del perfil) y se decide.
+"""Quién recibe cada aviso (F11). Lo llama el cron dos veces al día (dos tareas de Vercel Cron; en
+Hobby cada una corre una vez al día, en cualquier minuto de su hora UTC); aquí se pasa a la hora
+de cada persona (`timezone` del perfil) y se decide.
 
 - `evening` (víspera): "para mañana" si mañana hay tareas `eve` en el menú (o, mientras el menú
   no las traiga, "prepara lo de mañana" si mañana hay menú o entreno en el plan), y movilidad si
