@@ -116,12 +116,87 @@ Opciones:
 Cada fase: rama propia desde `feat/beta-coach`, push normal, sin PR, pruebas (pytest, vitest, E2E,
 tsc, build y la CI de la beta) y textos en es/en. Al terminar, se juntan en `feat/beta-coach`.
 
-## Decisiones del usuario
+### Fase 15 (estudio, sin construir): app Android con Health Connect
 
-1. Catálogo Mercadona: importación privada por usuario (recomendado) / subirlo al repo (no: es
-   público y los datos no tienen licencia) / solo OFF y USDA.
-2. Menús con IA: B + A + C (recomendado) / solo A / solo B.
-3. Avisos: Web Push con Vercel Cron (recomendado; pide crear claves VAPID y ponerlas en Render y
-   Vercel) / solo recordatorios dentro de la app.
-4. Fotos de tickets: no por ahora (recomendado; Neon free tiene 0,5 GB) / sí.
-5. Health Connect: no en la PWA (recomendado; FC a mano) / estudiar una app Android envoltorio más adelante.
+- Estudio, no implementación: una app Android que envuelva la PWA (TWA con Bubblewrap, o Capacitor) y
+  lea de **Health Connect** la frecuencia cardiaca en reposo, la media y la máxima, y los minutos por
+  zona, como hacía ParteDiario (`fc_reposo,fc_media,fc_max,min_z1..z3`), y los mande a FightLab.
+- Comparar TWA (casi sin código nativo, pero sin acceso a Health Connect salvo con un módulo aparte)
+  con Capacitor (con plugin de Health Connect, más mantenimiento). También: permisos de Health Connect,
+  publicación (APK propio o Play Store), firma, actualizaciones y coste 0.
+- Resultado: un documento con la recomendación y un prototipo mínimo solo si el usuario lo pide.
+- **Después de F11.**
+
+## Decisiones del usuario (2026-11-03)
+
+1. **Catálogo Mercadona:** importación privada en su cuenta, desde su PC. Nunca en el repo.
+2. **Menús con IA a coste 0:** B + A + C. Skill de Claude Code en su PC con su suscripción que
+   genera el menú y lo sube, reglas automáticas de respaldo y copiar y pegar desde el móvil.
+3. **Avisos:** Web Push con Vercel Cron. Las claves VAPID las crea y las pone el usuario (pasos en
+   `docs/DEPLOY.md` cuando se haga la F11).
+4. **Fotos de tickets:** en **Cloudflare R2** (decidido tras el estudio de abajo). Va en la F12.
+5. **Health Connect:** fase de estudio F15 (arriba).
+
+## Fotos de tickets solo en el móvil (IndexedDB de la PWA)
+
+Las fotos se guardan en el navegador del teléfono (IndexedDB), comprimidas (unos 150-300 KB cada
+una), y al servidor solo va una referencia: menú, fecha y un identificador. No ocupan Neon.
+
+**Ventajas:** coste 0 y nada de espacio en Neon (0,5 GB en el plan gratis); privadas (no salen del
+teléfono); funcionan sin conexión y cargan al instante.
+
+**Límites:**
+
+- **Se pierden** si se borran los datos del navegador o del sitio, se desinstala la PWA o se cambia de
+  móvil. Para que el navegador no las borre por falta de espacio, la app pide almacenamiento
+  persistente (`navigator.storage.persist()`); Chrome lo concede casi siempre a una PWA instalada. En
+  iPhone, Safari puede borrar los datos de webs no instaladas tras 7 días sin uso, pero no los de una
+  app añadida a la pantalla de inicio.
+- **Solo en ese teléfono y ese navegador:** no se ven desde el PC ni desde otro móvil.
+- **Copia de seguridad:** no la hace el servidor. La app tendría "Exportar fotos" (un .zip que se guarda
+  en el teléfono o en Drive) e "Importar fotos" para recuperarlas.
+- Si en el servidor queda una referencia a una foto que el móvil ya no tiene, la app lo dice ("foto
+  solo en el otro dispositivo o borrada") sin romperse.
+
+**Alternativas:** en Neon (unas 2.000 fotos llenarían el plan gratis, compartido con todo lo demás), o
+un almacenamiento externo gratuito tipo Cloudflare R2 (10 GB, pide crear otra cuenta).
+
+**Recomendación:** solo en el móvil con IndexedDB, almacenamiento persistente y exportar/importar en
+.zip. Iría en la F12, con la lista de la compra.
+
+### Decisión: Cloudflare R2 (F12)
+
+El usuario eligió R2. Requisitos para la F12:
+
+- **Bucket privado**, sin acceso público ni dominio público. Las fotos se sirven con **URLs firmadas** que
+  caducan (p. ej. 10 min) y que solo pide el dueño del ticket a través del backend.
+- **Compresión y límite al subir**: el cliente redimensiona y comprime (JPEG o WebP, unos 300 KB), y el
+  backend rechaza lo que pase de un máximo (p. ej. 2 MB). Un contador del uso total avisa al admin al
+  llegar al 80 % de los 10 GB gratis.
+- **Borrado**: al borrar un ticket se borra su objeto, y al borrar la cuenta todos los del usuario.
+- **Pruebas** con un almacenamiento falso en memoria; ninguna llamada real a R2.
+- **Ninguna credencial en el repo**, que es público.
+
+Variables (backend, en Render; ninguna va en Vercel ni con `NEXT_PUBLIC_`):
+
+| Variable | Qué es |
+|---|---|
+| `R2_ACCOUNT_ID` | ID de la cuenta de Cloudflare (sale en la URL del panel y en R2 → Overview) |
+| `R2_ACCESS_KEY_ID` | Access Key ID del token de API de R2 |
+| `R2_SECRET_ACCESS_KEY` | Secret Access Key del mismo token (secreto) |
+| `R2_BUCKET` | Nombre del bucket, p. ej. `fightlab-tickets` |
+| `R2_SIGNED_URL_SECONDS` | Opcional, caducidad de las URLs firmadas (por defecto 600) |
+
+Sin `R2_*`, la subida de tickets se desactiva y la app lo explica, igual que OFF sin contacto.
+
+Pasos del usuario (ya tiene cuenta de Cloudflare):
+
+1. Cloudflare → **R2 Object Storage** → **Create bucket** → nombre `fightlab-tickets`, ubicación
+   automática o UE. No actives el acceso público ni un dominio personalizado.
+2. R2 → **Manage R2 API Tokens** → **Create API token** → permiso **Object Read & Write**, limitado a
+   ese bucket → crear. Copia el **Access Key ID** y el **Secret Access Key**: el secreto solo se ve una vez.
+3. En Render, en el servicio del backend (el de prueba primero), añade las variables de la tabla y
+   redespliega.
+
+La F12 copia esta sección en `docs/DEPLOY.md`, junto a las variables VAPID de la F11.
+
