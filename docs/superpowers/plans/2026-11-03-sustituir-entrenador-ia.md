@@ -116,12 +116,51 @@ Opciones:
 Cada fase: rama propia desde `feat/beta-coach`, push normal, sin PR, pruebas (pytest, vitest, E2E,
 tsc, build y la CI de la beta) y textos en es/en. Al terminar, se juntan en `feat/beta-coach`.
 
-## Decisiones del usuario
+### Fase 15 (estudio, sin construir): app Android con Health Connect
 
-1. Catálogo Mercadona: importación privada por usuario (recomendado) / subirlo al repo (no: es
-   público y los datos no tienen licencia) / solo OFF y USDA.
-2. Menús con IA: B + A + C (recomendado) / solo A / solo B.
-3. Avisos: Web Push con Vercel Cron (recomendado; pide crear claves VAPID y ponerlas en Render y
-   Vercel) / solo recordatorios dentro de la app.
-4. Fotos de tickets: no por ahora (recomendado; Neon free tiene 0,5 GB) / sí.
-5. Health Connect: no en la PWA (recomendado; FC a mano) / estudiar una app Android envoltorio más adelante.
+- Estudio, no implementación: una app Android que envuelva la PWA (TWA con Bubblewrap, o Capacitor) y
+  lea de **Health Connect** la frecuencia cardiaca en reposo, la media y la máxima, y los minutos por
+  zona, como hacía ParteDiario (`fc_reposo,fc_media,fc_max,min_z1..z3`), y los mande a FightLab.
+- Comparar TWA (casi sin código nativo, pero sin acceso a Health Connect salvo con un módulo aparte)
+  con Capacitor (con plugin de Health Connect, más mantenimiento). También: permisos de Health Connect,
+  publicación (APK propio o Play Store), firma, actualizaciones y coste 0.
+- Resultado: un documento con la recomendación y un prototipo mínimo solo si el usuario lo pide.
+- **Después de F11.**
+
+## Decisiones del usuario (2026-11-03)
+
+1. **Catálogo Mercadona:** importación privada en su cuenta, desde su PC. Nunca en el repo.
+2. **Menús con IA a coste 0:** B + A + C. Skill de Claude Code en su PC con su suscripción que
+   genera el menú y lo sube, reglas automáticas de respaldo y copiar y pegar desde el móvil.
+3. **Avisos:** Web Push con Vercel Cron. Las claves VAPID las crea y las pone el usuario (pasos en
+   `docs/DEPLOY.md` cuando se haga la F11).
+4. **Fotos de tickets:** el usuario pregunta por guardarlas solo en el móvil. Estudio abajo, pendiente
+   de que decida.
+5. **Health Connect:** fase de estudio F15 (arriba).
+
+## Fotos de tickets solo en el móvil (IndexedDB de la PWA)
+
+Las fotos se guardan en el navegador del teléfono (IndexedDB), comprimidas (unos 150-300 KB cada
+una), y al servidor solo va una referencia: menú, fecha y un identificador. No ocupan Neon.
+
+**Ventajas:** coste 0 y nada de espacio en Neon (0,5 GB en el plan gratis); privadas (no salen del
+teléfono); funcionan sin conexión y cargan al instante.
+
+**Límites:**
+
+- **Se pierden** si se borran los datos del navegador o del sitio, se desinstala la PWA o se cambia de
+  móvil. Para que el navegador no las borre por falta de espacio, la app pide almacenamiento
+  persistente (`navigator.storage.persist()`); Chrome lo concede casi siempre a una PWA instalada. En
+  iPhone, Safari puede borrar los datos de webs no instaladas tras 7 días sin uso, pero no los de una
+  app añadida a la pantalla de inicio.
+- **Solo en ese teléfono y ese navegador:** no se ven desde el PC ni desde otro móvil.
+- **Copia de seguridad:** no la hace el servidor. La app tendría "Exportar fotos" (un .zip que se guarda
+  en el teléfono o en Drive) e "Importar fotos" para recuperarlas.
+- Si en el servidor queda una referencia a una foto que el móvil ya no tiene, la app lo dice ("foto
+  solo en el otro dispositivo o borrada") sin romperse.
+
+**Alternativas:** en Neon (unas 2.000 fotos llenarían el plan gratis, compartido con todo lo demás), o
+un almacenamiento externo gratuito tipo Cloudflare R2 (10 GB, pide crear otra cuenta).
+
+**Recomendación:** solo en el móvil con IndexedDB, almacenamiento persistente y exportar/importar en
+.zip. Iría en la F12, con la lista de la compra.
