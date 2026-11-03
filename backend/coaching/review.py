@@ -428,7 +428,33 @@ def generate(user, today: date, week_end: date, signs: set[str], lang: str = "es
 
 
 def latest(user) -> WeeklyReview | None:
-    return WeeklyReview.objects.filter(profile=user.profile).order_by("-week_end", "-created_at").first()
+    """La última revisión hecha en la app. Las importadas del coach (fase 10) no cuentan: solo
+    traen el TDEE, el objetivo y el texto, y salen aparte (`imported_data`)."""
+    return (
+        WeeklyReview.objects.filter(profile=user.profile, source=WeeklyReview.Source.APP)
+        .order_by("-week_end", "-created_at")
+        .first()
+    )
+
+
+IMPORTED_SHOWN = 12
+
+
+def imported_data(user, weight_blocked: bool) -> list[dict]:
+    """Las revisiones importadas del coach, de la más reciente a la más antigua. Con
+    `no_weight_targets` no se devuelven el TDEE ni el objetivo, aunque se guardaran antes."""
+    rows = WeeklyReview.objects.filter(profile=user.profile, source=WeeklyReview.Source.IMPORT).order_by("-week_end")
+    return [
+        {
+            "id": r.id,
+            "week_end": r.week_end.isoformat(),
+            "tdee_kcal": None if weight_blocked else r.recalibrated_tdee,
+            "target_kcal": None if weight_blocked else r.target_kcal,
+            "in_deficit": None if weight_blocked else r.in_deficit,
+            "text": r.narrative,
+        }
+        for r in rows[:IMPORTED_SHOWN]
+    ]
 
 
 def next_plan_week(review: WeeklyReview, today: date) -> date:
@@ -527,6 +553,7 @@ def review_data(review: WeeklyReview, lang: str) -> dict:
         "id": review.id,
         "week_end": review.week_end.isoformat(),
         "status": review.status,
+        "source": review.source,
         "goal": review.goal or None,
         "adherence": review.adherence,
         "trend": trend_out,

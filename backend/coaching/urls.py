@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .checkin_views import CheckinView
-from .import_views import ImportView
+from .import_views import HistoryImportView, ImportView
 from .menu_views import (
     FoodsView,
     MenuCheckView,
@@ -62,6 +62,7 @@ urlpatterns = [
     path("coach/strength/progress", StrengthProgressView.as_view(), name="coach-strength-progress"),
     path("coach/strength/last", StrengthLastView.as_view(), name="coach-strength-last"),
     path("coach/import", ImportView.as_view(), name="coach-import"),
+    path("coach/import/history", HistoryImportView.as_view(), name="coach-import-history"),
     path("coach/session-check", SessionCheckView.as_view(), name="coach-session-check"),
     path("coach/screening", ScreeningView.as_view(), name="coach-screening"),
     path("coach/injuries", InjuryListView.as_view(), name="coach-injuries"),
