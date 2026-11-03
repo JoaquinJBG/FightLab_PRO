@@ -304,3 +304,22 @@ export function useRemoveProduct() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["catalogue"] }),
   });
 }
+
+/** Descarga el PDF del menú (`/api/menu-pdf/<id>`, hecho en memoria en el servidor). Lanza
+ * `MenuError` con el código del servidor si no se puede (p. ej. `no_calorie_targets`). */
+export async function downloadMenuPdf(id: number): Promise<void> {
+  const res = await fetch(`/api/menu-pdf/${id}`, { credentials: "include" });
+  if (!res.ok || !(res.headers.get("content-type") ?? "").startsWith("application/pdf")) {
+    const data = await res.json().catch(() => ({}));
+    throw new MenuError(typeof data?.code === "string" ? data.code : String(res.status), "");
+  }
+  const name = /filename="([^"]+)"/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? "fightlab-menu.pdf";
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}

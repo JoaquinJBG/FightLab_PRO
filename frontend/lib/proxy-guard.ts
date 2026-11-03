@@ -136,6 +136,9 @@ export async function buildProxyResponse(upstream: Response): Promise<Response> 
   headers.set("content-type", contentType);
   const cacheControl = upstream.headers.get("cache-control");
   if (cacheControl) headers.set("cache-control", cacheControl);
+  // Descargas (p. ej. el PDF del menú): el nombre del archivo que propone Django.
+  const disposition = upstream.headers.get("content-disposition");
+  if (disposition) headers.set("content-disposition", disposition);
   // Si Render comprime la respuesta (content-encoding: gzip/br), undici ya la
   // descomprime antes de que lleguemos aquí, pero content-length sigue siendo
   // el tamaño comprimido original: reenviarlo tal cual puede truncar el cuerpo

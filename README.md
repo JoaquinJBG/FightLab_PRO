@@ -158,6 +158,8 @@ Base: `/api/v1`
 - **Datos de terceros:** alimentos de [USDA FoodData Central](https://fdc.nal.usda.gov/)
   (dominio público); productos de Open Food Facts (ODbL); PAR-Q+ © PAR-Q+ Collaboration
   (versión española del Dr. Martín Rubio), que no se redistribuye.
+- **Bibliotecas:** el PDF del menú y la lista de la compra usa
+  [ReportLab](https://www.reportlab.com/) (licencia BSD), fijada en `backend/requirements.txt`.
 - La app muestra lo mismo en `/profile/credits`.
 
 ## 📖 Documentación

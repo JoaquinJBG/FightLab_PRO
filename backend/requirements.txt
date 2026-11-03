@@ -10,3 +10,5 @@ anthropic==0.109.1
 gunicorn==26.2.0
 whitenoise==6.12.0
 PyYAML==6.0.3
+# PDF del menú y la lista de la compra (fase 8.5). Licencia BSD; rueda Python pura, sin paquetes del sistema.
+reportlab==5.1.0

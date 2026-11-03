@@ -2318,6 +2318,13 @@
         "search_empty": "Type at least one word.",
         "generic": "Could not complete it."
       }
+    },
+    "pdf": {
+      "download": "Download PDF",
+      "downloading": "Preparing the PDF…",
+      "hint": "The menu, the recipes with their links and the shopping list, to print or keep on your phone.",
+      "error": "Could not prepare the PDF.",
+      "no_calorie_targets": "With your safety notes there are no calorie targets any more, so there is no menu PDF."
     }
   },
   "sessionCheck": {
