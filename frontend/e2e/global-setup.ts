@@ -44,6 +44,8 @@ SETUPS = {
     "planParq": ({}, {"parq_any_yes": True}),
     "review": ({"goal": "fat_loss"}, {}),
     "reviewScoff": ({"goal": "fat_loss"}, {"scoff_yes_count": 2}),
+    "gymImport": ({}, {}),
+    "vigorous": ({}, {"parq_any_yes": True}),
 }
 for key, email in READY.items():
     u, p = fresh(email)

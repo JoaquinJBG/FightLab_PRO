@@ -26,4 +26,8 @@ export const READY_USERS = {
   // press banca estancado; y el mismo con SCOFF positivo (no_weight_targets).
   review: "e2e-review@fightlab.test",
   reviewScoff: "e2e-review-scoff@fightlab.test",
+  // Fase 9: importar CSV y "Última vez" desde el servidor; y un SÍ en el PAR-Q+ para el aviso de
+  // sesión vigorosa (review_before_vigorous).
+  gymImport: "e2e-import@fightlab.test",
+  vigorous: "e2e-vigorous@fightlab.test",
 };
