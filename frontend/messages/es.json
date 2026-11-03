@@ -808,6 +808,12 @@
         "empty": "Aún no has registrado ninguna actividad. Cronometra un deporte y aparecerá aquí.",
         "rpe": "RPE {n}",
         "au": "{n} AU"
+      },
+      "format": {
+        "title": "Formato",
+        "continuous": "Continuo",
+        "hiit": "Intervalos (HIIT)",
+        "sprints": "Sprints a tope"
       }
     },
     "mma": {
@@ -1108,7 +1114,8 @@
         "legRaises": "Elevaciones de piernas",
         "row": "Remo",
         "tricepsExtensionShort": "Extensión tríceps"
-      }
+      },
+      "importLink": "Importar de Hevy o CSV"
     },
     "gymSession": {
       "loading": "Cargando…",
@@ -1144,7 +1151,13 @@
       "finish": "Terminar entreno",
       "rest": "Descanso",
       "skip": "Saltar",
-      "setDone": "Serie hecha"
+      "setDone": "Serie hecha",
+      "e1rm": "e1RM ≈ {kg} kg",
+      "includesTitle": "¿Ha incluido algo de esto?",
+      "includes": {
+        "one_rm_test": "Un test de 1RM",
+        "plyometrics": "Pliometría (saltos)"
+      }
     },
     "myRoutine": {
       "back": "← Entreno",
@@ -2225,5 +2238,78 @@
         "generic": "No se ha podido completar."
       }
     }
+  },
+  "sessionCheck": {
+    "title": "Sesión vigorosa: mejor con revisión",
+    "modality": "{modality}: intensidad {intensity}",
+    "intensity": {
+      "light": "ligera",
+      "moderate": "moderada",
+      "vigorous": "vigorosa",
+      "maximal": "máxima"
+    },
+    "rpeBasis": "Con RPE {n} o más cuenta como dura",
+    "because": "Tu perfil pide: {flags}.",
+    "canSave": "Puedes guardarla igualmente: lo que ya has hecho siempre se registra. Antes de la próxima, consúltalo con un profesional."
+  },
+  "gymImport": {
+    "back": "← Gimnasio",
+    "title": "Importar entrenos",
+    "subtitle": "Sube el CSV que exporta tu app de gimnasio. Las series pasan a tu historial y cuentan para la fuerza y el plan.",
+    "format": "Formato",
+    "formats": {
+      "auto": "Detectar",
+      "hevy_csv": "Hevy",
+      "generic_csv": "CSV genérico"
+    },
+    "help": {
+      "hevy": "Hevy: Ajustes › Exportar datos. Sirve en kg o en libras.",
+      "generic": "CSV genérico: columnas date (AAAA-MM-DD, o AAAA-MM-DD HH:MM si hay dos sesiones el mismo día) y exercise. Opcionales: weight_kg o weight_lbs, reps, rir, rpe, set_type, distance_km, duration_s, session y notes. Decimales con punto (12.5).",
+      "lyfta": "Lyfta: todavía no hay importador. Para traerlo: exporta tus entrenos de Lyfta a CSV, deja una fila por serie, renombra las columnas a date (AAAA-MM-DD), exercise, weight_kg y reps (las demás del CSV genérico son opcionales), borra las que sobren y súbelo como «CSV genérico»."
+    },
+    "file": "Archivo CSV (máx. {mb} MB)",
+    "chosen": "Elegido: {name}",
+    "check": "Revisar archivo",
+    "import": "Importar",
+    "reading": "Leyendo…",
+    "preview": "Esto es lo que se importaría",
+    "done": "Importado",
+    "summary": {
+      "sets": "{n, plural, one {# serie nueva} other {# series nuevas}}",
+      "duplicates": "{n, plural, one {# ya estaba y no se duplica} other {# ya estaban y no se duplican}}",
+      "sessionsNew": "{n, plural, one {# sesión nueva} other {# sesiones nuevas}}",
+      "sessionsUpdated": "{n, plural, one {# sesión ampliada} other {# sesiones ampliadas}}",
+      "range": "Del {first} al {last}",
+      "importer": "Leído como {name}",
+      "nothingNew": "No hay nada nuevo: todo lo del archivo ya estaba."
+    },
+    "warnings": {
+      "template_rows": "{n, plural, one {# fila vacía} other {# filas vacías}} de plantilla (series que nunca se rellenaron): no se importan.",
+      "set_out_of_range": "{n, plural, one {# serie} other {# series}} con un peso o unas repeticiones imposibles: no se importan.",
+      "value_dropped": "{n, plural, one {# serie} other {# series}} con un RPE, RIR, distancia o duración fuera de rango: se importan sin ese dato.",
+      "session_out_of_range": "{n, plural, one {# sesión} other {# sesiones}} con fecha anterior a 2000 o futura: no se importan.",
+      "session_truncated": "{n, plural, one {# sesión} other {# sesiones}} con más de 300 series: solo se importan las 300 primeras.",
+      "set_invalid": "{n, plural, one {# serie} other {# series}} sin ejercicio: no se importan."
+    },
+    "errors": {
+      "missing_file": "Elige un archivo.",
+      "too_large": "El archivo pasa de {mb} MB.",
+      "not_csv": "No es un archivo CSV.",
+      "empty_file": "El archivo está vacío.",
+      "encoding": "El archivo no está en UTF-8. Guárdalo como «CSV UTF-8» y vuelve a probar.",
+      "unknown_format": "No reconozco las columnas: no es un export de Hevy ni un CSV genérico.",
+      "ambiguous_format": "Encaja con más de un formato: elige cuál es.",
+      "missing_columns": "Faltan columnas: {columns}.",
+      "decimal_comma": "La línea {line} tiene más campos que la cabecera. ¿Un decimal con coma (12,5)? Usa punto (12.5).",
+      "not_a_number": "Línea {line}: {column} «{value}» no es un número.",
+      "not_whole": "Línea {line}: {column} «{value}» tiene que ser un número entero.",
+      "bad_date": "Hay una fecha que no se entiende ({value}). Usa AAAA-MM-DD.",
+      "no_sets": "El archivo no tiene ninguna serie hecha.",
+      "too_many_sets": "Demasiadas series en un archivo (máx. {max}). Divídelo en varios.",
+      "invalid": "No se ha podido leer el archivo.",
+      "throttled": "Demasiados intentos seguidos. Espera un minuto.",
+      "server": "No se ha podido subir. Prueba otra vez."
+    },
+    "noLoad": "Las sesiones importadas no traen el esfuerzo de la sesión (RPE), así que no suman a tu carga."
   }
 }

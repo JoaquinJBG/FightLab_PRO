@@ -41,3 +41,13 @@ class StrengthProgressView(APIView):
         exercise = request.query_params.get("exercise") or None
         today = _today(request.user.profile)
         return Response(strength.progress_data(request.user, today, _lang(), exercise))
+
+
+class StrengthLastView(APIView):
+    """`GET /coach/strength/last?exercise=…&exercise=…`: "Última vez" y récords (gimnasio)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        names = request.query_params.getlist("exercise")[: strength.LAST_MAX_EXERCISES]
+        return Response(strength.last_data(request.user, _today(request.user.profile), names))

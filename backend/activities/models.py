@@ -22,6 +22,9 @@ class Activity(models.Model):
         MANUAL = "MANUAL", "Manual"
         XIAOMI = "XIAOMI", "Xiaomi"
         OTHER = "OTHER", "Other"
+        # Series importadas de un CSV (Hevy o genérico, Task 9.1). `external_id` es el
+        # `session_id` del coach (`hevy_csv:2025-07-24T11:25:00`).
+        IMPORT = "IMPORT", "Import"
 
     profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="activities")
     kind = models.CharField(max_length=8, choices=Kind.choices)

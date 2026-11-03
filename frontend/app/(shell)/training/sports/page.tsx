@@ -6,6 +6,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { intlLocale } from "@/lib/locale";
 import { useBiometrics } from "@/lib/hooks";
 import { deleteServerActivities, enqueueActivity } from "@/lib/activities";
+import { SPORT_FORMATS, type SportFormat } from "@/lib/session-check";
+import { VigorousWarning } from "@/components/safety/VigorousWarning";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { COMBAT_RULES } from "@/lib/combat-rules";
 import { KCAL_BAND } from "@/lib/combat-mets";
@@ -31,6 +33,8 @@ const SPORTS: Sport[] = [
 // muestran como estimación con un rango (combat-sports "METs classify intensity but do not give
 // individual kcal").
 const SPORT_BY_KEY: Record<string, Sport> = Object.fromEntries(SPORTS.map((s) => [s.key, s]));
+// Deportes que se pueden hacer por intervalos o sprints (HIIT y sprints son vigorosos, spec §8.2)
+const FORMAT_SPORTS = ["run", "bike", "swim", "elliptical"];
 
 // El primer valor es el id canónico que se guarda (local + servidor); la etiqueta visible sale de i18n.
 const INTENSITIES: [string, number][] = [["Suave", 0.85], ["Moderado", 1], ["Intenso", 1.2]];
@@ -131,6 +135,7 @@ export default function SportsPage() {
   const [running, setRunning] = useState(false);
   const [intIdx, setIntIdx] = useState(1);
   const [rpe, setRpe] = useState<number | null>(null);
+  const [sportFormat, setSportFormat] = useState<SportFormat>("continuous");
   const [rpeInfo, setRpeInfo] = useState(false);
   const [holdPct, setHoldPct] = useState(0);
   const holdTimer = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -195,7 +200,7 @@ export default function SportsPage() {
 
   function openSport(s: Sport) {
     if (resume) discardLive(); // el usuario ignora el banner: descarta la pendiente
-    setSel(s); setPhase("idle"); setElapsed(0); setKcalAcc(0); setRunning(false); setIntIdx(1); setRpe(null);
+    setSel(s); setPhase("idle"); setElapsed(0); setKcalAcc(0); setRunning(false); setIntIdx(1); setRpe(null); setSportFormat("continuous");
     elapsedRef.current = 0;
   }
   function start() {
@@ -245,7 +250,11 @@ export default function SportsPage() {
       duration_sec: Math.min(86_400, Math.max(1, Math.round(elapsed))),
       rpe,
       kcal: Math.min(20_000, Math.max(0, Math.round(kcalAcc))),
-      detail: { sport_key: sel.key, intensity: INTENSITIES[intIdx][0] },
+      detail: {
+        sport_key: sel.key,
+        intensity: INTENSITIES[intIdx][0],
+        ...(FORMAT_SPORTS.includes(sel.key) ? { format: sportFormat } : {}),
+      },
     });
     localStorage.removeItem(LIVE_KEY);
     setActivities(loadActivities());
@@ -344,6 +353,21 @@ export default function SportsPage() {
               </p>
             )}
           </div>
+
+          {FORMAT_SPORTS.includes(sel.key) && (
+            <div className="glass mt-4 p-4">
+              <p className="t-label text-ink">{t("format.title")}</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {SPORT_FORMATS.map((f) => (
+                  <button key={f} type="button" aria-pressed={sportFormat === f} onClick={() => setSportFormat(f)}
+                    className={`badge ${sportFormat === f ? "badge-neon" : ""}`}>
+                    {t(`format.${f}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          <VigorousWarning params={{ kind: "SPORT", sport_key: sel.key, sport_format: FORMAT_SPORTS.includes(sel.key) ? sportFormat : "continuous" }} />
 
           <div className="mt-4 flex gap-3">
             <button onClick={discardSession} className="btn btn-outline flex-1">{t("summary.discard")}</button>

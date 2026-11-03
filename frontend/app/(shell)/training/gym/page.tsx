@@ -135,6 +135,7 @@ export default function GymPage() {
           {todayFocus && todayFocus !== "Descanso" ? t("startWithFocus", { focus: focusLabel(todayFocus) }) : t("start")}
         </Link>
       )}
+      <Link href="/training/gym/import" className="btn btn-tonal btn-sm mt-2 w-full">{t("importLink")}</Link>
 
       {/* toggle */}
       <div className="glass mt-4 grid grid-cols-2 gap-1 rounded-2xl p-1">

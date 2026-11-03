@@ -2,8 +2,9 @@
 
 Prueban el onboarding con cribado (`onboarding.spec.ts`), los objetivos, el pesaje y los bloqueos
 de la fase 4 (`nutrition.spec.ts`), el check-in diario con la tendencia de la fase 5
-(`checkin.spec.ts`), el plan de la semana de la fase 6 (`plan.spec.ts`) y la revisión semanal de la
-fase 7 (`review.spec.ts`) y los menús de la fase 8 (`menu.spec.ts`) de punta a punta: Next (BFF) + Django + motor del coach.
+(`checkin.spec.ts`), el plan de la semana de la fase 6 (`plan.spec.ts`), la revisión semanal de la
+fase 7 (`review.spec.ts`), los menús de la fase 8 (`menu.spec.ts`) y los importadores de la fase 9 con
+el aviso de sesión vigorosa (`import.spec.ts`, con CSV inventados) de punta a punta: Next (BFF) + Django + motor del coach.
 Usan el Chrome instalado (`channel: "chrome"`), así que no hace falta `playwright install`.
 
 1. Backend con su base de datos migrada, en el puerto que lee el BFF (por defecto 8001):

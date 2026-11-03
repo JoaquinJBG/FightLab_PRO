@@ -4,6 +4,8 @@ import { expectClean, renderEn } from "./sportsmma-helpers";
 import MmaPage from "@/app/(shell)/training/mma/page";
 
 vi.mock("@/lib/activities", () => ({ enqueueActivity: vi.fn(), deleteServerActivities: vi.fn() }));
+// El aviso de sesión vigorosa (F9) tiene su propio test (vigorousWarning.test.tsx)
+vi.mock("@/lib/session-check", async (orig) => ({ ...(await orig<typeof import("@/lib/session-check")>()), useSessionCheck: () => ({ data: undefined }) }));
 // Sin golpes en la cabeza ni peso: la parte de combate (E.5) tiene su propio test (combat.test.tsx)
 vi.mock("@/lib/hooks", () => ({ useSafety: () => ({ data: undefined }), useBiometrics: () => ({ data: [] }) }));
 vi.mock("@/lib/combat", async (orig) => ({

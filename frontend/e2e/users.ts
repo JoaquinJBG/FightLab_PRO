@@ -29,4 +29,8 @@ export const READY_USERS = {
   // Fase 8 (menús): uno normal (pone una alergia) y uno con SCOFF positivo (menú a mantenimiento).
   menu: "e2e-menu@fightlab.test",
   menuScoff: "e2e-menu-scoff@fightlab.test",
+  // Fase 9: importar CSV y "Última vez" desde el servidor; y un SÍ en el PAR-Q+ para el aviso de
+  // sesión vigorosa (review_before_vigorous).
+  gymImport: "e2e-import@fightlab.test",
+  vigorous: "e2e-vigorous@fightlab.test",
 };

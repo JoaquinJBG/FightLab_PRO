@@ -13,6 +13,10 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => ({ get: (k: string) => (k === "plan" ? "A" : null) }),
 }));
 vi.mock("@/lib/activities", () => ({ enqueueActivity: mocks.enqueue }));
+// El aviso de sesión vigorosa (F9) tiene su propio test (vigorousWarning.test.tsx)
+vi.mock("@/lib/session-check", async (orig) => ({ ...(await orig<typeof import("@/lib/session-check")>()), useSessionCheck: () => ({ data: undefined }) }));
+// Sin datos del servidor: "Última vez" sale del navegador (F9 tiene su propio test, gymStats.test.tsx)
+vi.mock("@/lib/strength", async (orig) => ({ ...(await orig<typeof import("@/lib/strength")>()), useLastStats: () => ({ data: undefined }) }));
 vi.mock("@/lib/plan", async (orig) => ({
   ...(await orig<typeof import("@/lib/plan")>()),
   useWeeklyPlan: () => ({ data: mocks.plan }),

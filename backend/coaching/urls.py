@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .checkin_views import CheckinView
+from .import_views import ImportView
 from .menu_views import (
     FoodsView,
     MenuCheckView,
@@ -23,7 +24,8 @@ from .safety_views import (
     SafetyView,
     ScreeningView,
 )
-from .strength_views import StrengthE1rmView, StrengthProgressView, StrengthSetsView
+from .session_check import SessionCheckView
+from .strength_views import StrengthE1rmView, StrengthLastView, StrengthProgressView, StrengthSetsView
 from .targets_views import TargetsView, TrendView, WeighInView, ZonesView
 from .views import EngineView, RuleDetailView, RuleSearchView, SourceDetailView
 
@@ -56,6 +58,9 @@ urlpatterns = [
     path("coach/strength/e1rm", StrengthE1rmView.as_view(), name="coach-strength-e1rm"),
     path("coach/strength/sets", StrengthSetsView.as_view(), name="coach-strength-sets"),
     path("coach/strength/progress", StrengthProgressView.as_view(), name="coach-strength-progress"),
+    path("coach/strength/last", StrengthLastView.as_view(), name="coach-strength-last"),
+    path("coach/import", ImportView.as_view(), name="coach-import"),
+    path("coach/session-check", SessionCheckView.as_view(), name="coach-session-check"),
     path("coach/screening", ScreeningView.as_view(), name="coach-screening"),
     path("coach/injuries", InjuryListView.as_view(), name="coach-injuries"),
     path("coach/injuries/<int:pk>", InjuryDetailView.as_view(), name="coach-injury"),

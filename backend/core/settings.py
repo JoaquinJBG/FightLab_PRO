@@ -114,6 +114,7 @@ REST_FRAMEWORK = {
         "activities-sync": "30/min",
         # Proxy de Open Food Facts (fase 8): por usuario, además del límite de OFF para todo el servidor.
         "coach-off": "10/min",
+        "coach-import": "20/min",
     },
     # ProfileIncomplete del motor -> 409 profile_incomplete (spec §8.1)
     "EXCEPTION_HANDLER": "core.exceptions.api_exception_handler",
