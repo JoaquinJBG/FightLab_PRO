@@ -43,6 +43,13 @@ export async function djangoFetch(
   return { status: res.status, data };
 }
 
+/** GET de un archivo (p. ej. el PDF del menú): la respuesta tal cual, sin leerla como JSON. */
+export async function djangoDownload(path: string, access?: string | null): Promise<Response> {
+  const headers: Record<string, string> = { "Accept-Language": await acceptLanguage() };
+  if (access) headers.Authorization = `Bearer ${access}`;
+  return fetch(`${BASE}${path}`, { headers, cache: "no-store" });
+}
+
 /** POST multipart (subida de archivos). fetch pone solo el boundary correcto. */
 export async function djangoUpload(
   path: string,

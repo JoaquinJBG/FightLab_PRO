@@ -4,6 +4,8 @@
   kcal, `409 {"code": "no_calorie_targets", "reasons": …}`; sin un dato, `409 profile_incomplete`.
 - `POST /coach/menu/check`: comprueba un borrador con el motor, sin guardar.
 - `POST /coach/menu/rate`: valora un plato (los `loved` y `liked` van al recetario).
+- `GET /coach/menu/<id>/pdf`: el menú y la lista de la compra en PDF (Task 8.5), hecho en memoria.
+  Solo el dueño del menú; con los mismos bloqueos que preparar un menú (409).
 - `GET/PUT /coach/tastes`, `GET /coach/recipes`.
 - `GET /coach/foods?q=`: alimentos del motor y productos, con el nombre en el idioma del usuario.
 - `GET /coach/products/search?q=&brand=` y `GET /coach/products/lookup/<barcode>`: el proxy de
@@ -12,7 +14,7 @@
 """
 from coach import catalogue, foods
 from coach import tastes as coach_tastes
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from rest_framework import serializers, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -21,9 +23,9 @@ from rest_framework.views import APIView
 
 from core.messages import msg
 
-from . import menus, off_proxy, products
+from . import menu_pdf, menus, off_proxy, products
 from .menu_llm import get_proposer
-from .models import CatalogueProduct
+from .models import CatalogueProduct, MealPlan
 from .safety_views import _lang, _today
 
 OFF_STATUS = {
@@ -104,6 +106,27 @@ class MenuCheckView(APIView):
             return _blocked(exc)
         except menus.MenuInvalid as exc:
             return _invalid(exc)
+
+
+class MenuPdfView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        plan = MealPlan.objects.filter(pk=pk, profile=request.user.profile).first()
+        if plan is None:
+            raise Http404
+        user, lang = request.user, _lang()
+        # Los flags de hoy mandan: si ya no hay objetivos de kcal (o falta un dato), tampoco hay
+        # PDF de un menú comprobado contra ellos.
+        try:
+            menus.menu_targets(user, _today(user.profile))
+        except menus.MenuBlocked as exc:
+            return _blocked(exc)
+        data = menus.plan_data(plan, user, lang)
+        response = HttpResponse(menu_pdf.render(data, lang), content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="{menu_pdf.filename(data)}"'
+        response["Cache-Control"] = "private, no-store"
+        return response
 
 
 class RateSerializer(serializers.Serializer):

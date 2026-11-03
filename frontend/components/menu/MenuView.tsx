@@ -6,6 +6,8 @@ import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { intlLocale } from "@/lib/locale";
 import {
   RATINGS,
+  downloadMenuPdf,
+  MenuError,
   useRateDish,
   type DayCheck,
   type Menu,
@@ -238,6 +240,34 @@ function Shopping({ menu }: { menu: Menu }) {
   );
 }
 
+/** Descarga el menú en PDF (lo hace el servidor en memoria). */
+function PdfButton({ id }: { id: number }) {
+  const t = useTranslations("menu.pdf");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function download() {
+    setBusy(true);
+    setError(null);
+    try {
+      await downloadMenuPdf(id);
+    } catch (e) {
+      const code = e instanceof MenuError ? e.code : "";
+      setError(code === "no_calorie_targets" ? t("no_calorie_targets") : t("error"));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="glass mt-4 p-4">
+      <button type="button" data-testid="menu-pdf" onClick={download} disabled={busy} className="btn btn-tonal w-full disabled:opacity-60">
+        {busy ? t("downloading") : t("download")}
+      </button>
+      <p className="t-body mt-2 text-[11px] text-muted">{t("hint")}</p>
+      {error && <p role="alert" className="t-body mt-2 text-xs text-bad">{error}</p>}
+    </div>
+  );
+}
+
 /** El menú guardado: objetivos, días comprobados por el motor, rechazos, avisos y la compra. */
 export function MenuView({ menu }: { menu: Menu }) {
   const t = useTranslations("menu");
@@ -250,6 +280,7 @@ export function MenuView({ menu }: { menu: Menu }) {
       <Rejected menu={menu} />
       <TasteFlags menu={menu} />
       <Shopping menu={menu} />
+      <PdfButton id={menu.id} />
       <p className="t-label mt-3 text-muted">{t("engine", { sha: menu.engine_sha })}</p>
     </div>
   );

@@ -122,6 +122,47 @@ describe.each(["es", "en"] as const)("Menú y compra (%s)", (locale) => {
   });
 });
 
+describe("PDF del menú", () => {
+  function stubFetch(pdf: Response) {
+    const fn = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input).split("?")[0];
+      if (url === "/api/proxy/coach/menu") return new Response(JSON.stringify(state()), { status: 200 });
+      if (url === "/api/proxy/coach/products") return new Response(JSON.stringify({ products: [] }), { status: 200 });
+      if (url === "/api/menu-pdf/3") return pdf;
+      return new Response("{}", { status: 404 });
+    });
+    vi.stubGlobal("fetch", fn);
+    return fn;
+  }
+
+  it("descarga el PDF del menú guardado con su nombre", async () => {
+    const pdf = new Response(new Blob(["%PDF-1.4"], { type: "application/pdf" }), {
+      status: 200,
+      headers: { "Content-Type": "application/pdf", "Content-Disposition": 'attachment; filename="fightlab-menu-2026-10-29.pdf"' },
+    });
+    const fetch = stubFetch(pdf);
+    const created = vi.fn(() => "blob:menu");
+    vi.stubGlobal("URL", Object.assign(URL, { createObjectURL: created, revokeObjectURL: vi.fn() }));
+    const clicks: string[] = [];
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (this: HTMLAnchorElement) {
+      clicks.push(this.download);
+    });
+    renderApp(<MenuPage />, "en");
+    fireEvent.click(await screen.findByTestId("menu-pdf"));
+    await waitFor(() => expect(clicks).toEqual(["fightlab-menu-2026-10-29.pdf"]));
+    expect(fetch).toHaveBeenCalledWith("/api/menu-pdf/3", { credentials: "include" });
+    expect(created).toHaveBeenCalledOnce();
+    click.mockRestore();
+  });
+
+  it("explica por qué no hay PDF cuando el servidor lo bloquea", async () => {
+    stubFetch(new Response(JSON.stringify({ code: "no_calorie_targets" }), { status: 409, headers: { "Content-Type": "application/json" } }));
+    renderApp(<MenuPage />, "es");
+    fireEvent.click(await screen.findByTestId("menu-pdf"));
+    expect((await screen.findByRole("alert")).textContent).toBe(CATALOGS.es.menu.pdf.no_calorie_targets);
+  });
+});
+
 describe("Añadir comida busca en la tabla del motor", () => {
   it("enseña el nombre en el idioma del usuario y las kcal por 100 g o 100 ml", async () => {
     const food = (name: string, per: "100 g" | "100 ml", kcal: number | null) => ({

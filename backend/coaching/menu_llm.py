@@ -80,7 +80,7 @@ class FakeMenuProposer:
     def _candidates(self, ctx, meal: str) -> list[dict]:
         own = [
             {"dish": r["dish"], "source": r["source"], "seasoning": list(r["seasoning"]), "items": list(r["items"]),
-             "steps": list(r["steps"]), "tupper_ok": True}
+             "steps": list(r["steps"]), "tupper_ok": True, "own": True}
             for r in ctx.favoured if r["meal"] == meal
         ]
         # Solo platos cuyos ingredientes conoce la tabla del usuario (sin región, p. ej., no hay la
@@ -110,9 +110,13 @@ class FakeMenuProposer:
             ]
             if not options:  # nada que proponer: el motor rechazará el día
                 continue
-            pick = options[(when.toordinal() * 3 + offset + attempt * 5) % len(options)]
+            # El recetario del atleta va antes que los platos nuevos (paso 4 de `/menu`); en el
+            # último intento se prueba con todo.
+            own = [d for d in options if d.get("own")]
+            pool = own if own and attempt < 2 else options
+            pick = pool[(when.toordinal() * 3 + offset + attempt * 5) % len(pool)]
             taken.add(fold(pick["dish"]))
-            dish = {k: v for k, v in pick.items() if k != "tupper_ok" and (v or k == "items")}
+            dish = {k: v for k, v in pick.items() if k not in ("tupper_ok", "own") and (v or k == "items")}
             meals.append({"meal": meal, **({"tupper": True} if tupper else {}), "dishes": [dish]})
         if meals:
             self._fit(ctx, meals)
