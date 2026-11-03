@@ -112,6 +112,7 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_THROTTLE_RATES": {
         "activities-sync": "30/min",
+        "coach-import": "20/min",
     },
     # ProfileIncomplete del motor -> 409 profile_incomplete (spec §8.1)
     "EXCEPTION_HANDLER": "core.exceptions.api_exception_handler",

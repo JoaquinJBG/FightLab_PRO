@@ -141,3 +141,41 @@ def progress_data(user, today: date, lang: str, exercise: str | None = None) -> 
         "no_training": flags.no_training,
         "rules": rule_refs(keys, lang),
     }
+
+
+# convention (FightLab): cuántos ejercicios caben en una consulta de "Última vez".
+LAST_MAX_EXERCISES = 50
+
+
+def _last_session(history) -> dict | None:
+    """La última sesión con series de trabajo: cuántas, y la serie con más carga (a igual carga,
+    la de más repeticiones), como lo enseñaba el gimnasio desde el navegador."""
+    working = [s for s in history if coach_strength.is_working(s)]
+    if not working:
+        return None
+    day = working[-1].date
+    sets = [s for s in working if s.date == day]
+    top = max(sets, key=lambda s: (s.weight_kg or 0, s.reps or 0))
+    return {"date": day.isoformat(), "sets": len(sets), "reps": top.reps, "weight_kg": top.weight_kg}
+
+
+def last_data(user, today: date, names: list[str]) -> dict:
+    """"Última vez", récord de carga y mejor e1RM de cada ejercicio de `names`, de `SetLog`.
+
+    El récord es la carga máxima de una serie de trabajo (las series con el peso corporal y los
+    calentamientos no cuentan). El e1RM es el del coach (Epley con las repeticiones en reserva,
+    `best_by_day`), sobre todo el historial."""
+    by_lower: dict[str, list] = defaultdict(list)
+    for s in set_records(user, until=today):
+        by_lower[s.exercise.lower()].append(s)
+    exercises = {}
+    for name in dict.fromkeys(n.strip() for n in names if n.strip()):
+        history = by_lower.get(name.lower(), [])
+        loads = [s.weight_kg for s in history if coach_strength.is_working(s) and s.weight_kg]
+        points = best_by_day(history)
+        exercises[name] = {
+            "last": _last_session(history),
+            "pr_kg": max(loads) if loads else None,
+            "best_e1rm_kg": round(max(v for _, v in points), 2) if points else None,
+        }
+    return {"engine": engine_info(), "exercises": exercises, "convention": EPLEY_CONVENTION}
