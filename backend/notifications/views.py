@@ -1,9 +1,9 @@
 """Avisos con Web Push (F11).
 
 - `me/push*`: la persona suscribe su navegador, elige qué avisos quiere y se manda uno de prueba.
-- `cron/reminders`: lo llama el BFF desde Vercel Cron, con `X-Bff-Secret` (el mismo
+- `cron/reminders`: lo llama el BFF en cada tick de Vercel Cron, con `X-Bff-Secret` (el mismo
   `BFF_SHARED_SECRET` que firma la IP del visitante). Sin ese secreto configurado responde 503;
-  con uno distinto, 403. El backend decide a quién avisar (`reminders.run`).
+  con uno distinto, 403. El backend decide a quién le toca cada aviso en ese tick (`reminders.run`).
 """
 import hmac
 
@@ -135,7 +135,4 @@ class CronRemindersView(APIView):
         sent = request.headers.get("X-Bff-Secret") or ""
         if not hmac.compare_digest(sent.encode(), secret.encode()):
             return Response({"code": "forbidden"}, status=status.HTTP_403_FORBIDDEN)
-        slot = request.data.get("slot") if hasattr(request.data, "get") else None
-        if slot not in reminders.SLOTS:
-            return Response({"slot": f"must be one of: {', '.join(reminders.SLOTS)}"}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"slot": slot, **reminders.run(slot)})
+        return Response(reminders.run())

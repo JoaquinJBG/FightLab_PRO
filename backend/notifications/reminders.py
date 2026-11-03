@@ -1,19 +1,26 @@
-"""Quién recibe cada aviso (F11). Lo llama el cron dos veces al día (dos tareas de Vercel Cron; en
-Hobby cada una corre una vez al día, en cualquier minuto de su hora UTC); aquí se pasa a la hora
-de cada persona (`timezone` del perfil) y se decide.
+"""Quién recibe cada aviso y cuándo (F11).
 
-- `evening` (víspera): "para mañana" si mañana hay tareas `eve` en el menú (o, mientras el menú
-  no las traiga, "prepara lo de mañana" si mañana hay menú o entreno en el plan), y movilidad si
-  hoy no está marcada.
-- `morning`: pesarse si hoy no hay peso, y la revisión de la semana los martes si la semana
-  anterior aún no está revisada (como ParteDiario desde la v1.9.2: el lunes se cocina y el peso
-  arrastra el fin de semana).
+Cada aviso tiene su hora local, como en ParteDiario: pesarse a las 8, la revisión de la semana los
+martes a las 10, la movilidad a las 18 y la víspera a las 22 (`TARGET_HOURS`). Vercel Cron llama
+al backend ("tick") solo en las horas UTC de `TICK_HOURS_UTC`, que son las que caen en esas horas
+en Europe/Madrid con y sin horario de verano: cada tick despierta el backend de Render free, y sus
+horas gratis se comparten con el servicio de prueba. En el plan Hobby cada tick sale en cualquier
+minuto de su hora, así que en España cada aviso llega dentro de su hora (de 22:00 a 22:59...).
 
-Cada tipo solo sale si la hora local cae en su ventana (`WINDOWS`): con una sola hora UTC, a
-quien viva muy lejos no le llega un "para mañana" a las tres de la tarde. Cada aviso se apunta en
-`ReminderLog` y no se repite ese día aunque el cron llegue dos veces.
+A cada persona, cada aviso le sale en el tick más cercano a su hora local de entre los que caen
+ese día en su zona (`tick_for`; si hay empate, el más tarde). En España es su hora exacta; en otra
+zona llega antes o después, pero no se pierde. Cada aviso se apunta en `ReminderLog` y no se repite
+ese día aunque el cron llegue dos veces.
+
+- `eve` (víspera): "para mañana" si mañana hay tareas `eve` en el menú (o, mientras el menú no las
+  traiga, "prepara lo de mañana" si mañana hay menú o entreno en el plan).
+- `mobility`: si hoy no está marcada.
+- `weigh`: si hoy no hay peso (y nunca con `no_weight_targets`).
+- `review`: los martes, si la semana anterior aún no está revisada (como ParteDiario desde la
+  v1.9.2: el lunes se cocina y el peso aún arrastra el fin de semana).
 """
-from datetime import datetime, timedelta
+from datetime import UTC, date, datetime, time, timedelta
+from zoneinfo import ZoneInfo
 
 from django.db import IntegrityError, transaction
 from django.utils import timezone
@@ -26,10 +33,13 @@ from profiles.models import UserProfile
 from . import push
 from .models import PushSubscription, ReminderLog, ReminderPrefs
 
-SLOTS = ("evening", "morning")
-KINDS = {"evening": ("eve", "mobility"), "morning": ("weigh", "review")}
-# convention (FightLab): horas locales en que tiene sentido cada tanda, [desde, hasta).
-WINDOWS = {"evening": (18, 24), "morning": (5, 12)}
+# convention (FightLab, las horas de ParteDiario): hora local de cada aviso.
+TARGET_HOURS = {"weigh": 8, "review": 10, "mobility": 18, "eve": 22}
+KINDS = tuple(TARGET_HOURS)
+# Las horas UTC de los ticks: tienen que ser las mismas que las tareas de `frontend/vercel.json`
+# (lo comprueba un test). Cubren las horas de arriba en Europe/Madrid en invierno (UTC+1) y en
+# verano (UTC+2).
+TICK_HOURS_UTC = (6, 7, 8, 9, 16, 17, 20, 21)
 REVIEW_WEEKDAY = 1  # martes
 URLS = {"eve": "/today", "mobility": "/today", "weigh": "/today#weight", "review": "/training/review"}
 MAX_EVE_ITEMS = 3
@@ -155,6 +165,26 @@ BUILDERS = {"eve": _eve, "mobility": _mobility, "weigh": _weigh, "review": _revi
 # ---------------------------------------------------------------- la tanda
 
 
+def tick_for(day: date, hour: int, tz: ZoneInfo) -> datetime | None:
+    """El tick (una hora UTC en punto de `TICK_HOURS_UTC`) más cercano a las `hour` locales de
+    `day`, de entre los que caen ese día en la zona `tz`. Si hay empate, el más tarde."""
+    due = datetime.combine(day, time(hour), tzinfo=tz)
+    candidates = [
+        instant
+        for d in (day - timedelta(days=1), day, day + timedelta(days=1))
+        for h in TICK_HOURS_UTC
+        if (instant := datetime.combine(d, time(h), tzinfo=UTC)).astimezone(tz).date() == day
+    ]
+    if not candidates:
+        return None
+    return min(candidates, key=lambda i: (abs(i - due), -i.timestamp()))
+
+
+def current_tick(now: datetime) -> datetime:
+    """El tick al que pertenece `now`: Vercel Hobby lo lanza en cualquier minuto de su hora."""
+    return now.astimezone(UTC).replace(minute=0, second=0, microsecond=0)
+
+
 def _claim(profile, kind: str, day) -> ReminderLog | None:
     try:
         with transaction.atomic():
@@ -163,25 +193,25 @@ def _claim(profile, kind: str, day) -> ReminderLog | None:
         return None  # ya se envió hoy
 
 
-def run(slot: str, now: datetime | None = None) -> dict:
-    """Envía los avisos de `slot` a quien toque. Devuelve los recuentos (sin datos personales)."""
-    if slot not in SLOTS:
-        raise ValueError(slot)
+def run(now: datetime | None = None) -> dict:
+    """Envía los avisos a los que les toca en este tick. Devuelve los recuentos (sin datos
+    personales)."""
     now = now or timezone.now()
-    counts = {"profiles": 0, "sent": 0, "skipped": 0, "out_of_window": 0, "already_sent": 0, "failed": 0}
+    tick = current_tick(now)
+    counts = {"profiles": 0, "sent": 0, "skipped": 0, "not_due": 0, "already_sent": 0, "failed": 0}
     if not push.configured():
-        return {"enabled": False, **counts}
-    start, end = WINDOWS[slot]
+        return {"enabled": False, "tick": tick.isoformat(), **counts}
     profile_ids = PushSubscription.objects.values_list("profile_id", flat=True).distinct()
     for profile in UserProfile.objects.filter(pk__in=list(profile_ids)).select_related("user"):
         counts["profiles"] += 1
-        local = timezone.localtime(now, _tz(profile))
-        if not start <= local.hour < end:
-            counts["out_of_window"] += 1
-            continue
+        tz = _tz(profile)
+        local = timezone.localtime(now, tz)
         prefs = prefs_for(profile)
-        for kind in KINDS[slot]:
+        for kind in KINDS:
             if not getattr(prefs, kind):
+                continue
+            if tick_for(local.date(), TARGET_HOURS[kind], tz) != tick:
+                counts["not_due"] += 1
                 continue
             message = BUILDERS[kind](profile.user, local)
             if message is None:
@@ -195,6 +225,6 @@ def run(slot: str, now: datetime | None = None) -> dict:
             if result["ok"]:
                 counts["sent"] += 1
             else:
-                log.delete()  # no llegó a ningún navegador: otra llamada de hoy puede reintentarlo
+                log.delete()  # no llegó a ningún navegador: otro tick de hoy puede reintentarlo
                 counts["failed"] += 1
-    return {"enabled": True, **counts}
+    return {"enabled": True, "tick": tick.isoformat(), **counts}

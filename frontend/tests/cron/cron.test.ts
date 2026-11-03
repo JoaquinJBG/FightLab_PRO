@@ -6,10 +6,9 @@ import { callWithRetry, isAuthorized } from "@/lib/cron";
 const django = vi.hoisted(() => ({ request: vi.fn() }));
 vi.mock("@/lib/api", () => ({ djangoRequest: django.request }));
 
-import { GET } from "@/app/api/cron/[slot]/route";
+import { GET } from "@/app/api/cron/tick/route";
 
-const ctx = (slot: string) => ({ params: Promise.resolve({ slot }) });
-const req = (auth?: string) => new Request("http://localhost/api/cron/evening", { headers: auth ? { authorization: auth } : {} });
+const req = (auth?: string) => new Request("http://localhost/api/cron/tick", { headers: auth ? { authorization: auth } : {} });
 const ok = (body: unknown = { enabled: true, sent: 2 }) => new Response(JSON.stringify(body), { status: 200 });
 
 beforeEach(() => {
@@ -36,10 +35,10 @@ describe("isAuthorized", () => {
   });
 });
 
-describe("/api/cron/[slot]", () => {
+describe("/api/cron/tick", () => {
   it("sin CRON_SECRET está apagado", async () => {
     vi.stubEnv("CRON_SECRET", "");
-    const res = await GET(req("Bearer "), ctx("evening"));
+    const res = await GET(req("Bearer "));
     expect(res.status).toBe(503);
     expect(await res.json()).toEqual({ code: "cron_not_configured" });
     expect(django.request).not.toHaveBeenCalled();
@@ -48,41 +47,35 @@ describe("/api/cron/[slot]", () => {
   it.each([undefined, "Bearer otro", "cron-secreto-de-prueba", "Basic cron-secreto-de-prueba"])(
     "con un secreto malo (%s) responde 401 y no llama al backend",
     async (auth) => {
-      const res = await GET(req(auth), ctx("evening"));
+      const res = await GET(req(auth));
       expect(res.status).toBe(401);
       expect(django.request).not.toHaveBeenCalled();
     },
   );
 
-  it("un slot desconocido es 404", async () => {
-    const res = await GET(req("Bearer cron-secreto-de-prueba"), ctx("noon"));
-    expect(res.status).toBe(404);
-  });
-
   it("sin BFF_SHARED_SECRET no puede hablar con el backend", async () => {
     vi.stubEnv("BFF_SHARED_SECRET", "");
-    const res = await GET(req("Bearer cron-secreto-de-prueba"), ctx("evening"));
+    const res = await GET(req("Bearer cron-secreto-de-prueba"));
     expect(res.status).toBe(503);
     expect(await res.json()).toEqual({ code: "bff_secret_missing" });
   });
 
-  it("con el secreto bueno llama al backend con el secreto del BFF y el slot", async () => {
+  it("con el secreto bueno llama al backend con el secreto del BFF", async () => {
     django.request.mockResolvedValue(ok());
-    const res = await GET(req("Bearer cron-secreto-de-prueba"), ctx("morning"));
+    const res = await GET(req("Bearer cron-secreto-de-prueba"));
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ slot: "morning", status: 200, attempts: 1, result: { enabled: true, sent: 2 } });
+    expect(await res.json()).toEqual({ status: 200, attempts: 1, result: { enabled: true, sent: 2 } });
     const [path, opts] = django.request.mock.calls[0];
     expect(path).toBe("/cron/reminders");
     expect(opts.method).toBe("POST");
     expect(opts.headers["X-Bff-Secret"]).toBe("bff-secreto-de-prueba");
-    expect(JSON.parse(opts.body)).toEqual({ slot: "morning" });
     expect(opts.timeoutMs).toBe(45_000);
   });
 
   it("si Render está despertando (502) reintenta y acaba bien", async () => {
     django.request.mockResolvedValueOnce(new Response("", { status: 502 })).mockResolvedValueOnce(ok());
     vi.useFakeTimers({ toFake: ["setTimeout"] });
-    const pending = GET(req("Bearer cron-secreto-de-prueba"), ctx("evening"));
+    const pending = GET(req("Bearer cron-secreto-de-prueba"));
     await vi.runAllTimersAsync();
     const res = await pending;
     vi.useRealTimers();

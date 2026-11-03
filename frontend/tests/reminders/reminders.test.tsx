@@ -160,12 +160,16 @@ describe("Perfil → Avisos", () => {
     );
   });
 
-  it("explica las horas con la zona del perfil", async () => {
+  it("explica la hora de cada aviso, con la zona del perfil y qué pasa en otra zona", async () => {
     pushBrowser();
     routes();
     renderApp(<RemindersSettings />);
     expect(await screen.findByText(/zona horaria del perfil \(Europe\/Madrid\)/)).toBeTruthy();
-    expect(screen.getByText(/entre las 21:00 y las 22:00 en invierno/)).toBeTruthy();
+    expect(screen.getByText(/si vives en otra zona, el aviso llega a la hora más cercana/)).toBeTruthy();
+    expect(screen.getByText(/^A las 22:00, si mañana/)).toBeTruthy();
+    expect(screen.getByText("Los martes a las 10:00, si la semana pasada aún no está revisada.")).toBeTruthy();
+    expect(screen.getByText("A las 8:00, si aún no has apuntado el peso.")).toBeTruthy();
+    expect(screen.getByText("A las 18:00, si aún no la has marcado hoy.")).toBeTruthy();
   });
 
   it("en inglés", async () => {

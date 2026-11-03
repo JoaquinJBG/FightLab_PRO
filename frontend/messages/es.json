@@ -2698,17 +2698,17 @@
     "kinds": {
       "title": "Qué avisos quieres",
       "eve": "La víspera",
-      "eveBody": "Por la noche, si mañana hay algo que dejar hecho del menú o del plan (sacar algo del congelador, el táper, la bolsa del gimnasio).",
+      "eveBody": "A las 22:00, si mañana hay algo que dejar hecho del menú o del plan (sacar algo del congelador, el táper, la bolsa del gimnasio).",
       "review": "Revisión de la semana",
-      "reviewBody": "Los martes por la mañana, si la semana pasada aún no está revisada.",
+      "reviewBody": "Los martes a las 10:00, si la semana pasada aún no está revisada.",
       "weigh": "Pesarse",
-      "weighBody": "Por la mañana, si aún no has apuntado el peso.",
+      "weighBody": "A las 8:00, si aún no has apuntado el peso.",
       "mobility": "Movilidad",
-      "mobilityBody": "Por la noche, si aún no la has marcado hoy."
+      "mobilityBody": "A las 18:00, si aún no la has marcado hoy."
     },
     "hours": {
       "title": "A qué hora llegan",
-      "body": "Los avisos salen dos veces al día y se calculan con tu zona horaria del perfil ({tz}). En España, los de la noche llegan entre las 21:00 y las 22:00 en invierno y entre las 22:00 y las 23:00 en verano; los de la mañana, entre las 7:00 y las 8:00 en invierno y entre las 8:00 y las 9:00 en verano. No se puede elegir la hora exacta: en el plan gratuito del servidor cada tarea sale una vez al día, en cualquier momento de su hora."
+      "body": "Las horas son las de tu zona horaria del perfil ({tz}), y cada aviso llega en algún momento de su hora (de 22:00 a 22:59, por ejemplo). El servidor gratuito solo se despierta a unas horas fijas, elegidas para España con y sin horario de verano: si vives en otra zona, el aviso llega a la hora más cercana a la suya en que se despierta, antes o después, pero no se pierde."
     }
   }
 }

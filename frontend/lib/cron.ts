@@ -1,6 +1,6 @@
-// Disparo de los avisos (fase 11): Vercel Cron llama a /api/cron/<slot> con
+// Disparo de los avisos (fase 11): Vercel Cron llama a /api/cron/tick a ciertas horas UTC con
 // `Authorization: Bearer <CRON_SECRET>` (lo añade Vercel solo si CRON_SECRET existe), y esta
-// ruta llama al backend con el secreto del BFF. El backend decide a quién avisar.
+// ruta llama al backend con el secreto del BFF. El backend decide a quién le toca cada aviso.
 //
 // Render (plan free) duerme a los 15 min y tarda hasta ~50 s en despertar: el primer intento
 // tiene margen para el arranque en frío y, si falla por tiempo o porque el backend aún no
@@ -9,13 +9,6 @@
 // lo manda dos veces el mismo día.
 
 import { timingSafeEqual } from "node:crypto";
-
-export const SLOTS = ["evening", "morning"] as const;
-export type Slot = (typeof SLOTS)[number];
-
-export function isSlot(value: string): value is Slot {
-  return (SLOTS as readonly string[]).includes(value);
-}
 
 /** `Authorization: Bearer <secret>` comparado en tiempo constante. Sin secreto, nada vale. */
 export function isAuthorized(header: string | null, secret: string | undefined): boolean {

@@ -146,7 +146,7 @@ def test_a_failing_push_service_keeps_the_subscription(vapid, push_post):
 
 def test_cron_without_a_configured_secret_is_off(settings):
     settings.BFF_SHARED_SECRET = ""
-    res = APIClient().post(CRON, {"slot": "evening"}, format="json", HTTP_X_BFF_SECRET="anything")
+    res = APIClient().post(CRON, {}, format="json", HTTP_X_BFF_SECRET="anything")
     assert res.status_code == 503 and res.json() == {"code": "cron_not_configured"}
 
 
@@ -154,29 +154,28 @@ def test_cron_without_a_configured_secret_is_off(settings):
 def test_cron_with_a_wrong_secret_is_forbidden(settings, header):
     settings.BFF_SHARED_SECRET = SECRET
     extra = {} if header is None else {"HTTP_X_BFF_SECRET": header}
-    res = APIClient().post(CRON, {"slot": "evening"}, format="json", **extra)
+    res = APIClient().post(CRON, {}, format="json", **extra)
     assert res.status_code == 403
 
 
 def test_cron_ignores_user_tokens(settings):
     settings.BFF_SHARED_SECRET = SECRET
     client = client_for(make_user())  # un JWT válido no sirve de nada aquí
-    assert client.post(CRON, {"slot": "evening"}, format="json").status_code == 403
+    assert client.post(CRON, {}, format="json").status_code == 403
 
 
-def test_cron_with_the_secret_runs_the_slot(settings, vapid):
+def test_cron_with_the_secret_runs_the_tick(settings, vapid):
     settings.BFF_SHARED_SECRET = SECRET
-    res = APIClient().post(CRON, {"slot": "morning"}, format="json", HTTP_X_BFF_SECRET=SECRET)
+    res = APIClient().post(CRON, {}, format="json", HTTP_X_BFF_SECRET=SECRET)
     assert res.status_code == 200
     body = res.json()
-    assert body["slot"] == "morning" and body["enabled"] is True and body["sent"] == 0
-    assert APIClient().post(CRON, {"slot": "noon"}, format="json", HTTP_X_BFF_SECRET=SECRET).status_code == 400
+    assert body["enabled"] is True and body["sent"] == 0 and body["tick"].endswith(":00:00+00:00")
 
 
 def test_cron_without_vapid_keys_sends_nothing(settings, push_post):
     settings.BFF_SHARED_SECRET = SECRET
     settings.VAPID_PUBLIC_KEY = settings.VAPID_PRIVATE_KEY = settings.VAPID_SUBJECT = ""
-    body = APIClient().post(CRON, {"slot": "evening"}, format="json", HTTP_X_BFF_SECRET=SECRET).json()
+    body = APIClient().post(CRON, {}, format="json", HTTP_X_BFF_SECRET=SECRET).json()
     assert body["enabled"] is False and not push_post.called
 
 

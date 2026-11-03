@@ -270,31 +270,40 @@ abajo los avisos quedan apagados, Perfil → Avisos lo explica y el resto de la
 app funciona igual.
 
 **Cómo funcionan.** El navegador se suscribe con la clave pública VAPID y
-manda su suscripción al backend (`PushSubscription`). Vercel Cron llama dos
-veces al día a una ruta del BFF (`/api/cron/evening` y `/api/cron/morning`,
-en `frontend/vercel.json`), protegida con `CRON_SECRET`; la ruta llama al
-backend (`POST /api/v1/cron/reminders`) con `BFF_SHARED_SECRET`, y el backend
-decide a quién avisar con la zona horaria de cada perfil y lo envía firmado
-con la clave privada (`pywebpush`). Cada aviso se apunta y no se repite el
-mismo día aunque el cron llegue dos veces.
+manda su suscripción al backend (`PushSubscription`). Vercel Cron llama a una
+ruta del BFF, `/api/cron/tick`, a unas horas fijas (las 8 tareas de
+`frontend/vercel.json`); la ruta está protegida con `CRON_SECRET` y llama al
+backend (`POST /api/v1/cron/reminders`) con `BFF_SHARED_SECRET`. El backend
+mira, para cada persona y con la zona horaria de su perfil, qué aviso le toca
+en ese tick y lo envía firmado con la clave privada (`pywebpush`). Cada aviso
+se apunta y no se repite el mismo día aunque el cron llegue dos veces.
 
-**Horas.** En el plan Hobby de Vercel cada tarea corre como mucho una vez al
-día, a una hora UTC fija y **en cualquier minuto de esa hora** (±59 min, según
-la documentación de Vercel de julio de 2026). FightLab usa dos tareas:
+**Horas.** Cada aviso tiene su hora local, las de ParteDiario: pesarse a las
+8:00, la revisión de la semana los martes a las 10:00, la movilidad a las
+18:00 y la víspera a las 22:00. En el plan Hobby de Vercel cada tarea corre
+como mucho una vez al día, a una hora UTC fija y **en cualquier minuto de esa
+hora** (±59 min, según la documentación de Vercel de julio de 2026). Por eso
+hay una tarea en cada hora UTC que cae en esas horas en España, con y sin
+horario de verano:
 
-| Tarea | Cron (UTC) | España en invierno (UTC+1) | España en verano (UTC+2) | Qué manda |
-|---|---|---|---|---|
-| `evening` | `0 20 * * *` | 21:00–21:59 | 22:00–22:59 | La víspera y la movilidad |
-| `morning` | `0 6 * * *` | 07:00–07:59 | 08:00–08:59 | Pesarse y, los martes, la revisión |
+| Aviso | Hora local | Tick en invierno (UTC+1) | Tick en verano (UTC+2) |
+|---|---|---|---|
+| Pesarse | 8:00–8:59 | `0 7 * * *` | `0 6 * * *` |
+| Revisión (martes) | 10:00–10:59 | `0 9 * * *` | `0 8 * * *` |
+| Movilidad | 18:00–18:59 | `0 17 * * *` | `0 16 * * *` |
+| Víspera | 22:00–22:59 | `0 21 * * *` | `0 20 * * *` |
 
-Se eligió 20:00 UTC y no 21:00 para que la víspera no llegue nunca pasadas las
-23:00 (con 21:00 UTC, en verano llegaría entre las 23:00 y las 23:59). El
-backend además solo manda cada tanda si la hora local de la persona cae en su
-ventana (de 18:00 a 23:59 la de la noche, de 05:00 a 11:59 la de la mañana):
-a quien viva en otra zona muy distinta no le llega un "para mañana" a media
-tarde. Para que llegue a las 22:xx todo el año haría falta una tarea por hora
-UTC (Hobby admite hasta 100 tareas diarias por proyecto), con la hora objetivo
-decidida en el backend; queda propuesto, no hecho.
+Son 8 tareas y no 24 (una por hora) a propósito: cada tick despierta el
+backend de Render free, y sus 750 horas gratis al mes se comparten con el
+servicio de prueba. En los ticks que no le tocan a nadie el backend no envía
+nada. A quien tenga en su perfil otra zona horaria, cada aviso le llega en el
+tick más cercano a su hora de entre los que caen ese día en su zona (antes o
+después), pero no se pierde; Perfil → Avisos también lo explica. Si se lanza
+una tarea a mano fuera de esas horas, no sale ningún aviso.
+
+Las horas UTC de las tareas son las de `TICK_HOURS_UTC` en
+`backend/notifications/reminders.py`; un test comprueba que coinciden con
+`frontend/vercel.json`.
 
 **Dónde funcionan** (también lo explica la app): en Android, con Chrome (la
 PWA instalada o abierta en el navegador); en iPhone y iPad, **solo** con la
@@ -329,9 +338,10 @@ app añadida a la pantalla de inicio y con iOS 16.4 o posterior.
    Redespliega (*Deployments* → el último → *Redeploy*): la clave pública se
    lee en el build y las tareas de `vercel.json` se registran al desplegar.
 4. **Comprueba las tareas:** Vercel → proyecto → *Settings* → *Cron Jobs*
-   tiene que listar `/api/cron/evening` y `/api/cron/morning`. Desde ahí se
-   pueden lanzar a mano (*Run*); en *Logs* sale cuántos avisos se enviaron
-   (solo recuentos, sin datos de nadie).
+   tiene que listar 8 tareas a `/api/cron/tick` (a las 6, 7, 8, 9, 16, 17, 20
+   y 21 UTC). Desde ahí se pueden lanzar a mano (*Run*): solo envían algo si
+   es la hora de algún aviso; en *Logs* sale cuántos se enviaron (solo
+   recuentos, sin datos de nadie).
 5. **En el móvil:** abre la app → Perfil → Avisos → *Activar los avisos
    aquí* → acepta el permiso → *Mandar uno de prueba*.
 
@@ -362,7 +372,8 @@ Variables nuevas, en resumen: en Render `VAPID_PUBLIC_KEY`,
   red de seguridad: las cuotas de arriba acotan el uso normal, pero un límite
   de gasto corta cualquier escenario que no se haya previsto.
 - **Vercel Cron (Hobby): cada tarea, una vez al día como mucho**, y puede
-  salir en cualquier minuto de su hora (sección 7b). Los avisos usan dos. La función de cada tarea tiene 60 s: el primer
+  salir en cualquier minuto de su hora (sección 7b). Los avisos usan ocho, y
+  cada una despierta el backend de Render. La función de cada tarea tiene 60 s: el primer
   intento espera hasta 45 s a que Render despierte y, si no llega, se
   reintenta con lo que quede.
 - **Brevo: 300 emails/día.** De sobra para invitar y verificar a un grupo de
