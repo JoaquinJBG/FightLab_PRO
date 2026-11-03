@@ -1,0 +1,1033 @@
+# Traducción al español de knowledge/strength-hypertrophy.md de AI personal coach, de matgarfer499
+# (https://github.com/matgarfer499/ai-personal-coach), CC BY 4.0.
+# Cambios: FightLab Pro (Joaquín J Beltrán García) ha traducido las reglas al español; la
+# traducción se publica también bajo CC BY 4.0. Ver LICENSE-CONTENT.md.
+# Formato y cómo se actualiza: backend/knowledge_translations/README.md.
+# status: machine = traducción sin revisar por una persona.
+
+lang: es
+origin: upstream
+file: strength-hypertrophy
+rules:
+- key: strength-hypertrophy/public-health-minimum
+  source_hash: bc9fcbfa1056793deaed2a613f5728c4183a65005c741bf284ff8e5ed32fd26d
+  status: machine
+  heading: Mínimo de salud pública
+  rule_text: |-
+    Para todo cliente, la base innegociable es al menos 2 días por semana de entrenamiento de fuerza a intensidad moderada o mayor que cubra todos los grandes grupos musculares. Para clientes de 65+ años, programa además trabajo de equilibrio y de fuerza funcional 3 o más días por semana; puede combinarse con las sesiones de fuerza. El volumen por encima de estos mínimos es una elección de composición corporal o de rendimiento, no un requisito de salud.
+  applies_to: |-
+    Todos los adultos, para resultados de salud, con la recomendación multicomponente adicional para adultos de 65+ años. No son objetivos de hipertrofia.
+  conflicts: |-
+    El "sin dosis-respuesta" de la OMS se refiere a resultados de salud y no contradice la dosis-respuesta entre volumen e hipertrofia de los estudios de entrenamiento.
+- key: strength-hypertrophy/keep-it-simple-and-individualised
+  source_hash: beabfc66b3c25eb4a3f135d490edcac17be1d506e6bf70f86234bac194099dc2
+  status: machine
+  heading: Que sea sencillo e individualizado
+  rule_text: |-
+    Para principiantes, prescribe un plan sencillo de cuerpo completo o torso/pierna que de verdad vayan a seguir: 2-3 sesiones por semana, los grandes patrones de movimiento, rango de movimiento completo y controlado, series que terminen a unas pocas repeticiones del fallo, y luego progresa. Deja que el cliente elija frecuencia, rutina y material. No dejes que los detalles "óptimos" se interpongan en la adherencia.
+  applies_to: |-
+    Adultos sanos de 18+ años, de principiantes a experimentados; buena parte de la evidencia procede de personas sin experiencia en el entrenamiento.
+  conflicts: |-
+    Quienes entrenan fuerza y buscan la fuerza máxima pueden beneficiarse más de variables específicas (cargas ≥80% 1RM, carga ondulante). La preferencia individual guía legítimamente la elección.
+- key: strength-hypertrophy/weekly-sets-per-muscle-dose-response
+  source_hash: 0e0d26cf3c59ab7aabebc9f0fb892d6f84ee02a06de560dd01e6c15b9c400c93
+  status: machine
+  heading: Series semanales por músculo (dosis-respuesta)
+  rule_text: |-
+    Para un cliente cuya prioridad es ganar músculo y que tiene tiempo, lleva cada músculo principal con el tiempo hacia unas 10 o más series duras semanales, repartidas en 2 o más sesiones, contando las series con la regla fraccionaria (véase "Recuento de series"). Trata 10 como un punto de referencia mejor que cifras inferiores, no como un mínimo estricto; menos series también funcionan. Sube el volumen de forma gradual y solo mientras se mantengan la recuperación y la adherencia. Para objetivos de fuerza o de salud bastan menos series, porque los rendimientos decrecen rápido.
+  applies_to: |-
+    Adultos sanos de 18+ años. Los ensayos usaron sobre todo hombres jóvenes, a menudo no entrenados. La dirección se generaliza bien; el tamaño del efecto por serie es menos seguro en mujeres y personas mayores.
+  conflicts: |-
+    Los estudios coinciden en la dirección, pero el efecto por serie es impreciso; el análisis de 3 categorías de Schoenfeld 2017 (<5, 5-9, 10+ series) solo mostró una tendencia (p=0.074). El límite superior útil es individual y en la práctica lo marcan la recuperación, el tiempo y el disfrute.
+- key: strength-hypertrophy/multiple-sets-versus-one-set
+  source_hash: afffe9371c8e6d11f7c16dd1715dcd0a4a7f07b9c426f25ae1c3e4997496731d
+  status: machine
+  heading: Varias series frente a una serie
+  rule_text: |-
+    Empieza con los principiantes a 1-2 series por ejercicio si hace falta para la adherencia, y luego progresa a 2-4 series por ejercicio en los músculos que el cliente quiere desarrollar. No le digas a un cliente que una serie no sirve para nada.
+  applies_to: |-
+    Adultos entrenados y no entrenados; el metaanálisis en red incluyó aproximadamente la mitad de mujeres.
+  conflicts: |-
+    El beneficio de las series adicionales es real pero modesto a nivel de grupo. Las comparaciones de dosis individuales de Krieger (2-3 o 4-6 frente a 1) solo fueron tendencias (p=0.09 y p=0.096).
+- key: strength-hypertrophy/diminishing-returns-especially-for-strength
+  source_hash: 1459477761fb019a735d894a71d2f42417b3fd90030b973703245f7fe0ef1bd1
+  status: machine
+  heading: Rendimientos decrecientes, sobre todo en fuerza
+  rule_text: |-
+    Para un cliente centrado en la fuerza o con poco tiempo, mantén un volumen moderado (unas 2-3 series duras por ejercicio principal y sesión) y pon el esfuerzo en la carga, la frecuencia y la técnica. Añade series sobre todo cuando el objetivo sea el tamaño muscular y la recuperación lo permita.
+  applies_to: |-
+    Sobre todo hombres jóvenes; el ECA solo incluyó hombres jóvenes entrenados en fuerza (n=34). Los puntos de meseta son estimaciones de un modelo, no umbrales fijos.
+  conflicts: |-
+    Los puntos de inflexión exactos proceden de una sola metarregresión, según la recoge el ACSM, y son imprecisos. La fuerza no es totalmente plana frente al volumen (véase la regla siguiente).
+- key: strength-hypertrophy/volume-for-strength-goals
+  source_hash: 52de870140f2370c62fdd61a9f14a0885dfb148f2c857b405dd5b8306878b316
+  status: machine
+  heading: Volumen para objetivos de fuerza
+  rule_text: |-
+    Para objetivos de fuerza, prescribe 2-3 series efectivas por ejercicio principal y sesión, con cargas pesadas (≥80% 1RM, unas 8 repeticiones o menos) una vez que la técnica sea sólida, y pon el ejercicio prioritario al principio de la sesión. Añade volumen solo cuando la carga y la frecuencia ya estén bien planteadas.
+  applies_to: |-
+    Adultos sanos; los datos de Ralston son sobre todo de hombres principiantes e intermedios, y los del ACSM, sobre todo de principiantes.
+  conflicts: |-
+    Está en tensión con Schoenfeld 2019 (sin diferencias de fuerza entre 1, 3 y 5 series en hombres entrenados) y con los fuertes rendimientos decrecientes de Pelland. El efecto del volumen sobre la fuerza es pequeño comparado con el de la carga.
+- key: strength-hypertrophy/trained-lifters-12-20-weekly-sets
+  source_hash: 5a288c7589316db79f6a5941ca3f4d50bd07357c17451cacc447f0bb8f1634db
+  status: machine
+  heading: 'Levantadores entrenados: 12-20 series semanales'
+  rule_text: |-
+    Para un levantador recreativo con experiencia que se ha estancado, 12-20 series semanales por músculo prioritario es un rango de trabajo razonable. Supera las 20 solo para uno o dos músculos rezagados, en bloques limitados y solo mientras aguanten la recuperación y la comodidad articular.
+  applies_to: |-
+    Hombres de 18-35 años con al menos 1 año de entrenamiento. No para principiantes ni personas mayores; apenas se ha probado en mujeres.
+  conflicts: |-
+    Base de evidencia pequeña y resultados distintos según el músculo. Los modelos continuos de dosis-respuesta (Pelland 2026) no muestran un techo estricto en sus resúmenes. Algunas personas responden más a volúmenes altos.
+- key: strength-hypertrophy/minimum-effective-dose
+  source_hash: 9cac50a6104a05e694a3d42d0af38d18051e3382d01defdf0925de31a369aa46
+  status: machine
+  heading: Dosis mínima eficaz
+  rule_text: |-
+    Cuando un cliente anda corto de tiempo o de motivación, prescribe un programa mínimo en lugar de nada: 1 serie dura de unas 6-15 repeticiones, cerca del fallo, en 4-6 ejercicios multiarticulares (empuje, tracción, sentadilla o prensa, bisagra de cadera), con el objetivo de 2 sesiones por semana. Si solo es realista 1 sesión, sigue siendo mejor que nada. Preséntalo como eficaz para la fuerza y luego añade series y sesiones si los objetivos de hipertrofia, el tiempo y la adherencia lo permiten.
+  applies_to: |-
+    Adultos en general. El metaanálisis sobre 1RM y el ECA solo abarcan hombres entrenados en fuerza (sentadilla y press de banca); la aplicabilidad al peso muerto, a mujeres entrenadas y a deportistas no está clara. La hipertrofia con dosis mínimas es menos segura que la fuerza.
+  conflicts: |-
+    Las dosis mínimas son subóptimas para la hipertrofia, que muestra una dosis-respuesta con el volumen. Llevar las series cerca del fallo es parte de lo que hace que funcionen las series únicas. Las estimaciones agrupadas proceden de pocos estudios pequeños con CI amplios. Las personas mayores pueden necesitar más para mantener el músculo (véase "Dosis de mantenimiento").
+- key: strength-hypertrophy/time-efficient-floor
+  source_hash: 19abc448c097b5a8e721ca31df8deeeffd5747ef1cadcc6b01043c4ce24f6e91
+  status: machine
+  heading: Mínimo eficiente en tiempo
+  rule_text: |-
+    Para un principiante con poco tiempo, construye las sesiones en torno a una sentadilla o prensa, un empuje de tren superior y una tracción de tren superior. Apunta a al menos 4 series duras semanales por grupo muscular como mínimo práctico. Las superseries pueden reducir aproximadamente a la mitad el tiempo de sesión, sobre todo cuando el objetivo es la hipertrofia.
+  applies_to: |-
+    Adultos en general que buscan un entrenamiento eficiente en tiempo. Síntesis de expertos, no una estimación agrupada.
+  conflicts: |-
+    El mínimo de 4 series es una recomendación de los autores. Las técnicas para ahorrar tiempo probablemente sirven más para la hipertrofia que para la fuerza, y los datos longitudinales son limitados.
+- key: strength-hypertrophy/do-not-sell-set-caps-as-fact
+  source_hash: 98ec18d090c9901ed69ca81bfdbef7f62afaf38f5e2e3952770fe67c3aabf1fb
+  status: machine
+  heading: No vendas los topes de series como un hecho
+  rule_text: |-
+    No presentes topes concretos de series, umbrales de "volumen basura" ni frecuencias obligatorias como hechos científicos. Di que más volumen tiende a favorecer el crecimiento con rendimientos decrecientes y que el límite práctico lo marcan la recuperación y el horario de cada persona. Si una sola sesión se está alargando mucho para un músculo (aproximadamente 10 o más series), repartirla en varios días es una precaución sensata y de bajo coste.
+  applies_to: |-
+    Todas las poblaciones, en cuanto al mensaje general. Las curvas proceden sobre todo de hombres jóvenes (79% hombres, edad media de unos 25 años).
+  conflicts: |-
+    El preprint (Remmert et al., SportRxiv 537, publicado el 2025-04-02) no aparecía en PubMed a 2026-10-24 y no está revisado por pares. Los autores de ambas metarregresiones son entrenadores y divulgadores del sector del fitness (declarado en Pelland 2026).
+- key: strength-hypertrophy/individual-response-to-volume
+  source_hash: c7f94572f962be9454c074bf36a0cb076528aeeb4958abad6d32135d4c6c4271
+  status: machine
+  heading: Respuesta individual al volumen
+  rule_text: |-
+    Trata los objetivos de volumen como un punto de partida. Si la fuerza o las medidas de un cliente se estancan durante 8-12 semanas pese a una buena adherencia, alimentación y sueño, prueba un aumento controlado de series en los músculos rezagados. Si el volumen extra no trae progreso y sí más fatiga, redúcelo.
+  applies_to: |-
+    Adultos jóvenes no entrenados de ambos sexos; no se ha probado en personas entrenadas ni mayores.
+  conflicts: |-
+    Un único ensayo; la clasificación como "respondedor" depende del error de medida.
+- key: strength-hypertrophy/default-counting-rule-direct-1-indirect-0-5
+  source_hash: 6c287c214041b56b8a83699ec1f10cedf6bd3fc3506e4134bc75c9cf406cf22e
+  status: machine
+  heading: 'Regla de recuento por defecto: directo 1, indirecto 0.5'
+  rule_text: |-
+    Cuenta una serie como 1.0 para el músculo que es el motor principal y como 0.5 para un músculo que es un sinergista claro. Ejemplos de clasificación (propios del coach, no del artículo): press de banca o press militar para tríceps y deltoides anterior; remos y jalones para bíceps y deltoides posterior. Usa estos totales fraccionarios al comprobar el objetivo de ≥10 series por semana. No cuentes a los sinergistas series completas (12 series de banca y 0 de tríceps equivalen a unas 6 series de tríceps, no a 12), y no le digas a un cliente que sus brazos no reciben ningún trabajo de los empujes y las tracciones. Trata 0.5 como una estimación inicial y bájala para los músculos que, según otra evidencia, reciben poco estímulo de un ejercicio.
+  applies_to: |-
+    Sobre todo hombres jóvenes, no entrenados y entrenados, a lo largo de unas semanas a meses. Una decisión de modelado de los analistas, no una constante medida.
+  conflicts: |-
+    El peso de 0.5 se supuso, no se estimó, y solo se compararon 0, 0.5 y 1. Los autores dicen que la clasificación directo/indirecto "no fue del todo objetiva" y que el método "adolece de suponer que todo el entrenamiento indirecto debe cuantificarse como media serie". Es muy probable que el peso real varíe según el músculo y el ejercicio. Es una comparación de modelos entre estudios, no un experimento directo.
+- key: strength-hypertrophy/guidelines-are-silent-on-counting
+  source_hash: e3252695d8386779c45fdadba7c8314d7ed4bcbe5ef6096b7b5b4cef2a350c86
+  status: machine
+  heading: Las guías no dicen nada sobre el recuento
+  rule_text: |-
+    Considera que la pauta de ≥10 series por semana no dice nada sobre cómo contar las series. Elige la regla fraccionaria, explícasela al usuario y aplícala siempre de la misma forma. Nunca afirmes que el ACSM avala contar las series de multiarticulares 1:1 o 0.5.
+  applies_to: Adultos sanos de ≥18 años; la declaración de posición abarca ECA de ≥6 semanas.
+  conflicts: |-
+    El grado fuerte solo cubre el hecho de que la guía no da ninguna regla. Los metaanálisis en los que se basa el objetivo de ≥10 series contaron las series de formas distintas, así que su significado exacto es incierto.
+- key: strength-hypertrophy/earlier-1-1-advice-versus-the-newer-0-5-rule
+  source_hash: 6d661fce1c268c7f9cbdc201e5630884cef509a37c862d134ccefa32046c60fa
+  status: machine
+  heading: El antiguo consejo 1:1 frente a la nueva regla de 0.5
+  rule_text: |-
+    Usa 0.5 por defecto y di que es la mejor práctica actual, no ciencia asentada. Cuando un usuario u otra fuente cuente 1:1, explica la diferencia en lugar de decir que está mal. Para sinergistas con una activación claramente reducida en un ejercicio (isquiotibiales en sentadilla o prensa, recto femoral en prensa o sentadilla), cuenta como máximo 0.5, no confíes en esos ejercicios para el objetivo semanal de ese músculo y programa trabajo directo.
+  applies_to: |-
+    Adultos sanos; los datos de EMG son agudos y los longitudinales proceden de adultos jóvenes.
+  conflicts: |-
+    Desacuerdo explícito entre posiciones de expertos. El artículo de 2019 también dijo que una proporción 1:1 "no puede darse por supuesta" y que la contribución "probablemente depende de la persona y de la ejecución técnica". La EMG aguda no se traduce directamente en un peso por serie.
+- key: strength-hypertrophy/pressing-chest-1-triceps-and-front-delts-0-5
+  source_hash: ab451eb69ad061a3100296c68b4f851c3ca7b9667e6a547e3d5940fdd432b002
+  status: machine
+  heading: 'Empujes: pecho 1, tríceps y deltoides anterior 0.5'
+  rule_text: |-
+    Cuenta el press de banca y otros empujes horizontales como 1 serie para el pecho, 0.5 para el tríceps y el deltoides anterior, y 0 para el deltoides lateral y el bíceps. No hay que suponer que un programa solo de empujes trabaja el deltoides lateral.
+  applies_to: |-
+    Hombres jóvenes en muestras pequeñas; la generalización a mujeres, personas mayores y levantadores bien entrenados no está verificada.
+  conflicts: |-
+    Ningún ensayo da un estímulo preciso del tríceps por serie de banca; el 0.5 se toma del modelo agrupado. Es probable que la fracción dependa de la técnica, como la anchura del agarre y la trayectoria de los codos.
+- key: strength-hypertrophy/compounds-miss-the-triceps-long-head-and-rectus-femoris
+  source_hash: 4973ea7f654fdb6108707e40e0bdc679faea4bfaabde84bc1c25bbeab78cefcc
+  status: machine
+  heading: |-
+    Los multiarticulares no trabajan la porción larga del tríceps ni el recto femoral
+  rule_text: |-
+    Considera los empujes multiarticulares un estímulo pobre para la porción larga del tríceps. Cuenta la prensa y la sentadilla como 1 para los vastos y como aproximadamente 0 para el recto femoral. Cuando un usuario quiera un desarrollo completo de brazos o muslos, o una porción vaya rezagada, añade una extensión de tríceps por encima de la cabeza o tumbado, o una extensión de cuádriceps.
+  applies_to: |-
+    Adultos jóvenes durante 10-12 semanas, con medidas por resonancia magnética; no hay datos en personas mayores. Que esto importe o no a los clientes centrados en la salud es cuestión de preferencia.
+  conflicts: |-
+    Ensayos únicos y pequeños, aunque el hallazgo del recto femoral es coherente entre prensa y sentadilla. Rosa 2023 encontró una hipertrofia del músculo completo similar con entrenamiento monoarticular y multiarticular, y señaló que el trabajo monoarticular "puede" desarrollar preferentemente ciertas subdivisiones.
+- key: |-
+    strength-hypertrophy/squats-leg-press-and-hip-thrusts-barely-train-the-hamstrings
+  source_hash: c07a9237b7e5c6a6a5bb8270d65c7f339046f10a08a069489a0a724bdc2d045a
+  status: machine
+  heading: Sentadillas, prensa y hip thrust apenas trabajan los isquiotibiales
+  rule_text: |-
+    Cuenta la sentadilla, la prensa y el hip thrust como aproximadamente 0 (como máximo 0.25) para los isquiotibiales y prescribe trabajo directo de flexión de rodilla (curl femoral) y/o de bisagra de cadera (por ejemplo, un peso muerto rumano). Cuenta la sentadilla profunda y la prensa como al menos 0.5, y posiblemente más cerca de 1, para el glúteo mayor y los aductores; cuenta la media sentadilla con menos peso para los glúteos.
+  applies_to: |-
+    Adultos jóvenes durante 9-12 semanas; no hay datos en personas mayores ni en levantadores entrenados; las zancadas no se estudiaron.
+  conflicts: |-
+    Dirección coherente en tres ensayos pequeños con resonancia magnética. Los efectos en el glúteo varían mucho (2.2-15.4%) según la profundidad y el ejercicio. La recomendación del peso muerto rumano no se prueba en estas fuentes.
+- key: strength-hypertrophy/rows-and-pulldowns-for-the-biceps
+  source_hash: 40807b6fd345b74d3f1196da286c91cbc0d77ef1ab73500579ec25312c900bca
+  status: machine
+  heading: Remos y jalones para el bíceps
+  rule_text: |-
+    Cuenta los remos y los jalones como 0.5 series de bíceps. Si un usuario con objetivos de brazos no hace curls directos, espera un crecimiento del bíceps real pero probablemente más lento, y añade 2-4 series semanales de curl si hay tiempo.
+  applies_to: Hombres jóvenes no entrenados, 8-10 semanas, ecografía en un solo punto.
+  conflicts: |-
+    Resultados directamente contradictorios, quizá por el ejercicio, el diseño o el laboratorio. Gentil 2015 procede de un grupo con varios artículos retractados sobre entrenamiento monoarticular frente a multiarticular, así que dale menos peso.
+- key: strength-hypertrophy/isolation-work-is-optional-for-most-clients
+  source_hash: 83b09dcd02960aaecdf7a46671ecba00c213925e75ced8e3d21d4d2920b1e5cb
+  status: machine
+  heading: El trabajo de aislamiento es opcional para la mayoría de los clientes
+  rule_text: |-
+    Di a los usuarios que los programas solo de multiarticulares desarrollan los brazos de forma apreciable y que el aislamiento añade, como mucho, una cantidad extra modesta de tamaño del músculo completo a corto plazo. Para un principiante con 2-3 sesiones de unos 45 minutos por semana, construye el programa con multiarticulares que cubran empuje, tracción, sentadilla y bisagra de cadera. Añade aislamiento solo cuando se cumpla el volumen de multiarticulares y haya tiempo: primero un curl femoral y luego (criterio del entrenador, no probado aquí) elevaciones laterales para el deltoides lateral; el aislamiento de brazos es opcional. Recomienda aislamiento a los usuarios a quienes les importe el tamaño de los brazos o una porción rezagada. Nunca sustituyas los multiarticulares por un entrenamiento solo de aislamiento.
+  applies_to: |-
+    Adultos jóvenes sanos, sobre todo hombres, no entrenados y entrenados, de 8 semanas a 6 meses; los datos de brazos se midieron por ecografía o perímetro. Falta evidencia en personas mayores.
+  conflicts: |-
+    La mayoría de los ensayos primarios y la revisión de 23 estudios proceden de un mismo grupo (Gentil/Barbalho); PubMed recoge cuatro de sus artículos como retractados (dos sobre añadir trabajo monoarticular) y una expresión de preocupación de 2026 afecta a otro; Gentil 2013 y 2015 pueden compartir muestras; el ensayo de Barbalho 2021 tiene una fe de erratas. El metaanálisis independiente de Rosa 2023 coincide, pero es pequeño. La literatura de "los multiarticulares bastan" no abordó los isquiotibiales, el recto femoral ni el deltoides lateral.
+- key: strength-hypertrophy/strength-is-specific-to-the-lift-trained
+  source_hash: b60fd6b1c9a939379b5cc1308c80743e24a5704f77ec17eb86eaf97b24276272
+  status: machine
+  heading: La fuerza es específica del ejercicio entrenado
+  rule_text: |-
+    Para un objetivo de fuerza en un ejercicio concreto, cuenta las series de ese ejercicio exacto como 1 y las de ejercicios afines que trabajan los mismos músculos como aproximadamente 0.5. No esperes que el trabajo de aislamiento haga avanzar mucho el ejercicio principal. Para mejorar en un ejercicio, entrena ese ejercicio.
+  applies_to: |-
+    Principalmente adultos jóvenes en ensayos cortos; se extrapola a personas mayores y a quienes llevan mucho tiempo entrenando.
+  conflicts: |-
+    El peso de 0.5 no se estimó a partir de datos. Schoenfeld 2019 recomienda 1:1 por defecto. La transferencia probablemente varía según el ejercicio y la técnica.
+- key: strength-hypertrophy/counting-rule-outside-young-men
+  source_hash: 00fcbf7342c5dfd1b7ab297db14d99019891f5deb906ce1aa3a2ae2dd02a415b
+  status: machine
+  heading: Regla de recuento fuera de los hombres jóvenes
+  rule_text: |-
+    Para adultos de más de unos 60 años, mujeres y quienes llevan mucho tiempo entrenando, aplica la misma regla de recuento de 0.5 como opción de trabajo por defecto y di claramente que se extrapola de muestras jóvenes y mayoritariamente masculinas. Ajusta el volumen según el progreso observado, no solo con la aritmética de series.
+  applies_to: Personas mayores, mujeres y levantadores con muchos años de entrenamiento.
+  conflicts: |-
+    Schoenfeld 2019 recomienda 1:1 por defecto. Las personas mayores pueden diferir en la recuperación y en la contribución de los sinergistas, pero no hay datos en ningún sentido.
+- key: strength-hypertrophy/frequency-for-hypertrophy
+  source_hash: 789eb8ce4258ea828e23ed9d73591bf8249e80a9bfe161b0c460a9c450e72188
+  status: machine
+  heading: Frecuencia para hipertrofia
+  rule_text: |-
+    Elige con qué frecuencia entrenar cada músculo según el horario, la recuperación y la preferencia. Usa la frecuencia para encajar el volumen semanal, no como un objetivo en sí mismo. Repartir el volumen en 2 o más sesiones es práctico cuando una sola sesión necesitaría demasiadas series para un músculo.
+  applies_to: Adultos sanos, entrenados y no entrenados; sobre todo adultos jóvenes.
+  conflicts: |-
+    Un metaanálisis anterior (Schoenfeld 2016) encontró que dos veces por semana superaba a una vez por semana (ES 0.49 frente a 0.30); los análisis posteriores, más amplios, no respaldan un efecto independiente de la frecuencia.
+- key: strength-hypertrophy/frequency-for-strength
+  source_hash: 4da6a6cff8ec3ff9e49a44d10dca6603253004cfe8cf7085eb3458b2f24322a3
+  status: machine
+  heading: Frecuencia para fuerza
+  rule_text: |-
+    Para objetivos de fuerza, practica cada ejercicio principal al menos dos veces por semana. Tres o más exposiciones es una opción razonable para levantadores intermedios, sobre todo en los multiarticulares de tren superior, pero no lo presentes como necesario.
+  applies_to: |-
+    Sobre todo adultos jóvenes no entrenados. Los subgrupos de Grgic sugieren un efecto mayor en mujeres y adultos jóvenes y un efecto no significativo en adultos de mediana edad y mayores (p=0.093).
+  conflicts: |-
+    Hay desacuerdo sobre si la frecuencia actúa con independencia del volumen (Grgic, nulo al igualar el volumen; Pelland, pendiente positiva). Un beneficio por la práctica de la técnica es plausible, pero no se ha aislado.
+- key: strength-hypertrophy/full-body-versus-split
+  source_hash: a689f2902976e9b52cc28347a9d4dffdb7c51377e14036c3b2298e9c24ebab20
+  status: machine
+  heading: Cuerpo completo frente a rutina dividida
+  rule_text: |-
+    Deja que el cliente elija cuerpo completo, torso/pierna u otra rutina dividida según los días disponibles y lo que disfrute. Con 2-3 días por semana, las sesiones de cuerpo completo son la forma más sencilla de trabajar cada músculo dos veces. Comprueba que se cubren las series semanales por músculo sea cual sea la rutina elegida.
+  applies_to: |-
+    Adultos sanos, entrenados y no entrenados; sobre todo estudios de 8-12 semanas en adultos jóvenes; evidencia limitada en personas mayores.
+  conflicts: |-
+    Carneiro 2024 (23 hombres bien entrenados, 75 series por semana) encontró más pérdida de masa grasa con cuerpo completo que con una rutina dividida de 1x por semana; es otro resultado y un estudio pequeño, no un motivo para pasar por encima de la preferencia. Dos autores de Evangelista 2021 declararon que venden clínicas y talleres sobre el tema.
+- key: strength-hypertrophy/load-range-for-hypertrophy
+  source_hash: d75dbe9955b28db8861e9e3e9ce8223401be548551b97f01c1dc27f07a884b09
+  status: machine
+  heading: Rango de carga para hipertrofia
+  rule_text: |-
+    Para un objetivo de hipertrofia o de composición corporal, deja que el cliente elija cargas en cualquier punto entre unas 6 y 30 repeticiones por serie según su preferencia, la comodidad articular y el material. Por defecto, usa cargas moderadas (unas 6-15 repeticiones). Las cargas ligeras solo funcionan si la serie termina cerca del fallo.
+  applies_to: |-
+    Adultos sanos de 18+ años, sobre todo jóvenes y no entrenados o entrenados a nivel recreativo; las mujeres fueron el 47% del metaanálisis en red. La equivalencia puede no cumplirse en series con cargas bajas que se detienen lejos del fallo.
+  conflicts: |-
+    La equivalencia supone un esfuerzo alto; las cargas muy ligeras (>25-30 repeticiones) son más incómodas y más difíciles de valorar. En personas mayores (Csapo 2016, edad media 68) las cargas más pesadas (~80% 1RM) dieron ganancias de tamaño solo ligeramente mayores que ~45% 1RM (mu 0.056-0.136). Lopez 2021 tiene una fe de erratas publicada (MSSE 2022;54(2):370).
+- key: strength-hypertrophy/load-range-for-maximal-strength
+  source_hash: 89119e24cd8f176a93515d5c5e6d508169d967f919e01af446f7868fb95675ba
+  status: machine
+  heading: Rango de carga para fuerza máxima
+  rule_text: |-
+    Si el cliente quiere ganar fuerza, incluye trabajo más pesado de forma regular en el rango de 3-8 repeticiones (en torno al 75-85%+ 1RM) en los ejercicios principales una vez que la técnica sea sólida. Los principiantes logran grandes ganancias con cargas moderadas al principio; introduce las series más pesadas de forma gradual a medida que la técnica se vuelve constante (una decisión de entrenamiento, a menudo tras las primeras semanas, no un umbral derivado de la evidencia).
+  applies_to: Adultos sanos, sobre todo jóvenes.
+  conflicts: |-
+    Parte de la ventaja de las cargas pesadas se debe a la especificidad de la técnica. Para clientes orientados a la salud, la ganancia extra de 1RM puede importar menos que la adherencia y la comodidad articular.
+- key: strength-hypertrophy/training-to-failure-is-not-required
+  source_hash: 5fa87904d8e5975bb66630cb80a3d72368acfbc42595b60bafdc32bc99c89262
+  status: machine
+  heading: No hace falta entrenar al fallo
+  rule_text: |-
+    No prescribas entrenar al fallo de forma habitual. Haz que "duro pero sin llegar al fallo" sea lo normal. El fallo es opcional, como mucho en la última serie de ejercicios seguros (máquinas, aislamiento) para clientes que lo disfrutan y tienen buena técnica. Evita el fallo en clientes mayores o desentrenados.
+  applies_to: |-
+    Adultos sanos; ensayos casi todos en adultos jóvenes, muchos de ellos hombres entrenados; pocos datos en personas mayores.
+  conflicts: |-
+    Una posible pequeña ventaja en hipertrofia al entrenar más cerca del fallo en personas entrenadas (subgrupo entrenado de Grgic ES 0.15, 0.03-0.26; Refalo con cualquier definición ES 0.19, 0.00-0.37); trivial para la población objetivo.
+- key: strength-hypertrophy/target-reps-in-reserve
+  source_hash: 478e2dc644f9e748ee15d8ccd637069ede53d75198fd422825048110df05af49
+  status: machine
+  heading: Repeticiones en reserva objetivo
+  rule_text: |-
+    Prescribe la mayoría de las series efectivas a unas 1-3 RIR para hipertrofia y 1-4 RIR para las series pesadas orientadas a la fuerza. Las series de calentamiento y de técnica no cuentan como series efectivas. Una serie terminada con 5+ RIR probablemente es demasiado fácil para la hipertrofia.
+  applies_to: |-
+    Adultos sanos; las RIR se estimaron, no se midieron, en muestras mayoritariamente jóvenes.
+  conflicts: |-
+    La curva puede aplanarse cerca de 0 RIR; los autores califican de poco clara la relación exacta entre RIR e hipertrofia.
+- key: strength-hypertrophy/costs-of-failure
+  source_hash: 029354918fbadd0ee6d34582438cf4800eef406715bf2e3d73a9974b572bd008
+  status: machine
+  heading: Costes del fallo
+  rule_text: |-
+    Usa las RIR en lugar del fallo, sobre todo en los multiarticulares pesados (sentadilla, peso muerto, press de banca) y cuando el músculo vuelve a entrenarse en menos de 48 h. Evita el fallo al principio con principiantes cuya adherencia sea frágil, porque una menor incomodidad les ayuda a seguir entrenando.
+  applies_to: |-
+    Muestras pequeñas de adultos jóvenes entrenados; la generalización a principiantes es plausible pero no se ha probado.
+  conflicts: |-
+    La resistencia a la fatiga puede mejorar con el tiempo (Refalo 2024). A algunos clientes les gusta entrenar al fallo.
+- key: strength-hypertrophy/effort-limits-for-older-adults-and-cardiovascular-risk
+  source_hash: 1c94033a17e4d43864d2d5f942ed0f61c0c8c8ae59f48de02cc9df4d9487261d
+  status: machine
+  heading: Límites de esfuerzo para mayores y riesgo cardiovascular
+  rule_text: |-
+    Para principiantes mayores (de más de unos 60 años) y cualquier persona con hipertensión o riesgo cardiovascular, empieza en unas 2-3 RIR (unos 13-15 en la escala de Borg 6-20), evita entrenar al fallo, detén la serie cuando se rompa la técnica y evita contener la respiración (Valsalva). Las personas mayores pueden progresar a unas 1-2 RIR tras unas 8 semanas sin síntomas. Ajusta la carga por RIR o RPE, no por %1RM, porque el coach no tiene un 1RM medido. Nunca lleves al fallo los multiarticulares con peso libre sin un compañero que asista o sin barras de seguridad. Para los umbrales de tensión arterial que obligan a detener o limitar el entrenamiento, sigue las franjas de recovery-habits.md. El corte de edad, las cifras de RIR, la equivalencia con la escala de Borg y el paso de 8 semanas son convenciones prácticas, no derivadas de ensayos.
+  applies_to: |-
+    Personas mayores y personas con hipertensión o riesgo cardiovascular. Razonamiento de expertos por precaución, no datos de ensayos que muestren daño.
+  conflicts: |-
+    No hay evidencia directa de ECA de que el fallo cause daño en personas mayores; la redacción del ACSM es tentativa. ICFSR apunta a Borg 15-18 ("duro a muy duro") con supervisión y un 1RM medido; este coach empieza más bajo y trabaja sin supervisión, así que usa el tope más conservador.
+- key: strength-hypertrophy/rir-accuracy
+  source_hash: 84d3177f1fed2419915ba3ce8fd4136e89bd752171d236e5e87fd23d619a8bf4
+  status: machine
+  heading: Precisión del RIR
+  rule_text: |-
+    Considera que las RIR que declara el cliente tienen un margen de aproximadamente ±1-2 repeticiones. Espera que la gente pare con más repeticiones en reserva de las que cree, sobre todo en series de muchas repeticiones. Usa objetivos de RIR con cargas moderadas (unas 5-12 repeticiones), donde la estimación es mejor, y fíate más de las valoraciones de las últimas series.
+  applies_to: Adultos sanos, sobre todo jóvenes; entrenados y no entrenados.
+  conflicts: |-
+    Que el nivel de entrenamiento no prediga la precisión va en contra de la creencia de que solo los levantadores con experiencia pueden usar las RIR. No está claro qué error es "aceptable".
+- key: strength-hypertrophy/calibrating-clients-to-rir
+  source_hash: 1b90f1246670d7338b576853738241ba36ecf3a5516c9462d6284a8dfeca46dd
+  status: machine
+  heading: Calibrar a los clientes en el RIR
+  rule_text: |-
+    Enseña la escala RIR/RPE de forma explícita. Calibra periódicamente con alguna serie ocasional al fallo técnico en un ejercicio seguro (máquina, aislamiento o con seguros). Pide una valoración de RIR tras cada serie efectiva y ajusta la siguiente serie en un 2-5% aproximadamente (o ±1-2 repeticiones) cuando la valoración no coincida con el objetivo.
+  applies_to: |-
+    Adultos sanos; la calibración con series al fallo y el ajuste del 2-5% son inferencias prácticas.
+  conflicts: |-
+    La precisión varía según el ejercicio; el beneficio de la calibración en principiantes es una extrapolación.
+- key: strength-hypertrophy/self-selected-loads-are-often-too-light
+  source_hash: d6cb149ece33b19de1a81ed35f75b0a335bd904296412acce66695f766e8efbc
+  status: machine
+  heading: Las cargas elegidas por uno mismo suelen ser demasiado ligeras
+  rule_text: |-
+    No dejes que la prescripción sea "elige un peso que te parezca bien". Da un rango de repeticiones más un objetivo de RIR, sube la carga cuando se alcance el tope del rango con las RIR objetivo y comprueba que las series son realmente duras.
+  applies_to: |-
+    Adultos sanos de experiencia variada; sobre todo sesiones únicas con instrucciones vagas.
+  conflicts: |-
+    Metaanálisis exploratorio; unas instrucciones más claras pueden cambiar la autoselección.
+- key: strength-hypertrophy/autoregulation
+  source_hash: 809cf7c420bc9159b479bc52deccadafcef6fd5763e6a2e1934a0a6465e6382b
+  status: machine
+  heading: Autorregulación
+  rule_text: |-
+    Usa RIR/RPE como herramienta práctica para elegir cargas y gestionar el estado de forma diario, pero no lo presentes como superior a un plan fijo sensato. Para hipertrofia, deja que las series se acerquen razonablemente al fallo; para fuerza, basta con parar más lejos del fallo. Enseña las RIR de forma gradual a los principiantes.
+  applies_to: |-
+    Adultos entrenados, sobre todo jóvenes; no se ha probado en principiantes ni en personas mayores.
+  conflicts: |-
+    Pocos estudios y estimaciones imprecisas; trasladar los hallazgos de pérdida de velocidad a las RIR es una inferencia.
+- key: strength-hypertrophy/rest-intervals-for-hypertrophy
+  source_hash: 00bcc0c55bda748800cfda7871606957efd502a9e9d3cbc3a16234e1fbfad003
+  status: machine
+  heading: Descansos para hipertrofia
+  rule_text: |-
+    Por defecto, descansa unos 1.5-3 min entre series para hipertrofia, y más en los multiarticulares pesados. Los descansos más cortos (60 s o superseries) son aceptables cuando hay poco tiempo, pero añade una serie o acepta algunas repeticiones menos. Descansa lo suficiente para que las repeticiones de la siguiente serie no se desplomen.
+  applies_to: |-
+    Adultos sanos en estudios pequeños, sobre todo jóvenes; todos los intervalos creíbles incluyen el cero.
+  conflicts: |-
+    El ACSM 2009 (1-2 min) y los datos más recientes, que se inclinan por >60-90 s, difieren. Los efectos son pequeños, así que los clientes con poco tiempo pueden usar descansos cortos con poca pérdida si mantienen el volumen.
+- key: strength-hypertrophy/rest-intervals-for-strength
+  source_hash: 210fc8480976ec8cac6a4592cd86d6679e18759799fb38fad567d1737df4bf87
+  status: machine
+  heading: Descansos para fuerza
+  rule_text: |-
+    Para principiantes, 1-2 min entre series está bien. Para clientes entrenados que hacen series pesadas (≤6 repeticiones) en los ejercicios principales, deja 2-3+ min. Usa descansos más cortos en el trabajo accesorio para ahorrar tiempo.
+  applies_to: |-
+    Adultos sanos, predominantemente hombres; revisión sistemática sin agrupación de datos.
+  conflicts: |-
+    El ACSM 2026 y Grgic 2018 difieren en el énfasis; la diferencia probablemente importa sobre todo para levantadores avanzados.
+- key: strength-hypertrophy/tempo-and-time-under-tension
+  source_hash: 4e4d3e35ef4de592e37f8d680f96eb3f96fbc6439ea2087250eaa1fadfb4e2b8
+  status: machine
+  heading: Tempo y tiempo bajo tensión
+  rule_text: |-
+    No prescribas tempos lentos especiales ni objetivos de tiempo bajo tensión para el crecimiento. Indica una bajada controlada (unos 1-3 s) y una subida decidida, tan rápida como sea práctico, en todo el rango de movimiento. Evita las repeticiones superlentas (>10 s).
+  applies_to: |-
+    Adultos sanos de cualquier nivel de entrenamiento; los ensayos individuales son pequeños.
+  conflicts: |-
+    El hallazgo de >10 s es provisional. Los tempos más lentos siguen teniendo su lugar para aprender la técnica, por tolerancia articular o en rehabilitación. El ACSM 2026 indica que el entrenamiento de potencia (concéntrica rápida) mejoró la función física, algo relevante para las personas mayores.
+- key: strength-hypertrophy/free-weights-versus-machines
+  source_hash: 9771837810f376f37271d83400fef23c8e7306b10eb7c565ef383f0b8e416087
+  status: machine
+  heading: Pesos libres frente a máquinas
+  rule_text: |-
+    Elige el material por preferencia, acceso, seguridad y técnica, no por la creencia de que uno desarrolla más músculo. Las máquinas son una opción por defecto excelente para principiantes, personas mayores y cualquiera que quiera una progresión de poca técnica y fácil de cargar. Si un objetivo está ligado a un ejercicio con peso libre, incluye ese ejercicio, porque la fuerza es específica.
+  applies_to: |-
+    Adultos de 18-60 años (Haugen, sobre todo hombres); el análisis en personas mayores abarca edades de 63-87 años y solo la fuerza.
+  conflicts: |-
+    La comparación de hipertrofia se apoya en pocos estudios (5 en Haugen) y el ACSM la calificó de insuficiente. La preferencia y el historial de lesiones deberían primar.
+- key: strength-hypertrophy/full-range-of-motion-by-default
+  source_hash: f470e0f4b299264e155b17f450c98b48ea46ee239bf828803985912b3d4c21a3
+  status: machine
+  heading: Rango de movimiento completo por defecto
+  rule_text: |-
+    Por defecto, usa un rango de movimiento completo y controlado en todos los ejercicios. Si un cliente no puede usar el rango completo (movilidad, dolor), conserva la parte en la que el músculo está estirado (la parte baja de una sentadilla, un curl o un press) en lugar de la mitad superior corta. Evita las parciales de la mitad superior como estímulo principal.
+  applies_to: Adultos sanos, sobre todo jóvenes y no entrenados; pocos músculos estudiados.
+  conflicts: |-
+    Pallarés agrupó parciales en longitud larga y en longitud corta; Kassiano muestra que el déficit lo causan las parciales en longitud corta. Kassiano es una revisión sistemática sin agrupación de datos.
+- key: strength-hypertrophy/lengthened-partials-are-an-option-not-an-upgrade
+  source_hash: f3040878d1e156dd8add7352e85b9d9a385e70c6a0db402d7fcbb83c8d763b5a
+  status: machine
+  heading: Las parciales en estiramiento son una opción, no una mejora
+  rule_text: |-
+    Usa parciales en estiramiento cuando el rango completo resulte incómodo o poco práctico, o como extensiones al final de la serie. No sustituyas con ellas el entrenamiento en rango completo con la promesa de un crecimiento extra. Sea cual sea el rango, carga el músculo en la posición estirada.
+  applies_to: |-
+    Sobre todo hombres jóvenes entrenados; no hay datos directos en personas mayores y hay pocos en principiantes.
+  conflicts: |-
+    Los ensayos muestran similitud, no superioridad. Wolf 2026 (revisión sistemática narrativa, 8 estudios) sugiere que las longitudes musculares mayores pueden dar más crecimiento que las menores, pero califica la evidencia de mixta, y eso no es una comparación con el ROM completo. McMahon encontró mayores ganancias de longitud de fascículo con parciales en estiramiento, un cambio de arquitectura, no un tamaño extra.
+- key: strength-hypertrophy/exercise-variation
+  source_hash: d2ea83fc341d4256bf60c03ea5699688d60bf1a4041fc36e5da30db960cd6e63
+  status: machine
+  heading: Variación de ejercicios
+  rule_text: |-
+    Mantén un núcleo estable de ejercicios durante bloques de varias semanas (6-12 semanas es una heurística práctica) para que el progreso sea medible y la técnica se consolide. Cambia de ejercicio de forma deliberada, por ejemplo para trabajar un músculo en otra longitud o ángulo, o para sortear una molestia. Evita la "confusión muscular" (ejercicios nuevos en cada sesión), también como solución a un estancamiento.
+  applies_to: Evidencia solo en hombres jóvenes.
+  conflicts: |-
+    El disfrute y la adherencia pueden justificar más variedad para algunos clientes.
+- key: strength-hypertrophy/starting-point-for-novices
+  source_hash: 2291552fa8fc101dc591ae783d7851e6f2f7230983278dcac964e1208fd4c7de
+  status: machine
+  heading: Punto de partida para principiantes
+  rule_text: |-
+    Empieza con los principiantes en unas 8-12 repeticiones por serie, 2-3 RIR y 2-3 sesiones por semana. Una vez que la técnica sea sólida, incluye algo de trabajo más pesado (≥80% 1RM, unas 6-8 repeticiones o menos) en los ejercicios principales si la fuerza es un objetivo.
+  applies_to: Principiantes adultos sanos.
+  conflicts: |-
+    La declaración de 2026 resta importancia a las prescripciones rígidas y dice que las recomendaciones de 2009 pueden ser menos relevantes para la mayoría de los adultos.
+- key: strength-hypertrophy/double-progression
+  source_hash: aeed6d503adfbcb27c4795d5d5d65c81d42c6660ae00b3b81b3fd52a7f436d5e
+  status: machine
+  heading: Doble progresión
+  rule_text: |-
+    Usa la doble progresión. Elige un rango de repeticiones (por ejemplo, 8-12). Cuando el cliente supere el tope del rango en 1-2 repeticiones en todas las series efectivas con las RIR objetivo, añade el incremento práctico más pequeño dentro de un 2-10% aproximadamente (saltos menores en ejercicios de tren superior y de aislamiento, mayores en los grandes ejercicios de tren inferior). Añadir repeticiones o series con la misma carga es igual de válido cuando el siguiente salto es demasiado grande. Entrenar cada ejercicio al menos dos veces por semana es suficiente; los intermedios no necesitan 3-4 días. Para clientes centrados en la salud que están contentos, mantener estable una rutina exigente es aceptable; no plantees los aumentos constantes de carga como obligatorios.
+  applies_to: |-
+    Adultos sanos, de principiantes a entrenados; buena parte de la evidencia del ACSM 2026 procede de personas sin experiencia en el entrenamiento.
+  conflicts: |-
+    La regla del 2-10% es un consenso de expertos de 2009, no derivado de ensayos. La revisión general de 2026 no respalda como necesarios los niveles de frecuencia de 2009. El ritmo de progresión varía mucho; las personas mayores y las más pequeñas necesitan saltos absolutos menores.
+- key: strength-hypertrophy/when-progress-stalls
+  source_hash: ca21908b59c24c683765f14b0eebd50fbfbe469aeb562d8083ae176af1c0b869
+  status: machine
+  heading: Cuando el progreso se estanca
+  rule_text: |-
+    Considera estancado un ejercicio cuando la carga o las repeticiones no han subido durante unas 3 sesiones o semanas seguidas pese a un buen sueño, una buena alimentación y una buena asistencia (una heurística). Ante un estancamiento en hipertrofia, comprueba primero que las series efectivas son realmente duras (no hace falta llegar al fallo) y que el músculo recibe al menos 10 series duras semanales; luego prueba un aumento modesto de un 10-20% sobre las series semanales actuales del músculo rezagado, repartido entre sesiones, en lugar de saltar a una plantilla genérica de alto volumen. Ante un estancamiento en fuerza, añade trabajo pesado (≥80% 1RM) en rango completo y mantén cada ejercicio al menos dos veces por semana. Revisa el esfuerzo, el volumen y la recuperación antes de cambiar de ejercicios.
+  applies_to: |-
+    Adultos sanos; el ensayo de volumen individualizado fue pequeño y en personas entrenadas; el metaanálisis de Benito solo incluyó hombres adultos sanos.
+  conflicts: |-
+    Más volumen no siempre es mejor; Benito 2020 encontró una interacción negativa con las series por sesión. El límite inferior del CI de Scarpelli está cerca de cero.
+- key: strength-hypertrophy/periodisation-for-hypertrophy
+  source_hash: dde8f1ec5fe479aeb5dc8ffa49d5d5c0e4825c8ccf066cbd0b73964cb71ea58e
+  status: machine
+  heading: Periodización para hipertrofia
+  rule_text: |-
+    Para objetivos de composición corporal o de salud, no vendas un modelo de periodización como una ventaja para ganar músculo. Basta con un plan progresivo sencillo con suficientes series semanales. Usa la variación planificada solo por adherencia, gestión de la fatiga u organización del horario.
+  applies_to: Adultos sanos, sobre todo jóvenes, muchos no entrenados.
+  conflicts: Las definiciones de periodización varían entre estudios.
+- key: strength-hypertrophy/periodisation-for-maximal-strength
+  source_hash: 9fa9e7f243fcd63bcd835d2c571531738b2663062d56bfdc2222b28f619552b8
+  status: machine
+  heading: Periodización para fuerza máxima
+  rule_text: |-
+    Para principiantes y quienes vuelven a entrenar, usa una progresión lineal sencilla y no dediques esfuerzo a elegir un modelo. Para un levantador recreativo entrenado que quiera de forma explícita mejorar su sentadilla, press de banca o peso muerto, rotar días o semanas pesados, moderados y ligeros (ondulante) es una opción razonable y de bajo coste; preséntala como un beneficio modesto e incierto.
+  applies_to: Adultos sanos; sobre todo ensayos cortos en hombres jóvenes.
+  conflicts: |-
+    Los efectos son de pequeños a moderados, con CI cercanos a cero. Williams no exigió igualar el volumen y encontró mayores ganancias en personas no entrenadas, a diferencia de Moesgaard.
+- key: strength-hypertrophy/deloads
+  source_hash: 722374b8b345e3105eeff247685a06c7ff2891f9d4847eb113894640e3d4992c
+  status: machine
+  heading: Descargas
+  rule_text: |-
+    No prescribas descargas rutinarias como forma de aumentar las ganancias. Ofrece una descarga reactiva de 1 semana aproximadamente cuando dos o más de estas señales persistan a la vez durante 1-2 semanas: el rendimiento se estanca o baja en varios ejercicios, molestias articulares o agujetas persistentes, mal sueño, poca motivación. Mantén los ejercicios principales y reduce el estrés en lugar de parar: como convención de entrenamiento, recorta el volumen (series) en un 30-50% aproximadamente durante una semana, mantén las cargas y quédate a 3 o más repeticiones del fallo. Si las señales apuntan a un sobrealcance (el rendimiento baja pese al descanso, junto con mal sueño o mal estado de ánimo), usa la misma descarga más 1-3 días extra de descanso. Quien entrena fuerza y prefiere las descargas programadas puede usarlas, como opción y no como requisito; lo normal para quienes entrenan de forma recreativa es la descarga reactiva.
+  applies_to: |-
+    Adultos jóvenes durante 8-9 semanas; las prácticas de entrenadores y deportistas son la opinión de levantadores de competición, sobre todo hombres. No hay datos en personas mayores.
+  conflicts: |-
+    Dos ECA pequeños con diseños distintos; el coste en fuerza en Coleman es incierto. La justificación de la "resensibilización" no se ha probado. El consejo popular de "descarga cada 4 semanas" va más allá de la evidencia.
+- key: strength-hypertrophy/early-timeline-neural-then-hypertrophic-gains
+  source_hash: 11df018bcf1059c9e394973bbe554b253f1e949fba5ad5b37f815a1c83504316
+  status: machine
+  heading: 'Cronología inicial: primero ganancias neurales y luego hipertróficas'
+  rule_text: |-
+    Di a los principiantes que la fuerza subirá rápido en las semanas 1-6, sobre todo por aprender los ejercicios y por una mejor activación muscular, antes de que haya cambios de tamaño visibles. No juzgues si un programa funciona para la hipertrofia hasta haber completado al menos 8-12 semanas de entrenamiento constante.
+  applies_to: |-
+    Adultos jóvenes no entrenados; datos pequeños y antiguos avalados por el ACSM. Las personas mayores probablemente siguen la misma secuencia más despacio (no se estudió aquí).
+  conflicts: |-
+    La hipertrofia puede empezar antes de lo que suponían los modelos más antiguos; el punto exacto de cruce es incierto.
+- key: strength-hypertrophy/realistic-rate-of-muscle-growth
+  source_hash: a2049f8438dad80f03fdc1d8ffe6746411576e56a30a6565c4fc9ef59d8e24e7
+  status: machine
+  heading: Ritmo realista de crecimiento muscular
+  rule_text: |-
+    En un principiante, espera unos pocos puntos porcentuales más de tamaño por músculo entrenado en los primeros 1-2 meses y alrededor de un 5-10% en unas 10 semanas, con una ralentización a partir de unas 6-12 semanas. No tomes las medidas de las primeras 3 semanas como músculo real. Usa las tendencias de peso corporal y de perímetros a lo largo de meses.
+  applies_to: |-
+    Adultos jóvenes no entrenados, sobre todo hombres, n=7-15. Más lento en personas entrenadas y probablemente en mayores.
+  conflicts: |-
+    Los estudios difieren en cuánto de la ganancia temprana de CSA es edema; los ritmos con volante de inercia pueden estar en la parte alta. La variación individual es muy grande.
+- key: strength-hypertrophy/novice-strength-gains-and-plateau
+  source_hash: bfc38dd9b8c2f1d351d7c0819e296f529e73ef50a4dcb7d3394ff776b327ef5a
+  status: machine
+  heading: Ganancias de fuerza de los principiantes y estancamiento
+  rule_text: |-
+    Di a los principiantes con un programa de dos veces por semana que esperen ganancias de fuerza de alrededor de un 20% (con un rango amplio) en los ejercicios entrenados durante los primeros 5-6 meses, posiblemente del 30-50% en el primer año, y después un progreso mucho más lento. Presenta como normal la ralentización tras 6-12 meses.
+  applies_to: |-
+    Adultos no entrenados de ambos sexos, incluidos de mediana edad y mayores. Un único laboratorio finlandés; un modelo comercial de dosis baja.
+  conflicts: |-
+    Los datos de Steele son registros retrospectivos de una empresa, con coautores vinculados a ella; no está claro si la meseta puede superarse.
+- key: strength-hypertrophy/trained-lifters-progress-more-slowly
+  source_hash: 2281b744b9ec945f4270f7c20ed603e61dc270e48636385724e7db394f3e3451
+  status: machine
+  heading: Los levantadores entrenados progresan más despacio
+  rule_text: |-
+    Di a los usuarios que el progreso se ralentiza cuanto más entrenados están. Con levantadores entrenados a nivel recreativo, mide las ganancias a lo largo de meses o años y hazles progresar con cargas más pesadas (más trabajo en torno al 80% 1RM o por encima para la fuerza) y un volumen adecuado.
+  applies_to: |-
+    Adultos sanos; los datos en entrenados son sobre todo de hombres jóvenes; los ritmos exactos para levantadores recreativos entrenados no están bien cuantificados.
+  conflicts: |-
+    Rhea 2003 es más antiguo y se basa en tamaños del efecto; el ACSM dice que no puede determinarse el número óptimo exacto de series. En investigación, "entrenado" suele significar moderadamente entrenado.
+- key: strength-hypertrophy/large-individual-variability
+  source_hash: 678886518f1e6cdb89c1dc15005071c42a347c0c70e3fadde048094f35a15162
+  status: machine
+  heading: Gran variabilidad individual
+  rule_text: |-
+    No declares a un usuario no respondedor, ni reescribas el plan, porque una métrica se estanque en las primeras 4-8 semanas. Sigue varios resultados (carga o repeticiones, perímetros, peso corporal, función). Si la fuerza sube pero el tamaño no, sigue adelante y revisa el volumen, el esfuerzo y la alimentación. Deja al menos 12 semanas, preferiblemente 24.
+  applies_to: Adultos no entrenados de todas las edades y de ambos sexos.
+  conflicts: |-
+    Parte de la variabilidad aparente es error de medida. Se debate si existen verdaderos no respondedores; más duración y más dosis aumentan la proporción de respondedores.
+- key: strength-hypertrophy/maintenance-dose-during-busy-periods
+  source_hash: 94bda49a158842d8bc7b26366c9e06071f3fa12fb67228d704dd28259df5cd99
+  status: machine
+  heading: Dosis de mantenimiento en épocas de mucho trabajo
+  rule_text: |-
+    Cuando la vida se complica, recorta la frecuencia y las series antes que la carga. Para un cliente más joven, 1 sesión por semana con 1-2 series por movimiento principal a la carga de trabajo habitual es un mínimo de mantenimiento razonable. Para clientes de más de unos 60 años, apunta a 2 sesiones por semana con 2-3 series por ejercicio para conservar el músculo. Vuelve al programa completo en cuanto sea posible.
+  applies_to: |-
+    Adultos que acababan de completar un entrenamiento supervisado; no hay datos específicos de mujeres ni de levantadores con muchos años de entrenamiento.
+  conflicts: Pocos ECA y una revisión narrativa; el umbral para personas mayores es incierto.
+- key: strength-hypertrophy/short-breaks-cost-little
+  source_hash: c77b569ecc700b9a2a6807f684c0d2f121773093b64f6e2b4bc7b1a6b73d420e
+  status: machine
+  heading: Las pausas cortas cuestan poco
+  rule_text: |-
+    Tranquiliza a los usuarios: una pausa de unas pocas semanas por vacaciones o enfermedad no es un retroceso importante. Como heurística, tras menos de unas 2 semanas sin entrenar, retoma en torno al 90% de las cargas de trabajo previas; tras pausas más largas, empieza un 10-20% por debajo de las cargas de trabajo previas y recupera el nivel en 1-3 semanas (véase "Quienes vuelven a entrenar"). Espera recuperar los niveles previos en unas pocas semanas. Nunca uses el miedo a perder lo ganado para forzar a entrenar estando enfermo o lesionado.
+  applies_to: |-
+    Hombres jóvenes no entrenados, un ejercicio de tren superior; adultos jóvenes entrenados para la pausa de 1 semana.
+  conflicts: |-
+    Las pausas no son inferiores, pero tampoco superiores, y no justifican programar pausas para aumentar las ganancias.
+- key: strength-hypertrophy/longer-detraining
+  source_hash: d522bdc5629b5164f702e3545fe058ca933644cc69464db11a8902ab0a364b0a
+  status: machine
+  heading: Desentrenamiento más largo
+  rule_text: |-
+    Di a los clientes que la fuerza se pierde más despacio de lo que temen, y que cuanto más larga es la pausa, mayor es la pérdida. En pausas de varios meses, sobre todo a partir de los 65, espera una pérdida apreciable de músculo y fuerza, y ofrece una rutina mínima en casa o de mantenimiento para amortiguarla.
+  applies_to: |-
+    Poblaciones mixtas; los datos de tamaño en personas mayores proceden de 6 estudios pequeños.
+  conflicts: |-
+    Los ritmos varían con la edad, el nivel de entrenamiento y la duración de la pausa; las fuentes dan una dosis-respuesta, no cortes exactos.
+- key: strength-hypertrophy/returning-lifters-and-muscle-memory
+  source_hash: a58d5d7f35151c1c08749d1e679d16754fe3425154681ca5975f0c69c7886588
+  status: machine
+  heading: Quienes vuelven a entrenar y la "memoria muscular"
+  rule_text: |-
+    Di a quienes vuelven a entrenar que las pausas no borran lo invertido y que la fuerza vuelve más rápido que el tamaño. Como heurística de entrenamiento, tras menos de unas 2 semanas sin entrenar, retoma en torno al 90% de las cargas de trabajo previas; tras pausas más largas, reinicia con menos series y cargas un 10-20% por debajo de las previas, recupera el nivel en 1-3 semanas y luego progresa como de costumbre. No prometas la "memoria muscular" como un recrecimiento acelerado garantizado.
+  applies_to: |-
+    Adultos jóvenes y de mediana edad sin entrenamiento previo, tras unas 10 semanas de entrenamiento; no hay datos de levantadores veteranos que vuelven tras años sin entrenar.
+  conflicts: |-
+    Las afirmaciones populares sobre la memoria muscular van más allá de la evidencia en humanos; Psilander no pudo poner a prueba la hipótesis con rigor porque los mionúcleos no aumentaron. Los porcentajes de reinicio son heurísticas.
+- key: strength-hypertrophy/cardio-does-not-cancel-muscle-gain
+  source_hash: 3ae025d801d7fb564b8e138889f1ecc75aa129cd58bcfdb1705e4d51c960eb89
+  status: machine
+  heading: El cardio no anula la ganancia muscular
+  rule_text: |-
+    Corrige activamente el mito de que "el cardio se come las ganancias". Nunca aconsejes a un cliente que busca cambiar su composición corporal o mejorar su salud que se salte el cardio. A las dosis de los ensayos (unas 2-3 sesiones aeróbicas por semana junto a 2-3 sesiones de fuerza), mantén sin cambios el volumen y la progresión de la fuerza y vigila la recuperación y la ingesta energética. Si maximizar el tamaño es el objetivo principal, evita las sesiones de resistencia muy largas o muy frecuentes y controla el volumen de carrera cuando el volumen de entrenamiento de piernas sea alto (véase "Modalidad de cardio").
+  applies_to: |-
+    Adultos sanos, sobre todo hombres jóvenes de no entrenados a activos a nivel recreativo, en ensayos supervisados de 4-24 semanas con volúmenes aeróbicos moderados. No aplica a volúmenes de maratón ni a culturistas avanzados.
+  conflicts: |-
+    Wilson 2012 y los datos a nivel de fibra sugieren un pequeño coste en algunas condiciones. El ACSM 2026 encontró datos insuficientes para valorar el entrenamiento concurrente, y por eso esta regla es moderada.
+- key: strength-hypertrophy/maximal-strength-with-cardio
+  source_hash: a11ae6b0c2a1498fa35369a847ca38cf2bacfb2cd1f6daa4f77dc84e01b8feee
+  status: machine
+  heading: Fuerza máxima con cardio
+  rule_text: |-
+    Para clientes en general, prescribe cardio y fuerza juntos sin miedo a perder fuerza, manteniendo sin cambios la intensidad y la progresión de la fuerza. Para hombres entrenados que buscan la fuerza máxima de tren inferior, separa el cardio de la fuerza y mantén un volumen de cardio moderado.
+  applies_to: |-
+    Adultos sanos, sobre todo hombres de no entrenados a activos a nivel recreativo, y sobre todo 1RM de tren inferior.
+  conflicts: |-
+    El ACSM 2026 encontró datos insuficientes. Los déficits en subgrupos son pequeños y dependen del contexto.
+- key: strength-hypertrophy/explosive-strength-is-the-most-vulnerable-outcome
+  source_hash: b10d5c08465d41af1f36332e9c7b546654fbe946f7f88b80d34940c3ff1a922d
+  status: machine
+  heading: La fuerza explosiva es el resultado más vulnerable
+  rule_text: |-
+    Si un cliente prioriza el salto, el esprint o la potencia deportiva, separa el cardio del trabajo de potencia y de fuerza al menos 3 h o hazlos en días distintos. Si se usa HIIT, los formatos de intervalos de esprint o de esprints repetidos pueden interferir menos con el salto que el HIIT clásico (provisional). Para clientes con objetivos de salud general, esto es poco prioritario.
+  applies_to: Sobre todo adultos jóvenes, de no entrenados a activos a nivel recreativo.
+  conflicts: |-
+    Held y Kikuchi no encontraron un déficit global; los hallazgos por subgrupos se apoyan en pocos estudios; el efecto es pequeño e impreciso.
+- key: strength-hypertrophy/lift-first-in-combined-sessions
+  source_hash: 74c39a3d8b1278cb438e3eefe21ab372824ff0319f37d079b1e9c2646958830d
+  status: machine
+  heading: Primero la fuerza en las sesiones combinadas
+  rule_text: |-
+    En las sesiones combinadas, pon primero el entrenamiento de fuerza y después el cardio, sobre todo con objetivos de fuerza. Si el cardio tiene que ir primero, acéptalo: el orden no afecta a las ganancias de hipertrofia ni aeróbicas, y el beneficio en fuerza es pequeño.
+  applies_to: |-
+    Adultos sanos en programas de una misma sesión de ≥5 semanas; en Gao y Yu el beneficio apareció en personas mayores, mujeres y programas de más de 8 semanas.
+  conflicts: |-
+    El resumen de Held 2026 es incoherente internamente ("sin efectos significativos de la secuencia de entrenamiento" y aun así tendencias a favor de la fuerza primero), aunque la dirección coincide. La categoría de "orden de los ejercicios" del ACSM también agrupa el orden de los ejercicios de fuerza. Gao y Yu tiene una corrección publicada.
+- key: strength-hypertrophy/spacing-cardio-and-lifting
+  source_hash: e4a2663b50c0ac2a157d2e6430d256a6dff65a136aa83e841675ef44da02804e
+  status: machine
+  heading: Separar el cardio y la fuerza
+  rule_text: |-
+    Si el horario lo permite, separa el cardio y la fuerza al menos unas 3 h o ponlos en días distintos; esto importa en clientes entrenados que buscan fuerza o potencia. Para principiantes y clientes con objetivos de salud general, lo primero es la comodidad, y entrenar ambos en la misma sesión está bien, con la fuerza primero.
+  applies_to: |-
+    Adultos sanos; el beneficio de separarlos se ha visto sobre todo en personas entrenadas y en la fuerza explosiva o máxima.
+  conflicts: |-
+    Ningún metaanálisis comparó intervalos como 6 h frente a 24 h; los umbrales más allá de "al menos 3 h" no se basan en la evidencia.
+- key: strength-hypertrophy/training-status-and-sex-as-moderators
+  source_hash: 78a900cc71f997dbd0e900d4439d0029fbb527438126bcb1ad17f32a0d3b0d3b
+  status: machine
+  heading: Nivel de entrenamiento y sexo como moderadores
+  rule_text: |-
+    Para principiantes y quienes vuelven a entrenar, el cardio moderado (unas 2-3 sesiones por semana) no necesita restricciones. Para clientes en un bloque cuya prioridad es la fuerza máxima de tren inferior, sobre todo hombres entrenados, haz el cardio en sesiones separadas y mantén un volumen de resistencia moderado. Las mujeres pueden combinar cardio y fuerza con menos preocupación; aplica la misma separación si la fuerza de piernas es un objetivo prioritario, porque la estimación en mujeres es imprecisa.
+  applies_to: |-
+    Adultos sanos de unos 18-50 años; "entrenado" en Petre significa ≥3 meses de entrenamiento estructurado; los datos en mujeres entrenadas son escasos.
+  conflicts: |-
+    Schumann 2022 y Huiberts 2024 no encontraron moderación por el nivel de entrenamiento. El hallazgo por sexo procede de un único metaanálisis con una estimación imprecisa en mujeres.
+- key: strength-hypertrophy/cardio-modality
+  source_hash: f1fd7449b531d99b5b89e251c93898384e0aad3bb4d8c0c86187eed2146955de
+  status: machine
+  heading: Modalidad de cardio
+  rule_text: |-
+    No prescribas una modalidad de cardio para proteger la ganancia muscular. Caminar es la base para todo el mundo. El ciclismo u otras opciones de bajo impacto (remo, caminar en pendiente) van bien a principiantes, clientes con más peso y personas con dolor articular, por tolerancia, no por motivos demostrados de menor interferencia. Para el hueso, caminar por sí solo hace poco; lo que ayuda es el entrenamiento de fuerza más algo de impacto (véase "Salud ósea" en cardio-health.md y "Entrenamiento de fuerza y hueso en hombres y en mayores de 65 años" más abajo). Por lo demás, manda la preferencia del cliente, porque la adherencia es lo que más importa. Controla el volumen de carrera cuando el volumen de entrenamiento de piernas sea alto.
+  applies_to: |-
+    Adultos sanos, sobre todo jóvenes; comparaciones indirectas por subgrupos. La evidencia sobre el hueso procede de mujeres peri y posmenopáusicas y de personas con osteoporosis.
+  conflicts: Los metaanálisis discrepan en la dirección.
+- key: strength-hypertrophy/how-much-cardio-is-compatible
+  source_hash: b492ad9734d022e1b16111255adb38b94e65fe576dfe37088b20cfbf09a2ac2b
+  status: machine
+  heading: Cuánto cardio es compatible
+  rule_text: |-
+    Para un cliente que prioriza el músculo o la fuerza máxima, 2-3 sesiones de cardio moderado por semana de unos 30 min (la dosis típica de los ensayos) son compatibles con ganancias completas; la potencia puede verse ligeramente mermada. Añade más resistencia de forma gradual, aleja el cardio más duro o más largo de las sesiones de piernas y, si la fuerza se estanca, reduce la duración o la frecuencia de la resistencia antes de recortar la fuerza.
+  applies_to: |-
+    Adultos recreativos sanos; el entrenamiento de resistencia de alto volumen queda fuera de la evidencia.
+  conflicts: |-
+    La dirección de la dosis se apoya en datos correlacionales de 2012; "~30 min, 2-3 veces por semana" describe los protocolos típicos, no un límite probado.
+- key: strength-hypertrophy/hiit-and-sprint-intervals-with-lifting
+  source_hash: eac8aa0d150d000fa17f67d8cc77f24f84e05b69b2cce77003d571846677ae62
+  status: machine
+  heading: HIIT e intervalos de esprint con fuerza
+  rule_text: |-
+    El HIIT y los intervalos cortos de esprint son una forma eficiente en tiempo de ganar forma física con poco o ningún coste en tamaño muscular o fuerza máxima. Mantén las sesiones cortas, colócalas después de la fuerza o en días separados, y evita el HIIT intenso de tren inferior justo antes de un entrenamiento pesado de pierna. Para objetivos de potencia, prioriza intervalos de esprint muy cortos frente a bloques de HIIT más largos. Los formatos de esprint a máxima intensidad (SIT, REHIT) no son para principiantes sedentarios: exigen que todas las respuestas del PAR-Q+ sean "no" y al menos 4 semanas de cardio moderado regular sin síntomas, y son opciones para clientes ya activos con poco tiempo. Cualquier persona de más de 45 años, o con algún "sí" en el PAR-Q+, necesita la revisión de un profesional del ejercicio cualificado o de un clínico antes de hacer trabajo vigoroso o máximo (véase "Umbrales específicos del PAR-Q+" en recovery-habits.md).
+  applies_to: |-
+    Adultos sanos, en su mayoría jóvenes, en ensayos cortos; las muestras con intervalos de esprint son pequeñas. Los requisitos previos para los esprints se aplican a todo el mundo.
+  conflicts: |-
+    El pequeño coste en fuerza que encontró Sabag no aparece en análisis posteriores. Ferraro-Farro 2026 tiene una fe de erratas (Int J Sports Med 2026;47(4):e3) cuyo contenido no se revisó. El requisito previo de 4 semanas de cardio moderado y la revisión ante cualquier "sí" en el PAR-Q+ son decisiones conservadoras del producto, no texto del PAR-Q+.
+- key: strength-hypertrophy/fibre-level-hypertrophy
+  source_hash: 370dd1dac38c23812549820e93d7e098ae8c72628daf1b8f553eb1ea4b97ce14
+  status: machine
+  heading: Hipertrofia a nivel de fibra
+  rule_text: |-
+    Trata la interferencia a nivel de fibra como pequeña y sobre todo teórica; no justifica eliminar el cardio ni elegir una modalidad por el cliente. Para un cliente cuyo único objetivo sea el máximo tamaño muscular, evita el HIIT frecuente o la carrera de alto volumen y, en los demás casos, elige la modalidad como en "Modalidad de cardio".
+  applies_to: Adultos sanos, medidas por biopsia; relevancia clínica poco clara.
+  conflicts: |-
+    Los resultados en el límite chocan con los hallazgos nulos a nivel de músculo completo; análisis de subgrupos.
+- key: strength-hypertrophy/concurrent-training-after-50
+  source_hash: 800480a1c0e4427b09827a95249b85ae9519ef6c76d89fc94d45c5842bd77791
+  status: machine
+  heading: Entrenamiento concurrente después de los 50
+  rule_text: |-
+    Para clientes de más de 50 años, el entrenamiento combinado aeróbico y de fuerza es el programa preferido; la interferencia no es motivo para abandonar ninguno de los dos. Haz primero la fuerza o hazla en días separados, mantén al menos 2 sesiones de fuerza por semana e incluye algo de trabajo de potencia o de concéntrica rápida.
+  applies_to: |-
+    Adultos de más de 50 años, en su mayoría sanos y que viven en la comunidad, para fuerza y VO2máx. La hipertrofia en mayores no se agrupó en Khalafi.
+  conflicts: |-
+    Los ensayos en mayores midieron sobre todo fuerza y VO2máx, no tamaño muscular. El subgrupo de orden en personas mayores solo sirve para generar hipótesis. Las personas frágiles y las que tienen comorbilidades necesitan un cribado médico individual.
+- key: strength-hypertrophy/cardio-right-before-lifting
+  source_hash: 818a2094207ac7bdf55658016860330f9db59128585b675353903c2ef879e088
+  status: machine
+  heading: Cardio justo antes de la fuerza
+  rule_text: |-
+    Si el cardio tiene que ir antes de la fuerza, limítalo a un calentamiento corto y suave en vez de 30+ min o intervalos intensos. Cuenta con cargas de pierna más bajas el día en que el cliente haya hecho antes una salida en bici o una carrera larga o intensa.
+  applies_to: |-
+    Fuerza aguda del tren inferior en hombres entrenados; no es evidencia directa de pérdidas a largo plazo.
+  conflicts: |-
+    A largo plazo, el orden no afectó de forma significativa a la hipertrofia (Held 2026). Que el ciclismo agudo sea peor contrasta con los datos crónicos de fibra, en los que la carrera parecía peor.
+- key: strength-hypertrophy/plyometric-dose
+  source_hash: b42e0432d046ef789494e196801c9354398c424202a57df519734f5144987733
+  status: machine
+  heading: Dosis de pliometría
+  rule_text: |-
+    Si un cliente quiere saltar más o ser más explosivo, añade saltos pliométricos durante al menos 7 a 10 semanas (más de 14 a 20 sesiones en total), con el objetivo de 3 sesiones por semana cuando sea posible; menos sesiones semanales dieron mejoras menores en un análisis de subgrupos. Combina tipos de salto (sentadillas con salto, saltos con contramovimiento y saltos en caída o drop jumps) en lugar de usar uno solo. Los saltos con el peso corporal bastan: añadir peso a los saltos pliométricos no aportó ningún beneficio extra. Más saltos totales a lo largo de un bloque no es claramente mejor. Trata estos puntos de corte de dosis como provisionales.
+  applies_to: |-
+    Personas sanas, mayoritariamente hombres (alrededor del 78%) y en gran parte jóvenes: alrededor del 60% de la muestra de Ramirez-Campillo tenía menos de 18 años y 42 de 61 estudios tenían un contexto deportivo. Los adultos mejoraron más que los jóvenes. Ramirez-Campillo midió la fuerza reactiva (sobre todo el RSI en drop jump), no la altura de salto. No se ha probado específicamente en usuarios recreativos de gimnasio cuyo objetivo principal es la hipertrofia.
+  conflicts: |-
+    En Ramirez-Campillo, la metarregresión no encontró ninguna variable de entrenamiento que explicara el efecto (p = 0.714 a 0.984, R2 = 0.0), así que los puntos de corte salen de comparaciones de subgrupos. Los 50 saltos por sesión (de Villarreal) y los 1080 saltos totales por bloque (Ramirez-Campillo) miden cosas distintas, y las 3 sesiones por semana se apoyan en un único análisis de subgrupos. Lo de no añadir peso se aplica a los saltos pliométricos; las sentadillas con salto con carga ligera son otra comparación (véase "Cargas para potencia y salto").
+- key: strength-hypertrophy/plyometrics-alone-and-combined-with-lifting
+  source_hash: 1756f61693f62187d0a454f4e13a317ae7cd2f2474f246935216b839ebbf70f4
+  status: machine
+  heading: La pliometría sola y combinada con fuerza
+  rule_text: |-
+    La pliometría sola da mejoras de pequeñas a moderadas en altura de salto, esprint y fuerza de piernas. Para quien entrena fuerza y quiere ser más atlético, mantén la fuerza y añade saltos u otro trabajo explosivo (por ejemplo en la misma sesión, como entrenamiento complejo o de contraste) en lugar de sustituir la fuerza por saltos. Cuenta con mejoras de fuerza al menos iguales a las del entrenamiento de fuerza solo; cualquier mejora extra en salto o en esprints cortos es incierta porque los metaanálisis discrepan. La evidencia cubre solo resultados de rendimiento, así que esto es opcional para clientes cuyos objetivos son la hipertrofia o la salud.
+  applies_to: |-
+    Adultos sanos recreativamente activos o deportistas (Oxfeldt); las revisiones sobre entrenamiento complejo abarcan desde participantes sedentarios hasta muy entrenados, y Bauer planteó su conclusión para deportistas. La frase sobre la pliometría sola merecería el grado moderado; el grado es emergente porque los metaanálisis sobre entrenamiento complejo discrepan.
+  conflicts: |-
+    Thapa 2024 y Zhao 2026 encontraron mejoras extra en CMJ y en esprints cortos; Bauer 2019, solo en 1RM de sentadilla y en esprint de 20 m; Brandt 2023 no encontró ningún formato combinado superior para el CMJ; Cowley 2026 no encontró diferencias entre el entrenamiento complejo y de contraste y el entrenamiento tradicional. La certeza es baja o muy baja en todos los casos.
+- key: strength-hypertrophy/loads-for-power-and-jumping
+  source_hash: bbbea39aad306bfaab4100137e9bc2a7e286cb8933fd3b398620213914b1b204
+  status: machine
+  heading: Cargas para potencia y salto
+  rule_text: |-
+    Las cargas pesadas son las que mejor desarrollan la fuerza máxima (véase "Rango de carga para fuerza máxima"). Si un cliente quiere más potencia, incluye algunas series con cargas de ligeras a moderadas (alrededor del 40 al 70% del 1RM) levantadas con la máxima intención y, para la altura de salto, cargas más ligeras (alrededor del 30% del 1RM, como las sentadillas con salto). El entrenamiento basado en la velocidad con dispositivos que miden la velocidad de la barra funciona más o menos igual que la carga basada en porcentajes, pero no mejor, así que el equipo es opcional (véase también "Autorregulación").
+  applies_to: |-
+    Adultos sanos entrenados y no entrenados (Swinton); solo el 12% de sus estudios usó grupos exclusivamente femeninos. Los ensayos basados en la velocidad eran pequeños, en personas de 16 a 30 años (Liao) o en participantes aparentemente sanos (Orange).
+  conflicts: |-
+    Swinton no exigía grupos control, así que los óptimos de carga son estimaciones de un modelo a partir de una base de datos en gran parte no controlada. La evidencia sobre el entrenamiento basado en la velocidad es escasa (6 y 4 ensayos) y de baja calidad. La sugerencia de las sentadillas con salto convive con de Villarreal 2009 (ningún beneficio extra por añadir peso a los saltos pliométricos); son comparaciones distintas. La regla para mayores "Cómo prescribir el entrenamiento de potencia" usa el 40 al 60% del 1RM, coherente con este rango.
+- key: strength-hypertrophy/optional-balance-training-for-younger-adults-dose
+  source_hash: 809658ed610f9aff1dc0fe32f2784744584a7f7e57269ee9e85ee106f97e37f8
+  status: machine
+  heading: 'Entrenamiento de equilibrio opcional para adultos más jóvenes: dosis'
+  rule_text: |-
+    Para adultos sanos de menos de 65 años que quieran mejorar el equilibrio, o cubrir el componente neuromotor del ACSM, ofrece trabajo de equilibrio 2-3 días por semana. Los clientes de 65 años o más siguen en su lugar "Mayores: equilibrio y fuerza multicomponente" (cardio-health.md). Una plantilla práctica para empezar es de unas 3 sesiones por semana de 11-15 min, unos 4 ejercicios de 2 series cada uno, mantenidos 21-40 s, durante 11-12 semanas. Presenta estas cifras como una plantilla razonable sacada de estudios en personas de 16 a 40 años, no como óptimos demostrados, y no prometas grandes mejoras de equilibrio a quienes hacen ejercicio de forma recreativa.
+  applies_to: |-
+    Adultos sanos de 16-40 años (de élite, de subélite, recreativos y no entrenados) en el metaanálisis de dosis. Aplicarlo a adultos de 41-64 años es una extrapolación. El corte de edad de 65 años solo sirve para pasar a los clientes a las reglas para mayores; no es un hallazgo de los estudios.
+  conflicts: |-
+    Las cifras de dosis salen de análisis de subgrupos de ensayos de baja calidad (PEDro medio de 5), y los autores dicen que es difícil separar un parámetro de los demás. Navaratnarajah 2026 (17 ECA, n = 716, deportistas recreativos) encontró efectos pequeños sobre el equilibrio con intervalos de confianza que cruzaban el cero (un solo componente: SMD 0.15, CI del 95% -0.05 a 0.34; multicomponente: SMD 0.20, -0.01 a 0.41), de ahí el grado emergente. Véase también "Las mejoras de equilibrio son específicas de la tarea".
+- key: strength-hypertrophy/balance-gains-are-task-specific
+  source_hash: e449f215ce7404b7aef20782ccc631e9580f77fe4d4a6f8fd41ab78c66a681d3
+  status: machine
+  heading: Las mejoras de equilibrio son específicas de la tarea
+  rule_text: |-
+    Explica a los clientes que el entrenamiento de equilibrio mejora sobre todo las tareas concretas que practican. Elige ejercicios de equilibrio que se parezcan a lo que el cliente quiere mejorar (su deporte, el senderismo, el trabajo a una pierna). No vendas el entrenamiento de equilibrio como forma de ganar fuerza o velocidad de esprint; para eso usa el entrenamiento de fuerza y el pliométrico. Los efectos sobre el salto y la agilidad son dispares. No juzgues el progreso con una prueba genérica de apoyo a una pierna; vuelve a evaluar en su lugar la tarea entrenada o la tarea objetivo.
+  applies_to: |-
+    Personas sanas en Kummel (muestras pequeñas); adultos sanos y físicamente activos de hasta 40 años en Zech.
+  conflicts: |-
+    Kummel incluyó solo 6 estudios pequeños, y Zech califica de baja la calidad de los ensayos. Como Zech informa de indicios de beneficio en salto y agilidad frente a controles no entrenados, la regla no afirma que el entrenamiento de equilibrio no desarrolle potencia.
+- key: |-
+    strength-hypertrophy/trunk-core-training-an-add-on-for-trunk-endurance-and-balance
+  source_hash: e6aaec177d3fc304c65c1aa30556d34b5c8a87ea7aac3d4b0d08c1f4111681ea
+  status: machine
+  heading: |-
+    Entrenamiento del tronco (core): un complemento para la resistencia del tronco y el equilibrio
+  rule_text: |-
+    El entrenamiento específico del tronco (planchas, planchas laterales y similares) es un complemento razonable, sobre todo para la resistencia del tronco y el equilibrio, donde varios metaanálisis coinciden en que ayuda. No lo vendas como forma de aumentar la fuerza, el esprint o el salto, porque los metaanálisis discrepan sobre esa transferencia, y no sustituye a los ejercicios principales. Más de dos sesiones por semana se asoció con mayores mejoras de equilibrio y, en otra revisión, más de 18 sesiones en total dieron mayores efectos sobre potencia y esprint. Estas revisiones no comparan tipos de ejercicio (planchas, trabajo antirrotación, acarreos con carga), así que elige los ejercicios por variedad y preferencia.
+  applies_to: |-
+    Sobre todo deportistas jóvenes de competición o de deportes de equipo de 11 a 37 años, además de sujetos sanos de más de 12 años (Rodriguez-Perea) y, solo para el equilibrio, adultos sanos de 60 años o más (Zhong, que mezcla ensayos de un solo grupo y ECA). Aplicar esto a usuarios de gimnasio que no son deportistas es una extrapolación.
+  conflicts: |-
+    Yu 2025 no encontró una transferencia significativa a velocidad, fuerza, cambio de dirección o salto, mientras que Saeterbakken, Rodriguez-Perea y Liu informaron de una transferencia positiva. La calidad es baja (PEDro 5, certeza GRADE de baja a muy baja, I2 del 37 al 100% en Yu). El grado es moderado solo para resistencia y equilibrio; la transferencia al rendimiento sería emergente.
+- key: strength-hypertrophy/compound-free-weight-lifts-load-the-trunk
+  source_hash: 9dbc7cb052415f8f8c645da2be4858ecd3170f7f8aadd8e7cecaeb28785ed900
+  status: machine
+  heading: Los ejercicios multiarticulares con peso libre cargan el tronco
+  rule_text: |-
+    Los ejercicios pesados con peso libre (sentadillas, pesos muertos, hip thrusts) producen algunas de las mayores activaciones de la musculatura del tronco medidas en el erector de la columna, el recto abdominal y el oblicuo externo, y más actividad del multífido lumbar que los ejercicios de core con balón o con aparatos. Un programa construido sobre estos ejercicios con cargas pesadas, por tanto, ya trabaja el tronco. El trabajo directo de core es opcional: elígelo por preferencia, por la resistencia del tronco o el equilibrio, o para trabajar el oblicuo interno, que fue el más activo en los ejercicios de estabilidad tipo plancha. Esto es solo evidencia aguda de EMG y no demuestra mejoras de fuerza o de tamaño a largo plazo.
+  applies_to: Adultos sanos en estudios agudos de EMG. No hay estudios de entrenamiento.
+  conflicts: |-
+    Para el multífido, Martuscello encontró que el peso libre superaba a los ejercicios con balón o con aparatos, mientras que Oliva-Lozano situó en primer lugar los ejercicios de core tradicionales; son comparaciones distintas. El transverso del abdomen está poco investigado y el cuadrado lumbar no se estudió. El resultado del recto abdominal se apoya en sentadillas casi máximas (6RM), así que con cargas más ligeras puede que el tronco se cargue menos. Los métodos de EMG fueron poco homogéneos, y la activación es un marcador indirecto, no una medida de las mejoras de fuerza o de hipertrofia.
+- key: strength-hypertrophy/core-prescription-for-adults-65
+  source_hash: 4e7e5be5485b2a33220d82eef34790d6057a5e464eb28224c039aefda5ed347d
+  status: machine
+  heading: Prescripción de core para mayores de 65 años
+  rule_text: |-
+    Para clientes de más de unos 65 años: empieza con 2 sesiones de fuerza por semana que cubran los grandes grupos musculares y pasa a 3 si la recuperación lo permite; 2-3 series de unas 7-12 repeticiones, empezando en unas 2-3 RIR y pasando a unas 1-2 RIR tras unas 8 semanas sin síntomas (véase "Límites de esfuerzo para mayores y riesgo cardiovascular"). Ajusta la carga por RIR, no por %1RM: los objetivos del 70-80% del 1RM de las guías para mayores proceden de entornos supervisados con un 1RM medido. Añade trabajo de equilibrio o multicomponente para que la actividad total llegue a ≥3 días por semana. Las máquinas son un buen punto de partida. Prioriza la constancia frente a una programación ingeniosa. Haz un cribado de enfermedades y deriva cuando haga falta.
+  applies_to: |-
+    Mayores sanos y con sarcopenia que viven en la comunidad (edad media de unos 70-73 años). Las personas frágiles o con multimorbilidad necesitan supervisión clínica; este coach no debe programarles en solitario.
+  conflicts: |-
+    Las cifras concretas de Borde proceden de ensayos heterogéneos y de baja calidad y son solo orientativas. La respuesta disminuye con la edad y varía mucho. El ACSM 2026 dice que sus recomendaciones se aplican a todas las edades, pero no separó las revisiones por edad.
+- key: strength-hypertrophy/volume-and-frequency-in-older-adults
+  source_hash: 3b900b2b83e6ca9643e168c32d01000e76e6072de998cedc99459af01197e187
+  status: machine
+  heading: Volumen y frecuencia en mayores
+  rule_text: |-
+    Empieza con los clientes mayores con 2 sesiones de cuerpo completo por semana, 2-3 series por ejercicio y cargas moderadas ajustadas por RIR, progresando de forma gradual. Pasa a una tercera sesión si la recuperación lo permite; aporta pequeñas mejoras de fuerza adicionales.
+  applies_to: |-
+    Mayores sanos que viven en la comunidad; no poblaciones frágiles o clínicas sin adaptación.
+  conflicts: |-
+    Los datos de Borde son de baja calidad (PEDro medio de 4.6, I2=80%) y las variables se analizaron por separado. Las 3 sesiones por semana de Borde para la morfología solo coinciden en parte con el resultado nulo de Kneffel.
+- key: strength-hypertrophy/loads-for-older-adults
+  source_hash: 100f62e3d38488c5ff20df2ae926274434cb4033fe9956ded6fcfdff31a4ae74
+  status: machine
+  heading: Cargas para mayores
+  rule_text: |-
+    Empieza con los clientes mayores con cargas moderadas (8-15 repeticiones a 2-3 RIR) y, según lo permitan la tolerancia y la técnica y tras unas 8 semanas sin síntomas, pasa los ejercicios principales a series más pesadas de menos repeticiones a unas 1-2 RIR. Elige las cargas por repeticiones y RIR, no por %1RM, porque el coach no tiene un 1RM medido; las cifras de %1RM de abajo proceden de ensayos supervisados. Las cargas más ligeras son válidas cuando las articulaciones o la confianza limitan el trabajo más pesado, siempre que las series se acerquen razonablemente a la fatiga.
+  applies_to: |-
+    Adultos sanos que viven en la comunidad, con una edad media de unos 65-70 años; no poblaciones clínicas frágiles o con sarcopenia.
+  conflicts: |-
+    Datos heterogéneos y de baja calidad; los subgrupos de una sola variable no pueden captar las interacciones.
+- key: strength-hypertrophy/starting-load-and-ramp-up-icfsr
+  source_hash: d2e15e819459ee102c403193b6b6336350131a2d4765ad5dbb7ea3481216db50
+  status: machine
+  heading: Carga inicial y progresión (ICFSR)
+  rule_text: |-
+    Dedica la primera o las dos primeras sesiones a cargas ligeras (series fáciles de 8-12 repeticiones, lejos del fallo) para aprender la técnica, y luego sube la carga de forma gradual hasta que las series efectivas de 8-12 repeticiones queden en unas 2-3 RIR (Borg 6-20 de unos 13-15). Tras unas 8 semanas sin síntomas, los mayores pueden trabajar a unas 1-2 RIR. Vuelve a progresar cuando el cliente supere el rango de repeticiones con ese esfuerzo. Sin un 1RM medido, ajusta por repeticiones y RIR, no por %1RM. La progresión más rápida de ICFSR hasta el 70-80% del 1RM con Borg 15-18 se aplica a entornos supervisados con un 1RM medido, no a este coach. Deja al menos un día de descanso antes de volver a entrenar el mismo grupo muscular.
+  applies_to: |-
+    Adultos de 65+ años, incluidas personas frágiles e institucionalizadas; extrapolado a personas de 50-65 años no entrenadas.
+  conflicts: |-
+    Consenso de expertos, no comparado directamente en ensayos. El texto de la guía también describe un 50-80% del 1RM en las cuatro primeras sesiones bajo supervisión; la progresión más lenta y limitada por RIR del coach (primero 2-3 RIR, 1-2 RIR tras unas 8 semanas) es una convención conservadora del producto para clientes sin supervisión. Las personas con deterioro cognitivo pueden necesitar que un observador valore el esfuerzo.
+- key: strength-hypertrophy/do-not-keep-older-clients-on-light-weights-forever
+  source_hash: ada256d8b962c34f02e315b2dc884cd04d118e84a8c957d36b4a0a95ddb6509b
+  status: machine
+  heading: No mantengas a los clientes mayores con pesos ligeros para siempre
+  rule_text: |-
+    Una vez que la técnica es sólida y se ha hecho el cribado al cliente, no dejes a los clientes mayores con cargas fáciles: llévalos a series realmente exigentes a unas 2-3 RIR en las primeras semanas, y a unas 1-2 RIR tras unas 8 semanas sin síntomas, sobre todo con objetivos de fuerza. El 70-80% del 1RM (Borg 15-18) alcanzado en las primeras semanas en ICFSR se aplica a entornos supervisados con un 1RM medido; este coach no tiene ninguna de las dos cosas, así que ajusta por RIR. Para objetivos puramente funcionales, las cargas moderadas más trabajo de potencia son una alternativa aceptable.
+  applies_to: Adultos de 65+ años, incluidos adultos frágiles en entornos supervisados.
+  conflicts: |-
+    La progresión rápida de las fuentes da por hecho que hay supervisión y un 1RM medido; los topes de RIR son una convención conservadora del producto (véase "Límites de esfuerzo para mayores y riesgo cardiovascular").
+- key: strength-hypertrophy/expected-gains-in-older-adults
+  source_hash: 679d83a1a3af5bb4ba4eca7924aa89cf355efeacd321fc9f3443dc88d44cf343
+  status: machine
+  heading: Mejoras esperables en mayores
+  rule_text: |-
+    Di a los usuarios mayores que son realistas unas mejoras de fuerza de alrededor del 25-30% en los primeros 3-6 meses, con ganancias modestas de masa magra (alrededor de 1 kg). Haz de la fuerza y la funcionalidad (por ejemplo, el tiempo para levantarse de la silla) los principales indicadores de progreso, progresa la intensidad de forma gradual y recalca que entrenar durante más tiempo hace que más personas respondan positivamente.
+  applies_to: |-
+    Sobre todo adultos de 50+ años que viven en la comunidad, en programas de 6-52 semanas; no poblaciones clínicas sin supervisión médica.
+  conflicts: |-
+    Heterogeneidad alta; la masa magra varió de -3.3 a +5.4 kg y la prensa de piernas de -36 a +87 kg a las 12 semanas.
+- key: strength-hypertrophy/power-training-for-function
+  source_hash: b8e9dd900f7162929bd4b011cbbd529dc50d4b24488249e0a9faec827e00e2d1
+  status: machine
+  heading: Entrenamiento de potencia para la funcionalidad
+  rule_text: |-
+    Para clientes de 60+ años cuyo objetivo sea la funcionalidad (levantarse de una silla, levantarse y caminar, la independencia), incluye ejercicios con concéntrica rápida en la mayoría de las sesiones. No los presentes como claramente superiores: la mejora extra frente a un entrenamiento tradicional bien hecho es pequeña e incierta. Si un cliente no puede o no quiere levantar rápido, el entrenamiento progresivo tradicional sigue aportando la mayor parte del beneficio.
+  applies_to: |-
+    Adultos de 60+ años, en su mayoría sanos y que viven en la comunidad, en ensayos de unas 12 semanas.
+  conflicts: |-
+    Los metaanálisis se solapan mucho y su certeza es baja. Lopez 2023 (79 ensayos) no encontró diferencias significativas en la comparación directa en cinco pruebas funcionales.
+- key: strength-hypertrophy/velocity-and-specific-function-tests
+  source_hash: 55ab9c9900fa561f5489094cb715c633c7cf03aee03437909f13f25f28911199
+  status: machine
+  heading: Pruebas de velocidad y de funcionalidad específica
+  rule_text: |-
+    Tanto el entrenamiento rápido como el tradicional mejoran las pruebas de levantarse de la silla, el TUG y las pruebas de marcha en mayores; no prometas ventajas específicas en cada prueba por entrenar la velocidad. Una opción razonable por defecto es algo de trabajo de concéntrica rápida para tareas explosivas aisladas más un componente tradicional de mayor volumen para tareas repetidas o de resistencia, planteado como hipótesis.
+  applies_to: |-
+    Adultos de 60+ años no entrenados, con estado de salud variado; la mayoría de los estudios con alto riesgo de sesgo.
+  conflicts: |-
+    Las clasificaciones sugieren una especificidad de la velocidad que las comparaciones directas no confirman.
+- key: strength-hypertrophy/fast-intent-builds-power-without-costing-muscle-or-strength
+  source_hash: 548149bec96cae1c63408fe095e600064416e7fcb456431d08d857717b4c9027
+  status: machine
+  heading: La intención de velocidad desarrolla potencia sin costar músculo ni fuerza
+  rule_text: |-
+    Con los clientes mayores, usa por defecto la intención de repeticiones concéntricas rápidas en los ejercicios adecuados (prensa de piernas, levantarse de la silla, press de pecho en máquina). La potencia mejora y se mantienen las mejoras de músculo y de fuerza.
+  applies_to: |-
+    Adultos de 50+ años, sobre todo personas sanas de 60-80 años en ensayos de unas 12 semanas; no está establecido para adultos más jóvenes.
+  conflicts: |-
+    La equivalencia en fuerza y masa significa que no se detecta diferencia en datos de baja certeza, no una equivalencia demostrada.
+- key: strength-hypertrophy/how-to-prescribe-power-training
+  source_hash: c4f144a19e3326fecaaa223af6ce737379c5cee9afbec477794104227f22118d
+  status: machine
+  heading: Cómo prescribir el entrenamiento de potencia
+  rule_text: |-
+    Plantilla: 2-3 series de 6-10 repeticiones con una carga de ligera a moderada que el cliente pueda mover rápido (el 40-60% del 1RM de ICFSR; sin un 1RM medido, elígela por la velocidad de la barra o del cuerpo y por el esfuerzo), muy lejos del fallo (alrededor de RPE 5-7 como referencia práctica). Intención: subir tan rápido como sea posible con seguridad, bajar en 2-3 s. Detén la serie cuando la velocidad baje de forma visible. Prioriza la prensa de piernas, levantarse y sentarse en la silla y las subidas al cajón. Coloca las series de potencia al principio de la sesión, después del calentamiento y antes del trabajo pesado o fatigante.
+  applies_to: Adultos de 60+ años, incluidos mayores frágiles según ICFSR.
+  conflicts: |-
+    La carga óptima es incierta; las cargas más pesadas dieron más fuerza y resistencia y pueden reducir el riesgo de lesión al disminuir la velocidad al final del recorrido. Los ensayos fueron cortos y de baja calidad.
+- key: strength-hypertrophy/safety-of-power-training
+  source_hash: 33ecc940dfa1d5257c2afd1c0a471c92e4b238d17e965a44072cec154310bb78
+  status: machine
+  heading: Seguridad del entrenamiento de potencia
+  rule_text: |-
+    Pregunta por antecedentes de hombro, rodilla y hernia antes de añadir trabajo explosivo. Enseña primero el movimiento despacio y añade velocidad solo cuando la técnica sea constante. Para principiantes, prioriza las máquinas y levantarse y sentarse en la silla. Para clientes con artrosis o artritis, plantéate cargas de moderadas a más pesadas. Evita el press por encima de la cabeza rápido y los movimientos balísticos si hay molestias de hombro o rodilla o una hernia. Pregunta por el dolor en cada sesión y reduce la carga o la velocidad si aparece dolor articular.
+  applies_to: |-
+    Adultos de 60+ años; el registro de efectos adversos fue deficiente y los ensayos, pequeños y cortos.
+  conflicts: |-
+    Los metaanálisis llegan a conclusiones distintas sobre la seguridad; no se pueden descartar lesiones poco frecuentes.
+- key: strength-hypertrophy/frail-older-adults
+  source_hash: 647ac135bcc2c306b7ee0cbe555e596880dba0fceeab386eb8c47021c178ee9a
+  status: machine
+  heading: Mayores frágiles
+  rule_text: |-
+    Para clientes frágiles o muy mayores, combina repeticiones lentas y controladas con repeticiones con intención rápida a cargas moderadas (40-60% del 1RM) 2-3 veces por semana dentro de un programa que también entrene el equilibrio y la marcha. Cuenta con que la funcionalidad mejore frente a no hacer nada, pero no prometas que el entrenamiento de potencia supere al entrenamiento normal en este grupo.
+  applies_to: |-
+    Mayores prefrágiles y frágiles, en su mayoría con movilidad al inicio; ensayos pequeños.
+  conflicts: La redacción de la guía es más contundente que el metaanálisis comparativo.
+- key: strength-hypertrophy/vivifrail-stratification
+  source_hash: 9ad837fe3f8547e45ef20bbf811089af58882e53596aaad43a4ee338db3eabe0
+  status: machine
+  heading: Estratificación de Vivifrail
+  rule_text: |-
+    Para cualquier persona que parezca frágil o muy desentrenada, haz una SPPB (equilibrio, velocidad de marcha en 4 m, 5 levantamientos de la silla) al inicio y cada 4-8 semanas, y elige el nivel inicial según la puntuación. Empieza con una carga que el cliente pueda levantar unas 30 veces con cierto esfuerzo, añade los incrementos más pequeños disponibles y acompaña cada sesión de trabajo de equilibrio y de caminar casi a diario.
+  applies_to: |-
+    Adultos frágiles o prefrágiles de más de 75 años y mayores institucionalizados; los mayores robustos que van al gimnasio (SPPB 10-12) siguen un entrenamiento progresivo estándar.
+  conflicts: |-
+    Un ECA multicéntrico más el respaldo de una guía; las caídas, los ingresos y la mortalidad no difirieron.
+- key: strength-hypertrophy/falls-prevention-needs-balance-work
+  source_hash: 9305e7af5b295b0b65c5ecbb3b20af9cc8f88b9ffbb47ecf8515b16578af6aa9
+  status: machine
+  heading: La prevención de caídas necesita trabajo de equilibrio
+  rule_text: |-
+    Todo programa para clientes de 60+ años, o con antecedentes de caídas, incluye trabajo de equilibrio que ponga realmente a prueba la estabilidad al menos 3 días por semana (las sesiones en casa cuentan). Apunta a unas 3 h por semana de ejercicio total y continúa más allá de las 12 semanas. El entrenamiento de fuerza y de potencia se suma al trabajo de equilibrio, no lo sustituye. Nunca le digas a un cliente que levantar pesas por sí solo evitará que se caiga.
+  applies_to: |-
+    Adultos de 60+ años que viven en la comunidad (Cochrane: edad media de 76 años, 77% mujeres). No hay un efecto claro sobre las caídas del ejercicio por sí solo en residencias, después de un ictus o justo tras el alta hospitalaria.
+  conflicts: |-
+    Los efectos sobre las fracturas por caídas son de baja certeza. Las guías siguen recomendando ejercicio supervisado en cuidados de larga duración (1B). Véase también la regla siguiente.
+- key: strength-hypertrophy/resistance-or-power-training-alone-for-falls
+  source_hash: 8325366d86899431abf8caedbb38713fe45a27215a4e468479b5d0f9685c6c72
+  status: machine
+  heading: Entrenamiento de fuerza o de potencia solo para las caídas
+  rule_text: |-
+    Presenta el trabajo de fuerza y de potencia como forma de desarrollar capacidad, y el entrenamiento de equilibrio y funcional como la intervención demostrada contra las caídas. Programa ambos.
+  applies_to: |-
+    Mayores de 60+ años; los ensayos de potencia y caídas se generalizan mal a los mayores robustos.
+  conflicts: |-
+    ICFSR 2021 afirma que combinar entrenamiento de potencia y a velocidad lenta "reduce la incidencia de caídas" y que el ejercicio de fuerza por sí solo redujo las caídas en algunos ensayos; esto se apoya en ensayos pequeños o multicomponente. La fuerza sigue importando en personas demasiado débiles para hacer trabajo de equilibrio con seguridad.
+- key: strength-hypertrophy/integrating-and-progressing-balance-training
+  source_hash: 44635065486d0cc8ca660dda8815a20ce8e0645b8f373f388b705427f0a493b7
+  status: machine
+  heading: Integrar y progresar el entrenamiento de equilibrio
+  rule_text: |-
+    Incluye 5-15 min de trabajo de equilibrio en cada sesión, después del calentamiento o entre series de fuerza. Progresa en un solo eje cada vez: base de apoyo, luego visión o superficie, luego perturbación y luego doble tarea. Mantén siempre un apoyo estable al alcance. Sube de nivel cuando el cliente mantenga el nivel actual de forma estable durante el tiempo objetivo.
+  applies_to: |-
+    Adultos de 65+ años, de frágiles a robustos; la escala de progresión es consenso de expertos.
+  conflicts: |-
+    Las afecciones vestibulares, visuales o neurológicas requieren una adaptación individual.
+- key: strength-hypertrophy/weekly-template-for-older-adults
+  source_hash: b95d250150f7a9fc15b45387fe892f730e83d913265a253805afc366f5b57c50
+  status: machine
+  heading: Plantilla semanal para mayores
+  rule_text: |-
+    Semana por defecto para mayores: 2 sesiones de cuerpo completo para empezar, pasando a 3 si la recuperación lo permite, cada una con (a) un calentamiento, (b) 2-3 series de potencia en 1-2 ejercicios con predominio de pierna, (c) 4-6 ejercicios de fuerza de 8-12 repeticiones a unas 2-3 RIR (unas 1-2 RIR tras unas 8 semanas sin síntomas; el Borg 15-18 de ICFSR da por hecho que hay supervisión), (d) 10 min de trabajo de equilibrio progresivo. Añade práctica breve de equilibrio y de levantarse y sentarse en casa los otros días, y caminar la mayoría de los días. Vuelve a evaluar la SPPB, la velocidad de marcha o el levantarse de la silla de forma periódica (cada 4-8 semanas es una opción práctica, no un intervalo con fuente).
+  applies_to: |-
+    Adultos de 65+ años, de robustos a frágiles; extrapolado a personas desentrenadas de 50-65 años.
+  conflicts: |-
+    Cada componente tiene base en la evidencia, pero el conjunto es consenso. ICFSR sugiere que los adultos sedentarios pueden adherirse mejor si empiezan con una sola modalidad, y que en personas frágiles la mejor secuencia puede ser fuerza/potencia, luego equilibrio y luego aeróbico.
+- key: strength-hypertrophy/resistance-training-and-bone-in-men-and-adults-65
+  source_hash: b98aebe2bef6d86d1f880e55bdaa2a7178ec6db7d02c016965a407d37887e634
+  status: machine
+  heading: Entrenamiento de fuerza y hueso en hombres y en mayores de 65 años
+  rule_text: |-
+    Para hombres y para adultos de 65+ años, presenta el entrenamiento de fuerza progresivo (idealmente con algo de trabajo en carga o de impacto, y con cargas más pesadas en lugar de más volumen) como probable fuente de un pequeño beneficio en la cadera; no prometas mejoras en la columna. Muestra la estimación para la cadera como incierta.
+  applies_to: |-
+    Adultos de 65+ años (hombres y mujeres) y hombres adultos, en ensayos de unos 6 meses o más.
+  conflicts: |-
+    Un metaanálisis anterior en hombres agrupó solo 3 tamaños del efecto de cuello femoral y 5 de columna y consideró la evidencia insuficiente; tiene una corrección cuyo contenido no se pudo abrir. En mujeres posmenopáusicas, los programas combinados sí mejoraron la columna (véase "Las mejoras óseas esperables son modestas" en cardio-health.md).
+- key: |-
+    strength-hypertrophy/low-bone-mass-heavy-loading-only-when-screened-and-supervised
+  source_hash: 86d03e3c8546595b7410ce6aa60181b5834f03092aed7d03f2058c87d269b80d
+  status: machine
+  heading: 'Masa ósea baja: cargas pesadas solo con cribado y supervisión'
+  rule_text: |-
+    La carga progresiva es razonable para clientes con masa ósea baja que no tengan fracturas vertebrales ni múltiples fracturas por traumatismo leve. Empieza con cargas más ligeras y técnica, progresa de forma gradual, evita la flexión de columna con carga y reserva el protocolo pesado tipo LIFTMOR (más del 85% del 1RM más impacto) para clientes con cribado y bajo supervisión estrecha. Cualquier persona con fracturas osteoporóticas conocidas debe ver a un clínico o fisioterapeuta antes de empezar con la carga.
+  applies_to: |-
+    Mujeres posmenopáusicas con cribado y masa ósea de baja a muy baja bajo supervisión estrecha (un ensayo de 8 meses); no hombres ni personas con fracturas vertebrales previas.
+  conflicts: |-
+    LIFTMOR es más pesado que la dosis del consenso del Reino Unido (8-12 RM), que el consenso prefiere por ser más fácil de aplicar. PubMed recoge una fe de erratas del informe del ensayo de 2018 cuyo contenido no se pudo abrir; el resumen actual incluye las cifras anteriores.
+- key: strength-hypertrophy/same-relative-hypertrophy-for-women-and-men
+  source_hash: 8be78931beecb707a9c91318ca7dd7ed5fc8808a2591da94a127467cca4e250b
+  status: machine
+  heading: La misma hipertrofia relativa en mujeres y en hombres
+  rule_text: |-
+    No reduzcas las expectativas de hipertrofia ni cambies el programa porque una clienta sea mujer. Cuenta con la misma mejora porcentual respecto al punto de partida con el mismo programa, y valora el progreso frente a su propio punto de partida, no frente a las cifras absolutas de los hombres.
+  applies_to: |-
+    Adultos sanos de 18-45 años, de forma coherente en personas de más de 50 o 60; sobre todo estudios cortos en personas no entrenadas o con entrenamiento recreativo; pocos datos en mujeres muy entrenadas.
+  conflicts: |-
+    Las ganancias absolutas favorecen algo a los hombres (regla siguiente). La hipertrofia de las fibras de tipo I favoreció ligeramente a los hombres en Refalo. Refalo y Roberts comparten un autor y probablemente se solapan. La variación entre personas supera la diferencia media entre sexos.
+- key: strength-hypertrophy/absolute-gains-and-expectations
+  source_hash: 246576b8c8511e2ff7165bac7d63aa2f2588500f60707f2f9c47b990cc8d9f1f
+  status: machine
+  heading: Ganancias absolutas y expectativas
+  rule_text: |-
+    Fija los objetivos de las mujeres como cambio porcentual y dales el mismo programa. Explica a las clientas, sobre todo para los músculos del tren superior, que las ganancias absolutas en cm o kg pueden ser menores que las de un hombre porque parten de un punto de partida más bajo, no porque respondan peor. No añadas volumen solo para cerrar una diferencia absoluta.
+  applies_to: Adultos sanos, incluidos mayores; concentrado en medidas del tren superior.
+  conflicts: |-
+    Hawley no encontró diferencias entre sexos en el tamaño absoluto de las extremidades, en desacuerdo con Jones y Refalo en esa medida.
+- key: strength-hypertrophy/relative-strength-gains-by-sex
+  source_hash: 05232b51b17c3767338282d6034030dcd98e3c6e4868f3d23d424c6e668c2913
+  status: machine
+  heading: Ganancias relativas de fuerza por sexo
+  rule_text: |-
+    Cuenta con mejoras porcentuales tempranas y rápidas de la fuerza del tren superior en mujeres principiantes y, en mujeres mayores, con mejoras relativas de fuerza al menos tan buenas como las de los hombres. Usa estas mejoras para motivar y progresa la carga en cuanto se cumplan los objetivos de repeticiones. Da a las mujeres y a los hombres mayores la misma prescripción progresiva y nunca bajes la intensidad porque una clienta sea una mujer mayor.
+  applies_to: |-
+    Adultos de jóvenes a mediana edad (sobre todo a corto plazo, muchas mujeres no entrenadas) y adultos sanos de más de 50 o 60 años (calidad de los estudios moderada).
+  conflicts: |-
+    Heterogeneidad alta; el efecto en adultos jóvenes puede reflejar aprendizaje neural o muestras cortas de personas no entrenadas. Jones y Hawley no coinciden en si la ventaja relativa del tren superior en mujeres mayores es significativa.
+- key: strength-hypertrophy/one-prescription-for-both-sexes
+  source_hash: e695c69b8cafcb0c58cadeb75a787c89afb13bed4ac09cf2e7b454461e978051
+  status: machine
+  heading: Una sola prescripción para ambos sexos
+  rule_text: |-
+    Usa por defecto una única prescripción basada en la evidencia para todo el mundo (carga, series, frecuencia, proximidad al fallo, descanso). Individualiza según el nivel de entrenamiento, los objetivos, la recuperación, las preferencias y la respuesta, no según el sexo. Al dar cifras como series por semana, indica que los datos proceden sobre todo de hombres jóvenes y sigue la respuesta de cada persona. Trata las afirmaciones de que las mujeres "necesitan" mucho más volumen o descansos más cortos como una hipótesis que hay que probar en cada persona.
+  applies_to: |-
+    Adultos sanos de 18+ años; el ACSM no estratifica por sexo ni menciona a deportistas.
+  conflicts: |-
+    El ACSM no tiene en cuenta el sexo, en lugar de ponerlo a prueba. La opción neutra respecto al sexo se apoya sobre todo en Roberts 2020. Hagstrom detectó sesgo de publicación. Una recuperación entre series más rápida en las mujeres y una señal en la pérdida de velocidad (Rissanen 2022, no significativa) sugieren que las mujeres podrían tolerar más volumen, pero esto no se ha probado; la evidencia sobre diferencias entre sexos en volumen y descanso es emergente.
+- key: strength-hypertrophy/1rm-tables-and-repeated-set-fatigue
+  source_hash: cfc6b479af9603efb7264372001738e6555fdbbf6dfd97391aefdb8cf99a5678
+  status: machine
+  heading: Tablas de %1RM y fatiga con series repetidas
+  rule_text: |-
+    Usa las mismas tablas de %1RM a repeticiones para mujeres y hombres, elegidas según el ejercicio, y fija las cargas de trabajo por RIR u objetivos de repeticiones en lugar de solo por %1RM. No des por hecho que una mujer mostrará la misma caída de repeticiones que un hombre a lo largo de varias series; prescribe el trabajo de varias series con un RIR objetivo (o un rango de repeticiones más RIR) y deja que haga las repeticiones extra que pueda.
+  applies_to: |-
+    Las tablas: series únicas al fallo, grupos con un 66% de hombres, en su mayoría sanos y de menos de 59 años (evidencia moderada). Los hallazgos sobre fatiga: adultos jóvenes entrenados en estudios agudos pequeños de press de banca (n=24 y 42); inciertos para otros ejercicios, cargas más pesadas, principiantes y mujeres mayores.
+  conflicts: |-
+    No hay metaanálisis sobre la fatiga dinámica; la diferencia es específica de la tarea. La variabilidad entre personas es grande (SD de unas 27 repeticiones en mujeres).
+- key: strength-hypertrophy/rir-targets-and-accuracy-in-women
+  source_hash: 4e7618df9ee5fe493409ae4cd685b1523af76346c8d601e7717a5be2a24dc217
+  status: machine
+  heading: Objetivos de RIR y precisión en mujeres
+  rule_text: |-
+    Usa los mismos objetivos de RIR para mujeres y hombres: sobre todo 1-3 RIR, con el fallo como opción. Enseña y comprueba la estimación del RIR en principiantes de ambos sexos.
+  applies_to: |-
+    Adultos jóvenes entrenados, n=19-24; un ejercicio en cada caso para precisión y para adaptación.
+  conflicts: Pocas mujeres; no se puede descartar un efecto específico del sexo.
+- key: strength-hypertrophy/menstrual-cycle-phase
+  source_hash: bfffd916458d19c5876a06441cbf7bf9b9096fec5e596fba2e5aaaae6ff44cb8
+  status: machine
+  heading: Fase del ciclo menstrual
+  rule_text: |-
+    No programes, canceles ni periodices sesiones según la fase del ciclo, y no digas a las clientas que ganan más músculo en una fase. Mantén un entrenamiento progresivo constante durante todo el ciclo. Si una clienta se encuentra peor en torno a la regla, autorregula ese día (menos carga o volumen, ajusta el RIR) según sus síntomas, e invítala a registrar los síntomas si quiere.
+  applies_to: |-
+    Mujeres eumenorreicas de aproximadamente 18-38 años; no usuarias de anticoncepción hormonal, embarazadas ni mujeres peri- o posmenopáusicas.
+  conflicts: |-
+    Hay un desacuerdo real: Kissow 2022 (revisión narrativa) y unos pocos ensayos pequeños favorecen entrenar en la fase folicular. Las respuestas y los síntomas son muy individuales.
+- key: strength-hypertrophy/oral-contraceptives
+  source_hash: ea76f4b7005ee86db05bd5e1440a47b2b03313a83fc6ee1ed53f1bb64c9163f7
+  status: machine
+  heading: Anticonceptivos orales
+  rule_text: |-
+    No cambies el programa porque una clienta use anticonceptivos orales. Nunca aconsejes empezar o dejar la anticoncepción con fines de entrenamiento; es una decisión médica de la clienta y su médico.
+  applies_to: |-
+    Mujeres premenopáusicas que usan píldoras anticonceptivas orales; no hay datos sobre otros métodos hormonales.
+  conflicts: |-
+    La estimación de la potencia es muy imprecisa; los posibles efectos de la androgenicidad de la píldora proceden de estudios pequeños.
+- key: strength-hypertrophy/preparticipation-screening
+  source_hash: 1dd0ea55e10f286084d86d0f1ea6080c10e1b14fabb203ab12c4ceb269d4b027
+  status: machine
+  heading: Cribado previo a la participación
+  rule_text: |-
+    Antes de la primera sesión, pregunta: (1) ¿Has estado haciendo ejercicio con regularidad (30 min, 3 días por semana, durante 3 meses)? (2) ¿Tienes diagnosticada alguna enfermedad cardiaca, vascular, cerebrovascular o renal, o diabetes? (3) ¿Tienes alguno de los síntomas de la lista? Cualquier síntoma: parar y obtener el visto bueno médico antes de hacer ejercicio. Enfermedad conocida e inactivo: visto bueno médico antes de empezar cualquier programa y, después, empezar a intensidad de ligera a moderada. Enfermedad conocida, activo y sin síntomas: continuar a intensidad moderada; obtener el visto bueno antes de pasar a intensidad vigorosa. En los demás casos, empezar de ligero a moderado y progresar de forma gradual. Si aparece un síntoma en cualquier momento, parar y obtener el visto bueno. Los clientes sanos y sin síntomas no necesitan visto bueno médico. Para las franjas de TA en reposo, aplica "Umbrales de TA en reposo" de recovery-habits.md.
+  applies_to: |-
+    Adultos de todas las edades; se centra en los eventos cardiacos relacionados con el ejercicio, no en el riesgo musculoesquelético o de caídas.
+  conflicts: |-
+    Aún no está validado frente a eventos cardiacos. Aplicado a adultos estadounidenses de 40+ años, derivaría al 54.2% antes de cualquier ejercicio (al 70.9% de los de 70+). Los criterios de la 11.ª edición redujeron las derivaciones en un 41% frente a la 9.ª en una muestra pequeña de 2025. La hipertensión no controlada y las afecciones inestables siguen justificando la valoración médica.
+- key: strength-hypertrophy/fall-risk-screening
+  source_hash: 61aad071cc74e86ca21e4c29ed03f130e4539aa513d3cff4380b8b19c88346ca
+  status: machine
+  heading: Cribado del riesgo de caídas
+  rule_text: |-
+    En la entrada de clientes de 60+ años, pregunta por caídas en los últimos 12 meses (opcionalmente: ¿te sientes inestable?, ¿te preocupa caerte?) y cronometra una marcha de 4 m y/o un TUG. Una velocidad de marcha inferior a 0.8 m/s o un TUG de más de 15 s hacen que el trabajo de marcha y equilibrio sea la prioridad, y el coach sugiere una valoración profesional de la marcha y el equilibrio. Cualquier criterio de alto riesgo implica derivar al médico para una valoración multifactorial de caídas antes de progresar el entrenamiento. Vuelve a preguntar cada año.
+  applies_to: |-
+    Adultos de 65+ años que viven en la comunidad (60+ en entornos de ingresos bajos y medios).
+  conflicts: |-
+    La evidencia sobre el punto de corte del TUG es menos consistente que la de la velocidad de marcha; el intervalo anual es de consenso.
