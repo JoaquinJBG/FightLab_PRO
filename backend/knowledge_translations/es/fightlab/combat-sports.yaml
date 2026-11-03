@@ -1,0 +1,619 @@
+# Traducción al español de backend/knowledge_fightlab/combat-sports.md, de FightLab Pro
+# (Joaquín J Beltrán García), CC BY 4.0. Ver LICENSE-CONTENT.md.
+# Formato y cómo se actualiza: backend/knowledge_translations/README.md.
+# status: machine = traducción sin revisar por una persona.
+
+lang: es
+origin: fightlab
+file: combat-sports
+rules:
+- key: combat-sports/acwr-is-not-a-validated-injury-predictor
+  source_hash: eb0ccfeab8e9efaabcc287869dfbc91adde9242b56e4f8ddc331bfa98e3ad919
+  status: machine
+  heading: El ACWR no es un predictor de lesiones validado
+  rule_text: |-
+    FightLab puede mostrar el cociente entre la carga de esta semana y la media reciente como una cifra descriptiva de seguimiento. No debe presentarlo como un predictor de lesiones validado ni asociar a ningún valor una etiqueta de "seguro" o de "riesgo de lesión". El texto del coach debe decir que la investigación en la que se basan los umbrales del ratio procede sobre todo de deportes de equipo y está en discusión.
+  applies_to: |-
+    Deportistas de deportes de equipo, sobre todo adultos de élite o profesionales (fútbol, rugby, fútbol australiano, críquet y otros). Andrade 2020, Wang 2021 y Jiang 2022 incluyeron solo hombres; el sexo no se indica en el texto de Ding 2026 consultado. Griffin 2020 pide datos en ambos sexos. Ninguna de estas revisiones incluye deportes de combate.
+  conflicts: |-
+    Las revisiones coinciden en que hay cierta asociación, pero no en su utilidad. Griffin 2020, Maupin 2020 (tendencia al riesgo más bajo en 0.80-1.30) y Andrade 2020 (con Blanch y Gabbett, principales defensores del concepto, entre sus autores) se inclinan a favor; Ding 2026, Qin 2025 y Wang 2021 subrayan la heterogeneidad y la baja calidad; Impellizzeri 2020 no encuentra pruebas para usar el ACWR en la gestión de la carga con el fin de reducir lesiones (véase "No dirijas el entrenamiento por el ACWR"). Qin 2025 señala un posible sesgo de publicación, mientras que Ding 2026 no encontró efectos de estudios pequeños. Todos los datos son observacionales.
+- key: combat-sports/acwr-is-barely-studied-in-combat-sports
+  source_hash: b91b2ece07f99bbc6faad53137829e3a65f3de2e322dc511e5477d09351ec770
+  status: machine
+  heading: El ACWR apenas se ha estudiado en los deportes de combate
+  rule_text: |-
+    FightLab no debe decir a los deportistas de deportes de combate que las franjas del ACWR están validadas para su deporte. Cuando la app muestre el ratio a un boxeador, a un luchador de MMA, a un judoka o similar, conviene que diga que el ratio procede de la investigación en deportes de equipo y que apenas se ha probado en deportes de combate.
+  applies_to: |-
+    Solo taekwondo: 110 deportistas universitarios, 56 mujeres y 54 hombres en la versión de PMC (el resumen de PubMed dice 58 mujeres) (Lee 2025); una revisión de 21 estudios de taekwondo que mezcla deportistas de élite (1138), no de élite (1864) y mixtos (246), jóvenes y adultos (Hu 2026). Nada para MMA, boxeo, kickboxing, judo, lucha ni BJJ.
+  conflicts: |-
+    Aplicar a los deportes de combate los resultados de los deportes de equipo es una suposición. Es tentador argumentar que el ratio importa menos donde muchas lesiones vienen del contacto (golpes, proyecciones), porque Gabbett 2016 plantea la justificación en torno a la lesión sin contacto, pero el metaanálisis más reciente en deportes de equipo encontró asociaciones combinadas similares para las lesiones con contacto (g 0.54) y sin contacto (g 0.55) (Ding 2026). Por tanto, FightLab no debe afirmar ni que el ratio es relevante para las lesiones en deportes de combate ni que es irrelevante para las lesiones por contacto.
+- key: combat-sports/the-0-8-1-3-sweet-spot-is-not-a-safe-zone
+  source_hash: ba4c9e55c1810512048613a1c3a421c8d59c3fdce1966533bd43efd8fd49372e
+  status: machine
+  heading: La franja óptima de 0.8-1.3 no es una zona segura
+  rule_text: |-
+    Elimina del prompt del coach el texto "zona segura 0.8-1.3; por encima, riesgo de lesión" y elimina las etiquetas de riesgo tipo semáforo. Nunca describas ningún valor del ACWR como seguro ni como un riesgo de lesión. Si se mantienen franjas en pantalla, etiquétalas como "convención de FightLab, tomada de la investigación en deportes de equipo, no un umbral de seguridad" y usa colores neutros.
+  applies_to: |-
+    Datos de origen: jugadores de élite de deportes de equipo en críquet, rugby league y fútbol australiano (el sexo no se indica en los textos consultados). Datos de taekwondo: 110 deportistas universitarios, 56 mujeres y 54 hombres.
+  conflicts: |-
+    Gabbett 2016 y Maupin 2020 describen 0.8-1.3 como la zona de menor riesgo y Qin 2025 encuentra ahí la proporción combinada más baja; Lee 2025 informa de la lectura contraria en taekwondo; Jiang 2022 y Ding 2026 no encuentran ningún umbral utilizable. La idea de la franja óptima es una práctica popular que va por delante de la evidencia.
+- key: combat-sports/do-not-steer-training-by-the-acwr
+  source_hash: 68c0796f31fa67226085317f24cffc8cc9c06d07c0c917a1cd80a1f3118005b7
+  status: machine
+  heading: No dirijas el entrenamiento por el ACWR
+  rule_text: |-
+    Nunca redactes el resultado del ACWR como causa de lesión ni como un objetivo hacia el que dirigirse. Usa solo un lenguaje descriptivo y deja claro en el texto del coach que el ratio es un descriptor aproximado con problemas estadísticos conocidos.
+  applies_to: |-
+    Comentarios metodológicos basados en la literatura de deportes de equipo; Coyne 2019 es un pequeño estudio de caso de dos grupos de nivel internacional (baloncesto, halterofilia); el informe antes-después de Gabbett procede de un único entorno de rugby league de élite.
+  conflicts: |-
+    Desacuerdo directo. Críticos (el grupo de Impellizzeri, Wang 2020) frente a defensores (Gabbett 2016 y Blanch 2016; Griffin 2020, que consideró la EWMA más sensible; Maupin 2020, que también sugiere que la EWMA puede ser más sensible; Coyne 2019 sobre el acoplamiento). Wang 2020 plantea problemas concretos de la EWMA, así que la idea de que la EWMA arregla el ratio no está resuelta. El acoplamiento sigue en debate; las críticas de Lolli y colaboradores, incluido un comentario publicado sobre Coyne 2019, no se pudieron consultar más allá de sus títulos y no se usan.
+- key: combat-sports/ioc-consensus-backs-gradual-and-individual-load-progression
+  source_hash: 725afb407245763641236e2a70409c4276655c94c6fbc7de9cf954900f5e7f33
+  status: machine
+  heading: El consenso del COI respalda una progresión de la carga gradual e individual
+  rule_text: |-
+    FightLab puede decir que el consenso del COI sobre carga y lesión cuenta la mala gestión de la carga, incluidos los cambios rápidos en la carga de entrenamiento y de competición, entre los factores de riesgo de lesión, y que la declaración complementaria del COI sobre enfermedad recomienda vigilar la carga y hacer aumentos pequeños e individualizados para limitar el riesgo de enfermar. No debe afirmar que ninguna de las dos declaraciones defina un ACWR seguro ni un umbral validado de aumento semanal para las lesiones. Cualquier aviso numérico de aumento semanal es una convención de FightLab (véase "Presenta la carga como una comparación neutra con la media reciente").
+  applies_to: |-
+    Deportistas de élite de deportes olímpicos; consenso de expertos basado en datos limitados, sobre todo observacionales, que los autores describen como emergentes (Parte 1) y limitados a unos pocos deportes (Parte 2). No es específico de los deportes de combate.
+  conflicts: |-
+    Impellizzeri 2020 (JOSPT Parte 2) sostiene que este tipo de recomendaciones se apoya en una evidencia débil y propensa a la confirmación, y que evitar hacer demasiado demasiado pronto se justifica por los principios del entrenamiento, no por los resultados de los estudios. La cifra del 10% aparece en una declaración sobre enfermedad y se atribuye a una literatura sobre lesiones que no se cita. Wang 2020 afirma que el COI recomendó el ACWR y sus umbrales; no se pudo comprobar porque no se consultó el texto completo de la Parte 1. Gabbett, el principal defensor del ACWR, es coautor de ambas declaraciones del COI.
+- key: combat-sports/show-the-load-ratio-only-after-28-days-of-history
+  source_hash: e2ca11571d0c3729ae207397b729f86c9f6ba1dd00f918c29d31ae2e3da3eaf6
+  status: machine
+  heading: Muestra el ratio de carga solo tras 28 días de historial
+  rule_text: |-
+    Muestra la comparación de carga solo cuando el deportista tenga 28 días de sesiones registradas; antes, muestra "todavía no hay suficiente historial". El requisito de 28 días es una convención de FightLab, no un mínimo basado en la evidencia. Cuando el registro tenga huecos, tras un parón (lesión o enfermedad) o durante un tapering, muestra la comparación solo con una advertencia de que la cifra puede inducir a error.
+  applies_to: |-
+    Investigación en deportes de equipo; no se estudiaron los ciclos de campamento y de tapering de los deportes de combate ni las semanas irregulares.
+  conflicts: |-
+    No está resuelto si es mejor la media móvil o la EWMA (Griffin 2020 y Maupin 2020 prefieren la EWMA por su sensibilidad; Wang 2020 critica sus problemas con la carga inicial y con el tapering). La objeción de Wang sobre el tapering se refiere a la EWMA; la media móvil acoplada de FightLab no se probó allí, así que la advertencia sobre el tapering es una precaución, no un hallazgo. Gabbett 2016 cita un hallazgo según el cual los deportistas de deportes de equipo con más de 18 semanas de entrenamiento antes de una primera lesión tenían menos riesgo de sufrir otra después, lo que sugiere que un historial más largo importa, pero no fija un mínimo para un ratio.
+- key: combat-sports/present-load-as-a-neutral-comparison-with-the-recent-average
+  source_hash: 6aeb638f953e52b8ccc74e6194736ee48ab69ed19f8c44c03dcc2430b6b03ed0
+  status: machine
+  heading: Presenta la carga como una comparación neutra con la media reciente
+  rule_text: |-
+    Muestra "la carga de esta semana está un X% por encima o por debajo de tu media de 4 semanas" con un lenguaje neutro, sin palabras como "seguro", "peligro" o "riesgo de lesión" y sin colores de riesgo rojo-verde, y acompáñalo de cómo se siente el deportista (sueño, agujetas, fatiga, estado de ánimo) y de lo que pretendía el plan del campamento. El texto del coach puede decir que conviene comentar los saltos grandes sobre la media reciente con un entrenador o un fisioterapeuta, y que nada de esto es un diagnóstico. Cualquier aviso numérico, como un aumento de una semana a otra superior al 10% o las franjas del ratio, debe etiquetarse como "convención de FightLab (una regla práctica habitual)", y la app no debe decir que mantenerse por debajo evita las lesiones.
+  applies_to: |-
+    Síntesis de revisiones y comentarios sobre deportes de equipo; datos del 10% procedentes de rugby league profesional (sin publicar) y de fútbol australiano; RPE en judo de 29 deportistas en un único campamento internacional.
+  conflicts: |-
+    Los defensores abogan por usar el ACWR para cuantificar el riesgo: Gabbett 2016 y Blanch 2016 (que recomienda el ACWR en las decisiones de vuelta a la competición) y Myers 2020 (un critically appraised topic de 3 cohortes; 2 encontraron un riesgo de 2.0 a 4.5 veces mayor con un ACWR alto frente a uno equilibrado; calificó el nivel de evidencia como A). Los críticos dicen que incluso un planteamiento descriptivo puede leerse como un consejo sobre el riesgo. Los datos del 10% del rugby league nunca se publicaron. La elección de la redacción es un criterio de diseño de FightLab, basado en las conclusiones prudentes de las revisiones más recientes.
+- key: |-
+    combat-sports/taekwondo-injury-factors-are-rapid-weight-loss-and-competition-exposure
+  source_hash: 3410a6bc48d8e1f82cf4339ba68dfad8736fcb6b5e0ef9d032d66bd19303b76e
+  status: machine
+  heading: |-
+    Los factores de lesión en taekwondo son la pérdida rápida de peso y la exposición a la competición
+  rule_text: |-
+    FightLab puede decir a los deportistas de deportes de combate que la única revisión sistemática sobre carga y lesión en un deporte de combate (taekwondo) encontró la evidencia más consistente para la pérdida rápida de peso, evidencia moderada para la exposición a la competición y para la frecuencia y la duración del entrenamiento, y que no graduó los ratios de carga semanal como factor. Es solo información; el contenido sobre el corte de peso debe seguir siendo informativo, no dar ningún protocolo de corte y derivar a un profesional cualificado.
+  applies_to: |-
+    Solo deportistas de taekwondo: de élite, no de élite y mixtos, jóvenes (una cohorte incluida tenía de 6 a 17 años) y adultos, de ambos sexos. Los autores de la revisión dicen que hay pocos estudios de alta calidad.
+  conflicts: |-
+    El grado fuerte que da Hu a la pérdida rápida de peso se refiere al taekwondo y procede de estudios observacionales en una síntesis de la mejor evidencia, no de un metaanálisis ni de un consenso, así que FightLab lo califica como emergente para su traslado a otros deportes de combate. La tasa de competición es por hora y sale de una exposición pequeña. En las fuentes consultadas no se ha comprobado si estos hallazgos se extienden al MMA, al boxeo o al judo.
+- key: combat-sports/prefer-planned-weight-management-to-acute-dehydration
+  source_hash: 781773b8ecb9099110bc0ca6e13f32c4f5f16d7256a6ea96ce1ac0dc1f3fa573
+  status: machine
+  heading: Prefiere una gestión del peso planificada a la deshidratación aguda
+  rule_text: |-
+    Cuando un deportista pregunte cómo dar el peso, la app puede decir que el principal consenso de medicina deportiva (ACSM, 2021) prefiere una gestión gradual y planificada de la masa corporal y elegir una categoría de peso que el deportista pueda alcanzar sin un estrés físico, nutricional o psicológico excesivo, y que los métodos de deshidratación aguda tienen costes para la salud y el rendimiento. Conviene que la app derive al deportista a un dietista-nutricionista deportivo o a un médico del deporte para un plan individual, y no debe proporcionar ella misma un protocolo de corte.
+  applies_to: |-
+    Deportistas de deportes por categorías de peso en general (deportes de combate como la lucha, el judo, el taekwondo, el boxeo y el MMA, además del remo, la halterofilia y las carreras de caballos); los estudios de base son sobre todo de hombres adultos jóvenes. Consenso redactado por 5 autores; sin muestra combinada.
+  conflicts: |-
+    El consenso reconoce que la cultura y la ventaja percibida de competir en una categoría inferior mantienen en uso la RWL, que los deportistas refieren beneficios psicológicos (identidad, concentración, sensación de ventaja) y que el peso mínimo puede no ser el peso óptimo para rendir. Reale 2017 afirma que, aunque la manipulación aguda puede perjudicar la salud y el rendimiento absoluto, su uso estratégico puede mejorar el éxito competitivo. Ningún ensayo muestra que la pérdida gradual dé mejores resultados en competición en el MMA; la preferencia se basa en razones de salud y en datos limitados. La declaración también señala que varias medidas basadas en el reglamento son difíciles de hacer cumplir.
+- key: combat-sports/rapid-weight-loss-is-common-but-not-safe-because-of-it
+  source_hash: a4170d7cb9b913097f7d0f0bc52670c1732c6a73ae46f572ee2635751817f1cb
+  status: machine
+  heading: La pérdida rápida de peso es frecuente, pero eso no la hace segura
+  rule_text: |-
+    La app puede decir que la pérdida rápida de peso antes del pesaje es frecuente en los deportes de combate (la mayoría de los competidores encuestados dicen haberlo hecho alguna vez), que los deportistas de MMA refieren la pérdida aguda de peso más frecuente y de mayor magnitud, y que ser frecuente no la hace segura. No conviene que use la prevalencia para normalizar ni recomendar el corte.
+  applies_to: |-
+    Competidores de nivel aficionado a élite, sobre todo hombres; encuesta en judo n=822 (26% mujeres); encuesta multideporte n=637; revisión sistemática n=4,432 (3.5% mujeres), en la que solo 3 de sus 16 estudios informan de la propia pérdida. Los datos de las encuestas son autodeclarados.
+  conflicts: |-
+    Las encuestas se basan en lo que declaran y recuerdan los participantes, y las muestras son de voluntarios. La revisión advierte de que la recuperación de peso tras el pesaje no es un indicador válido de cuánto se perdió. Las cifras de prevalencia varían según el deporte, el nivel y el país. Ninguna fuente consultada fija un límite seguro.
+- key: combat-sports/weight-regained-after-the-weigh-in-is-not-proof-of-recovery
+  source_hash: c2a04d48ce644b863f59854b8d3375e2821b788c068ac406ff16853e4e00356d
+  status: machine
+  heading: El peso recuperado tras el pesaje no prueba la recuperación
+  rule_text: |-
+    La app puede informar, como medias descriptivas, de cuánta masa corporal suelen recuperar los deportistas de combate entre el pesaje y el combate (las cifras combinadas y las de MMA profesional que figuran en la evidencia). Debe decir que recuperar el peso en la báscula no prueba que se hayan restablecido del todo la hidratación, el glucógeno ni el rendimiento. No debe fijar ni sugerir al deportista un objetivo de recuperación de peso.
+  applies_to: |-
+    Deportistas profesionales de MMA (datos de la comisión de California, 89% hombres) y cohortes mixtas de deportes de combate en el metaanálisis (la edad, el sexo y el nivel varían según el estudio). En el metaanálisis, ningún estudio tenía bajo riesgo de sesgo en todos los dominios (14 con algunas dudas, 21 de moderado a grave, 3 grave, 2 con limitaciones graves).
+  conflicts: |-
+    Heterogeneidad muy alta (I2 de alrededor del 99%). El estudio de la comisión no tiene los pesos previos al corte, así que no puede separar el tamaño del corte de la realimentación. La mayoría de los datos del metaanálisis son observaciones de campo con una recuperación elegida por los propios deportistas, y las cohortes emparejadas usaron ventanas de observación no equivalentes. La evidencia sobre la hidratación tras la recuperación es escasa: el metaanálisis solo tenía dos momentos de medida de la densidad urinaria tras la recuperación, cada uno de un único estudio, y un estudio de lucha incluido en la revisión de Lakicevic 2021 encontró que la densidad urinaria volvía a la normalidad en 16 horas. Por eso, la afirmación de que recuperar el peso no prueba la rehidratación expresa incertidumbre; no prueba que los deportistas sigan deshidratados.
+- key: combat-sports/dehydration-based-cuts-have-been-linked-to-deaths
+  source_hash: 7fcd53688384b934cf613583b42a2f05840e575ffd6cf3643e511e1aa07ffe39
+  status: machine
+  heading: Los cortes por deshidratación se han asociado a muertes
+  rule_text: |-
+    La app puede decir que el corte de peso extremo se ha asociado a muertes en varios deportes de combate y en la lucha, por lo general cuando se combinó una restricción grave de líquidos con exposición al calor o sudoración intensa, y que no se conoce su frecuencia real. El contenido debe acompañar siempre esto de una derivación a un médico y de una afirmación firme de que la sauna, los trajes de sudoración y entrenar en salas calientes para forzar la pérdida de peso son los métodos asociados a los peores desenlaces.
+  applies_to: |-
+    Casos clínicos e investigaciones en luchadores, taekwondo, MMA, judo, Muay Thai y remeros; el informe de los CDC abarca 3 luchadores universitarios varones. Sin denominador poblacional, así que no se puede dar ninguna tasa.
+  conflicts: |-
+    La evidencia se basa en casos y no permite dar un riesgo por corte; el consenso y el informe de los CDC coinciden en el mecanismo. Las muertes se concentran en los métodos extremos, así que la app no debe dar a entender que la manipulación moderada de líquidos o de comida conlleva el mismo riesgo ni que esté demostrado que es segura.
+- key: combat-sports/kidney-strain-markers-rise-after-rapid-weight-loss
+  source_hash: 1547900f8c48084d04573334fb176e97e831ab4b6b5281985742108cb8117e19
+  status: machine
+  heading: Los marcadores de sobrecarga renal suben tras una pérdida rápida de peso
+  rule_text: |-
+    La app puede decir que los estudios en deportistas de combate muestran marcadores de sobrecarga renal (creatinina y nitrógeno ureico elevados) y orina concentrada tras una pérdida rápida de peso, y que la lesión renal aguda se ha asociado a pérdidas extremas de líquidos, pero que se desconoce el riesgo real por corte. No debe diagnosticar. Convención de FightLab (no procede de las fuentes; pendiente de revisión clínica): di a cualquiera que tenga una orina muy oscura o escasa, dolor intenso en el costado o en la espalda, hinchazón o no pueda orinar que vaya al médico cuanto antes.
+  applies_to: |-
+    Deportistas de combate sanos, sobre todo hombres jóvenes y algunas mujeres (un estudio con 8 mujeres); 10 estudios pequeños, 171 participantes en total, incluido un caso clínico de un solo deportista. Los resultados son cambios en biomarcadores, no lesiones diagnosticadas, salvo en el caso clínico.
+  conflicts: |-
+    La creatinina y la urea suben con la propia deshidratación y pueden normalizarse con la rehidratación, así que una subida de los biomarcadores no equivale a un daño renal. La redacción de la revisión sobre el daño va más allá de sus biomarcadores, su selección de estudios fue solo en parte sistemática y los estudios incluidos difieren mucho en la duración y el método del corte. Ningún estudio siguió la función renal a largo plazo. La lista de síntomas urinarios de la regla es una convención de FightLab, no está tomada de las fuentes.
+- key: combat-sports/weight-cutting-affects-mood-and-can-distort-concussion-tests
+  source_hash: 030658c7561d53e755983e2f3e5911a3f8d978594a086f28189ccdd96d0fd041
+  status: machine
+  heading: |-
+    El corte de peso afecta al estado de ánimo y puede distorsionar las pruebas de conmoción
+  rule_text: |-
+    La app puede decir que el corte de peso se asocia de forma constante a un peor estado de ánimo y a un empeoramiento transitorio de la capacidad de pensar, y que la deshidratación puede hacer que las pruebas de cribado de conmoción den peores resultados. Puede decir que es plausible, pero no está demostrado, que el corte aumente el riesgo de lesión cerebral, y no debe presentarlo como un hecho. Tras cualquier golpe en la cabeza, se aplica la regla prevista de no hacer contacto, sea cual sea el estado de hidratación o de peso.
+  applies_to: |-
+    Muestra mixta de luchadores, boxeadores y luchadores de MMA, sobre todo hombres; Bray 2021 n=156 luchadores profesionales, resonancia magnética y pruebas neuropsicológicas, con la categoría de peso (no el corte) como exposición.
+  conflicts: |-
+    La categoría de peso es un mal indicador del corte de peso, así que Bray 2021 no puede respaldar un efecto del corte. En el mismo estudio, los pesos pesados mostraron mayores descensos anuales del volumen cerebral regional y en las pruebas de velocidad de procesamiento y de tiempo de reacción, así que el patrón es dispar. El consenso dice que el riesgo de lesión no está confirmado. Los efectos sobre el estado de ánimo proceden de unos pocos estudios pequeños con medidas autodeclaradas.
+- key: |-
+    combat-sports/performance-effects-of-rapid-weight-loss-are-mixed-with-no-safe-percentage
+  source_hash: a19ee5c094bafcc97b6097f3c5d5c283fed92b84231a194706b5410dc9a7d5b4
+  status: machine
+  heading: |-
+    Los efectos de la pérdida rápida de peso en el rendimiento son dispares, y no hay un porcentaje seguro
+  rule_text: |-
+    La app puede decir que algunos estudios en deportistas de combate encuentran pequeños descensos de la fuerza máxima y de los esfuerzos repetidos de alta intensidad justo después de un corte rápido y otros no encuentran ninguno, que los efectos tras la rehidratación son dispares y dependen del tamaño del corte, del método y del tiempo de recuperación, y que no hay establecido ningún porcentaje seguro. No debe decir a un deportista que un corte de un tamaño determinado no perjudicará su rendimiento, ni presentar ningún porcentaje como un límite seguro o un objetivo.
+  applies_to: |-
+    Sobre todo deportistas de combate varones jóvenes (judo, lucha, taekwondo, boxeo, MMA) en condiciones de laboratorio o simuladas; el ensayo individual más grande aquí tiene n=14; revisión n=184. Las mujeres apenas se han estudiado.
+  conflicts: |-
+    Los metaanálisis difieren: Brechney 2022 encontró pequeños descensos de la fuerza y de los esfuerzos repetidos justo después de la RWL, mientras que Mauricio 2022 no encontró ningún efecto sobre la fuerza ni la potencia con pérdidas de hasta el 5%. Ninguno de los dos encontró un déficit claro tras la recuperación, mientras que Barley 2018 (ECA) seguía encontrando déficits en los esfuerzos repetidos a las 24 horas, y Martinez-Aranda 2023 encontró descensos en la mayoría de los estudios por encima del 3%. Las pruebas de laboratorio (fuerza, salto, empuje de trineo) pueden no reflejar el rendimiento en combate, y no recogen la ventaja relativa frente a un rival más ligero. Las cifras del 3-5% y de 24 horas son la interpretación de los autores de las revisiones a partir de estudios limitados, y la app no debe presentarlas como un límite seguro ni como un objetivo.
+- key: combat-sports/a-longer-weigh-in-to-bout-gap-is-not-protective
+  source_hash: 98dbe248d557d07abc5cfbd055d204b0271547d5ceb17efd987989726c15690f
+  status: machine
+  heading: Un margen mayor entre el pesaje y el combate no protege
+  rule_text: |-
+    La app puede decir que más tiempo después del pesaje permite recuperarse más, pero que, en los deportes con márgenes largos, los deportistas tienden a cortar y recuperar más peso, y que los pesajes el mismo día dejan poco tiempo para recuperarse de un corte. No debe sugerir elegir eventos ni horarios que permitan un corte mayor.
+  applies_to: |-
+    Deportes de combate mixtos; ningún estudio aleatoriza pesajes el mismo día frente al día anterior en MMA o boxeo. Barley 2018: n=14 deportistas de MMA varones.
+  conflicts: |-
+    No existe ninguna comparación directa de las ventanas de recuperación; la postura del ACSM es una interpretación de expertos. El efecto sobre el rendimiento tras 24 horas difiere entre estudios (Brechney: sin diferencias significativas tras recuperar el peso; Barley: deteriorado). La cifra de 24 horas es una recomendación del autor de una revisión, no un umbral probado.
+- key: combat-sports/post-weigh-in-recovery-guidance-is-general-consensus-only
+  source_hash: 24d5f037d73a188a6eaeb5750d1b7f9938a1bdfbc920fa158ff5862f4cba2e24
+  status: machine
+  heading: Las pautas de recuperación tras el pesaje son solo consenso general
+  rule_text: |-
+    La app puede explicar, como información general y citando su origen, que el consenso de nutrición deportiva (ACSM 2021) describe en términos generales la recuperación tras el pesaje: reponer más líquido del que se perdió, incluir sodio mediante bebidas o alimentos salados, tomar alimentos y líquidos ricos en hidratos de carbono en cantidades más pequeñas y frecuentes, y cuidar el bienestar digestivo, teniendo en cuenta que lo que se puede conseguir depende del tiempo que quede hasta el combate. Debe decir que se trata de un consenso de expertos extrapolado en gran parte de otros deportistas y que ningún enfoque de recuperación ha demostrado ser superior en deportistas de combate, y debe derivar al deportista a un dietista-nutricionista deportivo para cualquier plan individual. No debe mostrar cantidades de líquido, sodio, hidratos de carbono o proteína por kg de peso corporal ni como porcentaje del peso perdido, ni calcular cantidades a partir del peso o de las pérdidas del propio deportista, ni vincular nada de esto a la cuenta atrás del pesaje. Conviene que diga que la rehidratación intravenosa está prohibida por los organismos que rigen el deporte y que no fue mejor que beber en los estudios que cita el consenso.
+  applies_to: |-
+    Derivado de la literatura de nutrición deportiva, sobre todo en deportistas de resistencia y de deportes sin categorías de peso, además de pequeños estudios en combate; ningún protocolo de recuperación se ha comparado directamente con otro en deportistas de combate.
+  conflicts: |-
+    Las cifras de líquidos de Burke 2021 y de Barley 2019 difieren ligeramente, y ambas remiten a la experiencia individual y al bienestar digestivo. El metaanálisis (Sun 2026) afirma que la evidencia específica de cada estrategia es insuficiente y que la masa recuperada no equivale a la rehidratación. Las cifras del consenso son recomendaciones de expertos, no resultados de ensayos en deportistas de combate. FightLab no prescribe ni un corte ni un plan de recuperación, así que estas cifras corresponden a un dietista-nutricionista deportivo, no a las instrucciones de la app.
+- key: combat-sports/do-not-promote-water-loading-diuretics-or-iv-fluids
+  source_hash: 982d230ce036d5f7173bfd83e8fd6f8f6148ebbe4d97a32d0af0cc2f072a7565
+  status: machine
+  heading: No promuevas la sobrecarga de agua, los diuréticos ni los sueros intravenosos
+  rule_text: |-
+    No conviene que la app presente la sobrecarga de agua, los diuréticos, los laxantes, el vómito ni los sueros intravenosos como opciones. Si un deportista los menciona, puede decir que los diuréticos están prohibidos en la mayoría de los deportes y que la rehidratación intravenosa está prohibida por los organismos que rigen el deporte, que la evidencia sobre la sobrecarga de agua es limitada y preliminar, y que debe hablar con un médico o con un dietista-nutricionista deportivo.
+  applies_to: |-
+    Encuestas y ensayos pequeños en deportistas de combate, sobre todo hombres; revisión sobre dopaje de 6 estudios.
+  conflicts: |-
+    La evidencia sobre la sobrecarga de agua es limitada y en parte favorable (Barley 2019 cita un estudio que respalda alrededor de un 3% en luchadores de grappling), así que la app no debe calificarla de segura ni de insegura: dice que la evidencia es limitada y deriva. La revisión sobre dopaje es pequeña, se basa en parte en datos autodeclarados y no trata específicamente del corte de peso.
+- key: combat-sports/weigh-in-rules-are-not-a-safety-guarantee
+  source_hash: 8c99de979173f1f5e90a802c624d78ce53716162ecf1c08ba00596d1b880bc9d
+  status: machine
+  heading: Las normas de pesaje no garantizan la seguridad
+  rule_text: |-
+    La app puede decir que las organizaciones usan medidas como adelantar o retrasar los pesajes, límites en el repesaje, pruebas de hidratación (densidad urinaria), normas de peso mínimo y categorías de peso adicionales, y que la evidencia sobre su efecto es limitada y dispar. Conviene que la app diga a los deportistas que consulten las normas de su propio evento y de su comisión, y no conviene que sugiera que superar una prueba de hidratación o un pesaje significa que el deportista está a salvo.
+  applies_to: |-
+    Lucha de instituto y universitaria en EE. UU. (el programa de la NCAA), judo, taekwondo y comisiones de MMA profesional. La cohorte de Curran-Sills abarca eventos de MMA profesional en Norteamérica durante 2014-2018 (el número total de deportistas no figura en el resumen). Los estudios de resultados de la NCAA son los que cita el consenso y no se consultaron uno por uno.
+  conflicts: |-
+    El programa de la NCAA parece reducir la recuperación de peso y las oscilaciones a lo largo de la temporada, pero agrupa varias medidas y no fue aleatorizado. La política de pesaje anticipado en MMA coincidió con más fallos al dar el peso, que es un resultado distinto de la salud. Las normas de repesaje por la mañana pueden burlarse. El metaanálisis de 2026 aboga por abordar el tamaño del corte y no solo el tiempo de recuperación.
+- key: combat-sports/no-weight-cut-content-for-minors-and-refer-repeated-cutters
+  source_hash: d5c36e7dc13d1498c0b6e218a287984c882bc9b1bd8cb153194a2323ef940d70
+  status: machine
+  heading: |-
+    Nada de contenido sobre corte de peso para menores, y deriva a quien corta peso de forma repetida
+  rule_text: |-
+    Convención de FightLab (filtro de edad, respaldado por el consenso): no muestres información sobre el corte de peso a usuarios menores de 18 años; en su lugar, di que el consenso de medicina deportiva desaconseja que los deportistas jóvenes bajen peso para dar una categoría, y derívalos a un médico o a un dietista-nutricionista deportivo. En el caso de los adultos, la app puede explicar que el consenso de medicina deportiva asocia el corte repetido y una ingesta energética baja prolongada con la deficiencia energética relativa en el deporte (REDs), con cambios hormonales y, en algunos grupos, con alteraciones de la conducta alimentaria, y conviene que los derive a un médico del deporte o a un dietista-nutricionista. Convención de FightLab (no es un cribado validado): los motivos de derivación son cortes repetidos a lo largo de una temporada, restricción prolongada, ciclos frecuentes de pérdida y recuperación de peso, energía baja persistente, ánimo bajo, libido baja o una relación problemática con la comida.
+  applies_to: |-
+    Deportistas jóvenes y adultos de deportes de combate y de deportes por categorías de peso; luchadores mayoritariamente varones; el consenso del COI abarca ambos sexos. El filtro de edad y la lista de motivos son convenciones de FightLab.
+  conflicts: |-
+    La evidencia sobre los REDs en deportistas de combate varones es limitada: el artículo metodológico del COI señala que gran parte de la fisiología de los REDs se basa en estudios limitados, o se extrapola de ellos, históricamente realizados sobre todo en deportistas mujeres jóvenes. En los estudios con deportistas de combate que cita la declaración del ACSM no se vio un daño claro en la densidad ósea. Las puntuaciones de trastornos de la conducta alimentaria fueron más altas en algunas cohortes, pero no en todas. El límite de 18 años y la lista de motivos son convenciones de FightLab, no proceden de las fuentes.
+- key: combat-sports/collapse-or-confusion-during-a-cut-is-an-emergency
+  source_hash: 42b2280662bade55558e816402bb394d93b1c1286fdb91f72de5f0c92852741c
+  status: machine
+  heading: Un colapso o confusión durante un corte es una emergencia
+  rule_text: |-
+    La app puede decir, como información general y no como diagnóstico, que un colapso, o señales de que el cerebro está afectado, durante o después del ejercicio o de la exposición al calor pueden indicar un golpe de calor por esfuerzo, que es una urgencia médica: llama a los servicios de emergencia; enfriar rápido salva vidas; nunca es algo que haya que aguantar. Ejemplos de señales cerebrales según la convención de FightLab: confusión, pérdida de coordinación, comportamiento inusual. Convención de FightLab para la lista adicional de parar y buscar atención (pendiente de revisión clínica): dolor en el pecho o latido irregular, mareo intenso o desmayo al ponerse de pie, vómitos persistentes, calambres musculares intensos, orina muy oscura o escasa, y no poder retener los líquidos. Ante cualquiera de ellos, conviene que la app diga al deportista que deje los métodos basados en el calor o el sudor y busque atención médica o llame a los servicios de emergencia, y no conviene que sugiera ninguna alternativa para seguir.
+  applies_to: |-
+    Enfermedad por calor de esfuerzo en deportistas en general (declaración de postura); muertes por corte de peso en la lucha y en deportes de combate (basadas en casos). Los ejemplos concretos de síntomas y la lista adicional no figuran en las fuentes consultadas.
+  conflicts: |-
+    Las fuentes respaldan el principio (un colapso o una disfunción del sistema nervioso central durante el esfuerzo con calor es una urgencia; enfriamiento precoz), pero no dan ninguna lista de síntomas validada para quienes cortan peso, y la declaración de postura trata la exposición al calor durante el esfuerzo, no la pasiva. Un colapso puede ser un agotamiento por calor y no un golpe de calor, y solo una medición de la temperatura central permite distinguirlos, algo que la app no puede medir. La app no debe dar a entender que puede detectar un golpe de calor o una deshidratación. Según la declaración de postura, los calambres intensos suelen ser benignos; su inclusión en la lista de parar es una convención prudente de FightLab.
+- key: combat-sports/stop-training-after-a-suspected-head-injury
+  source_hash: c5cac77dd6e47e15120085a42d715c3f5dad6005aaa260867be18b551d31691b
+  status: machine
+  heading: Deja de entrenar tras una sospecha de lesión en la cabeza
+  rule_text: |-
+    Si un deportista refiere un golpe en la cabeza (o un golpe fuerte en el cuerpo que le sacude la cabeza) con cualquier síntoma de conmoción, o un compañero o entrenador ve señales de alerta (por ejemplo, el deportista se queda inmóvil, tarda en levantarse o se tambalea, parece aturdido o confuso, pierde el conocimiento, tiene una convulsión o no recuerda lo que ha pasado), conviene que la app le diga que deje de entrenar ya. Conviene que diga que no vuelva ese día y que no haga sparring ni ninguna actividad con riesgo de contacto en la cabeza, caídas o choques hasta que lo haya evaluado un médico u otro clínico cualificado, aunque los síntomas mejoren. La app no debe decirle al deportista si tiene o no una conmoción.
+  applies_to: |-
+    Declaración de consenso (31 autores) y herramienta de reconocimiento para deportistas de todas las edades y niveles, de recreativo a profesional; la base de evidencia procede sobre todo de deportes de campo y sobre hielo, no de deportes de combate. Los datos de base son principalmente observacionales; la recomendación es un consenso de expertos.
+  conflicts: |-
+    No se encontraron recomendaciones contradictorias. La evidencia para retirar al deportista el mismo día es observacional y basada en expertos, pero la recomendación es universal entre los organismos internacionales. Las conmociones previas y los factores individuales modifican el riesgo y la recuperación.
+- key: combat-sports/red-flags-after-a-head-blow-mean-emergency-care
+  source_hash: ede6ec15e2edc581b64fe762159f13fbee0efc472c7d7ee02acd63bc20df92d6
+  status: machine
+  heading: Las señales de alarma tras un golpe en la cabeza requieren atención de urgencia
+  rule_text: |-
+    Si, tras un golpe en la cabeza o en el cuerpo, el deportista refiere o los demás ven una señal de alarma (por ejemplo, dolor de cuello, una convulsión, pérdida del conocimiento, problemas de visión, confusión o dolor de cabeza que empeoran, o vómitos repetidos), conviene que la app sustituya el contenido de entrenamiento por un mensaje urgente para que busque atención médica de urgencia ya (llamando al número de emergencias local). También conviene que diga que no hay que dejar solo al deportista durante al menos las primeras 3 horas, que no hay que mandarlo solo a casa, que debe evitar el alcohol, las drogas recreativas y los fármacos que no le haya recetado su clínico, y que no debe conducir hasta que un profesional sanitario lo autorice. Para la lista completa de señales de alarma, conviene que la app enlace a la CRT6 oficial en lugar de reproducirla, cambiarle el formato o volver a maquetarla, salvo que se obtenga permiso del BMJ, y la redacción final debe revisarla un clínico.
+  applies_to: |-
+    Herramienta de reconocimiento para niños, adolescentes y adultos de todos los deportes, desarrollada por el Concussion in Sport Group como resultado del consenso de Ámsterdam; no es específica de los deportes de combate, pero se aplica a cualquier golpe en la cabeza. Leída en la herramienta oficial del BJSM.
+  conflicts: |-
+    No se encontraron contradicciones en el contenido. La lista es un consenso de expertos, no una regla de decisión validada. Las reproducciones modificadas difieren (la versión de esquí de la FIS usa de 1 a 2 horas y una lista más corta), así que solo debe usarse la herramienta oficial. La CRT6 solo puede copiarse sin alteraciones; cambiarle el formato en digital o traducirla requiere el consentimiento del BMJ, lo que limita cómo puede mostrarla la app.
+- key: combat-sports/early-rest-after-a-concussion-is-relative
+  source_hash: b59f0502869c1a94adefb70bd1b79b9b954f09eb82137914fb82b13157167af5
+  status: machine
+  heading: El reposo inicial tras una conmoción es relativo
+  rule_text: |-
+    Tras una sospecha de conmoción, no conviene que la app diga al deportista que se quede en una habitación a oscuras ni que no haga nada. Puede decir que durante aproximadamente los primeros 1 a 2 días se aplica un reposo relativo (actividades cotidianas, menos tiempo de pantalla) y que la actividad ligera, como caminar, suele ser aceptable si no empeora claramente los síntomas. Conviene que añada que todo lo que tenga riesgo de contacto, choque o caída (sparring, grappling, clinch, rolls, trabajo de paos con un compañero) queda descartado hasta que un clínico diga que es seguro. Si los síntomas empeoran claramente con la actividad, para y descansa hasta que vuelvan al nivel anterior.
+  applies_to: |-
+    Principalmente deportistas adolescentes y adultos de deportes variados; las recomendaciones se apoyan en una revisión sistemática y metaanálisis sobre reposo y ejercicio que se citó, pero que no se consultó por separado. Ninguna muestra de deportes de combate.
+  conflicts: |-
+    La recuperación varía de una persona a otra. La declaración señala que las alteraciones del sueño en los primeros 10 días se asocian a síntomas persistentes. Allí donde difiere de las recomendaciones antiguas (reposo estricto y aislado), el consenso deja claro que no se recomienda el reposo estricto.
+- key: combat-sports/return-to-contact-follows-a-graded-clinician-supervised-plan
+  source_hash: 229f4cceb25286c11be60f7b06bf00a41d2618dcc6e1bb544d09c182badd822f
+  status: machine
+  heading: La vuelta al contacto sigue un plan gradual supervisado por un clínico
+  rule_text: |-
+    Conviene que la app muestre como información la estructura de vuelta al deporte en seis pasos (actividad limitada por los síntomas, ejercicio aeróbico ligero y luego moderado, trabajo individual específico del deporte fuera del grupo, drills sin contacto, práctica con contacto completo, vuelta a la competición) y que diga que cada paso suele durar al menos 24 horas, así que una vuelta completa lleva al menos una semana, aproximadamente, y suele completarse en un mes, más o menos. No debe calcular una fecha de vuelta para el deportista ni hacerle pasar de un paso a otro por su cuenta. El avance por los últimos pasos lo supervisa y lo autoriza un clínico. Si los síntomas no mejoran de forma constante 2 a 4 semanas después de la lesión, conviene que la app diga al deportista que pida a un clínico una evaluación más completa.
+  applies_to: |-
+    Conmoción relacionada con el deporte en general en niños, adolescentes y adultos; los tiempos de recuperación combinados proceden de cohortes mixtas, sobre todo de deportes de campo y sobre hielo de Norteamérica; ninguna muestra de deportes de combate. Las cifras del 55 y el 70% de la frecuencia cardíaca usan 220 menos la edad, lo cual es tosco. El grado fuerte se basa en la estrategia del consenso; la cifra de 19.8 días es descriptiva y procede de un único metaanálisis con una heterogeneidad muy alta.
+  conflicts: |-
+    El tiempo de recuperación varía mucho (I² del 99.3%). La declaración dice que los plazos deben individualizarse; 19.8 días es una media combinada, no un objetivo. Los protocolos de las federaciones difieren en el reposo inicial y en el tiempo total (véase "No presentes el casco como protección frente a la conmoción").
+- key: combat-sports/no-sparring-until-symptom-free-with-exertion-and-cleared
+  source_hash: cd6646647af597a6b509b100ca51b0dd1e598a3ad42f3fff2e962045277d4d4d
+  status: machine
+  heading: Nada de sparring hasta estar sin síntomas con el esfuerzo y con el alta
+  rule_text: |-
+    Tras un golpe en la cabeza referido con síntomas, conviene que la app mantenga activado el indicador no_contact y bloquee el sparring previsto, el trabajo de clinch, el grappling con resistencia real, los drills con compañero y cualquier otra actividad con riesgo de impacto en la cabeza, choque o caída. La redacción debe decir que el alta es una decisión médica, que los síntomas deben haber desaparecido tanto en reposo como durante y después de un esfuerzo intenso, y que la práctica con contacto completo es la penúltima etapa de la vuelta, después del trabajo sin contacto y antes de la competición. Convención de FightLab: el indicador solo se desactiva cuando el deportista confirma en la app que un clínico le ha dado el alta para volver al contacto; la app nunca lo desactiva por tiempo y nunca sugiere que el deportista probablemente está bien. Convención de FightLab: al mostrar las etapas, el trabajo técnico en solitario cuenta como paso 3, los drills cooperativos con compañero sin contacto en la cabeza como paso 4 y el sparring o los rolls a tope como paso 5, y cualquier trabajo con compañero espera al alta del clínico.
+  applies_to: |-
+    Conmoción relacionada con el deporte en general, en todos los niveles; se aplica a los deportes de combate por extensión, no a partir de datos de deportes de combate. El grado fuerte abarca solo los requisitos del consenso (desaparición de los síntomas con el esfuerzo, autorización del clínico antes de los pasos de riesgo). El funcionamiento del indicador y la correspondencia de los pasos son convenciones de FightLab y no tienen grado de evidencia.
+  conflicts: |-
+    No se encontraron contradicciones en el consenso. La app no puede verificar un alta autodeclarada. Las leyes locales y los organismos sancionadores pueden añadir sus propias normas (por ejemplo, un alta por escrito o periodos mínimos de inactividad).
+- key: combat-sports/concussion-is-common-in-combat-sport-competition
+  source_hash: 1aa9da5b1cc0be35cedf2ae661d599e99826913f8462c7695ddd05cb271891b7
+  status: machine
+  heading: La conmoción es frecuente en la competición de deportes de combate
+  rule_text: |-
+    La app puede decir que la conmoción está entre las lesiones graves más frecuentes en la competición de MMA y de boxeo, que las tasas varían mucho entre estudios y que los mejores datos proceden de la competición y no del entrenamiento. No conviene que cite una única tasa de lesión como riesgo personal.
+  applies_to: |-
+    Sobre todo competición profesional y aficionada masculina (en la serie de Muay Thai, alrededor de un tercio eran mujeres); las revisiones de MMA se basan en pocos estudios, las de boxeo en 14 a 35 estudios; las definiciones de lesión y de conmoción y las unidades de exposición difieren. Los datos de Muay Thai proceden de una única serie nacional a pie de ring. Competición, no sparring.
+  conflicts: |-
+    La proporción de conmociones (del 3.8 al 20.4% en MMA; 12.3% en boxeo; 1.5% de los deportistas en una serie de Muay Thai) varía según las definiciones, el nivel y el reglamento. El metaanálisis sobre traumatismos craneales en boxeo da sus razones de riesgo sin una comparación clara, así que solo se usa su dirección. El metaanálisis de MMA de 2026 tiene un denominador poco claro. Las lesiones en el entrenamiento rara vez se registran, así que estas tasas no pueden aplicarse al sparring.
+- key: combat-sports/head-injuries-also-happen-in-training
+  source_hash: fd59004822b78f6d918cb5de549f7cef076f1988ccbef271f96f15516815f7f6
+  status: machine
+  heading: Las lesiones en la cabeza también ocurren en el entrenamiento
+  rule_text: |-
+    La app puede decir que la mayoría de las lesiones en la cabeza documentadas proceden de la competición, y que aun así hay conmociones en los entrenamientos y en el sparring, así que un golpe en la cabeza en el gimnasio debe tratarse con la misma regla de parar y derivar que un golpe en la cabeza en competición.
+  applies_to: |-
+    Boxeo aficionado (cohortes combinadas); casos de urgencias hospitalarias de EE. UU. en kárate, jiu-jitsu, taekwondo, MMA, kickboxing, judo y otras disciplinas (las edades no figuran en el resumen consultado); los recuentos incluyen solo los casos que llegaron a urgencias, sin denominador de exposición.
+  conflicts: |-
+    La tasa de lesiones en el entrenamiento tiene un intervalo de confianza muy amplio y hay pocos estudios sobre el entrenamiento. Los datos de urgencias no permiten calcular tasas. Estos datos no responden si el sparring duro tiene una tasa de conmoción mayor que el trabajo técnico.
+- key: combat-sports/sparring-delivers-many-head-impacts-of-variable-size
+  source_hash: 90379ef6e4267bfb636d5e408ce46a9a8e84c51bdc8a93e49603ffb6f0c9b6f4
+  status: machine
+  heading: El sparring acumula muchos impactos en la cabeza de intensidad variable
+  rule_text: |-
+    La app puede decir a los deportistas que el sparring expone la cabeza a impactos repetidos, que su número y su intensidad varían mucho entre sesiones y entre personas, y que los sensores de los estudios son herramientas de investigación con problemas de precisión conocidos. No conviene que afirme estimar la dosis de impactos en la cabeza, ni que use el RPE de la sesión o el número de asaltos como medida de la carga de impactos en la cabeza sin decir que es una convención de FightLab y no una medida validada.
+  applies_to: |-
+    Muestras de conveniencia pequeñas; hombres en los estudios que indican el sexo (más 4 mujeres en un estudio), sexo no indicado en los resúmenes de tres estudios; MMA aficionado, universitario, de cadetes militares, profesional o semiprofesional, y un deportista de Muay Thai de élite; los distintos sensores y umbrales hacen que los estudios no sean comparables.
+  conflicts: |-
+    Distintos sensores, umbrales y métodos de verificación dan recuentos y magnitudes distintos. Los picos del Muay Thai no están verificados. La aceleración lineal máxima por sí sola no define el riesgo de conmoción. La calidad de los datos de los sensores limita las comparaciones.
+- key: combat-sports/feeling-normal-after-sparring-does-not-rule-out-head-injury
+  source_hash: 5a03c2753b81bac7845b0a306432cbfc85838f601029a4eb1c91aa4099e690d3
+  status: machine
+  heading: Sentirse bien tras el sparring no descarta una lesión en la cabeza
+  rule_text: |-
+    La app puede decir que, en estudios de investigación, se han medido cambios pequeños y breves en la memoria o en la función motora tras sesiones de sparring, y que una sesión en la que uno se siente bien no descarta una lesión en la cabeza. Una comprobación de síntomas después del sparring dentro de la app debe limitarse a pedir al deportista que refiera sus síntomas y siga la regla de parar y derivar de "Deja de entrenar tras una sospecha de lesión en la cabeza", sin puntuar ni tranquilizar.
+  applies_to: |-
+    Boxeadores aficionados, universitarios y de competición; muestras muy pequeñas (7, 20, 27); el sexo solo se indica en el estudio universitario (hombres). Un estudio tenía participantes de control.
+  conflicts: |-
+    Las pruebas cognitivas y motoras muestran pequeños efectos agudos, mientras que una escala de síntomas en otra muestra pequeña no los mostró. Los hallazgos no pueden usarse para fijar una dosis segura de contacto en la cabeza.
+- key: combat-sports/cumulative-fight-exposure-is-linked-to-brain-changes
+  source_hash: a411a8552846a46a250b24ea007cecb1244ebcd0328055db3bbd05366684746d
+  status: machine
+  heading: La exposición acumulada a combates se asocia a cambios cerebrales
+  rule_text: |-
+    La app puede decir que los estudios en luchadores profesionales asocian una mayor exposición acumulada con menores volúmenes cerebrales en algunas regiones y una menor velocidad de procesamiento, que estos estudios son observacionales y no pueden demostrar causalidad, y que los resultados específicos del sparring son dispares. Conviene que anime a los luchadores a reducir el contacto evitable en la cabeza durante el entrenamiento como convención de FightLab, no como una regla dosis-respuesta demostrada, y que evite decirle a nadie que su cerebro está o no está dañado.
+  applies_to: |-
+    Boxeadores y luchadores de MMA profesionales con licencia que se presentaron voluntarios a la resonancia magnética y a las pruebas (el sexo no se indica en los resúmenes consultados; probable sesgo de selección), con pocos controles (22 al inicio); la revisión sistemática abarca sobre todo fútbol americano y fútbol, no deportes de combate.
+  conflicts: |-
+    Las asociaciones con el volumen de exposición en los luchadores contrastan con la ausencia de asociación entre los asaltos de sparring y volúmenes menores en luchadores de MMA (y una asociación positiva con el caudado), aunque los asaltos de sparring sí se correlacionaron con la cadena ligera de neurofilamentos en sangre. La revisión sistemática no ve ninguna señal en aficionados y una señal incierta en profesionales. Los factores de confusión (nivel educativo, riesgo vascular, sueño, alcohol y otras exposiciones) no están del todo controlados. No presentes esto como prueba de que el sparring daña el cerebro ni de que un número determinado de asaltos sea seguro.
+- key: combat-sports/do-not-present-headgear-as-concussion-protection
+  source_hash: e4885baaf5e8b2c24105324814fe3e384d8d0975dbd39ea2eccac4ba39555a23
+  status: machine
+  heading: No presentes el casco como protección frente a la conmoción
+  rule_text: |-
+    No conviene que la app diga que el casco, el protector bucal o el sparring ligero evitan la conmoción en los deportes de combate. Puede decir que el casco reduce los cortes y probablemente las lesiones en la oreja, pero que no se ha demostrado que evite la conmoción, y que los protocolos de conmoción de las organizaciones de deportes de combate varían (según una comparación de septiembre de 2023, ninguno reflejaba aún el consenso de 2022), así que los deportistas deben seguir las normas de su propia federación y los consejos de su propio clínico.
+  applies_to: |-
+    Declaraciones de postura de médicos de ring para boxeo, MMA y otros deportes de combate (opinión de expertos basada en datos limitados); estudios sobre cascos sobre todo en boxeadores aficionados; el protocolo de judo es una propuesta sin probar; la comparación de federaciones es una revisión documental.
+  conflicts: |-
+    En la evidencia del consenso, el protector bucal se asoció a una tasa de conmoción un 28% menor en hockey sobre hielo, así que la regla de no afirmarlo se limita a los deportes de combate, donde no se encontraron datos así. No se encontraron recomendaciones revisadas por pares que limiten el contacto en la cabeza en el sparring ni que definan la vuelta al sparring específicamente para MMA, boxeo, kickboxing o Muay Thai. El resultado del casco sobre las detenciones del combate es difícil de interpretar (las detenciones no son conmociones). Los protocolos de las federaciones pueden haberse actualizado desde septiembre de 2023.
+- key: combat-sports/a-head-blow-with-symptoms-sets-no-contact-and-refers
+  source_hash: 710cbb77ac462bfdd64db52185a30b9e6cbb2772cd71a84be91c32f99934d578
+  status: machine
+  heading: Un golpe en la cabeza con síntomas implica no hacer contacto y derivar
+  rule_text: |-
+    Comportamiento sugerido de la app. Cuando el deportista registra un golpe en la cabeza con cualquier síntoma (dolor de cabeza, mareo, náuseas, visión borrosa, problemas de equilibrio, sensación de no estar bien, confusión, lagunas de memoria, cansancio, irritabilidad), o informa de signos que han visto otros, la app debe (1) mostrar primero el mensaje de urgencia si se cumple alguna señal de alarma (véase "Las señales de alarma tras un golpe en la cabeza requieren atención de urgencia"); (2) decir al deportista que deje de entrenar ya y que no haga más trabajo de contacto ese día; (3) decir que debe valorarle un médico u otro clínico cualificado, que es quien decide si se trata de una conmoción; (4) convención de FightLab: activar no_contact y quitar del plan el sparring, el clinch, los drills con compañero y el grappling en vivo hasta que el deportista confirme que un clínico le ha dado el alta; (5) decir que la actividad cotidiana y el ejercicio suave, como caminar, están bien desde el principio si no empeoran claramente los síntomas; y (6) nunca dar un diagnóstico, una probabilidad de conmoción, un número de días ni un mensaje de que ya es seguro hacer sparring. Redacción sugerida (texto de FightLab, pendiente de revisión por un clínico): "Un golpe en la cabeza con síntomas tiene que verlo un médico. Deja de entrenar por hoy y no hagas sparring ni ningún trabajo de contacto hasta que un clínico te dé el alta. Si tienes una señal de alerta como dolor de cuello, una convulsión, un desmayo, confusión o dolor de cabeza que van a más, o vómitos repetidos, busca atención de urgencia ahora. La lista completa de señales de alerta está en la herramienta oficial Concussion Recognition Tool 6." Convención de FightLab: la lista de síntomas que activan la regla, y el uso de un golpe en la cabeza repetido o reciente, una conmoción previa o una fecha de combate próxima para hacer los mensajes más prudentes, son decisiones de producto; ninguna puede acortar ni relajar la regla.
+  applies_to: |-
+    Pautas generales sobre conmoción en el deporte aplicadas a deportistas de deportes de combate de todos los niveles. El grado fuerte solo se justifica por los elementos de consenso (retirar ante la sospecha, sin contacto hasta la valoración médica, derivar, vuelta progresiva autorizada por el clínico); la mecánica de la marca no_contact, la lista de síntomas que la activan y los modificadores del tono son convenciones de FightLab sin grado de evidencia propio. La regla en sí no se ha probado en deportes de combate.
+  conflicts: |-
+    Marcar también un golpe en la cabeza sin síntomas es una decisión de producto; el consenso respalda la retirada ante la sospecha y la revaloración seriada, no una regla aparte para los golpes sin síntomas. Una marca prudente puede molestar a deportistas que se encuentran bien; tanto la CRT6 como el consenso dicen que no se vuelva hasta la valoración médica aunque los síntomas desaparezcan. La app no puede verificar un alta comunicada por el propio deportista.
+- key: combat-sports/hard-striking-sparring-is-vigorous-in-small-samples
+  source_hash: 8487938776131e3b9bbf75bf5a2a03d2aedf77f6eb410f42ff455c95e4295a8e
+  status: machine
+  heading: El sparring de golpeo duro es vigoroso en muestras pequeñas
+  rule_text: |-
+    FightLab puede clasificar como vigoroso el sparring duro o a ritmo de combate en deportes de golpeo (boxeo, Muay Thai, kickboxing) y el sparring de MMA, y debe presentarlo como vigoroso en las muestras pequeñas medidas, no como un hecho universal. El sparring suave, técnico o con pausas largas quedará más bajo, y la intensidad cambia con el ritmo, el rival, el nivel y el formato de los asaltos.
+  applies_to: |-
+    Estudios observacionales sueltos y pequeños (n = 9 a 20) de competidores adultos jóvenes, de nivel aficionado a nacional o internacional. Las muestras de boxeo (n = 9) y Muay Thai (n = 10) eran de hombres; los resúmenes de MMA (n = 13, media de 25 años) y kickboxing (n = 20, media de 20 años) no indican el sexo; la muestra de kárate era de 8 mujeres y 10 hombres, todos cinturones negros. No hay deportistas recreativos ni mayores.
+  conflicts: |-
+    Los autores del estudio de MMA describen su sparring como de intensidad moderada a alta, no uniformemente vigoroso. La FC media de la sesión puede caer en la franja moderada mientras el lactato y el RPE son altos. En el estudio de boxeo, el sparring en laboratorio fue más bajo que en el gimnasio. Se ha descrito que el randori de judo es menos exigente que los combates reales. El estudio de kickboxing no da valores absolutos de FC, así que muestra que el formato cambia la intensidad, pero no a qué franja llega.
+- key: combat-sports/class-pad-and-bag-work-by-pace
+  source_hash: df367a743b94d687555e43e4d62fe933c25d07779b1f32125bbd0a2ea9dd6ee9
+  status: machine
+  heading: Clasifica el trabajo con paos y saco por el ritmo
+  rule_text: |-
+    No asignes al trabajo con paos o con saco una clase fija. FightLab debe clasificarlo por ritmo y esfuerzo: los asaltos de paos a ritmo duro y los asaltos rápidos de saco, como vigorosos; los asaltos lentos y técnicos de saco, como moderados. Cualquier valor por defecto que se use cuando no se conoce el ritmo debe etiquetarse como convención de FightLab, y el RPE del deportista debe prevalecer sobre él.
+  applies_to: |-
+    Nueve boxeadores aficionados varones con experiencia, de nivel regional y provincial (edad media 22, media de 13 combates); un único estudio de laboratorio.
+  conflicts: |-
+    Solo se midió el boxeo; no se encontraron datos del trabajo de paos o saco con patadas, de Muay Thai ni de MMA. El trabajo de saco marcado con metrónomo en laboratorio puede diferir de los asaltos libres de saco en el gimnasio. El resumen solo da estadísticas del VO2 y describe que la FC sigue un patrón parecido.
+- key: combat-sports/technical-drilling-runs-below-sparring
+  source_hash: 5139f7ac1d0c2cc0d4a00cdfea8d79baca0ec0af40772b4a87a66a3035515010
+  status: machine
+  heading: La técnica por repetición queda por debajo del sparring
+  rule_text: |-
+    Las sesiones de drills técnicos o tácticos no deben clasificarse igual que el sparring. FightLab puede tratar la técnica por repetición como más baja que el sparring (de suave a moderada según la FC) y el sparring como vigoroso, etiquetando los umbrales exactos, incluido cualquier punto de corte de CR10 entre clases, como convenciones de FightLab, ya que la regla base "Franjas de intensidad del ACSM" (cardio-health) solo da franjas de RPE en la escala 6-20. La app debe contar con que la FC media de la sesión infravalore lo dura que fue una sesión de sparring.
+  applies_to: |-
+    18 karatekas, de unos 23 años de media (9 de nivel nacional y 9 de nivel internacional, cada grupo con 4 mujeres y 5 hombres), que entrenaban al menos siete veces por semana; una única concentración poco antes de un campeonato del mundo. El kárate no es uno de los deportes principales de FightLab, así que la transferencia al boxeo, el Muay Thai, las MMA o el grappling es una inferencia.
+  conflicts: |-
+    Un estudio, un deporte. El lactato tras la sesión de desarrollo técnico (6.6 mmol/L) no era bajo, así que la etiqueta de suave se apoya solo en la FC y el RPE. En el randori, la FC (franja moderada) y el lactato y el RPE (duro) no coinciden. Las medias de sesión incluyen el calentamiento y los descansos, que bajan la FC media. La misma sesión se lee distinto según el sexo (FC) y el nivel (lactato, RPE).
+- key: combat-sports/class-drills-by-structure-and-judo-randori-sits-below-competition
+  source_hash: 2dec7aa1d266f3cb3a388229a9814750c87f658b8dd2ec7e81cdf51b94bafbe5
+  status: machine
+  heading: |-
+    Clasifica los ejercicios por su estructura; el randori de judo queda por debajo de la competición
+  rule_text: |-
+    Para los drills de proyecciones, de patadas y de grappling, FightLab debe clasificar por la estructura (bloques de repeticiones a tope con descanso corto frente a repetición técnica lenta) y no por la etiqueta de drill. No debe darse por hecho que el randori de judo equivale a la competición. Como se ha descrito que la FC es una medida poco fiable de la intensidad en las modalidades de entrenamiento de judo, el RPE del deportista debe pesar más que la FC en estas sesiones; cualquier clase por defecto es una convención de FightLab.
+  applies_to: |-
+    Diez judokas (el resumen no indica el sexo), una revisión narrativa de estudios de judo y 18 deportistas adolescentes varones de taekwondo. Los adolescentes quedan fuera de la población adulta de FightLab.
+  conflicts: |-
+    Ninguna fuente abierta da la FC ni el lactato de la repetición técnica lenta en judo; los únicos datos de ese tipo son los de kárate de "La técnica por repetición queda por debajo del sparring". El resumen de uchi-komi solo da el VO2 absoluto, así que no puede situarse en las franjas de %FC máx de la regla base. La conclusión de la revisión de judo de que la FC es poco fiable debilita cualquier clase basada en la FC para estos drills.
+- key: combat-sports/grappling-roll-intensity-class-is-a-fightlab-convention
+  source_hash: f5f9619bf8cb708fcfc62c5ede73e0b1a1223a7722cd21e713d46f9718604ea7
+  status: machine
+  heading: La clase de intensidad de los rolls de grappling es una convención de FightLab
+  rule_text: |-
+    FightLab no debe afirmar que tiene una clase de intensidad basada en la evidencia para los rolls en vivo de BJJ o de lucha. Si asigna una (por ejemplo, vigorosa para los rolls duros y moderada para los rolls fluidos), debe etiquetarse como convención de FightLab, y la app debe apoyarse en el RPE del deportista.
+  applies_to: |-
+    Muestras pequeñas de deportistas varones de BJJ (n = 7 y 9, con experiencia o de élite), más una revisión sistemática de BJJ (1496 participantes, que pide ella misma estudios en mujeres) y revisiones narrativas; ningún resumen abierto midió rolls de entrenamiento.
+  conflicts: |-
+    La competición simulada difiere de los rolls de entrenamiento en ritmo y descansos. Ninguna fuente abierta dio el %FC máx de los rolls. Las revisiones de BJJ y de judo insisten en la estructura intermitente, que baja la FC media en relación con el esfuerzo.
+- key: combat-sports/do-not-class-a-combat-session-by-mean-heart-rate-alone
+  source_hash: a0537d387148d833f7f3424238eb61aef2317978fcf05c8ef5aba8e3e9c9712a
+  status: machine
+  heading: No clasifiques una sesión de combate solo por la frecuencia cardiaca media
+  rule_text: |-
+    FightLab debe admitir que el RPE y la FC no coincidan, y no debe rebajar una sesión de sparring dura porque la FC media parezca moderada. Cuando estén los dos, muestra ambos y deja que prevalezca el RPE del deportista. Cualquier valor de CR10 que se use para separar lo moderado de lo vigoroso es una convención de FightLab.
+  applies_to: |-
+    Judo (n = 29, ambos sexos, concentración internacional), kárate (n = 18, ambos sexos), sparring de MMA (n = 13), más revisiones narrativas de boxeo (competiciones de aficionados varones), kickboxing y deportes de combate mixtos. Las proporciones de actividad y descanso proceden de la competición o del combate simulado, no de sesiones de entrenamiento.
+  conflicts: |-
+    La revisión considera válido el RPE en los deportes de combate, pero el estudio de judo con sesiones mixtas no encontró relación entre el RPE de sesión y la FC o el lactato. Que las correlaciones entre RPE y FC sean más débiles en el entrenamiento que en la competición significa que cabe esperar desacuerdo justo en las sesiones que registra FightLab. Las revisiones son revisiones narrativas breves.
+- key: combat-sports/session-rpe-is-a-valid-general-measure-of-internal-load
+  source_hash: 9951dd64ebaaca37f92841df2f8ab1537e82a08ec54347df692c980690068455
+  status: machine
+  heading: El RPE de sesión es una medida general válida de la carga interna
+  rule_text: |-
+    FightLab puede presentar los minutos x RPE CR10 como una estimación validada y práctica de la carga interna de la sesión para deportistas en general: se contrastó con puntuaciones basadas en la frecuencia cardiaca y las revisiones respaldan su uso por sí solo. Es una puntuación de esfuerzo percibido en unidades arbitrarias, no una medición fisiológica, y la app no debe comparar valores absolutos entre deportistas.
+  applies_to: |-
+    Foster 2001: parte de ciclismo, 6 hombres y 6 mujeres; parte de baloncesto, 14 hombres (tamaños muestrales según la tabla de Haddad 2017, no según el resumen de Foster). Haddad 2017: minirrevisión de 36 estudios de validación, con deportes, edades y niveles variados. McLaren 2018: solo deportistas de deportes de equipo (295 deportistas en 13 estudios); no se agruparon deportes de combate.
+  conflicts: |-
+    Haddad 2017 es una minirrevisión con búsqueda en bases de datos, no una síntesis cuantitativa; su principal criterio de validez es la concordancia con puntuaciones basadas en la FC, que a su vez son imperfectas. McLaren 2018 usó inferencia basada en magnitudes y solo agrupó deportes de equipo, así que respalda que el RPE de sesión sigue el trabajo externo de un modo que depende de la modalidad, no su validez en deportes de combate. En el RPE de sesión influyen factores ajenos a la carga (véanse las reglas siguientes).
+- key: combat-sports/session-rpe-tracks-heart-rate-load-in-taekwondo-and-karate
+  source_hash: d02578ad7263fdc52476287adb11aff3374bb00ee3b1cc9293ccef5248dd5074
+  status: machine
+  heading: El RPE de sesión sigue a la carga por frecuencia cardiaca en taekwondo y kárate
+  rule_text: |-
+    Para las artes de golpeo (taekwondo, kárate y, por extensión, deportes parecidos), la app puede decir que el RPE de sesión se ha comparado con la carga basada en la frecuencia cardiaca en muestras pequeñas de deportes de combate y que suele correlacionar de forma moderada a fuerte, pero que la concordancia varía con el tipo de sesión, la edad y el deporte, y que no la hubo en un estudio de sesiones cortas de intervalos de alta intensidad. No debe afirmar que el RPE y la FC coincidirán en todas las sesiones.
+  applies_to: |-
+    Deportistas jóvenes o de élite de taekwondo y kárate, sobre todo varones (Tabben 2015 y Lupo 2017 incluyen mujeres y chicas); muestras de 9 a 18 por estudio; concentraciones o periodos de seguimiento de una semana a cortos. Slimani 2017 es una revisión narrativa breve sobre deportes de golpeo y de grappling, de principiante a élite. No hay luchadores adultos aficionados ni recreativos.
+  conflicts: |-
+    La concordancia depende del tipo de sesión y de la edad: fuerte en sesiones aeróbicas o mixtas, ausente en un estudio de intervalos cortos de alta intensidad (Haddad 2011b), que los autores relacionaron con la mayor aportación anaeróbica. Todas las muestras son pequeñas y jóvenes, los estudios son observacionales y varios son del mismo grupo de investigación. No se abrió ningún metaanálisis sobre la validez del RPE de sesión en deportes de combate.
+- key: |-
+    combat-sports/treat-session-rpe-as-perceived-load-in-grappling-mma-boxing-and-judo
+  source_hash: 2899c7b56068327dffde99677a95576201a3181271873adccbfdb41bf5686c65
+  status: machine
+  heading: Trata el RPE de sesión como carga percibida en grappling, MMA, boxeo y judo
+  rule_text: |-
+    Para MMA, BJJ, boxeo, lucha y judo, la app debe presentar la carga por RPE de sesión como un registro útil de la carga percibida que sigue los cambios del entrenamiento y el contexto, y evitar decir que se ha validado frente a la frecuencia cardiaca en estos deportes. Los deportistas deben saber que cómo se sienten (cansancio, agujetas, sueño) puede influir en la puntuación.
+  applies_to: |-
+    20 deportistas de MMA (23.3 +/- 5.3 años); 10 deportistas de MMA (24 +/- 2.8 años); 12 deportistas de BJJ (el resumen no indica el sexo); 61 judokas de 14 a 17 años (37 varones); 8 boxeadores (el resumen no indica el sexo). Ninguno es una validación directa frente a un criterio basado en la FC en grappling o MMA.
+  conflicts: |-
+    Muestras pequeñas, en su mayoría observacionales; la medida de carga externa en MMA (un acelerómetro en el torso) no es un criterio establecido para el grappling; las correlaciones del sRPE con variables de bienestar indican que la puntuación refleja el estado además de la carga. Haddad 2017 y Ouergui 2020 apuntan en direcciones distintas sobre si la fatiga previa influye en la puntuación. No se encontró ningún metaanálisis de fiabilidad o validez del sRPE específico de combate.
+- key: combat-sports/ask-for-the-session-rpe-about-30-minutes-after-training
+  source_hash: dc103bd78904b855aaf266e4cc5326dd998e8fc01bdee9c27b24f5a66ce60e58
+  status: machine
+  heading: Pide el RPE de la sesión unos 30 minutos después de entrenar
+  rule_text: |-
+    Convención de FightLab: pide el RPE de la sesión unos 30 minutos después de que termine la sesión (el momento que usa el método original), y acepta una puntuación dada a los 10 minutos o más tarde, pero no una dada en los primeros minutos tras la sesión. La evidencia sobre el momento exacto es limitada y dispar, así que la app no debe presentar ningún momento concreto como demostrado.
+  applies_to: |-
+    8 boxeadores (3 sesiones cada uno, el resumen no indica el sexo); 9 deportistas prepúberes de taekwondo (5 chicas, 4 chicos, 12 años); 15 hombres entrenados en fuerza (unos 27 años). No se encontró ningún estudio sobre el momento de la puntuación en adultos de MMA, BJJ o lucha.
+  conflicts: |-
+    En los boxeadores no hubo diferencia entre 10 y 30 min, pero en quienes entrenaban fuerza sí la hubo a los 10 min, así que el efecto puede depender del tipo de sesión; ninguno de los estudios abiertos probó puntuaciones dadas horas después (esa misma noche o al día siguiente), así que no puede afirmarse nada sobre el registro diferido. La convención de 30 min viene del método original; la evidencia a su favor son sobre todo resultados sin diferencias en muestras pequeñas.
+- key: combat-sports/use-the-cr10-scale-with-foster-s-wording
+  source_hash: 290b001aa944cfaa0af39a514e795641434a2a2c064617d4e77f5e883d390160
+  status: machine
+  heading: Usa la escala CR10 con la formulación de Foster
+  rule_text: |-
+    Mantén la escala CR10 modificada (con la formulación de Foster) para el RPE de sesión, ya que es la escala que se usó en los estudios de validez. Convención de FightLab: no mezcles puntuaciones CR10 y de Borg 6-20 en el mismo cálculo de carga. La app no debe afirmar que la CR10 es superior a la 6-20.
+  applies_to: |-
+    Estudios de distintos deportes y edades, como en Haddad 2017; taekwondo juvenil (Lupo 2017, Haddad 2011b).
+  conflicts: |-
+    No se encontró ninguna comparación directa entre CR10 y 6-20 para la carga de sesión; la regla solo dice que la evidencia de validez se basa en la CR10. La regla de no mezclar es una convención, no un resultado probado.
+- key: combat-sports/monotony-and-strain-are-descriptive-indices
+  source_hash: 571d898926a908db1cb01cad590558ba22f10c26b10ba40cacad48567f5a722d
+  status: machine
+  heading: La monotonía y la tensión son índices descriptivos
+  rule_text: |-
+    FightLab puede mostrar la monotonía (la carga diaria media dividida por su desviación estándar a lo largo de una semana) y la tensión (la carga semanal multiplicada por la monotonía) como índices descriptivos del patrón de entrenamiento, y debe decir que proceden de un estudio pequeño de seguimiento de enfermedades. Deben describirse como indicadores de lo uniforme y lo cargada que fue la semana, no como puntuaciones de riesgo demostradas.
+  applies_to: |-
+    Foster 1998: 25 deportistas con experiencia (el resumen no indica el deporte ni el sexo); la enfermedad como resultado.
+  conflicts: |-
+    El resumen da umbrales individuales, no un punto de corte universal, y no da tamaños del efecto. Por definición, la monotonía se dispara cuando la desviación estándar diaria es pequeña (por ejemplo, una semana muy uniforme o con muy pocas sesiones), lo que la hace inestable en semanas cortas o con pocas sesiones; esto se deduce aritméticamente de la definición y no procede de ningún artículo crítico abierto. Una búsqueda de artículos de validación prospectiva específicos de la monotonía o la tensión no encontró ninguno en PubMed aparte de los pequeños estudios de cohortes citados en la regla siguiente.
+- key: combat-sports/monotony-and-strain-illness-thresholds-are-inconsistent
+  source_hash: 4f53eadf317dc5db1f9b05d4d0fcf31eff0bc65b13bd65d334674c1c99a21a84
+  status: machine
+  heading: Los umbrales de monotonía y tensión para enfermar no son coherentes
+  rule_text: |-
+    La app puede decir que la monotonía y la tensión se han asociado con enfermedad en algunas cohortes de deportistas, pero que los umbrales difieren entre estudios y ninguno está validado para deportes de combate. FightLab no debe mostrar etiquetas de riesgo ni puntos de corte derivados de ellos.
+  applies_to: |-
+    Derman 2022: deportistas de 15-65 años, deportes variados, de élite y no de élite, sin desglose específico de combate en el resumen. Putlur 2004: 14 jugadoras de fútbol de la NCAA D-III. Anderson 2003: 12 jugadoras de baloncesto de la NCAA D-III. Thornton 2016: 32 jugadores profesionales varones de rugby league.
+  conflicts: |-
+    Los umbrales varían: el punto de corte de monotonía de Thornton (0.78) y el de tensión son específicos de ese deporte y esa muestra; las cohortes pequeñas se basan en asociaciones (no en validación prospectiva) y usaron enfermedades comunicadas por los propios deportistas. Anderson 2003 relaciona las lesiones con la carga, no con la monotonía en sí. No es aplicable a deportes de combate sin datos propios.
+- key: combat-sports/combat-sport-monotony-and-strain-data-are-weak-and-observational
+  source_hash: 26676b83e956a59a993d5dc934874ade0e4a96bc1676507d5fc8ba76b36f64a7
+  status: machine
+  heading: |-
+    Los datos de monotonía y tensión en deportes de combate son débiles y observacionales
+  rule_text: |-
+    Cuando muestres la monotonía y la tensión a luchadores, trátalas como un resumen del patrón semanal. La app no debe decir a un luchador que un valor concreto de monotonía o tensión predice lesión, enfermedad o bajo rendimiento.
+  applies_to: |-
+    16 luchadores jóvenes de élite (46 semanas); 20 boxeadoras júnior de élite (edad media 18.9 años, 10 semanas); 12 deportistas de BJJ (7 semanas).
+  conflicts: |-
+    La fuerte correlación entre monotonía y tensión viene en gran parte dada por construcción (tensión = carga x monotonía). Los resultados difieren entre estudios (luchadores: sin relación con el bienestar; boxeadoras: coincidencia temporal con el rendimiento neuromuscular, una coincidencia descriptiva en un solo grupo, sin prueba de predicción). Los resultados son observacionales y pequeños, y puede que no se generalicen a adultos que no son de élite.
+- key: combat-sports/do-not-present-session-rpe-indices-as-injury-predictors
+  source_hash: 6945bb7e1b80474c4d1c691b3479e49a510d7ebbe83cda020128a5d4760a8ab1
+  status: machine
+  heading: No presentes los índices del RPE de sesión como predictores de lesiones
+  rule_text: |-
+    FightLab no debe presentar la carga, el ACWR, la monotonía ni la tensión como predictores de lesiones para luchadores. Puede decir que los aumentos grandes de carga se han asociado con lesiones y enfermedades en estudios con deportistas sobre todo de deportes de equipo, que la relación no está establecida en otras poblaciones y que no se encontró evidencia de predicción de lesiones en deportes de combate.
+  applies_to: |-
+    Deportistas de deportes de equipo variados y deportistas adolescentes; nadadores. Ningún deporte de combate en los resúmenes; ninguna de estas revisiones era específica de combate.
+  conflicts: |-
+    La propia revisión de Drew describe evidencia moderada de una relación entre carga y lesión, pero con limitaciones (un único revisor valoró la calidad, estudios añadidos fuera de la búsqueda) y resultados dispares sobre el efecto protector; Dudley y Barry consideran la evidencia limitada o poco clara. El objetivo de esta regla es qué puede decir FightLab (ninguna predicción individual de lesiones), no si la carga importa.
+- key: combat-sports/the-fitness-fatigue-model-predicts-individual-performance-poorly
+  source_hash: 2414c5bf068cd8c7eaaec0c4bfa0023f1593b0740ef62ac23a228580cabe296c
+  status: machine
+  heading: El modelo fitness-fatiga predice mal el rendimiento individual
+  rule_text: |-
+    Si FightLab muestra una vista de fitness-fatiga (CTL/ATL), no debe afirmar que predice el rendimiento ni el estado de forma diario de un luchador. Puede describirla como una imagen suavizada de la carga reciente, porque las pruebas publicadas del modelo muestran parámetros imprecisos y difíciles de identificar y una predicción individual débil.
+  applies_to: |-
+    1 lanzador de martillo (Busso 1994); 9 nadadores de élite (Hellard 2006); 11 nadadores durante dos temporadas (Busso 2023); 7 y 14 patinadores de velocidad en pista corta de élite nacional (Marchal 2025); todos deportes individuales con pruebas de rendimiento frecuentes. Ningún deporte de combate.
+  conflicts: |-
+    Busso 2023 sí encontró que los mejores modelos daban aproximaciones relevantes de la relación entre entrenamiento y rendimiento. Los modelos de impulso-respuesta con ponderación exponencial se ajustaron mejor que las medias móviles en tres nadadores de élite (SEE de 0.57 a 0.73 s frente a 1.32 a 1.36 s; Mitchell 2020), pero eso es bondad de ajuste en 3 nadadores, no predicción, y los modelos de redes neuronales se ajustaron aún mejor. Los resultados concuerdan entre estudios, pero todos proceden de natación, lanzamiento y patinaje con pruebas de rendimiento periódicas, no de deportes de combate. No se abrió el artículo original de Banister 1975.
+- key: combat-sports/the-42-day-and-7-day-pmc-constants-are-conventions
+  source_hash: 3e7b88583279c9d59dbeab7e7469616bd41567fc83b748788ac987162d57e297
+  status: machine
+  heading: Las constantes del PMC de 42 y 7 días son convenciones
+  rule_text: |-
+    Convención de FightLab: si se construye un PMC, indica que las constantes de tiempo de 42 días (CTL) y 7 días (ATL) y la diferencia TSB son convenciones elegidas para la visualización, no valores ajustados ni validados para la persona. La app debe decir que las constantes de tiempo individuales pueden variar mucho y que distintas medidas de carga dan resultados distintos del modelo. No debe asociar umbrales de TSB (zonas de forma o de frescura) ni dar predicciones de lesiones o de rendimiento a partir de estos valores.
+  applies_to: |-
+    9 nadadores de élite (Hellard 2006); 9 participantes en un estudio corto de ciclismo por intervalos (Vermeire 2021, el resumen no indica su nivel de entrenamiento); 3 nadadores en el ranking mundial (Mitchell 2020). Ningún deporte de combate.
+  conflicts: |-
+    Muestras muy pequeñas. Vermeire encontró que el RPE de sesión se ajustaba tan bien como los métodos basados en la FC en un estudio corto de ciclismo, lo que respalda el sRPE como dato de entrada, pero no las constantes de 42 y 7 días. Se buscaron los valores de 42 y 7 días y los umbrales de TSB y no se encontraron en ninguna fuente científica abierta.
+- key: combat-sports/a-pmc-display-is-a-labelled-fightlab-convention
+  source_hash: 486288c091ed2754b571bf6018eb014973db68f84fb5c85ef2b4696ad98f813f
+  status: machine
+  heading: Una vista PMC es una convención de FightLab etiquetada como tal
+  rule_text: |-
+    Si se construye el PMC, etiquétalo como "Convención de FightLab: tendencia de carga suavizada (medias ponderadas de 42 días y 7 días; la diferencia se muestra como balance de carga)" con una nota de evidencia emergente. No debe mostrar umbrales de TSB, de forma ni de estado de forma diario, no debe dar predicciones de lesiones ni de rendimiento y no debe sugerir cuándo hacer el tapering. El dato de entrada (la carga por RPE de sesión) tiene un respaldo moderado como medida de carga en deportistas en general y un respaldo emergente en deportes de combate.
+  applies_to: |-
+    Derivado de las fuentes anteriores; entre lo que se abrió no hay ningún estudio de PMC en deportes de combate.
+  conflicts: |-
+    El uso de CTL, ATL y TSB por parte de los entrenadores está muy extendido, pero esa práctica va por delante de la evidencia abierta. Las pruebas de rendimiento frecuentes, repetibles y específicas de combate que necesita el modelo rara vez están al alcance de los luchadores. Una vista con ponderación exponencial y constantes fijas puede seguir sirviendo como resumen descriptivo de la carga, como apunta la comparación de ajustes en nadadores (Mitchell 2020), sin ninguna afirmación predictiva.
+- key: combat-sports/use-2024-compendium-mets-as-combat-intensity-anchors
+  source_hash: 0611d2b60805fb7d4b3b1bf321ee03876fc5ee3950f869db2ef6a4ddc37e0e47
+  status: machine
+  heading: Usa los MET del Compendio de 2024 como referencia de intensidad en combate
+  rule_text: |-
+    Cuando FightLab necesite un MET de referencia para una sesión de combate, usa el Adult Compendium de 2024 e indica la entrada usada. Boxeo: en el ring, general 12.3; saco, general 5.8 (a ritmo de 60, 120 y 180 golpes por minuto: 7.0, 8.5, 10.8); sparring 7.8; asalto de boxeo simulado 9.3. Artes marciales a ritmo moderado (la entrada incluye judo, jujitsu, kárate, kickboxing, taekwondo, Muay Thai) 10.3; práctica de principiante a ritmo más lento 5.3; judo 11.3; simulación de combate de taekwondo 14.3; kickboxing 7.3; lucha de competición (un combate de 5 min) 6.0, que el Compendium marca como valor estimado. El sparring, las artes marciales a ritmo moderado y las entradas de saco con ritmo marcado se clasifican como vigorosas (>= 6.0 MET); la práctica de principiante a ritmo lento y la entrada general de saco se clasifican como moderadas (3.0-5.9). Si la app aún tiene los valores de 2011, actualízalos (en el ring, de 12.8 a 12.3; saco, de 5.5 a 5.8). No hay entrada para MMA, jiu-jitsu brasileño ni grappling: usa la entrada genérica de artes marciales o la de lucha y marca la aproximación.
+  applies_to: |-
+    Adultos sanos de 19-59 años (la actualización de 2024 eliminó los datos de personas de 60 años o más); no es específico de deportistas; un valor por actividad sin ajuste por sexo, tamaño corporal ni destreza. No se abrió el estudio de origen de cada entrada de combate no estimada.
+  conflicts: |-
+    Algunas entradas no encajan con los datos medidos en deportistas: el kickboxing, con 7.3, queda muy por debajo del valor genérico de artes marciales a ritmo moderado, 10.3, y por debajo de los 9.39 MET medidos en un combate simulado de Muay Thai (véase "Las sesiones de combate duras cuestan unas 8-13 kcal por minuto"); el boxeo en el ring (12.3) queda muy por encima del sparring (7.8). El valor de la lucha es estimado, no medido, y el Compendium dice que el boxeo real está mal medido. Trata la tabla como una escala de clasificación, no como el coste medido de una sesión concreta en el gimnasio. Los propios documentos del Compendium codifican el kickboxing de forma incoherente (15450 en la guía de registro, 15457 en la web y en el PDF).
+- key: combat-sports/mets-classify-intensity-but-do-not-give-individual-kcal
+  source_hash: 4b1c4b5c53411e6eee52d8e0bc96ecad0ee1b54260864b431605e43ca85da888
+  status: machine
+  heading: Los MET clasifican la intensidad, pero no dan las kcal individuales
+  rule_text: |-
+    Muestra las kcal de la sesión como un rango aproximado y etiquétalas como estimación. No presentes MET x kg x horas como el gasto real de una persona ni lo uses para hacer ajustes finos de calorías. Convención de FightLab: muestra una banda de +/- alrededor de la estimación en lugar de un único número exacto.
+  applies_to: |-
+    La fuente son las salvedades de los propios autores del Compendium (la postura de la propia referencia); los ejemplos cuantitativos proceden de adultos no deportistas. No hay datos de deportes de combate sobre la magnitud del error individual.
+  conflicts: |-
+    Se discute si los MET corregidos son mejores (Howley frente a Kozey et al.). El sentido del error en deportistas musculados con un gasto en reposo alto por kg no se ha probado en las fuentes abiertas.
+- key: combat-sports/hard-combat-sessions-cost-about-8-13-kcal-per-minute
+  source_hash: 27eeb6c1001bbed0b520633f0060d4ab4e8b2b5e8ad6f768e0fd5432dcd43764
+  status: machine
+  heading: Las sesiones de combate duras cuestan unas 8-13 kcal por minuto
+  rule_text: |-
+    Para el trabajo de golpeo duro o de sparring, cuenta con unas 8-13 kcal/min en adultos entrenados; para sesiones centradas en la técnica o de contacto ligero, cuenta con claramente menos. Usa un factor según el contenido de la sesión (asaltos de saco, paos o sparring frente a drills) además de la modalidad. No sumes encima un gran efecto postcombustión. Convención de FightLab: mantén un factor más bajo para los bloques de drills y técnica que para los de paos, saco y sparring.
+  applies_to: |-
+    Muestras pequeñas: n=8 hombres (boxeo sin contacto), n=10 hombres (combate simulado de Muay Thai), n=20 mujeres de nivel nacional (sparring de boxeo, basado en la FC), n=29 adultos jóvenes no deportistas (saco pesado), muestras de kárate de tamaño no indicado (un estudio en mujeres y otro sin sexo indicado). Sobre todo adultos jóvenes. No se encontraron kcal medidas en sesiones de entrenamiento de MMA, BJJ, lucha ni judo.
+  conflicts: |-
+    La gran dispersión entre estudios (3.8 a 14.4 kcal/min) refleja el contenido de la sesión (drills frente a sparring), la masa corporal (kcal/min absolutas, casi nunca se da la masa corporal) y el método (calorimetría indirecta frente a regresión con la FC). Los valores más altos (boxeadoras) proceden de un método basado en la FC, que puede sobrestimar el coste (véase la regla siguiente). Usar el valor de sparring del Compendium, 7.8 MET, y 1 MET de alrededor de 1 kcal/kg/h da unas 0.13 kcal/kg/min, unas 9.8 kcal/min para un adulto de 75 kg, dentro del rango medido. Los estudios son de 1997-2014 y ninguno midió una sesión real completa de gimnasio con periodos de descanso y explicaciones.
+- key: combat-sports/heart-rate-can-overstate-the-cost-of-technique-training
+  source_hash: 30ac5c3a4c3d2a22567a159913ed9316d6bde8a3280e6310194810358acdb3bc
+  status: machine
+  heading: La frecuencia cardiaca puede sobrestimar el coste del entrenamiento técnico
+  rule_text: |-
+    No deduzcas las kcal solo a partir de la frecuencia cardiaca en bloques de técnica, kata o drills con paos. Si una sesión se registra con frecuencia cardiaca, di que las kcal resultantes pueden sobrestimar el coste real del trabajo de tipo drill.
+  applies_to: |-
+    Practicantes de kárate; los resúmenes no indican los tamaños muestrales; dos estudios de un mismo grupo de investigación (1999, 2002).
+  conflicts: |-
+    Solo kárate; sin probar en boxeo, MMA, lucha ni grappling. Los estudios comparan clasificaciones de intensidad, no estimaciones de kcal, así que se desconoce la magnitud de cualquier sobrestimación de kcal.
+- key: combat-sports/wearable-kcal-are-rough-and-unvalidated-in-combat-sports
+  source_hash: 4e0a5a1adcdc673a51ce67236723e21923c5db744635ca9599747f2ac5c1b6e6
+  status: machine
+  heading: |-
+    Las kcal de los wearables son aproximadas y no están validadas en deportes de combate
+  rule_text: |-
+    Etiqueta las kcal que dan el reloj o la banda como una estimación aproximada, nunca como un valor preciso, y no las uses para fijar objetivos de ingesta diaria. Di claramente que ningún wearable se ha validado para las kcal en el entrenamiento de boxeo, MMA, Muay Thai, kickboxing, lucha, judo ni BJJ, y que el error puede ser mayor en el trabajo intermitente, de alta intensidad y de grappling que en el ejercicio continuo.
+  applies_to: |-
+    Adultos en general en muchos estudios de dispositivos; el estudio de fútbol es de 13 mujeres de élite. En la literatura revisada no existe ningún estudio en boxeadores, deportistas de MMA, judokas, luchadores ni deportistas de BJJ.
+  conflicts: |-
+    El sentido y la magnitud del error difieren según el dispositivo y la actividad: la revisión paraguas muestra una ligera infraestimación media, mientras que los datos de kárate sugieren que la intensidad basada en la FC puede sobrestimarse. La única validación con algo de combate encontrada (un exergame de boxeo de Wii en 21 estudiantes) usó otro acelerómetro como referencia, así que no dice nada del gasto real. Que el error sea mayor en las sesiones de combate es una inferencia, no un resultado medido.
+- key: combat-sports/fao-who-unu-pal-bands-are-the-reference-scale
+  source_hash: 3ab65ce961072157a70c2d5dda5b58da499cd08fcb4623790a3c0f9a3eb3f1a1
+  status: machine
+  heading: Las franjas de PAL de la FAO/OMS/UNU son la escala de referencia
+  rule_text: |-
+    Usa las franjas de la FAO/OMS/UNU como escala de referencia de la actividad habitual: sedentario o ligero 1.40-1.69, activo o moderadamente activo 1.70-1.99, vigoroso 2.00-2.40, y di a los usuarios que un PAL por encima de 2.40 es difícil de mantener durante mucho tiempo en la población general. Aquí PAL significa el gasto energético diario total como múltiplo de la tasa metabólica basal.
+  applies_to: |-
+    Poblaciones adultas generales en vida libre de todo el mundo (incluidas las cargas de trabajo laborales); no es un documento específico para deportistas. Los deportistas no se describen como categoría.
+  conflicts: |-
+    Los deportistas que entrenan en bloques diarios estructurados pueden superar 2.4 (véanse las dos reglas siguientes). El ejemplo de +0.2 de PAL por hora corresponde a un escenario de ejemplo y no es una constante específica de combate.
+- key: combat-sports/athletes-can-exceed-pal-2-0-with-a-ceiling-near-2-4-2-5
+  source_hash: 3aefb67c3adfedab7ab335c226148a5cf6afb2846456a9276aa0634a3c5ffa7e
+  status: machine
+  heading: Los deportistas pueden superar un PAL de 2.0, con un techo cerca de 2.4-2.5
+  rule_text: |-
+    No pongas un tope fijo de PAL de 2.0 a los deportistas que entrenan duro la mayoría de los días. Lo que respalda la evidencia: 2.00-2.40 es la franja vigorosa de la FAO/OMS/UNU; las revisiones con agua doblemente marcada encuentran que las personas con actividad vigorosa y los adultos jóvenes que entrenan comiendo sin restricciones llegan a unos 2.0-2.4; el límite superior de PAL sostenido es de alrededor de 2.2-2.5 en la población general, con un límite de aporte energético de unas 2.5x la tasa metabólica basal, por encima del cual se tira de las reservas corporales; los valores sostenidos por encima de esto se describen sobre todo en deportistas profesionales y de resistencia que comen alimentos extra de alta densidad energética. Di a los usuarios que los valores por encima de unos 2.4-2.5 son difíciles de mantener y necesitan una base medida. Convención de FightLab (decisión de producto, no evidencia): el PAL por defecto, el valor más alto que permite la app y el disparador para subirlo (por ejemplo, dos sesiones duras la mayoría de los días) son ajustes de la app que deben revisarse frente a la tendencia de peso del deportista.
+  applies_to: |-
+    Estudios con agua doblemente marcada en la población general y en deportistas de resistencia y de deportes de campo, sobre todo hombres. Los valores de los deportistas de resistencia (4.0-5.0) no se trasladan a los deportes de combate. Los deportistas de combate solo están representados por un estudio de lucha (véase la regla siguiente).
+  conflicts: |-
+    Las revisiones dividen el TDEE entre el REE o entre la tasa metabólica basal, que difieren un poco, así que los números no son estrictamente intercambiables. El techo procede sobre todo de datos de deportes que no son de combate y de larga duración. Los bloques cortos e intensos pueden superar 2.5 sin ser sostenibles (la FAO cita 4.5-4.7 durante tres semanas de ciclismo de competición). Cualquier valor por defecto concreto del producto es una convención.
+- key: combat-sports/collegiate-wrestlers-measured-a-pal-near-2-6
+  source_hash: 36341f0317247e2285d1652b5302e59ae1c5dda64755bbd4e178e7c8d6f3e28f
+  status: machine
+  heading: En luchadores universitarios se midió un PAL cercano a 2.6
+  rule_text: |-
+    Di a los deportistas de combate en fases de entrenamiento intenso que el único estudio con agua doblemente marcada en deportistas de combate que se ha encontrado (10 luchadores universitarios que entrenaban unas 3 horas al día) midió un PAL de alrededor de 2.6, más alto que el de las ecuaciones que suponen 2.0 o 2.2, y que sus diarios de alimentación salieron un 19% por debajo del gasto medido mientras el peso corporal se mantenía estable. Convención de FightLab (no evidencia): para los bloques de entrenamiento intenso, la app puede ofrecer valores de planificación de 2.2-2.6 y pide al deportista que vigile el peso corporal y el rendimiento durante 2-3 semanas; este rango extrapola un único estudio pequeño más las franjas de PAL y no es una prescripción validada.
+  applies_to: |-
+    Diez luchadores universitarios varones en Japón, una temporada, alrededor de una semana de agua doblemente marcada. Sin mujeres, sin deportistas de MMA, judo, boxeo, Muay Thai ni BJJ, sin profesionales y sin comparación entre entrenar una o dos veces al día.
+  conflicts: |-
+    Un único estudio pequeño con una carga de entrenamiento alta (172 min/día) que puede no representar a los luchadores aficionados. La ingesta declarada estaba un 19% por debajo del gasto medido, así que los registros de ingesta no son una comprobación fiable de las necesidades. El PAL también depende de la actividad fuera del entrenamiento, que no se recogió.
+- key: combat-sports/inform-and-refer-on-low-energy-availability
+  source_hash: e6616bf27797d6c22a7c9a4e52a934e5f3d9f39f26f56bed5f1607f94c59e5ff
+  status: machine
+  heading: Ante una baja disponibilidad energética, informa y deriva
+  rule_text: |-
+    Explica la disponibilidad energética (la ingesta menos el coste energético del ejercicio, por kg de masa libre de grasa) como contexto, y describe unas 45 kcal/kg FFM/día como referencia de investigación para un nivel saludable, no como un objetivo preciso que la app pueda calcular, porque las estimaciones de campo de cada componente no son fiables. Di a los deportistas de combate que los escasos datos disponibles describen una proporción alta en riesgo de baja disponibilidad energética, tanto en el nivel recreativo como en el de élite, y que aumenta durante la pérdida de peso previa a la competición. No bajes un objetivo de ingesta por una estimación aproximada de las kcal del ejercicio. Si un deportista informa de una ingesta muy baja o de posibles síntomas, dale información y anímale a acudir a un médico deportivo o a un dietista-nutricionista; nunca diagnostiques.
+  applies_to: |-
+    Fuentes de revisión y de consenso sobre deportistas en general; datos específicos de combate de 84 deportistas de combate chinas (11 seguidas de forma longitudinal) y 117 jugadores coreanos varones de taekwondo, la mitad adolescentes de secundaria. Los datos previos a la competición se solapan con el corte de peso, que se trata en "Dar el peso y rehidratación".
+  conflicts: |-
+    El nivel de 45 kcal/kg FFM/día y cualquier umbral bajo están en debate y son sensibles al error de medición. Del consenso del COI de 2023 solo se abrió el resumen, así que no se usa ningún umbral suyo. El riesgo según un cuestionario no es un diagnóstico. Los registros dietéticos infradeclaran la ingesta (véase la regla del PAL de los luchadores), así que una ingesta registrada baja puede reflejar en parte un error de registro.

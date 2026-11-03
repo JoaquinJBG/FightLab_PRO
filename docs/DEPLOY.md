@@ -210,7 +210,8 @@ de evidencia de la base de datos. **Se cargan solas al arrancar el contenedor**:
 `createcachetable`. No hay que hacer nada a mano.
 
 - Guarda una huella (sha256) de los archivos de cada conjunto (`upstream`: el `knowledge/` del
-  coach; `fightlab`: `backend/knowledge_fightlab/`) en la tabla `coaching_knowledgesync`. Si no
+  coach; `fightlab`: `backend/knowledge_fightlab/`; `translations-es`: las traducciones al español
+  de esas reglas, `backend/knowledge_translations/es/`) en la tabla `coaching_knowledgesync`. Si no
   cambió, no carga nada: la comprobación tarda unos 30 ms (más lo que tarda Django en arrancar un
   proceso). Si cambió (el primer arranque de `feat/beta-coach`, o un despliegue que toca la
   evidencia), la carga entera tarda unos 20 s en local y algo más en Render; solo pasa en ese
@@ -225,11 +226,15 @@ de evidencia de la base de datos. **Se cargan solas al arrancar el contenedor**:
   terminal): `cd backend && PYTHONPATH=vendor/ai-personal-coach python manage.py sync_knowledge --force`.
   `load_knowledge` (con `--dir knowledge_fightlab --origin fightlab` para el anexo) sigue existiendo
   para cargas sueltas.
-- Las traducciones de las reglas (`manage.py translate_rules`) llaman a la API de Anthropic, cuestan
-  dinero y no se lanzan solas. El mecanismo está pensado para cargar también, más adelante, archivos
-  de traducción al arrancar: basta con añadir su conjunto en `coaching/knowledge_sync.py`
-  (`knowledge_sets()`), detrás de los de reglas. Sin traducciones, cada regla se muestra en su
-  idioma original.
+- **Las traducciones al español de las reglas también se cargan solas** en el mismo arranque, detrás
+  de las reglas: vienen en archivos del repo (`backend/knowledge_translations/es/`, ver su README),
+  sin llamar a ninguna API. Se recargan si cambian sus archivos o si se recargó alguna regla; una
+  traducción cuyo texto en inglés cambió queda "desfasada" y la app muestra la regla en inglés con
+  "Sin traducir" hasta que se actualice el archivo. A mano: `manage.py load_translations --lang es`
+  (con `--dry-run` para ver qué haría). `manage.py translate_rules` (que llama a la API de Anthropic
+  y cuesta dinero) no se usa ni se lanza solo.
+- Otro conjunto (otro idioma, por ejemplo) se añade en `coaching/knowledge_sync.py`
+  (`knowledge_sets()`), detrás de los de reglas.
 
 **Antes del primer despliegue de `feat/beta-coach`:** el ensayo de la migración con el esquema de
 producción está en `backend/scripts/migration_rehearsal/` (README). Conviene hacer una copia de

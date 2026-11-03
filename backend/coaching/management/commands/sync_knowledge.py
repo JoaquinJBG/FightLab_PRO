@@ -1,12 +1,12 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from coaching.knowledge_sync import sync_knowledge
+from coaching.knowledge_sync import summary, sync_knowledge
 
 
 class Command(BaseCommand):
     help = (
-        "Carga la base de evidencia (coach y anexo de combate) solo si sus archivos cambiaron "
+        "Carga la base de evidencia (coach, anexo de combate y traducciones) solo si sus archivos cambiaron "
         "desde la última carga. Nunca falla: los errores van al log. Lo lanza el arranque del "
         "contenedor (backend/Dockerfile)."
     )
@@ -27,10 +27,6 @@ class Command(BaseCommand):
             if r.status == "unchanged":
                 self.stdout.write(f"base de evidencia '{r.name}': sin cambios")
             elif r.status == "loaded":
-                rep = r.report
-                self.stdout.write(
-                    f"base de evidencia '{r.name}': cargada ({rep.rules_created} altas, "
-                    f"{rep.rules_updated} cambios, {rep.rules_retired} bajas de reglas)"
-                )
+                self.stdout.write(f"base de evidencia '{r.name}': cargada ({summary(r.report)})")
             else:
                 self.stderr.write(f"base de evidencia '{r.name}': NO cargada ({r.error})")

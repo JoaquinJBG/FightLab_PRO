@@ -5,10 +5,11 @@ es el sha256 de los archivos (ruta relativa + bytes) y de `LOADER_VERSION`; se g
 `KnowledgeSync` tras cargarlo bien. Con la misma huella no se toca la base de datos más que
 para leerla, así que un arranque sin cambios tarda una fracción de segundo.
 
-Para añadir otro conjunto (p. ej. los archivos de traducción de las reglas, cuando existan),
-basta con otra entrada en `knowledge_sets()` con su carpeta, sus patrones y su cargador.
-Los conjuntos se cargan en orden: uno que dependa de otro (las traducciones, de las reglas) va
-después.
+Para añadir otro conjunto basta con otra entrada en `knowledge_sets()` con su carpeta, sus
+patrones y su cargador. Los conjuntos se cargan en orden: uno que dependa de otro (las
+traducciones, de las reglas) va después y lleva `reload_after_previous`: se vuelve a cargar si se
+cargó alguno de los anteriores, aunque sus archivos no hayan cambiado (el estado de una
+traducción, al día o desfasada, depende del texto de la regla).
 """
 import hashlib
 import logging
@@ -21,6 +22,7 @@ from django.conf import settings
 
 from .knowledge_loader import load_knowledge
 from .models import KnowledgeRule, KnowledgeSync
+from .translation_loader import TRANSLATIONS_DIR, load_translations
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +36,7 @@ class KnowledgeSet:
     directory: Path
     load: Callable[[Path], object]
     patterns: tuple[str, ...] = ("*.md",)
+    reload_after_previous: bool = False
 
     def files(self) -> list[Path]:
         found = {p for pattern in self.patterns for p in self.directory.glob(pattern) if p.is_file()}
@@ -59,6 +62,14 @@ def knowledge_sets() -> list[KnowledgeSet]:
             Path(settings.BASE_DIR) / "knowledge_fightlab",
             lambda d: load_knowledge(d, origin=KnowledgeRule.Origin.FIGHTLAB),
         ),
+        # Traducciones al español de las reglas de los dos conjuntos anteriores (archivos, sin API)
+        KnowledgeSet(
+            "translations-es",
+            TRANSLATIONS_DIR,
+            lambda d: load_translations(d, "es"),
+            patterns=("es/**/*.yaml",),
+            reload_after_previous=True,
+        ),
     ]
 
 
@@ -81,7 +92,8 @@ def sync_knowledge(sets: list[KnowledgeSet] | None = None, *, force: bool = Fals
         try:
             new_hash = kset.content_hash()
             saved = KnowledgeSync.objects.filter(name=kset.name).values_list("content_hash", flat=True).first()
-            if saved == new_hash and not force:
+            previous_loaded = any(r.status == "loaded" for r in results)
+            if saved == new_hash and not force and not (kset.reload_after_previous and previous_loaded):
                 results.append(SyncResult(kset.name, "unchanged"))
                 continue
             report = kset.load(kset.directory)
@@ -91,3 +103,16 @@ def sync_knowledge(sets: list[KnowledgeSet] | None = None, *, force: bool = Fals
             logger.exception("No se pudo cargar la base de evidencia '%s'", kset.name)
             results.append(SyncResult(kset.name, "failed", error=f"{type(exc).__name__}: {exc}"))
     return results
+
+
+def summary(report) -> str:
+    """Una línea con lo que cambió, para el informe de reglas (`Report`) o el de traducciones."""
+    if hasattr(report, "rules_created"):
+        return (
+            f"{report.rules_created} altas, {report.rules_updated} cambios, "
+            f"{report.rules_retired} bajas de reglas"
+        )
+    return (
+        f"{report.created} altas, {report.updated} cambios, {len(report.stale_keys)} desfasadas, "
+        f"{report.missing} reglas sin traducción al día"
+    )

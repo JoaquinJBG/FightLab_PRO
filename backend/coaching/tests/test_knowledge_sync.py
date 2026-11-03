@@ -75,7 +75,7 @@ def test_a_failure_is_logged_keeps_the_old_hash_and_does_not_raise(tmp_path, cap
 @pytest.mark.django_db
 def test_real_sets_cover_the_coach_and_the_combat_annex():
     names = [s.name for s in knowledge_sync.knowledge_sets()]
-    assert names == ["upstream", "fightlab"]
+    assert names == ["upstream", "fightlab", "translations-es"]  # las traducciones, detrás de sus reglas
     assert all(s.files() for s in knowledge_sync.knowledge_sets())
 
 
@@ -98,3 +98,72 @@ def test_dockerfile_runs_it_on_start_without_blocking_gunicorn():
     cmd = (Path(__file__).resolve().parents[2] / "Dockerfile").read_text(encoding="utf-8")
     assert "sync_knowledge --on-start ||" in cmd
     assert cmd.index("sync_knowledge") < cmd.index("gunicorn core.wsgi")
+
+
+# --- Traducciones al español (conjunto "translations-es") ---
+
+def translations_set(tmp_path, rules_dir):
+    """Traducciones de las reglas de `rules_dir` (ya cargadas) en archivos, como en el repo."""
+    import yaml
+
+    from coaching.translation_loader import load_translations
+
+    from .test_load_translations import entries_for_loaded_rules
+
+    folder = tmp_path / "tr" / "es" / "upstream"
+    folder.mkdir(parents=True)
+    doc = {"lang": "es", "origin": "upstream", "file": "widgets", "rules": entries_for_loaded_rules()}
+    (folder / "widgets.yaml").write_text(yaml.safe_dump(doc, allow_unicode=True, sort_keys=False), encoding="utf-8")
+    return KnowledgeSet("translations-es", tmp_path / "tr", lambda d: load_translations(d, "es"),
+                        patterns=("es/**/*.yaml",), reload_after_previous=True)
+
+
+@pytest.mark.django_db
+def test_translations_load_after_the_rules_and_are_skipped_without_changes(tmp_path):
+    from coaching.models import RuleTranslation
+
+    rules = good_set(tmp_path)
+    sync_knowledge([rules])
+    tr = translations_set(tmp_path, rules.directory)
+    results = sync_knowledge([rules, tr])
+    assert [r.status for r in results] == ["unchanged", "loaded"]
+    assert results[1].report.created == 3
+    assert RuleTranslation.objects.filter(lang="es", status=RuleTranslation.Status.MACHINE).count() == 3
+    assert [r.status for r in sync_knowledge([rules, tr])] == ["unchanged", "unchanged"]
+    assert "3 altas, 0 cambios, 0 desfasadas" in knowledge_sync.summary(results[1].report)
+
+
+@pytest.mark.django_db
+def test_changed_translation_files_are_loaded_again(tmp_path):
+    from coaching.models import RuleTranslation
+
+    rules = good_set(tmp_path)
+    sync_knowledge([rules])
+    tr = translations_set(tmp_path, rules.directory)
+    sync_knowledge([rules, tr])
+    path = next(tr.directory.glob("es/**/*.yaml"))
+    path.write_text(path.read_text(encoding="utf-8").replace("despacio", "muy despacio"), encoding="utf-8")
+    results = sync_knowledge([rules, tr])
+    assert [r.status for r in results] == ["unchanged", "loaded"]
+    assert results[1].report.updated == 1
+    assert RuleTranslation.objects.get(rule__key="widgets/lift-widgets-slowly").heading == "Levanta los widgets muy despacio"
+
+
+@pytest.mark.django_db
+def test_a_changed_rule_reloads_the_translations_and_marks_them_stale(tmp_path):
+    from coaching.models import RuleTranslation
+
+    rules = good_set(tmp_path)
+    sync_knowledge([rules])
+    tr = translations_set(tmp_path, rules.directory)
+    sync_knowledge([rules, tr])
+    rule_file = next(p for p in rules.files() if p.name not in ("sources.md", "index.md"))
+    text = rule_file.read_text(encoding="utf-8")
+    assert "Lift each widget over about 2 seconds." in text
+    rule_file.write_text(text.replace("about 2 seconds", "about 3 seconds"), encoding="utf-8")
+    # Los archivos de traducción no cambian, pero se recargan porque cambió una regla
+    results = sync_knowledge([rules, tr])
+    assert [r.status for r in results] == ["loaded", "loaded"]
+    assert results[1].report.stale_keys == ["widgets/lift-widgets-slowly"]
+    stale = RuleTranslation.objects.get(rule__key="widgets/lift-widgets-slowly")
+    assert stale.status == RuleTranslation.Status.STALE

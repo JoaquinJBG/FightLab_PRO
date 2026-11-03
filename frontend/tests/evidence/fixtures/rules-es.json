@@ -1,0 +1,140 @@
+{
+  "nutrition/default-rmr-equation-mifflin-st-jeor": {
+    "key": "nutrition/default-rmr-equation-mifflin-st-jeor",
+    "file": "nutrition",
+    "section": "Estimating energy needs",
+    "heading": "Default RMR equation: Mifflin-St Jeor",
+    "title": "Default RMR equation: Mifflin-St Jeor",
+    "grade": "moderate",
+    "origin": "upstream",
+    "checked_on": "2026-10-24",
+    "retired": false,
+    "engine_sha": "69e5537718069b308690491c38c10d7cfd3a5b3f",
+    "rule_text": "Use Mifflin-St Jeor (MSJ) as the default starting RMR for ordinary adults, especially when body composition is unknown or unreliable. MSJ in its sex-specific form: RMR (kcal/day) = 10 × weight (kg) + 6.25 × height (cm) - 5 × age (y) + 5 for men, and the same with - 161 instead of + 5 for women. Present the result to the client as a starting guess with about ±10% error (roughly ±150-200 kcal for a typical adult), not a measurement, and calibrate it against the real 2-4-week weight trend.",
+    "evidence": "A systematic review of the four most-used equations (Harris-Benedict, MSJ, Owen, WHO/FAO/UNU) in healthy non-obese and obese adults found MSJ estimated RMR within 10% of measured in more people than any other, with the narrowest error range. In 337 community-living adults, MSJ was unbiased (95% CI of the difference -26 to +8 kcal/d) and 82% of estimates fell within ±10% (87% non-obese, 75% obese); Livingston performed similarly (79%), while Harris-Benedict, WHO and others tended to overestimate. About 1 in 5 people are still off by more than 10%. MSJ was derived from 498 healthy adults (247 women, 251 men, aged 19-78, normal weight and obese; R2 0.71), and the simplified sex-specific form predicted as well as the full equation.",
+    "applies_to": "Healthy ambulatory adults, normal weight to obesity, mostly white North American samples. Not validated for severe obesity, clinical populations, athletes, older adults or many ethnic groups, which were under-represented.",
+    "conflicts": "Group bias is near zero but individual error is large and unpredictable. Accuracy drops in obesity: Madden 2016 found WHO the most accurate on average in BMI ≥25/≥30 and Henry in BMI ≥40, even though Mifflin was the most precise. During and after weight loss in people with excess weight, Harris-Benedict showed the smallest bias, but prediction intervals were wide. For severe obesity, see \"Overweight and obesity: equation choice\".",
+    "translation": {
+      "lang": "es",
+      "status": "machine",
+      "heading": "Ecuación de RMR por defecto: Mifflin-St Jeor",
+      "rule_text": "Usa Mifflin-St Jeor (MSJ) como RMR de partida por defecto para adultos corrientes, sobre todo cuando la composición corporal se desconoce o no es fiable. MSJ en su forma específica por sexo: RMR (kcal/día) = 10 × peso (kg) + 6.25 × altura (cm) - 5 × edad (años) + 5 en hombres, y la misma con - 161 en lugar de + 5 en mujeres. Presenta el resultado al cliente como una estimación de partida con un error de alrededor de ±10% (unas ±150-200 kcal en un adulto típico), no como una medición, y calíbralo con la tendencia de peso real de 2-4 semanas.",
+      "evidence": "",
+      "applies_to": "Adultos sanos ambulatorios, de normopeso a obesidad, en muestras sobre todo de blancos norteamericanos. No validada en obesidad grave, poblaciones clínicas, deportistas, personas mayores ni muchos grupos étnicos, que estaban infrarrepresentados.",
+      "conflicts": "El sesgo de grupo es casi nulo, pero el error individual es grande e impredecible. La exactitud cae en la obesidad: Madden 2016 encontró que la ecuación de la OMS era la más exacta de media con IMC ≥25/≥30 y la de Henry con IMC ≥40, aunque Mifflin fue la más precisa. Durante y después de perder peso en personas con exceso de peso, Harris-Benedict mostró el menor sesgo, pero los intervalos de predicción fueron amplios. Para la obesidad grave, véase \"Sobrepeso y obesidad: elección de la ecuación\"."
+    },
+    "sources": [
+      {
+        "sid": "S161",
+        "citation": "Frankenfield D et al., 2005, Comparison of predictive equations for resting metabolic rate in healthy nonobese and obese adults: a systematic review, J Am Diet Assoc",
+        "type": "Systematic review",
+        "doi": "10.1016/j.jada.2005.02.005",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/15883556/"
+      },
+      {
+        "sid": "S163",
+        "citation": "de Lima Macena M et al., 2023, Longitudinal estimates of resting energy expenditure using predictive equations in individuals with excess weight after weight loss: systematic review with meta-analysis, Clin Nutr ESPEN",
+        "type": "Meta-analysis",
+        "doi": "10.1016/j.clnesp.2023.10.004",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/38057015/"
+      },
+      {
+        "sid": "S267",
+        "citation": "Frankenfield DC. 2013. Bias and accuracy of resting metabolic rate equations in non-obese and obese adults. Clin Nutr 32(6):976-82",
+        "type": "Cohort",
+        "doi": "10.1016/j.clnu.2013.03.022",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/23631843/"
+      },
+      {
+        "sid": "S268",
+        "citation": "Madden AM, Mulrooney HM, Shah S. 2016. Estimation of energy expenditure using prediction equations in overweight and obese adults: a systematic review. J Hum Nutr Diet 29(4):458-76",
+        "type": "Systematic review",
+        "doi": "10.1111/jhn.12355",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/26923904/"
+      },
+      {
+        "sid": "S819",
+        "citation": "Mifflin MD, St Jeor ST, Hill LA, Scott BJ, Daugherty SA, Koh YO. 1990. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr 51(2):241-7",
+        "type": "Other",
+        "doi": "10.1093/ajcn/51.2.241",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/2305711/"
+      }
+    ]
+  },
+  "combat-sports/acwr-is-not-a-validated-injury-predictor": {
+    "key": "combat-sports/acwr-is-not-a-validated-injury-predictor",
+    "file": "combat-sports",
+    "section": "ACWR and load spikes",
+    "heading": "ACWR is not a validated injury predictor",
+    "title": "ACWR is not a validated injury predictor",
+    "grade": "emerging",
+    "origin": "fightlab",
+    "checked_on": "2026-10-29",
+    "retired": false,
+    "engine_sha": "",
+    "rule_text": "FightLab may show the ratio of this week's load to the recent average as a descriptive monitoring number. It must not present it as a validated predictor of injury and must not attach a \"safe\" or \"injury risk\" label to any value. Coach text must say that the research behind ratio thresholds comes mostly from team sports and is disputed.",
+    "evidence": "Two meta-analyses and several systematic reviews of mostly team-sport cohorts find some association but disagree on how useful it is. Ding 2026 (multilevel meta-analysis: 41 cohort studies met inclusion, 16 studies with 797 team-sport athletes pooled) found a small-to-moderate pooled association between elevated ACWR and injury (Hedges g 0.35, 95% CI 0.16 to 0.54) with extreme heterogeneity (I2 95.8%). Contact (g 0.54) and non-contact (g 0.55) injuries showed associations, while time-loss injury outcomes were near null (g 0.01, 95% CI -0.34 to 0.37). 80% of the 41 studies were rated moderate quality, and Egger's test showed no small-study effects. The authors conclude that ACWR is not supported as a stand-alone causal or predictive model and that observational data cannot show that lowering the ratio lowers injury. Qin 2025 (22 single-arm cohorts, 16 high and 6 moderate quality) found ACWR associated with injury but advised caution because of heterogeneity, possible publication bias and differing calculation methods. Andrade 2020 (20 studies, 2375 injuries, 1234 male athletes, mean age 24) found that most studies report higher time-loss injury risk at a higher ACWR than at a low or moderate one, but methods varied too much for firm recommendations (14 binning schemes, almost none shared). Griffin 2020 (22 cohort studies, median Newcastle-Ottawa score 8, range 5 to 9) supported an association with non-contact injury and use as one part of a wider monitoring system. Maupin 2020 (27 studies, quality 48.2% to 64.3%) found high variability and said method problems must be fixed before confident use. Jiang 2022 (professional male soccer) found session-RPE ACWR possibly linked to non-contact injury but could not derive a minimum-risk threshold. Wang 2021 (12 elite male football studies) rated all studies poor quality.",
+    "applies_to": "Team-sport athletes, mostly elite or professional adults (soccer, rugby, Australian football, cricket and others). Andrade 2020, Wang 2021 and Jiang 2022 included only men; sex is not reported in the Ding 2026 text opened. Griffin 2020 calls for data in both sexes. None of these reviews includes combat sports.",
+    "conflicts": "The reviews agree on some association but not on usefulness. Griffin 2020, Maupin 2020 (trend to lowest risk at 0.80-1.30) and Andrade 2020 (co-authored by Blanch and Gabbett, the concept's main proponents) lean supportive; Ding 2026, Qin 2025 and Wang 2021 stress heterogeneity and poor quality; Impellizzeri 2020 finds no evidence for using ACWR to manage load for injury reduction (see \"Do not steer training by the ACWR\"). Qin 2025 flags possible publication bias, while Ding 2026 found no small-study effects. All data are observational.",
+    "translation": {
+      "lang": "es",
+      "status": "machine",
+      "heading": "El ACWR no es un predictor de lesiones validado",
+      "rule_text": "FightLab puede mostrar el cociente entre la carga de esta semana y la media reciente como una cifra descriptiva de seguimiento. No debe presentarlo como un predictor de lesiones validado ni asociar a ningún valor una etiqueta de \"seguro\" o de \"riesgo de lesión\". El texto del coach debe decir que la investigación en la que se basan los umbrales del ratio procede sobre todo de deportes de equipo y está en discusión.",
+      "evidence": "",
+      "applies_to": "Deportistas de deportes de equipo, sobre todo adultos de élite o profesionales (fútbol, rugby, fútbol australiano, críquet y otros). Andrade 2020, Wang 2021 y Jiang 2022 incluyeron solo hombres; el sexo no se indica en el texto de Ding 2026 consultado. Griffin 2020 pide datos en ambos sexos. Ninguna de estas revisiones incluye deportes de combate.",
+      "conflicts": "Las revisiones coinciden en que hay cierta asociación, pero no en su utilidad. Griffin 2020, Maupin 2020 (tendencia al riesgo más bajo en 0.80-1.30) y Andrade 2020 (con Blanch y Gabbett, principales defensores del concepto, entre sus autores) se inclinan a favor; Ding 2026, Qin 2025 y Wang 2021 subrayan la heterogeneidad y la baja calidad; Impellizzeri 2020 no encuentra pruebas para usar el ACWR en la gestión de la carga con el fin de reducir lesiones (véase \"No dirijas el entrenamiento por el ACWR\"). Qin 2025 señala un posible sesgo de publicación, mientras que Ding 2026 no encontró efectos de estudios pequeños. Todos los datos son observacionales."
+    },
+    "sources": [
+      {
+        "sid": "F001",
+        "citation": "Ding L et al., 2026. Acute:chronic workload ratio and load management for team sports: a multilevel meta-analysis. Front Public Health 14:1896651",
+        "type": "Meta-analysis",
+        "doi": "10.3389/fpubh.2026.1896651",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/42662491/"
+      },
+      {
+        "sid": "F051",
+        "citation": "Qin W, Li R, Chen L, 2025. Acute to chronic workload ratio (ACWR) for predicting sports injury risk: a systematic review and meta-analysis. BMC Sports Sci Med Rehabil 17(1):285",
+        "type": "Meta-analysis",
+        "doi": "10.1186/s13102-025-01332-x",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/41029871/"
+      },
+      {
+        "sid": "F009",
+        "citation": "Andrade R et al., 2020. Is the Acute: Chronic Workload Ratio (ACWR) Associated with Risk of Time-Loss Injury in Professional Team Sports? A Systematic Review of Methodology, Variables and Injury Risk in Practical Situations. Sports Med 50(9):1613-1635",
+        "type": "Systematic review",
+        "doi": "10.1007/s40279-020-01308-6",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/32572824/"
+      },
+      {
+        "sid": "F008",
+        "citation": "Griffin A et al., 2020. The Association Between the Acute:Chronic Workload Ratio and Injury and its Application in Team Sports: A Systematic Review. Sports Med 50(3):561-580",
+        "type": "Systematic review",
+        "doi": "10.1007/s40279-019-01218-2",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/31691167/"
+      },
+      {
+        "sid": "F052",
+        "citation": "Maupin D et al., 2020. The Relationship Between Acute: Chronic Workload Ratios and Injury Risk in Sports: A Systematic Review. Open Access J Sports Med 11:51-75",
+        "type": "Systematic review",
+        "doi": "10.2147/OAJSM.S231405",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/32158285/"
+      },
+      {
+        "sid": "F053",
+        "citation": "Jiang Z et al., 2022. A Systematic Review of the Relationship between Workload and Injury Risk of Professional Male Soccer Players. Int J Environ Res Public Health 19(20):13237",
+        "type": "Systematic review",
+        "doi": "10.3390/ijerph192013237",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/36293817/"
+      },
+      {
+        "sid": "F054",
+        "citation": "Wang A et al., 2021. A systematic review on methodological variation in acute:chronic workload research in elite male football players. Sci Med Footb 5(1):18-34",
+        "type": "Systematic review",
+        "doi": "10.1080/24733938.2020.1765007",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/35073237/"
+      }
+    ]
+  }
+}
