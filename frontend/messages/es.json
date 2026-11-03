@@ -456,7 +456,12 @@
         "amount": "Cantidad",
         "less": "Quitar 10 g",
         "more": "Añadir 10 g",
-        "back": "Volver"
+        "back": "Volver",
+        "perHundredMl": "{kcal} kcal/100 ml",
+        "noData": "sin dato de kcal",
+        "typeMore": "Escribe al menos 2 letras.",
+        "searching": "Buscando…",
+        "source": "Alimentos de la tabla del coach (USDA FoodData Central) y tus productos."
       },
       "quick": {
         "intro": "¿Sabes las kcal pero no quieres buscar? Apúntalas directas.",
@@ -467,6 +472,10 @@
         "f": "G (g)",
         "defaultName": "Comida rápida"
       }
+    },
+    "menuCard": {
+      "title": "Menú y lista de la compra",
+      "body": "Platos para varios días, comprobados por el coach contra tus objetivos."
     }
   },
   "dashboard": {
@@ -2064,6 +2073,156 @@
       "origin": {
         "upstream": "coach",
         "fightlab": "anexo de FightLab"
+      }
+    }
+  },
+  "menu": {
+    "back": "← Nutrición",
+    "title": "Menú y compra",
+    "intro": "El coach propone los platos y su motor comprueba cada día contra tus objetivos de kcal, proteína, grasa y fibra. Los días que no pasan no se guardan.",
+    "loading": "Cargando…",
+    "error": "No se pudo cargar el menú.",
+    "simulated": "Platos de ejemplo de FightLab elegidos por un proponedor simulado (sin IA). Los números son del motor del coach.",
+    "engine": "Motor del coach {sha}",
+    "rateHint": "Toca un plato para valorarlo: los que te gustan vuelven en próximos menús y los que no repetirías no salen más.",
+    "blocked": {
+      "title": "Sin menú por ahora",
+      "body": "Con tus avisos de seguridad, el coach no calcula objetivos de kcal, así que no hay menú que comprobar."
+    },
+    "missing": {
+      "body": "Al coach le falta un dato para calcular tus objetivos. Complétalo en Nutrición y vuelve.",
+      "cta": "Ir a Nutrición",
+      "weight": "Registrar mi peso"
+    },
+    "form": {
+      "days": "Días",
+      "dayCount": "{n, plural, one {# día} other {# días}}",
+      "meals": "Comidas del día",
+      "tupper": "Para llevar en tupper",
+      "generate": "Preparar menú",
+      "regenerate": "Preparar otro menú",
+      "generating": "Preparando…"
+    },
+    "meals": {
+      "breakfast": "Desayuno",
+      "lunch": "Comida",
+      "dinner": "Cena",
+      "snack": "Merienda"
+    },
+    "errors": {
+      "menu_rejected": "El coach ha rechazado todos los días: no encaja ningún plato con tus objetivos o tus gustos. Revisa los gustos y prueba otra vez.",
+      "days_invalid": "Elige de 1 a 7 días.",
+      "meals_invalid": "Elige al menos una comida.",
+      "start_invalid": "Fecha de inicio no válida.",
+      "profile_incomplete": "Falta un dato de tu perfil para calcular los objetivos.",
+      "no_calorie_targets": "Con tus avisos de seguridad no hay objetivos de kcal ni menú.",
+      "generic": "No se ha podido preparar el menú."
+    },
+    "targets": {
+      "title": "Objetivos de cada día",
+      "kcal": "{kcal} kcal",
+      "protein": "Proteína: al menos {g} g",
+      "fat": "Grasa: al menos {g} g",
+      "fibre": "Fibra: al menos {g} g",
+      "margin": "Un día vale desde tu objetivo de kcal hasta un {pct} % más",
+      "noRepeat": "Ningún plato se repite en {days} días"
+    },
+    "day": {
+      "ok": "Comprobado",
+      "tupper": "tupper",
+      "totals": "{kcal} kcal · proteína {p} g · grasa {f} g · hidratos {c} g · fibra {fib} g",
+      "seasoning": "Para aliñar: {list}",
+      "source": "Receta original",
+      "offProduct": "Open Food Facts"
+    },
+    "status": {
+      "ok": "bien",
+      "under": "por debajo",
+      "over": "por encima",
+      "missing": "sin dato"
+    },
+    "checkLabels": {
+      "kcal": "kcal",
+      "protein_g": "Proteína",
+      "fat_g": "Grasa",
+      "fibre_g": "Fibra"
+    },
+    "amount": {
+      "g": "{n} g",
+      "ml": "{n} ml"
+    },
+    "rejected": {
+      "title": "Días rechazados por el coach (no se han guardado)",
+      "empty": "no había platos que encajen con tus gustos",
+      "repeats": "repetía un plato",
+      "blocking": "{kind}: {entry}",
+      "unknown": "alimentos desconocidos: {list}"
+    },
+    "flags": {
+      "title": "Avisos por tus gustos",
+      "line": "{dish}: {kind} ({entry})",
+      "kinds": {
+        "allergy": "alergia",
+        "intolerance": "intolerancia",
+        "disliked": "no te gusta",
+        "untried": "no lo has probado",
+        "never_again": "no lo repetirías"
+      },
+      "net": "El coach compara por nombre: no conoce sinónimos ni ingredientes ocultos. Lee siempre las etiquetas."
+    },
+    "rate": {
+      "label": "¿Qué tal?",
+      "loved": "Me encantó",
+      "liked": "Bien",
+      "disliked": "No me gustó",
+      "never_again": "No lo repetiría",
+      "saved": "Guardado"
+    },
+    "shopping": {
+      "title": "Lista de la compra",
+      "any": "Cualquier tienda",
+      "g": "{n} g",
+      "ml": "{n} ml",
+      "pantry": "En casa (no se compra): {list}",
+      "unknown": "Sin datos en la tabla: {list}",
+      "note": "Las cantidades son para la forma que dice cada nombre (crudo, cocido, escurrido)."
+    },
+    "tastes": {
+      "title": "Tus gustos",
+      "intro": "Las alergias e intolerancias dejan fuera un plato; lo demás solo avisa. Lo que tienes siempre en casa no entra en la compra.",
+      "allergies": "Alergias",
+      "intolerances": "Intolerancias",
+      "disliked_foods": "No te gusta",
+      "loved_foods": "Te encanta",
+      "pantry": "Siempre en casa",
+      "chains": "Supermercados",
+      "hint": "Separa con comas (vacío: nada)",
+      "notAsked": "sin contestar",
+      "save": "Guardar gustos",
+      "saved": "Gustos guardados.",
+      "error": "No se han podido guardar."
+    },
+    "products": {
+      "title": "Productos del súper",
+      "intro": "Busca un producto en Open Food Facts y añádelo a tus productos para usarlo en los menús.",
+      "placeholder": "Producto o marca",
+      "search": "Buscar",
+      "searching": "Buscando…",
+      "notConfigured": "La búsqueda de productos no está configurada en este servidor. Los menús siguen funcionando con los alimentos del coach.",
+      "none": "Sin resultados.",
+      "add": "Añadir",
+      "unverified": "Sin verificar · ver en Open Food Facts",
+      "catalogue": "Tus productos",
+      "empty": "Aún no has añadido ninguno.",
+      "remove": "Quitar {name}",
+      "attribution": "Datos de Open Food Facts, colaborativos y sin verificar, bajo licencia ODbL.",
+      "errors": {
+        "off_not_configured": "La búsqueda de productos no está configurada.",
+        "off_rate_limited": "Demasiadas búsquedas: espera un minuto.",
+        "off_busy": "Open Food Facts está ocupado: espera un minuto.",
+        "off_unavailable": "No se ha podido consultar Open Food Facts.",
+        "search_empty": "Escribe al menos una palabra.",
+        "generic": "No se ha podido completar."
       }
     }
   }

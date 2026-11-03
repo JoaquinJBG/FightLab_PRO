@@ -4,8 +4,8 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { useFoodSearch, type Food } from "@/lib/menu";
 import {
-  FOODS,
   foodName,
   MEALS,
   addItem,
@@ -40,29 +40,47 @@ async function toJpeg(file: File): Promise<Blob> {
   }
 }
 
-function fromFood(name: string, grams: number): Detected {
-  const food = FOODS.find((f) => f.name === name);
-  if (!food) return { name, grams, kcal: 0, p: 0, c: 0, f: 0 };
-  return { name, grams, ...scale(food, grams) };
-}
+// Platos de ejemplo cuando la IA no está configurada (marcados como simulados en la pantalla).
 const PHOTO_PLATES: { name: string; items: Detected[] }[] = [
   {
     name: "Pollo con arroz y verduras",
-    items: [fromFood("Pechuga de pollo", 150), fromFood("Arroz blanco cocido", 200), { name: "Verduras salteadas", grams: 120, kcal: 80, p: 2, c: 9, f: 4 }],
+    items: [
+      { name: "Pechuga de pollo", grams: 150, kcal: 248, p: 47, c: 0, f: 5 },
+      { name: "Arroz blanco cocido", grams: 200, kcal: 260, p: 5, c: 56, f: 1 },
+      { name: "Verduras salteadas", grams: 120, kcal: 80, p: 2, c: 9, f: 4 },
+    ],
   },
   {
     name: "Ensalada con atún",
-    items: [fromFood("Atún en lata", 80), { name: "Ensalada mixta", grams: 150, kcal: 35, p: 2, c: 6, f: 0 }, { name: "Aceite de oliva", grams: 10, kcal: 90, p: 0, c: 0, f: 10 }],
+    items: [
+      { name: "Atún en lata", grams: 80, kcal: 106, p: 22, c: 0, f: 1 },
+      { name: "Ensalada mixta", grams: 150, kcal: 35, p: 2, c: 6, f: 0 },
+      { name: "Aceite de oliva", grams: 10, kcal: 90, p: 0, c: 0, f: 10 },
+    ],
   },
   {
     name: "Tostada de aguacate y huevo",
-    items: [fromFood("Pan integral", 60), fromFood("Aguacate", 50), fromFood("Huevo", 60)],
+    items: [
+      { name: "Pan integral", grams: 60, kcal: 148, p: 8, c: 25, f: 2 },
+      { name: "Aguacate", grams: 50, kcal: 80, p: 1, c: 5, f: 8 },
+      { name: "Huevo", grams: 60, kcal: 93, p: 8, c: 1, f: 7 },
+    ],
   },
   {
     name: "Bol de avena con plátano",
-    items: [fromFood("Avena", 60), fromFood("Plátano", 120), fromFood("Yogur natural", 125)],
+    items: [
+      { name: "Avena", grams: 60, kcal: 233, p: 10, c: 40, f: 4 },
+      { name: "Plátano", grams: 120, kcal: 107, p: 1, c: 28, f: 0 },
+      { name: "Yogur natural", grams: 125, kcal: 76, p: 4, c: 6, f: 4 },
+    ],
   },
 ];
+
+/** Valores por 100 g (o 100 ml) de la tabla del motor; un dato que falta cuenta 0 en el diario,
+ * pero sin kcal no se puede añadir. */
+function per100(food: Food) {
+  return { kcal: food.kcal ?? 0, p: food.protein_g ?? 0, c: food.carbs_g ?? 0, f: food.fat_g ?? 0 };
+}
 
 type Mode = "recientes" | "buscar" | "rapido";
 
@@ -93,13 +111,14 @@ function AddInner() {
     setTimeout(() => setAddedFlash((cur) => (cur === name ? null : cur)), 1200);
   }
 
-  /* ---- buscar ---- */
+  /* ---- buscar: tabla del motor del coach y productos propios (`/coach/foods`) ---- */
   const [q, setQ] = useState("");
-  const [sel, setSel] = useState<(typeof FOODS)[number] | null>(null);
+  const [sel, setSel] = useState<Food | null>(null);
   const [grams, setGrams] = useState(100);
-  const foods = FOODS.map((f) => ({ ...f, name: foodName(f.name, locale) }));
-  const results = foods.filter((f) => f.name.toLocaleLowerCase(locale).includes(q.toLocaleLowerCase(locale))).slice(0, 8);
-  const scaled = sel ? scale(sel, grams) : null;
+  const search = useFoodSearch(q);
+  const results = (search.data ?? []).slice(0, 8);
+  const scaled = sel && sel.kcal != null ? scale(per100(sel), grams) : null;
+  const unit = sel?.per === "100 ml" ? "ml" : "g";
 
   function addFood() {
     if (!sel || !scaled || saving) return;
@@ -344,28 +363,33 @@ function AddInner() {
           {!sel ? (
             <div className="mt-3 flex flex-col gap-2">
               {results.map((f) => (
-                <button key={f.name} onClick={() => { setSel(f); setGrams(100); }} className="glass flex items-center justify-between p-3.5 text-left">
-                  <span className="t-body text-ink">{f.name}</span>
-                  <span className="t-body text-xs text-muted">{t("search.perHundred", { kcal: f.kcal })}</span>
+                <button key={`${f.kind}-${f.barcode ?? f.name}`} data-testid="food-hit" onClick={() => { setSel(f); setGrams(100); }} className="glass flex items-center justify-between gap-2 p-3.5 text-left">
+                  <span className="t-body text-ink first-letter:uppercase">{f.name}{f.chain ? ` · ${f.chain}` : ""}</span>
+                  <span className="t-body shrink-0 text-xs text-muted">
+                    {f.kcal == null ? t("search.noData") : t(f.per === "100 ml" ? "search.perHundredMl" : "search.perHundred", { kcal: Math.round(f.kcal) })}
+                  </span>
                 </button>
               ))}
-              {results.length === 0 && <p className="t-body mt-2 text-xs text-muted">{t("search.none")}</p>}
+              {q.trim().length < 2 && <p className="t-body mt-2 text-xs text-muted">{t("search.typeMore")}</p>}
+              {q.trim().length >= 2 && search.isFetching && <p className="t-body mt-2 text-xs text-muted">{t("search.searching")}</p>}
+              {q.trim().length >= 2 && !search.isFetching && results.length === 0 && <p className="t-body mt-2 text-xs text-muted">{t("search.none")}</p>}
+              <p className="t-body mt-1 text-[11px] text-muted">{t("search.source")}</p>
             </div>
           ) : (
             <div className="glass mt-3 p-4">
-              <p className="t-title text-ink">{sel.name}</p>
+              <p className="t-title text-ink first-letter:uppercase">{sel.name}</p>
               <div className="mt-3 flex items-center justify-between">
                 <span className="t-label text-muted">{t("search.amount")}</span>
                 <div className="flex items-center gap-3">
                   <button onClick={() => setGrams((g) => Math.max(10, g - 10))} aria-label={t("search.less")} className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">−</button>
-                  <span className="stat w-20 text-center text-lg text-ink">{grams} g</span>
+                  <span className="stat w-20 text-center text-lg text-ink">{grams} {unit}</span>
                   <button onClick={() => setGrams((g) => Math.min(1000, g + 10))} aria-label={t("search.more")} className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">+</button>
                 </div>
               </div>
-              <p className="t-body mt-3 text-center text-sm text-neon">{scaled && t("macros", { kcal: scaled.kcal, p: scaled.p, c: scaled.c, f: scaled.f })}</p>
+              <p className="t-body mt-3 text-center text-sm text-neon">{scaled ? t("macros", { kcal: scaled.kcal, p: scaled.p, c: scaled.c, f: scaled.f }) : t("search.noData")}</p>
               <div className="mt-3 flex gap-2">
                 <button onClick={() => setSel(null)} className="btn btn-outline btn-sm flex-1">{t("search.back")}</button>
-                <button onClick={addFood} disabled={saving} className="btn btn-primary btn-sm flex-1 disabled:opacity-60">{t("addTo", { meal: tm(meal) })}</button>
+                <button onClick={addFood} disabled={saving || !scaled} className="btn btn-primary btn-sm flex-1 disabled:opacity-60">{t("addTo", { meal: tm(meal) })}</button>
               </div>
             </div>
           )}

@@ -35,7 +35,7 @@ describe("formato y nombres en inglés", () => {
     expect(intlLocale("es")).toBe("es");
     expect(new Date(2026, 10, 2).toLocaleDateString(intlLocale("en"), { day: "2-digit", month: "short" })).toBe("02 Nov");
   });
-  it("los alimentos de ejemplo tienen nombre en inglés y en español se quedan igual", () => {
+  it("los platos simulados de la foto tienen nombre en inglés y en español se quedan igual", () => {
     expect(foodName("Pechuga de pollo", "en")).toBe("Chicken breast");
     expect(foodName("Pechuga de pollo", "es")).toBe("Pechuga de pollo");
     expect(foodName("Algo nuevo", "en")).toBe("Algo nuevo");
