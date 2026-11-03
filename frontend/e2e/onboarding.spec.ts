@@ -81,7 +81,7 @@ test("SCOFF positivo: ve el bloqueo del déficit y la línea de derivación (es)
   await expect(banner.locator('[data-code="eating_disorder_screen"]')).toBeVisible();
   await expect(banner.getByTestId("safety-footer")).toHaveText(es.safety.deferralLine);
   await page.getByTestId("onboarding-finish").click();
-  await page.waitForURL("**/dashboard");
+  await page.waitForURL("**/today");
   await expect(page.getByTestId("safety-banner").getByTestId("safety-footer")).toHaveText(es.safety.deferralLine);
 
   // Nutrición: "Perder" bloqueado, con el motivo y la línea de derivación
@@ -141,7 +141,7 @@ test.describe("selector de idioma encendido, con el navegador en inglés", () =>
     await expect(banner).toContainText(en.safety.parqPending);
     await expect(banner.getByTestId("safety-footer")).toHaveText(en.safety.disclaimer);
     await page.getByTestId("onboarding-finish").click();
-    await page.waitForURL("**/dashboard");
+    await page.waitForURL("**/today");
     await expect(page.getByTestId("safety-banner")).toContainText(en.safety.parqPending);
   });
 });
@@ -171,7 +171,7 @@ test("síntoma cardiaco ahora: pantalla de parada con el número de emergencias"
   await expect(stop.getByTestId("safety-disclaimer")).toHaveText(es.safety.deferralLine);
 
   await page.getByText(es.onboarding.cardiac.exit).click();
-  await page.waitForURL("**/dashboard");
+  await page.waitForURL("**/today");
   const banner = page.getByTestId("safety-banner");
   await expect(banner.locator('[data-code="cardiac_symptoms"]')).toBeVisible();
   await expect(banner.getByText("Emergencias: 112")).toBeVisible();

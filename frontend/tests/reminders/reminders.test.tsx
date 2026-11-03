@@ -1,16 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { RemindersSettings } from "@/components/reminders/RemindersSettings";
-import { urlBase64ToUint8Array } from "@/lib/push";
+import { urlBase64ToUint8Array, type PushState } from "@/lib/push";
 import { PROFILE, mockApi, renderApp } from "../support/app";
 
 const KEY = "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U";
 const ENDPOINT = "https://fcm.googleapis.com/fcm/send/abc";
-const STATE = { configured: true, public_key: KEY, prefs: { eve: true, review: true, weigh: false, mobility: false }, devices: 0 };
+const STATE: PushState = { configured: true, public_key: KEY, prefs: { eve: true, review: true, weigh: false, mobility: false }, devices: 0 };
 
 type Calls = { path: string; method: string; body: unknown }[];
 
-function routes(over: Partial<typeof STATE> = {}, calls: Calls = []) {
+function routes(over: Partial<PushState> = {}, calls: Calls = []) {
   const record = (path: string, reply: (body: Record<string, unknown>) => unknown) => (init?: RequestInit) => {
     const body = init?.body ? JSON.parse(String(init.body)) : undefined;
     calls.push({ path, method: init?.method ?? "GET", body });

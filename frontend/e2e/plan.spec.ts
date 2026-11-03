@@ -11,7 +11,7 @@ async function login(page: Page, email: string) {
   await page.locator('input[type="email"]').fill(email);
   await page.locator('input[type="password"]').fill(PASSWORD);
   await page.locator('button[type="submit"]').click();
-  await page.waitForURL("**/dashboard");
+  await page.waitForURL("**/today");
 }
 
 async function build(page: Page) {

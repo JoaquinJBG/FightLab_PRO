@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useFormatter, useTranslations } from "next-intl";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
+import { SafetyBanner } from "@/components/safety/SafetyBanner";
 import { ChevronRight } from "@/components/icons";
 import { parseNum } from "@/lib/checkin";
 import {
@@ -489,6 +490,8 @@ export function TodayView({ state }: { state: TodayState }) {
           {t("summaryLink")}
         </Link>
       </header>
+      {/* Hoy es la pantalla de inicio: los avisos de seguridad del motor van arriba, como en el resumen. */}
+      <SafetyBanner />
       <NextMeal state={state} />
       <DayPlan state={state} />
       <DayStatus state={state} />

@@ -50,6 +50,7 @@ SETUPS = {
     "vigorous": ({}, {"parq_any_yes": True}),
     "history": ({}, {}),
     "historyScoff": ({}, {"scoff_yes_count": 2}),
+    "today": ({"timezone": "Europe/Madrid"}, {}),
 }
 for key, email in READY.items():
     u, p = fresh(email)
@@ -90,6 +91,22 @@ for key in ("review", "reviewScoff"):
 # Fase 10: un check-in de hace 4 días (5 h de sueño) que el historial importado contradice.
 p = UserProfile.objects.get(user__email=READY["history"])
 DailyCheckin.objects.create(profile=p, date=timezone.now().date() - timedelta(days=4), sleep_hours=5, notes="Hecho en FightLab")
+
+# Fase 11 (Hoy): plan activo con la sesión A de gimnasio hoy y un menú de hoy (platos inventados).
+from zoneinfo import ZoneInfo
+from coaching.models import MealPlan, WeeklyPlan
+p = UserProfile.objects.get(user__email=READY["today"])
+today = timezone.localdate(timezone=ZoneInfo("Europe/Madrid"))
+weekday = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")[today.weekday()]
+WeeklyPlan.objects.create(
+    profile=p, week_start=today - timedelta(days=today.weekday()), status="active",
+    training_schedule=[{"day": weekday, "time": "18:00", "kind": "gym", "session": "A"}],
+    sessions=[{"key": "A", "kind": "gym", "items": [{"exercise": "Sentadilla"}, {"exercise": "Press banca"}]}],
+)
+MealPlan.objects.create(profile=p, start_date=today, days=[{"date": today.isoformat(), "meals": [
+    {"meal": "breakfast", "dishes": [{"dish": "Avena con yogur", "items": []}]},
+    {"meal": "lunch", "tupper": True, "dishes": [{"dish": "Arroz con pollo", "items": []}]},
+]}])
 `;
   execFileSync(python, ["manage.py", "shell", "-c", code], { cwd: backend, stdio: "inherit" });
 }

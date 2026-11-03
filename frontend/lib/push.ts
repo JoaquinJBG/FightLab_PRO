@@ -132,8 +132,25 @@ function usePushMutation<T>(run: (v: T) => Promise<unknown>) {
   });
 }
 
+/** El interruptor cambia al momento; si el servidor no lo guarda, vuelve a como estaba. */
 export function useSavePrefs() {
-  return usePushMutation((prefs: Partial<Record<PrefKey, boolean>>) => call(`${BASE}/prefs`, "PUT", prefs));
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (prefs: Partial<Record<PrefKey, boolean>>) => call(`${BASE}/prefs`, "PUT", prefs),
+    onMutate: async (prefs) => {
+      const before = qc.getQueryData<PushState>(["push"]);
+      if (before) qc.setQueryData<PushState>(["push"], { ...before, prefs: { ...before.prefs, ...prefs } });
+      await qc.cancelQueries({ queryKey: ["push"] });
+      return { before };
+    },
+    onError: (_err, _prefs, ctx) => {
+      if (ctx?.before) qc.setQueryData(["push"], ctx.before);
+    },
+    onSuccess: (data) => {
+      const parsed = pushState.safeParse(data);
+      if (parsed.success) qc.setQueryData(["push"], parsed.data);
+    },
+  });
 }
 
 export function useTestPush() {
