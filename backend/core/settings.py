@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "activities",
     "userstate",
     "coaching",
+    "notifications",
 ]
 
 MIDDLEWARE = [
@@ -196,6 +197,8 @@ REST_FRAMEWORK = {
         # Proxy de Open Food Facts (fase 8): por usuario, además del límite de OFF para todo el servidor.
         "coach-off": "10/min",
         "coach-import": "20/min",
+        # Aviso de prueba (F11): cada uno sale a todos los navegadores de la persona.
+        "push-test": "6/hour",
     },
     # Nº de proxies de confianza delante de Django, para que el throttling
     # por IP (SimpleRateThrottle.get_ident) recorte la cabecera X-Forwarded-For
@@ -367,6 +370,18 @@ if not DEBUG and not BFF_SHARED_SECRET:
         "a los visitantes detrás del BFF y compartirán un único contador "
         "por la IP de salida de Vercel."
     )
+
+# --- Avisos con Web Push (F11) ---
+# Las tres opcionales: sin ellas los avisos quedan apagados y la app lo explica. Se crean con
+# `npx web-push generate-vapid-keys` (ver docs/DEPLOY.md). La pública es la misma que va en
+# Vercel como NEXT_PUBLIC_VAPID_PUBLIC_KEY; la privada solo va aquí (Render). VAPID_SUBJECT es
+# un contacto del proyecto para los servicios de push: un `mailto:` del proyecto o la URL https
+# de la app, nunca uno personal.
+VAPID_PUBLIC_KEY = env("VAPID_PUBLIC_KEY", default="").strip()
+VAPID_PRIVATE_KEY = env("VAPID_PRIVATE_KEY", default="").strip()
+VAPID_SUBJECT = env("VAPID_SUBJECT", default="").strip()
+if VAPID_SUBJECT and not VAPID_SUBJECT.startswith(("mailto:", "https://")):
+    raise ImproperlyConfigured("VAPID_SUBJECT debe empezar por mailto: o https://")
 
 # --- IA (Anthropic) ---
 # Sin clave, los endpoints de IA responden 503 y el frontend degrada a reglas/simulado
