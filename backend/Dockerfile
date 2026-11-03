@@ -35,4 +35,5 @@ USER app
 EXPOSE 8000
 
 # La base de evidencia se carga solo si cambió (rápido si no); si falla, se registra y se arranca igual.
-CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py createcachetable && (python manage.py sync_knowledge --on-start || echo 'sync_knowledge ha fallado: se arranca sin recargar la base de evidencia') && gunicorn core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 90"]
+# seed_demo solo hace algo con DEMO_USER_EMAIL y DEMO_USER_PASSWORD (entorno de prueba, nunca producción).
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py createcachetable && (python manage.py sync_knowledge --on-start || echo 'sync_knowledge ha fallado: se arranca sin recargar la base de evidencia') && (python manage.py seed_demo || echo 'seed_demo ha fallado: se arranca sin usuario de demostración') && gunicorn core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 90"]

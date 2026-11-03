@@ -242,6 +242,40 @@ Neon (*Branches → Create branch*) justo antes, para poder volver atrás.
 
 ---
 
+## Entorno de prueba (usuario de demostración) — NUNCA en producción
+
+Para enseñar la app en el móvil sin tocar producción: un Preview de Vercel, un servicio de Render
+**aparte** y una base de datos de Neon **vacía y aparte** (otro proyecto u otra rama de Neon sin
+datos reales). En ese servicio de prueba, y solo ahí, se definen dos variables más:
+
+| Variable | Secreto | Ejemplo |
+|---|---|---|
+| `DEMO_USER_EMAIL` | No | `demo@fightlab.test` |
+| `DEMO_USER_PASSWORD` | **Sí** | Una contraseña larga, solo para esta cuenta |
+
+En cada arranque, después de `sync_knowledge`, el contenedor lanza `python manage.py seed_demo`:
+
+- **Sin esas dos variables no hace nada** (una línea en el log lo dice). Por eso en el servicio de
+  producción no deben existir nunca.
+- Con ellas crea (o actualiza) esa cuenta, activa y con el email verificado, con datos
+  inventados: perfil de adulto (hombre, objetivo de pérdida, región `es`), cribado sin nada que
+  señalar, 4 semanas de check-ins con pesajes que bajan, 16 sesiones de MMA, deportes y gimnasio
+  (con series), un plan semanal aplicado, una revisión y un menú de 7 días hecho con el proveedor
+  simulado (sin LLM ni API).
+- Es idempotente: si la cuenta ya tiene un bloque de datos, no lo repite. Cambiar
+  `DEMO_USER_PASSWORD` y reiniciar cambia la contraseña de la cuenta de demostración.
+- Solo toca la cuenta que él mismo creó (tabla `users_demoaccount`). Si ya hay una cuenta real con
+  ese email, no la toca y lo dice en el log.
+- La contraseña no sale nunca en el log. Si un bloque falla, lo registra y el arranque sigue.
+- Se entra con ese email y esa contraseña aunque no esté en `BETA_ALLOWED_EMAILS`: esa lista solo
+  se mira al **registrarse**.
+
+Los datos se calculan respecto al día del primer arranque: con el paso de los días la semana actual
+se queda sin sesiones nuevas. Para recrearlos, borra la cuenta (en el admin de Django del servicio
+de prueba, o vaciando su base) y reinicia el servicio.
+
+---
+
 ## 7. Instalar la PWA
 
 FightLab Pro es una PWA instalable, sin pasar por las tiendas de apps.
