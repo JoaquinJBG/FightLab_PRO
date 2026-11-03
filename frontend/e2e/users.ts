@@ -33,4 +33,8 @@ export const READY_USERS = {
   // sesión vigorosa (review_before_vigorous).
   gymImport: "e2e-import@fightlab.test",
   vigorous: "e2e-vigorous@fightlab.test",
+  // Fase 10: importar el historial (con un check-in ya hecho hace 4 días, para el conflicto); y
+  // con SCOFF positivo (no_weight_targets: peso, cintura y kcal no se importan).
+  history: "e2e-history@fightlab.test",
+  historyScoff: "e2e-history-scoff@fightlab.test",
 };
