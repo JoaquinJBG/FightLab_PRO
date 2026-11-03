@@ -307,6 +307,9 @@ class WeeklyPlan(models.Model):
     rules_used = models.JSONField(default=list)  # claves de regla
     engine_sha = models.CharField(max_length=40, blank=True, default="")
     narrative = models.TextField(blank=True, default="")
+    # Semana de descarga aceptada en la revisión semanal (F7): `volume_cut`, `stop_rir`,
+    # `extra_rest_days` de `coach.strength.deload`, con su regla. Nulo en una semana normal.
+    deload = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     applied_at = models.DateTimeField(null=True, blank=True)
 
@@ -320,3 +323,53 @@ class WeeklyPlan(models.Model):
 
     def __str__(self) -> str:
         return f"WeeklyPlan<{self.profile_id} {self.week_start} {self.status}>"
+
+
+class WeeklyReview(models.Model):
+    """La revisión de una semana (spec §6.6, Task 7.1), siguiendo `review/SKILL.md` del coach.
+
+    Copia lo que el motor dijo ese día: adherencia (plan de F6 frente a lo registrado), tendencia
+    de peso, TDEE recalibrado, series y progresión, y las señales de descarga. `proposals` son los
+    cambios propuestos (calorías, descarga); al aceptarlos se guardan `accepted`, `target_kcal` e
+    `in_deficit` y se genera un `WeeklyPlan` nuevo (`plan`). El `recalibrated_tdee` de una revisión
+    aceptada es el que usa `coach/targets` (fase 4). `narrative` es lo único que escribe el LLM.
+    """
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "pending"
+        ACCEPTED = "accepted", "accepted"
+
+    profile = models.ForeignKey(
+        "profiles.UserProfile", on_delete=models.CASCADE, related_name="weekly_reviews"
+    )
+    week_end = models.DateField()
+    status = models.CharField(max_length=8, choices=Status.choices, default=Status.PENDING)
+    goal = models.CharField(max_length=13, blank=True, default="")
+    adherence = models.JSONField(default=dict)
+    trend = models.JSONField(default=dict)
+    recalibrated_tdee = models.FloatField(null=True, blank=True)
+    current_kcal = models.PositiveIntegerField(null=True, blank=True)  # el objetivo en vigor
+    calories = models.JSONField(default=dict)  # ritmo frente al rango del objetivo y su regla
+    training = models.JSONField(null=True, blank=True)  # series por músculo y progresión
+    signs = models.JSONField(default=list)  # señales de descarga marcadas (y las deducidas)
+    deload = models.JSONField(null=True, blank=True)
+    proposals = models.JSONField(default=list)
+    safety_reasons = models.JSONField(default=list)
+    rules_used = models.JSONField(default=list)
+    engine_sha = models.CharField(max_length=40, blank=True, default="")
+    narrative = models.TextField(blank=True, default="")
+    accepted = models.JSONField(default=list)  # tipos de propuesta aceptados
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    target_kcal = models.PositiveIntegerField(null=True, blank=True)  # el aceptado
+    in_deficit = models.BooleanField(null=True, blank=True)
+    plan_week_start = models.DateField(null=True, blank=True)
+    plan = models.ForeignKey(
+        WeeklyPlan, on_delete=models.SET_NULL, null=True, blank=True, related_name="reviews"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-week_end", "-created_at"]
+
+    def __str__(self) -> str:
+        return f"WeeklyReview<{self.profile_id} {self.week_end} {self.status}>"

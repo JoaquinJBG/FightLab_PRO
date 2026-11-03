@@ -2,6 +2,7 @@ from django.urls import path
 
 from .checkin_views import CheckinView
 from .plan_views import PlanApplyView, PlanView
+from .review_views import KnowledgeStaleView, ReviewAcceptView, ReviewView
 from .safety_views import (
     HeadImpactDetailView,
     HeadImpactListView,
@@ -27,6 +28,9 @@ urlpatterns = [
     path("coach/checkin", CheckinView.as_view(), name="coach-checkin"),
     path("coach/plan", PlanView.as_view(), name="coach-plan"),
     path("coach/plan/<int:pk>/apply", PlanApplyView.as_view(), name="coach-plan-apply"),
+    path("coach/review", ReviewView.as_view(), name="coach-review"),
+    path("coach/review/<int:pk>/accept", ReviewAcceptView.as_view(), name="coach-review-accept"),
+    path("coach/knowledge/stale", KnowledgeStaleView.as_view(), name="coach-knowledge-stale"),
     path("coach/strength/e1rm", StrengthE1rmView.as_view(), name="coach-strength-e1rm"),
     path("coach/strength/sets", StrengthSetsView.as_view(), name="coach-strength-sets"),
     path("coach/strength/progress", StrengthProgressView.as_view(), name="coach-strength-progress"),

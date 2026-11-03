@@ -18,6 +18,11 @@
 
 Con `no_training` no hay plan. El LLM solo escribe `narrative` (`plan_narrative.py`), después de
 guardar los números, y no los puede cambiar.
+
+Semana de descarga (F7, `plan/SKILL.md`, "Agreed changes"): si la revisión semanal aceptada pide
+una descarga para la semana del plan, cada ejercicio va con las series recortadas según el
+`volume_cut` del motor, las mismas cargas (nunca más que las de la última sesión) y el esfuerzo
+parado a `stop_rir` repeticiones del fallo ("Deloads").
 """
 import math
 from collections import Counter, defaultdict
@@ -37,7 +42,7 @@ from .bridge.adapters import _tz, set_records, to_coach_profile
 from .bridge.muscle_map import muscle_map
 from .bridge.reasons import Reason, parse_reason
 from .combat import combat_flags
-from .models import WeeklyPlan
+from .models import WeeklyPlan, WeeklyReview
 from .strength import WEEKLY_SETS_RULE, suggestion_for, suggestion_rule_key
 from .targets import _key, reasons_data, rule_refs, targets_data, zones_data
 from .views import engine_info
@@ -88,6 +93,7 @@ EFFORT_LIMITS_AGE = 60
 CARDIOVASCULAR_CONDITIONS = {"hypertension", "heart_disease"}
 
 FULL_BODY = 'strength-hypertrophy.md: "Full-body versus split"'
+DELOADS = coach_strength.DELOADS
 HOW_LONG_HABITS = 'recovery-habits.md: "How long habits take"'
 
 
@@ -111,6 +117,7 @@ class PlanRequest:
     mma_days: list[str] | None = None
     cardio_days: list[str] | None = None
     times: dict[str, str] = field(default_factory=dict)
+    week_start: date | None = None  # la semana del plan (por defecto, la de `today`)
 
 
 def week_start_for(today: date) -> date:
@@ -420,6 +427,67 @@ def _previous_ranges(plan: WeeklyPlan | None) -> dict[str, list[int]]:
     return {i["exercise"]: i["rep_range"] for s in plan.sessions for i in s.get("items", [])}
 
 
+def deload_for(user, week_start: date) -> dict | None:
+    """La descarga que la revisión semanal aceptada pide para la semana `week_start`, o `None`."""
+    review = (
+        WeeklyReview.objects.filter(
+            profile=user.profile, status=WeeklyReview.Status.ACCEPTED, plan_week_start=week_start
+        )
+        .order_by("-accepted_at")
+        .first()
+    )
+    if review is None or "deload" not in review.accepted:
+        return None
+    d = next((p for p in review.proposals if p["kind"] == "deload"), None)
+    if d is None:
+        return None
+    return {
+        "review_id": review.id,
+        "volume_cut": d["volume_cut"],
+        "stop_rir": d["stop_rir"],
+        "extra_rest_days": d["extra_rest_days"],
+        "rule_key": _key(DELOADS),
+        "sets_convention": "fightlab",
+    }
+
+
+def deload_sets(sets: int, volume_cut) -> int:
+    """Series de la semana de descarga. convention (FightLab): `ceil(series × (1 − corte máximo))`,
+    que con 2-5 series deja un recorte dentro del 30-50 % del motor ("Deloads")."""
+    if sets <= 0:
+        return sets
+    return max(1, math.ceil(sets * (1 - volume_cut[1])))
+
+
+def _last_load(history) -> float | None:
+    """La carga más alta de trabajo de la última sesión registrada del ejercicio."""
+    working = [s for s in history if coach_strength.is_working(s) and s.weight_kg is not None]
+    if not working:
+        return None
+    last = max(s.date for s in working)
+    return max(s.weight_kg for s in working if s.date == last)
+
+
+def _apply_deload(sessions: list[dict], deload: dict, records_by_name: dict) -> None:
+    """Semana de descarga: menos series, las mismas cargas y sin progresar."""
+    for session in sessions:
+        session["effort"] = {"rir": [deload["stop_rir"], deload["stop_rir"]], "rule_key": deload["rule_key"]}
+        for item in session["items"]:
+            if item["action"] in ("paused", "no_training") or item["sets"] <= 0:
+                continue
+            item["sets"] = deload_sets(item["sets"], deload["volume_cut"])
+            item["sets_basis"] = "deload"
+            item["sets_rule_key"] = deload["rule_key"]
+            last = _last_load(records_by_name.get(item["exercise"], []))
+            if item["load_kg"] is not None and last is not None:
+                item["load_kg"] = min(item["load_kg"], last)
+            elif last is not None:
+                item["load_kg"] = last
+            if item["action"] != "no_data":
+                item["action"] = "deload"
+                item["rule_key"] = deload["rule_key"]
+
+
 def _validate_days(days, code: str) -> list[str]:
     if any(d not in DAYS for d in days):
         raise PlanInvalid(f"{code}_invalid")
@@ -490,6 +558,10 @@ def build(user, today: date, request: PlanRequest) -> dict:
     effort = _effort(profile, flags, today)
     for session in sessions:
         session["effort"] = effort
+    week_start = request.week_start or week_start_for(today)
+    deload = deload_for(user, week_start)
+    if deload:
+        _apply_deload(sessions, deload, by_name)
 
     last = last_plan_session(user)
     start = (SESSION_KEYS.index(last) + 1) % len(SESSION_KEYS) if last else 0
@@ -521,6 +593,8 @@ def build(user, today: date, request: PlanRequest) -> dict:
     safety_reasons += [_reason_dict(r) for r in fight.reasons]
 
     keys = {effort["rule_key"], cardio["rule_key"], _key(FULL_BODY), _key(rules.WEEKLY_BASELINE)}
+    if deload:
+        keys.add(deload["rule_key"])
     for s in sessions:
         for item in s["items"]:
             keys.add(item["rule_key"])
@@ -538,7 +612,7 @@ def build(user, today: date, request: PlanRequest) -> dict:
         keys.add(_key(HOW_LONG_HABITS))
 
     return {
-        "week_start": week_start_for(today),
+        "week_start": week_start,
         "target_kcal": nutrition.get("kcal"),
         "in_deficit": bool(nutrition.get("in_deficit")),
         "training_schedule": schedule,
@@ -548,6 +622,7 @@ def build(user, today: date, request: PlanRequest) -> dict:
         "safety_reasons": safety_reasons,
         "rules_used": sorted(k for k in keys if k),
         "engine_sha": engine_info()["sha_full"],
+        "deload": deload,
     }
 
 
@@ -610,6 +685,7 @@ def plan_data(plan: WeeklyPlan, lang: str) -> dict:
         "rules": rule_refs(plan.rules_used, lang),
         "engine_sha": plan.engine_sha[:7],
         "narrative": plan.narrative,
+        "deload": plan.deload,
         "created_at": plan.created_at.isoformat(),
         "applied_at": plan.applied_at.isoformat() if plan.applied_at else None,
     }

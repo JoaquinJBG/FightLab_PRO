@@ -59,26 +59,31 @@ def _payload(plan: dict) -> dict:
     return {k: v for k, v in plan.items() if k not in ("id", "created_at", "applied_at", "narrative", "engine_sha")}
 
 
-def write_narrative(plan: dict, lang: str) -> str:
+def narrate(system: str, payload: dict, lang: str, what: str) -> str:
+    """Unas frases del LLM sobre `payload` en `lang`, o `""`. Se descartan si traen un número que
+    no está en `payload`. Sin `ANTHROPIC_API_KEY` no se llama a nada."""
     if not settings.ANTHROPIC_API_KEY:
         return ""
     from ai.services import AIUnavailable, _client, language_instruction
 
-    payload = _payload(plan)
     try:
         resp = _client(timeout=30).messages.create(
             model=settings.AI_MODEL_CHAT,
             max_tokens=MAX_TOKENS,
-            system=f"{SYSTEM}\n{language_instruction(lang)}",
+            system=f"{system}\n{language_instruction(lang)}",
             messages=[{"role": "user", "content": json.dumps(payload, ensure_ascii=False)}],
         )
     except AIUnavailable:
         return ""
-    except Exception:  # el plan se guarda igual, sin texto
-        logger.exception("plan: el LLM no ha podido escribir el texto")
+    except Exception:  # se guarda igual, sin texto
+        logger.exception("%s: el LLM no ha podido escribir el texto", what)
         return ""
     text = "".join(getattr(b, "text", "") for b in resp.content).strip()
     if not numbers_ok(text, payload):
-        logger.warning("plan: texto del LLM descartado porque trae números que no están en el plan")
+        logger.warning("%s: texto del LLM descartado porque trae números que no están en los datos", what)
         return ""
     return text
+
+
+def write_narrative(plan: dict, lang: str) -> str:
+    return narrate(SYSTEM, _payload(plan), lang, "plan")

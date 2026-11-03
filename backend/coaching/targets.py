@@ -9,6 +9,13 @@ apuntadas en `docs/coach-upstream-sugerencias.md`:
   `energy.calorie_target` y `macros.macro_targets` se siguen aplicando.
 - U06: con `no_training` el motor sigue usando el nivel de actividad del perfil. Aquí se
   calcula con el PAL de `desk`, etiquetado como convención de FightLab.
+
+Con una revisión semanal aceptada (fase 7), el mantenimiento es su TDEE recalibrado por la
+tendencia (`recalibrated=True` en el motor), como hace `/plan` del coach con `data/reviews/`. El
+objetivo es el que quedó en vigor en la revisión (el aceptado o, si no se cambiaron las calorías,
+el que ya tenía), salvo que los flags de hoy lo prohíban (igual que `coach macros --kcal`). Si el
+objetivo ha cambiado desde la revisión, el motor lo recalcula desde ese TDEE, bajando un escalón
+como mucho. Sin pesajes (`no_weight_targets`) o sin entrenar (`no_training`, U06) no se usa.
 """
 from dataclasses import replace
 from datetime import date
@@ -20,7 +27,7 @@ from .bridge import energy_athletes, reason_texts
 from .bridge.adapters import latest_body_fat, latest_resting_hr, latest_weight, to_coach_profile
 from .bridge.reasons import Reason, parse_reason
 from .keys import rule_key
-from .models import KnowledgeRule, RuleTranslation
+from .models import KnowledgeRule, RuleTranslation, WeeklyReview
 from .views import engine_info
 
 # Reglas de `nutrition.md` que respaldan un número sin que el motor las cite en sus motivos
@@ -101,6 +108,43 @@ def weight_data(user, today: date) -> dict | None:
     return {"kg": kg, "date": day.isoformat(), "stale_days": (today - day).days}
 
 
+def accepted_review(user, flags) -> WeeklyReview | None:
+    """La última revisión semanal aceptada con TDEE recalibrado, si los flags dejan usarla."""
+    if flags.no_weight_targets or flags.no_training:
+        return None
+    return (
+        WeeklyReview.objects.filter(
+            profile=user.profile, status=WeeklyReview.Status.ACCEPTED, recalibrated_tdee__isnull=False
+        )
+        .order_by("-accepted_at")
+        .first()
+    )
+
+
+def held_kcal(review: WeeklyReview) -> int | None:
+    """El objetivo que quedó en vigor en la revisión."""
+    return review.target_kcal if "calories" in review.accepted else review.current_kcal
+
+
+def _recalibrated_target(calc, flags, today: date, review: WeeklyReview):
+    """El objetivo con el TDEE de la revisión (`calorie_target(recalibrated=True)`)."""
+    held = held_kcal(review)
+    if review.goal != (calc.goal or "") or held is None:
+        return energy.calorie_target(
+            calc, flags, today=today, tdee_kcal=review.recalibrated_tdee, current_kcal=held, recalibrated=True
+        ), False
+    target = energy.calorie_target(calc, flags, today=today, tdee_kcal=review.recalibrated_tdee, recalibrated=True)
+    # Como `coach macros --kcal`: un objetivo guardado se respeta salvo que los flags de hoy
+    # prohíban su déficit o su superávit.
+    if held < target.kcal and energy.deficit_blockers(calc, flags, today):
+        return target, False
+    if held > target.kcal and (flags.no_weight_targets or flags.prescriber_owns_weight):
+        return target, False
+    if held < energy.FLOOR_KCAL[calc.require("sex")]:
+        return target, False
+    return replace(target, kcal=held, deficit=round(target.maintenance) - held, clamped=False), True
+
+
 def targets_data(user, today: date, lang: str) -> dict:
     """Los objetivos de energía y macros de `user`. Lanza `ProfileIncomplete` si falta un dato
     (la API lo convierte en 409 con el campo)."""
@@ -118,7 +162,7 @@ def targets_data(user, today: date, lang: str) -> dict:
             **base,
             "blocked": {"code": "no_calorie_targets", "reason_code": block.code},
             "goal": profile.goal, "kcal": None, "maintenance_kcal": None, "deficit_kcal": None, "in_deficit": False,
-            "deficit_blocked": True, "clamped": False, "macros": None, "equation": None, "rules": {},
+            "deficit_blocked": True, "clamped": False, "macros": None, "equation": None, "recalibrated": None, "rules": {},
             "reasons": reasons_data([block], lang),
         }
 
@@ -129,7 +173,12 @@ def targets_data(user, today: date, lang: str) -> dict:
         notes.append(NO_TRAINING_NOTE)
     choice = energy_athletes.choose_rmr(calc, latest_body_fat(user, today), today)  # U04
     pal = energy.pal(calc)
-    target = energy.calorie_target(calc, flags, today=today, tdee_kcal=choice.rmr_kcal * pal)
+    review = accepted_review(user, flags)
+    held = False
+    if review is None:
+        target = energy.calorie_target(calc, flags, today=today, tdee_kcal=choice.rmr_kcal * pal)
+    else:
+        target, held = _recalibrated_target(calc, flags, today, review)
     in_deficit = target.deficit > 0
     # Lo que decide si la UI ofrece "Perder": los mismos bloqueos que usa el motor para el déficit.
     deficit_blocked = bool(energy.deficit_blockers(calc, flags, today)) or flags.hold_deficit
@@ -138,6 +187,7 @@ def targets_data(user, today: date, lang: str) -> dict:
     reasons = _reasons(notes + choice.notes + target.notes + m.notes)
     protein_keys = [r.rule_key for r in reasons if r.code == "protein_per_kg"]
     kcal_keys = [
+        *([_key(energy.RECALIBRATE_RULE)] if review else []),
         choice.rule_key, _key(energy.PAL_RULE),
         *(_key(r) for r in DEFICIT_RULES if in_deficit),
         *([_key(SURPLUS_RULE)] if target.deficit < 0 else []),
@@ -175,6 +225,12 @@ def targets_data(user, today: date, lang: str) -> dict:
             "activity_level": calc.activity_level,
             "rule_key": choice.rule_key,
         },
+        "recalibrated": {
+            "review_id": review.id,
+            "week_end": review.week_end.isoformat(),
+            "tdee_kcal": round(review.recalibrated_tdee),
+            "held": held,
+        } if review else None,
         "rules": {name: rule_refs(keys, lang) for name, keys in rule_keys.items()},
         "reasons": reasons_data(reasons, lang),
     }

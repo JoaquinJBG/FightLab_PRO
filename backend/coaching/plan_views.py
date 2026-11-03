@@ -48,7 +48,13 @@ class PlanView(APIView):
         today = _today(user.profile)
         week = plans.week_start_for(today)
         active = WeeklyPlan.objects.filter(profile=user.profile, status=WeeklyPlan.Status.ACTIVE).first()
-        draft = WeeklyPlan.objects.filter(profile=user.profile, status=WeeklyPlan.Status.DRAFT, week_start=week).first()
+        # El último borrador de esta semana o de la siguiente (la revisión semanal genera el de la
+        # semana que sigue a la revisada).
+        draft = (
+            WeeklyPlan.objects.filter(profile=user.profile, status=WeeklyPlan.Status.DRAFT, week_start__gte=week)
+            .order_by("-created_at")
+            .first()
+        )
         try:
             plans.check_trainable(user, today)
             blocked, days = None, plans.defaults(user, today)

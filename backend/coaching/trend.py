@@ -46,13 +46,21 @@ def _empty(status: str, *, blocked: bool, reasons: list) -> dict:
     }
 
 
-def trend_data(user, today: date, lang: str) -> dict:
+def compute(user, today: date):
+    """`(policy, Trend)` del motor con los pesajes hasta `today`; `Trend` es `None` si los flags
+    bloquean el peso (la revisión semanal lo usa para recalibrar el TDEE)."""
     policy = policy_for(user, today)
     if policy.blocked:
-        return _empty("disabled", blocked=True, reasons=reasons_data(policy.reasons, lang))
+        return policy, None
     profile = to_coach_profile(user, today)
     points = [(day, kg) for day, kg in weigh_ins(user) if day <= today]
-    result = coach_trend.weight_trend(points, coach_flags(profile, today))
+    return policy, coach_trend.weight_trend(points, coach_flags(profile, today))
+
+
+def trend_data(user, today: date, lang: str) -> dict:
+    policy, result = compute(user, today)
+    if result is None:
+        return _empty("disabled", blocked=True, reasons=reasons_data(policy.reasons, lang))
     reasons = [parse_reason(note) for note in result.notes]
     # El motor no cita la regla en estas notas (la cita en el comentario de la constante).
     reasons = [dataclasses.replace(r, rule_key=r.rule_key or TREND_RULE) for r in reasons]

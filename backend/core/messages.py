@@ -36,6 +36,10 @@ MESSAGES: dict[str, dict[str, str]] = {
         "plan_gym_days_invalid": "Días de gimnasio no válidos.",
         "plan_mma_days_invalid": "Días de MMA no válidos.",
         "plan_cardio_days_invalid": "Días de cardio no válidos.",
+        "review_week_end_future": "La semana revisada no puede acabar después de hoy.",
+        "review_week_end_too_old": "Solo se pueden revisar las últimas 8 semanas.",
+        "review_signs_invalid": "Señales de descarga no válidas.",
+        "review_accept_invalid": "Esa propuesta no está en la revisión.",
     },
     "en": {
         "chat_bad_messages": "Invalid message format.",
@@ -63,6 +67,10 @@ MESSAGES: dict[str, dict[str, str]] = {
         "plan_gym_days_invalid": "Invalid gym days.",
         "plan_mma_days_invalid": "Invalid MMA days.",
         "plan_cardio_days_invalid": "Invalid cardio days.",
+        "review_week_end_future": "The reviewed week cannot end after today.",
+        "review_week_end_too_old": "Only the last 8 weeks can be reviewed.",
+        "review_signs_invalid": "Invalid deload signs.",
+        "review_accept_invalid": "That proposal is not in the review.",
     },
 }
 
