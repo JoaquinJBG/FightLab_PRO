@@ -112,6 +112,8 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_THROTTLE_RATES": {
         "activities-sync": "30/min",
+        # Proxy de Open Food Facts (fase 8): por usuario, además del límite de OFF para todo el servidor.
+        "coach-off": "10/min",
     },
     # ProfileIncomplete del motor -> 409 profile_incomplete (spec §8.1)
     "EXCEPTION_HANDLER": "core.exceptions.api_exception_handler",
@@ -171,3 +173,12 @@ PARQ_NATIVE_FORM = False
 # Se enlaza el documento oficial (BJSM, Echemendia 2023, fuente [F026] del anexo de combate) y
 # nunca se reproduce: copiarlo o reformatearlo necesita permiso de BMJ.
 CRT6_URL = env("CRT6_URL", default="https://doi.org/10.1136/bjsports-2023-107021")
+
+# --- Menús y Open Food Facts (fase 8) ---
+# Contacto que Open Food Facts pide en el User-Agent de cada app. Es la variable que ya lee el
+# coach (`coach.off.CONTACT_ENV`). Vacía por defecto: sin ella FightLab nunca llama a OFF y la
+# búsqueda y la lectura de productos responden `off_not_configured`.
+COACH_OFF_CONTACT = env("COACH_OFF_CONTACT", default="")
+# Quién propone los platos del menú. Solo existe el proveedor simulado y determinista: los menús
+# no llaman nunca a la API de Anthropic, aunque haya ANTHROPIC_API_KEY (decisión de la fase 8).
+MENU_LLM_PROVIDER = "fake"
