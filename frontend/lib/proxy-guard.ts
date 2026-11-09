@@ -35,7 +35,8 @@ export function isPathSafe(segments: string[]): boolean {
 // y /api/v1/health/* no existe en Django, así que incluirlo solo añadía
 // superficie sin ningún uso real.
 // "coach" y "knowledge": endpoints del coach (coaching/urls.py).
-export const ALLOWED_PREFIXES = ["me", "activities", "ai", "coach", "knowledge"] as const;
+// "gym": gimnasio de la F17 (exercises/urls.py: biblioteca y ejercicios propios; rutinas después).
+export const ALLOWED_PREFIXES = ["me", "activities", "ai", "coach", "knowledge", "gym"] as const;
 
 export function isPrefixAllowed(segments: string[]): boolean {
   return segments.length > 0 && (ALLOWED_PREFIXES as readonly string[]).includes(segments[0]);
