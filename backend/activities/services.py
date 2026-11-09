@@ -33,7 +33,7 @@ def activity_create(*, user, raw, strict: bool = False) -> dict:
     lo que no en `warnings`: nunca se descarta en silencio.
     """
     cid = raw.get("client_id") if isinstance(raw, dict) else None
-    ser = SyncItemSerializer(data=raw if isinstance(raw, dict) else {})
+    ser = SyncItemSerializer(data=raw if isinstance(raw, dict) else {}, context={"profile": user.profile})
     if not ser.is_valid():
         return {"client_id": cid, "status": "invalid", "errors": ser.errors}
     data = dict(ser.validated_data)
@@ -106,7 +106,7 @@ def activity_update(*, activity: Activity, data: dict) -> tuple[Activity | None,
         if activity.kind != Activity.Kind.GYM:
             errors["sets"] = [msg("sets_only_gym")]
         else:
-            sets_ser = SetItemSerializer(data=data["sets"], many=True)
+            sets_ser = SetItemSerializer(data=data["sets"], many=True, context={"profile": activity.profile})
             if not isinstance(data["sets"], list) or not sets_ser.is_valid():
                 errors["sets"] = sets_ser.errors if isinstance(data["sets"], list) else [msg("sync_bad_format")]
             else:

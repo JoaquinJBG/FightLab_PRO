@@ -24,6 +24,12 @@ def client(db):
     return make_client("h@test.com")
 
 
+def _custom(email):
+    from exercises.models import CustomExercise
+    profile = UserProfile.objects.get(user__email=email)
+    return f"custom:{CustomExercise.objects.create(profile=profile, name='Dominadas lastradas', primary_muscles=['lats']).pk}"
+
+
 def gym(cid, sets=None, **over):
     base = item(cid, kind="GYM", title="Torso", rpe=8, kcal=None, detail={"focus": "Torso"})
     base.update(over)
@@ -50,14 +56,14 @@ def test_sync_keeps_everything_logged(client):
         s(0, 2, "60", 10, set_type="drop", rir=1, superset=1),
         {"exercise": "Remo con barra", "exercise_key": "cat:barbell-row", "exercise_index": 1, "set_index": 0,
          "weight_kg": "70", "reps": 8, "set_type": "dropset", "superset": 1},
-        {"exercise": "Dominadas", "exercise_key": "custom:12", "exercise_index": 2, "set_index": 0,
+        {"exercise": "Dominadas", "exercise_key": _custom("h@test.com"), "exercise_index": 2, "set_index": 0,
          "weight_kg": None, "reps": 12, "set_type": "failure"},
     ]
     resp = client.post(SYNC, {"items": [gym("cid-h0000001", sets)]}, format="json")
     assert resp.data["created"] == 1, resp.data
     rows = list(SetLog.objects.order_by("exercise_index", "set_index"))
     assert [r.set_type for r in rows] == ["warmup", "normal", "drop", "drop", "failure"]
-    assert rows[0].exercise_key == "cat:barbell-bench-press" and rows[4].exercise_key == "custom:12"
+    assert rows[0].exercise_key == "cat:barbell-bench-press" and rows[4].exercise_key == sets[4]["exercise_key"]
     assert rows[1].rpe == Decimal("8.5") and rows[2].rir == Decimal("1.0")
     assert [r.superset for r in rows] == [1, 1, 1, 1, None]
     assert rows[0].notes == "Agarre medio" and rows[0].rest_s == 120
@@ -213,9 +219,12 @@ def test_records_and_progress_per_exercise(client):
     key = "cat:barbell-bench-press"
     _session(client, "cid-h0000010", 10, [s(0, 0, "100", 1, set_type="warmup"), s(0, 1, "80", 5), s(0, 2, "80", 5)])
     _session(client, "cid-h0000011", 3, [s(0, 0, "85", 3, rir=0), s(0, 1, "70", 10)])
-    # Lo antiguo, sin clave, cuenta por el nombre.
+    # Lo antiguo, sin clave: un nombre de LIBRARY va con su clave del catálogo (rama E) y uno
+    # desconocido, por el nombre.
     _session(client, "cid-h0000012", 1, [{"exercise": "Curl bíceps", "exercise_index": 0, "set_index": 0,
-                                          "weight_kg": "15", "reps": 12}])
+                                          "weight_kg": "15", "reps": 12},
+                                         {"exercise": "Curl Zottman casero", "exercise_index": 1, "set_index": 0,
+                                          "weight_kg": "8", "reps": 12}])
 
     resp = client.get("/api/v1/gym/records", {"exercise": key})
     assert resp.status_code == 200
@@ -228,8 +237,9 @@ def test_records_and_progress_per_exercise(client):
     assert {r["weight_kg"]: r["reps"] for r in rec["reps_by_weight"]} == {85.0: 3, 80.0: 5, 70.0: 10}
 
     all_records = client.get("/api/v1/gym/records").data["records"]
-    assert set(all_records) == {key, "name:curl bíceps"}
-    assert all_records["name:curl bíceps"]["name"] == "Curl bíceps"
+    assert set(all_records) == {key, "cat:biceps-curl", "name:curl zottman casero"}
+    assert all_records["name:curl zottman casero"]["name"] == "Curl Zottman casero"
+    assert client.get("/api/v1/gym/records", {"exercise": "Curl bíceps"}).data["records"]["cat:biceps-curl"]["max_weight_kg"] == 15.0
 
     progress = client.get("/api/v1/gym/progress", {"exercise": key})
     assert progress.status_code == 200

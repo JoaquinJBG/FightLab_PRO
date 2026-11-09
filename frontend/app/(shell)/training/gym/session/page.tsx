@@ -612,6 +612,7 @@ function SessionInner() {
   const groups = supersetGroups(exercises);
   const resting = restLeft !== null && restLeft > 0;
   const paused = routineSafety?.paused ?? [];
+  const safetyReasons = (routineSafety?.reasons ?? []).map((r) => r.text).filter((x): x is string => !!x);
 
   return (
     // F18: con el descanso en marcha, sitio de sobra debajo para que la barra no tape «Terminar»
@@ -626,10 +627,15 @@ function SessionInner() {
       </div>
 
       {routineError && <p role="alert" className="t-body mt-3 text-sm text-[#ffd08a]">{t("routineLoadError")}</p>}
-      {(routineSafety?.blocked || paused.length > 0) && (
+      {(routineSafety?.blocked || paused.length > 0 || safetyReasons.length > 0) && (
         <div role="status" data-testid="routine-safety" className="glass mt-3 border border-[rgba(255,180,80,0.3)] p-3">
           {routineSafety?.blocked && <p className="t-body text-sm text-[#ffd08a]">{t("routineBlocked")}</p>}
           {paused.length > 0 && <p className="t-body text-sm text-[#ffd08a]">{t("routinePaused", { names: paused.map((p) => exLabel(p.name)).join(", ") })}</p>}
+          {safetyReasons.length > 0 && (
+            <ul className="mt-1 flex flex-col gap-0.5">
+              {safetyReasons.map((r, i) => <li key={i} className="t-body text-xs text-[#ffd08a]">{r}</li>)}
+            </ul>
+          )}
         </div>
       )}
 

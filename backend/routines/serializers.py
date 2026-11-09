@@ -4,6 +4,9 @@ from decimal import Decimal
 
 from rest_framework import serializers
 
+from activities.keys import custom_key_owned
+from core.messages import msg
+
 from .models import SET_TYPES, Routine, RoutineFolder
 
 # Contrato de F17: `cat:<slug en inglés>` o `custom:<id>`; nulo para un nombre antiguo sin clave.
@@ -72,6 +75,9 @@ class RoutineExerciseSerializer(serializers.Serializer):
             return None
         if not EXERCISE_KEY_RE.match(value):
             raise serializers.ValidationError("cat:<slug> | custom:<id>")
+        # F17 (H): un `custom:<id>` tiene que ser un ejercicio propio de este usuario
+        if not custom_key_owned(self.context.get("profile"), value):
+            raise serializers.ValidationError(msg("exercise_not_yours"))
         return value
 
 

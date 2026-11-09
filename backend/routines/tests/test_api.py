@@ -148,9 +148,12 @@ def test_title_required(me):
 
 
 def test_custom_and_legacy_keys_are_valid(me):
-    _, client = me
-    data = create(client, exercises=[bench(exercise_key="custom:12"), bench(exercise_key=None, name="Mi ejercicio")])
-    assert [e["exercise_key"] for e in data["exercises"]] == ["custom:12", None]
+    user, client = me
+    # F17 (H): el `custom:<id>` tiene que ser un ejercicio propio de este usuario
+    from exercises.models import CustomExercise
+    key = f"custom:{CustomExercise.objects.create(profile=user.profile, name='Mío', primary_muscles=['chest']).pk}"
+    data = create(client, exercises=[bench(exercise_key=key), bench(exercise_key=None, name="Mi ejercicio")])
+    assert [e["exercise_key"] for e in data["exercises"]] == [key, None]
 
 
 def test_set_defaults(me):
@@ -275,8 +278,10 @@ def test_folder_routine_count(me):
 
 
 def test_start_matches_contract(me):
-    _, client = me
-    data = create(client, exercises=[bench(superset=1), row(superset=1), bench(exercise_key="custom:4", notes="")])
+    user, client = me
+    from exercises.models import CustomExercise
+    key = f"custom:{CustomExercise.objects.create(profile=user.profile, name='Mío', primary_muscles=['chest']).pk}"
+    data = create(client, exercises=[bench(superset=1), row(superset=1), bench(exercise_key=key, notes="")])
     resp = client.get(f"{ROUTINES}/{data['id']}/start")
     assert resp.status_code == 200
     body = resp.data
@@ -284,7 +289,7 @@ def test_start_matches_contract(me):
     assert body["title"] == "Torso A"
     assert set(body) >= {"routine_id", "title", "exercises"}
     ex = body["exercises"]
-    assert [e["exercise_key"] for e in ex] == ["cat:barbell-bench-press", "cat:barbell-row", "custom:4"]
+    assert [e["exercise_key"] for e in ex] == ["cat:barbell-bench-press", "cat:barbell-row", key]
     assert [e["superset"] for e in ex] == [0, 0, None]
     for e in ex:
         assert set(e) >= {"exercise_key", "name", "notes", "rest_s", "superset", "sets"}

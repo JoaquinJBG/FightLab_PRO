@@ -21,8 +21,9 @@ F17 (rama H), importar de Hevy de forma completa:
 - la descripción de la sesión pasa a su nota;
 - reimportar no duplica y completa lo importado antes sin esos datos;
 - de cada título de entreno distinto sale una rutina con los ejercicios y las series de su última
-  vez, creada con la API de la rama R (`activities.contract.create_routine`). Reimportar no la
-  vuelve a crear (`ImportedRoutine`).
+  vez, con el cuerpo del contrato de la rama R y `source=import` / `source_ref` = el título
+  (`activities.contract.create_routine`). Reimportar no la vuelve a crear (`ImportedRoutine`),
+  ni aunque el usuario la haya borrado.
 """
 from __future__ import annotations
 
@@ -137,13 +138,13 @@ def _routines(user, source: str, last_by_title: dict[str, list[dict]], dry_run: 
     done = set(ImportedRoutine.objects.filter(profile=profile, source=source).values_list("title", flat=True))
     counts = {"new": 0, "existing": 0, "unavailable": 0}
     for title, rows in sorted(last_by_title.items()):
-        if title[:120] in done:
+        if title[:120] in done or contract.imported_routine_exists(user, title):
             counts["existing"] += 1
             continue
         if dry_run:
             counts["new"] += 1
             continue
-        routine_id = contract.create_routine(user, _routine_payload(title, rows))
+        routine_id = contract.create_routine(user, _routine_payload(title, rows), source_ref=title)
         if routine_id is None:
             counts["unavailable"] += 1
             continue

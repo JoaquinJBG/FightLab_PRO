@@ -77,11 +77,31 @@ def exercise_key_for(user, name: str, *, create: bool, cache: dict[str, str | No
     return key
 
 
-def create_routine(user, payload: dict) -> int | None:
-    """`POST gym/routines` (contrato de R): {title, notes, exercises: [{exercise_key, name,
-    notes, rest_s, superset, sets: [{set_type, reps, reps_max, weight_kg, rpe, rir}]}]}. El id
-    de la rutina creada, o None si la API no está o no la acepta."""
-    result = call(user, "POST", "gym/routines", payload)
-    if result and result[0] == 201 and isinstance(result[1], dict):
-        return result[1].get("id")
-    return None
+def create_routine(user, payload: dict, *, source_ref: str = "") -> int | None:
+    """Crea una rutina importada con el cuerpo del contrato de R ({title, notes, exercises:
+    [{exercise_key, name, notes, rest_s, superset, sets: [{set_type, reps, reps_max, weight_kg,
+    rpe, rir}]}]}), validado con el mismo serializer que `POST gym/routines`. Va por el servicio
+    de R y no por la API porque `source=import` y `source_ref` (el título de Hevy) solo se ponen
+    desde el servidor: el cliente no puede. El id, o None si la app no está o no la acepta."""
+    try:
+        from routines import services
+        from routines.models import Routine
+        from routines.serializers import RoutineWriteSerializer
+    except ImportError:
+        return None
+    ser = RoutineWriteSerializer(data=payload, context={"profile": user.profile})
+    if not ser.is_valid():
+        return None
+    routine = services.routine_create(
+        user.profile, **ser.validated_data, source=Routine.Source.IMPORT, source_ref=source_ref[:160],
+    )
+    return routine.id
+
+
+def imported_routine_exists(user, source_ref: str) -> bool:
+    """Si ya hay una rutina importada con ese título de origen (para no duplicarla)."""
+    try:
+        from routines.models import Routine
+    except ImportError:
+        return False
+    return Routine.objects.filter(profile=user.profile, source=Routine.Source.IMPORT, source_ref=source_ref[:160]).exists()

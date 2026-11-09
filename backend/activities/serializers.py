@@ -6,6 +6,7 @@ from rest_framework import serializers
 
 from core.messages import msg
 
+from .keys import custom_key_owned
 from .models import SET_TYPES, Activity, SetLog
 
 MAX_DETAIL_CHARS = 8_192
@@ -72,6 +73,11 @@ class SetItemSerializer(serializers.Serializer):
 
     def validate_set_type(self, value):
         return SET_TYPE_ALIASES.get(value, value)
+
+    def validate_exercise_key(self, value):
+        if not custom_key_owned(self.context.get("profile"), value):
+            raise serializers.ValidationError(msg("exercise_not_yours"))
+        return value
 
 
 class SyncItemSerializer(serializers.Serializer):

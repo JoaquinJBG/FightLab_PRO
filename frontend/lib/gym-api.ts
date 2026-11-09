@@ -39,6 +39,8 @@ export const routineStart = z.object({
   safety: z.object({
     blocked: z.boolean().default(false),
     paused: z.array(z.object({ exercise_key: z.string().nullable(), name: z.string() })).default([]),
+    // motivos del coach (lesiones, golpe en la cabeza…), ya traducidos por el servidor
+    reasons: z.array(z.object({ text: z.string().nullable().optional() }).passthrough()).default([]),
   }).partial().optional(),
 });
 export type RoutineStart = z.infer<typeof routineStart>;

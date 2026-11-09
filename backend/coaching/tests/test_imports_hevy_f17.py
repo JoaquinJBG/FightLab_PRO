@@ -47,6 +47,8 @@ def test_one_routine_per_title_with_its_last_session(today_fixed):
     upload(client_for(user), HEVY)
     routines = {r.title: r for r in Routine.objects.filter(profile=user.profile)}
     assert set(routines) == {"Push A", "Legs"}
+    # Hechas desde el servidor: `source=import` y el título de Hevy (el cliente no puede ponerlos)
+    assert {(r.source, r.source_ref) for r in routines.values()} == {("import", "Push A"), ("import", "Legs")}
     push = list(routines["Push A"].exercises.order_by("order"))
     assert [e.name for e in push] == ["Bench Press (Barbell)", "Lateral Raise (Dumbbell)", "Zottman Wobble Curl"]
     bench = push[0]
@@ -93,7 +95,7 @@ def test_dry_run_counts_routines_without_creating_anything(today_fixed):
 
 
 def test_without_the_routines_api_the_history_is_still_imported(today_fixed, monkeypatch):
-    monkeypatch.setattr(contract, "create_routine", lambda user, payload: None)
+    monkeypatch.setattr(contract, "create_routine", lambda user, payload, **kw: None)
     user = make_user()
     response = upload(client_for(user), HEVY)
     assert response.status_code == 201
@@ -105,7 +107,7 @@ def test_without_the_routines_api_the_history_is_still_imported(today_fixed, mon
 
 def test_the_payload_follows_the_contract(today_fixed, monkeypatch):
     sent = []
-    monkeypatch.setattr(contract, "create_routine", lambda user, payload: sent.append(payload) or 99)
+    monkeypatch.setattr(contract, "create_routine", lambda user, payload, **kw: sent.append(payload) or 99)
     upload(client_for(make_user()), HEVY)
     legs = next(p for p in sent if p["title"] == "Legs")
     assert legs == {
