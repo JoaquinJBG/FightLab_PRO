@@ -65,6 +65,39 @@ def test_a_head_blow_blocks_contact_in_the_active_plan_without_redoing_it(today_
     assert next(e for e in day["entries"] if e["kind"] == "mma")["contact_blocked"] is False
 
 
+def test_a_head_blow_also_takes_vigorous_work_out_until_clearance(today_fixed):
+    """R3-3: tras el golpe, el plan sacaba el contacto pero dejaba «Paos a ritmo alto» y «Drills a
+    tope». La vuelta es por fases: hasta el alta, nada vigoroso (ni en MMA ni en el cardio)."""
+    user = make_user()
+    client = client_for(user)
+    active_plan(client, gym_days=["mon", "fri"], mma_days=[WEEKDAY])
+    impact = HeadImpact.objects.create(profile=user.profile, occurred_on=TODAY - timedelta(days=1), symptoms=True)
+    plan = client.get(PLAN).json()["active"]
+    entry = mma_entry(plan)
+    allowed = {w["key"] for w in entry["allowed"]}
+    assert allowed == {"technical_drilling", "bag_slow"}
+    excluded = {w["key"]: w["blocked_by"] for w in entry["excluded"]}
+    assert "head_blow_return" in excluded["pads_hard"] and "head_blow_return" in excluded["drills_all_out"]
+    assert excluded["sparring_hard"] == ["no_contact"]
+    cardio = plan["cardio"]
+    assert {o["key"] for o in cardio["options"]} == {"walking_brisk", "continuous_moderate"}
+    assert all(o["intensity"] != "vigorous" for o in cardio["options"])
+    # Con el alta vuelve todo lo que el resto de flags permite
+    impact.cleared_on = TODAY
+    impact.save()
+    cleared = client.get(PLAN).json()["active"]
+    assert {"pads_hard", "drills_all_out", "sparring_hard"} <= {w["key"] for w in mma_entry(cleared)["allowed"]}
+    assert {"hiit", "jump_rope"} <= {o["key"] for o in cleared["cardio"]["options"]}
+
+
+def test_a_plan_prepared_after_the_blow_has_no_vigorous_work_either(today_fixed):
+    user = make_user()
+    HeadImpact.objects.create(profile=user.profile, occurred_on=TODAY - timedelta(days=1), symptoms=True)
+    plan = client_for(user).post(PLAN, {"gym_days": ["mon", "fri"], "mma_days": [WEEKDAY]}, format="json").json()
+    assert {w["key"] for w in mma_entry(plan)["allowed"]} == {"technical_drilling", "bag_slow"}
+    assert all(o["intensity"] != "vigorous" for o in plan["cardio"]["options"])
+
+
 def test_a_head_blow_without_symptoms_does_not_block(today_fixed):
     user = make_user()
     client = client_for(user)

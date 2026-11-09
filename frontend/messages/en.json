@@ -1312,7 +1312,8 @@
     "title": "Coach",
     "badges": {
       "week": "Week {au} AU",
-      "weighIn": "Weigh-in in {days} d"
+      "weighIn": "Weigh-in in {days} d",
+      "headBlow": "Blow to the head: no contact or hard training"
     },
     "recovery": {
       "cuidado": {
@@ -1997,7 +1998,8 @@
       "no_all_out_sprints": "SIT and REHIT need every PAR-Q+ answer to be NO",
       "no_contact": "no contact until a clinician clears you",
       "no_training": "no training until a doctor reviews it",
-      "prerequisites": "they need 4 weeks of regular moderate cardio without symptoms"
+      "prerequisites": "they need 4 weeks of regular moderate cardio without symptoms",
+      "head_blow_return": "nothing vigorous after the blow to the head until a clinician clears you"
     },
     "cardio": {
       "dose": "{minutes} min a week of moderate cardio",
@@ -2124,8 +2126,10 @@
       "intakeNoTarget": "You ate {mean} kcal on average over {days, plural, one {# logged day} other {# logged days}}.",
       "intakeNone": "No intake logged this week: add it in the check-in to compare it with your target.",
       "intakeBlocked": "For safety, what you eat is not compared with a calorie target.",
-      "doneOn": "Done on {date}",
-      "extra": "Not in the plan"
+      "extra": "Not in the plan",
+      "doneEarlier": "Moved earlier: done on {date}",
+      "doneLater": "Made up: done on {date}",
+      "movedNote": "A session moved to another day of the week counts for the planned one: the plan asks for a weekly dose."
     },
     "weight": {
       "ok": "Trend: {kg} kg average over the last week; {rate} kg a week ({pct} % a week) over {days} days.",

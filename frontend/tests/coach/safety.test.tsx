@@ -1,5 +1,5 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, screen, within } from "@testing-library/react";
 import type { LoadMetrics } from "@/lib/load";
 import CoachPage from "@/app/(shell)/coach/page";
 import { renderEn } from "./_helpers";
@@ -11,13 +11,13 @@ const WEIGH_IN = {
   blocked: false, deficit_blocked: false, reasons: [], goal_weight_kg: null, goal_date: null, weigh_in_at: null,
   weight_class: null, days_left: null, current_kg: null, to_go_kg: null,
 };
-const state = vi.hoisted(() => ({ metrics: null as unknown, safety: undefined as unknown }));
+const state = vi.hoisted(() => ({ metrics: null as unknown, safety: undefined as unknown, logs: [] as unknown[] }));
 
 vi.mock("next/link", () => ({
   default: ({ href, children, ...r }: { href: string; children: React.ReactNode }) => <a href={href} {...r}>{children}</a>,
 }));
 vi.mock("@/lib/hooks", () => ({
-  useBiometrics: () => ({ data: [] }),
+  useBiometrics: () => ({ data: state.logs }),
   useSafety: () => ({ data: state.safety }),
   useWeighIn: () => ({ data: WEIGH_IN }),
 }));
@@ -41,6 +41,7 @@ beforeEach(() => {
   localStorage.clear();
   Element.prototype.scrollIntoView = vi.fn();
   state.metrics = metrics;
+  state.logs = [];
   state.safety = { flags: {}, reasons: [], disclaimer: "General guidance." };
   vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline"))); // sin IA: por reglas
 });
@@ -61,6 +62,26 @@ describe("Coach con un golpe en la cabeza activo (no_contact)", () => {
     // Recomendación que no se puede descartar, con la vuelta al contacto
     expect(screen.getByText("Contact blocked after a blow to the head")).toBeTruthy();
     expect(screen.queryByText(/No warnings: all good/)).toBeNull();
+  });
+
+  it("R3-3: la cabecera sale del mismo estado de seguridad: no dice «Ready to train»", () => {
+    // Recuperación por encima de la media (FC en reposo baja y HRV alta): sin golpe sería «listo»
+    const day = 86_400_000;
+    const bio = (i: number, rhr: number, hrv: number) => ({
+      id: i, weight_kg: null, body_fat_pct: null, resting_heart_rate: rhr, sleep_quality_score: null, hrv_ms: hrv,
+      waist_cm: null, hip_cm: null, chest_cm: null, arm_cm: null, thigh_cm: null, neck_cm: null,
+      timestamp: new Date(Date.now() - i * day).toISOString(), source: "MANUAL",
+    });
+    state.logs = [bio(0, 45, 95), bio(1, 55, 60), bio(2, 55, 60), bio(3, 55, 60), bio(4, 55, 60)];
+    renderEn(<CoachPage />);
+    expect(screen.getByTestId("coach-safety-badge").textContent).toBe("Blow to the head: no contact or hard training");
+    expect(screen.queryByTestId("coach-recovery-badge")).toBeNull();
+    // Sin el golpe, la misma recuperación sí sale en la cabecera
+    state.safety = { flags: {}, reasons: [], disclaimer: "General guidance." };
+    cleanup();
+    renderEn(<CoachPage />);
+    expect(screen.getByTestId("coach-recovery-badge")).toBeTruthy();
+    expect(screen.queryByTestId("coach-safety-badge")).toBeNull();
   });
 
   it("el chat por reglas nombra el golpe en vez de dar un consejo de carga", async () => {
