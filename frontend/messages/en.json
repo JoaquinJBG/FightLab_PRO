@@ -986,6 +986,10 @@
           "title": "Gym",
           "sub": "In-session logging and weekly calendar"
         },
+        "routines": {
+          "title": "Routines",
+          "sub": "Your routines, folders and classic programs"
+        },
         "myRoutine": {
           "title": "My routine",
           "sub": "Your active plan for the week"
@@ -2844,6 +2848,130 @@
       "title": "Exercises",
       "sub": "The app's library and your own exercises.",
       "count": "{n, plural, one {# exercise} other {# exercises}}"
+    }
+  },
+  "routines": {
+    "back": "← Training",
+    "title": "Routines",
+    "subtitle": "Your routines in folders, no limits. Start a workout from any of them.",
+    "new": "New routine",
+    "create": "Create",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "edit": "Edit",
+    "start": "Start workout",
+    "loading": "Loading…",
+    "loadError": "Couldn't load your routines. Check your connection and try again.",
+    "saveError": "Couldn't save. Check the data and try again.",
+    "notFound": "That routine doesn't exist or isn't yours.",
+    "empty": {
+      "title": "No routines yet",
+      "body": "Build one from scratch or load a classic program and edit it your way."
+    },
+    "card": {
+      "empty": "No exercises yet",
+      "counts": "{exercises, plural, one {# exercise} other {# exercises}} · {sets, plural, one {# set} other {# sets}}",
+      "edited": "Edited by you",
+      "menu": "More options for {name}",
+      "moveTo": "Folder",
+      "deleteConfirm": "Delete “{name}”? This can't be undone."
+    },
+    "folders": {
+      "new": "New folder",
+      "none": "No folder",
+      "namePlaceholder": "Folder name",
+      "menu": "Options for folder {name}",
+      "rename": "Rename",
+      "delete": "Delete folder",
+      "deleteTitle": "What should happen to the routines in “{name}”?",
+      "deleteKeep": "Delete only the folder (routines stay, without a folder)",
+      "deleteAll": "Delete the folder and its {n, plural, one {# routine} other {# routines}}",
+      "empty": "Empty folder.",
+      "plan": "From the plan",
+      "program": "Program"
+    },
+    "reorder": {
+      "label": "Move",
+      "drag": "Drag to move {name}",
+      "up": "Move {name} up",
+      "down": "Move {name} down"
+    },
+    "editor": {
+      "newTitle": "New routine",
+      "editTitle": "Edit routine",
+      "titlePlaceholder": "Routine name",
+      "titleRequired": "Give the routine a name.",
+      "routineNotes": "Routine notes",
+      "folder": "Folder",
+      "noExercises": "Add exercises to plan their sets.",
+      "addExercise": "Add exercise",
+      "addSet": "Add set",
+      "remove": "Remove",
+      "removeExercise": "Remove {name} from the routine",
+      "removeSet": "Remove set {n}",
+      "notesPlaceholder": "Exercise notes",
+      "notesFor": "Notes for {name}",
+      "rest": "Rest",
+      "restOff": "No timer",
+      "effortToggle": "Plan effort as {mode}",
+      "supersetLabel": "Superset {label}",
+      "supersetWithNext": "Superset with next",
+      "supersetRemove": "Remove from superset",
+      "save": "Save",
+      "saved": "Saved",
+      "saving": "Saving…",
+      "saveAndStart": "Save and start",
+      "invalidNumber": "Type a number (comma or dot, only once).",
+      "outOfRange": "It has to be between {min} and {max}.",
+      "setTypeFor": "Type of set {n} of {name}",
+      "repsFor": "Reps for set {n}",
+      "repsMaxFor": "Max reps for set {n}",
+      "kgFor": "Kilos for set {n}",
+      "rirFor": "RIR for set {n}",
+      "rpeFor": "RPE for set {n}",
+      "col": {
+        "set": "Set",
+        "reps": "Reps",
+        "max": "Max"
+      },
+      "setType": {
+        "warmup": "Warm-up",
+        "normal": "Normal",
+        "drop": "Drop set",
+        "failure": "To failure"
+      },
+      "setTypeShort": {
+        "warmup": "W",
+        "normal": "N",
+        "drop": "D",
+        "failure": "F"
+      }
+    },
+    "programs": {
+      "title": "Classic programs",
+      "sub": "Full body, upper/lower and push/pull/legs, ready to load",
+      "back": "← Routines",
+      "intro": "Each program is copied as your own routines in a new folder: then change them however you like.",
+      "days": "{n} days/wk",
+      "load": "Load as my routines",
+      "loading": "Loading…",
+      "level": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      }
+    },
+    "plan": {
+      "title": "Plan routines",
+      "intro": "The coach's plan turned into routines. You can edit them: when a new plan arrives, your changes are never lost without asking.",
+      "editedWarning": "There's a new plan and you changed {names}. What should we do?",
+      "keep": "Keep my version and add the new ones",
+      "overwrite": "Replace with the new plan's",
+      "regenerate": "Regenerate from the plan",
+      "blocked": "The coach doesn't recommend training today: plan routines won't be regenerated until the block is lifted.",
+      "syncError": "Couldn't build the plan routines.",
+      "syncing": "Building the plan routines…"
     }
   }
 }
