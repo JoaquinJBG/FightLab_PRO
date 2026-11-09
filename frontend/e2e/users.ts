@@ -39,4 +39,6 @@ export const READY_USERS = {
   historyScoff: "e2e-history-scoff@fightlab.test",
   // Fase 11 (Hoy): plan de la semana activo con gimnasio hoy y un menú con dos comidas para hoy.
   today: "e2e-today@fightlab.test",
+  // F17 R (rutinas y programas): con una lesión sin evaluar que pausa la sentadilla.
+  routines: "e2e-routines@fightlab.test",
 };

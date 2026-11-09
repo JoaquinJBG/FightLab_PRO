@@ -1,0 +1,262 @@
+{
+  "slug": "full-body-3",
+  "order": 1,
+  "title": {
+    "es": "Cuerpo completo, 3 días",
+    "en": "Full body, 3 days"
+  },
+  "description": {
+    "es": "Tres sesiones A, B y C de cuerpo completo: cada músculo se entrena 3 veces por semana. La opción más sencilla con 2 o 3 días.",
+    "en": "Three full-body sessions A, B and C: each muscle is trained 3 times a week. The simplest option with 2 or 3 days."
+  },
+  "days_per_week": 3,
+  "level": "beginner",
+  "source": "FightLab convention",
+  "source_note": {
+    "es": "Estructura habitual de gimnasio, sin un estudio que la prescriba tal cual. Los parámetros (series, rango de repeticiones, RIR y descansos) siguen las reglas del coach enlazadas.",
+    "en": "A common gym structure with no single study prescribing it as is. The parameters (sets, rep range, RIR and rest) follow the linked coach rules."
+  },
+  "rules": [
+    "strength-hypertrophy/full-body-versus-split",
+    "strength-hypertrophy/frequency-for-hypertrophy",
+    "strength-hypertrophy/weekly-sets-per-muscle-dose-response",
+    "strength-hypertrophy/load-range-for-hypertrophy",
+    "strength-hypertrophy/target-reps-in-reserve",
+    "strength-hypertrophy/rest-intervals-for-hypertrophy",
+    "strength-hypertrophy/double-progression",
+    "strength-hypertrophy/starting-point-for-novices"
+  ],
+  "routines": [
+    {
+      "key": "a",
+      "title": {
+        "es": "Cuerpo completo A",
+        "en": "Full body A"
+      },
+      "exercises": [
+        {
+          "exercise": "Sentadilla",
+          "warmup": 2,
+          "sets": 3,
+          "reps": [
+            6,
+            10
+          ],
+          "rir": 2,
+          "rest_s": 150,
+          "superset": null
+        },
+        {
+          "exercise": "Press banca",
+          "warmup": 1,
+          "sets": 3,
+          "reps": [
+            6,
+            10
+          ],
+          "rir": 2,
+          "rest_s": 150,
+          "superset": null
+        },
+        {
+          "exercise": "Remo con barra",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            8,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 120,
+          "superset": null
+        },
+        {
+          "exercise": "Elevaciones laterales",
+          "warmup": 0,
+          "sets": 2,
+          "reps": [
+            10,
+            15
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": null
+        },
+        {
+          "exercise": "Crunch en polea",
+          "warmup": 0,
+          "sets": 2,
+          "reps": [
+            10,
+            15
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": null
+        }
+      ]
+    },
+    {
+      "key": "b",
+      "title": {
+        "es": "Cuerpo completo B",
+        "en": "Full body B"
+      },
+      "exercises": [
+        {
+          "exercise": "Peso muerto rumano",
+          "warmup": 1,
+          "sets": 3,
+          "reps": [
+            8,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 150,
+          "superset": null
+        },
+        {
+          "exercise": "Press militar",
+          "warmup": 1,
+          "sets": 3,
+          "reps": [
+            6,
+            10
+          ],
+          "rir": 2,
+          "rest_s": 150,
+          "superset": null
+        },
+        {
+          "exercise": "Jalón al pecho",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            8,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 120,
+          "superset": null
+        },
+        {
+          "exercise": "Zancadas",
+          "warmup": 0,
+          "sets": 2,
+          "reps": [
+            10,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 90,
+          "superset": null
+        },
+        {
+          "exercise": "Curl bíceps",
+          "warmup": 0,
+          "sets": 2,
+          "reps": [
+            10,
+            15
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": 0
+        },
+        {
+          "exercise": "Extensión de tríceps",
+          "warmup": 0,
+          "sets": 2,
+          "reps": [
+            10,
+            15
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": 0
+        }
+      ]
+    },
+    {
+      "key": "c",
+      "title": {
+        "es": "Cuerpo completo C",
+        "en": "Full body C"
+      },
+      "exercises": [
+        {
+          "exercise": "Prensa",
+          "warmup": 1,
+          "sets": 3,
+          "reps": [
+            8,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 120,
+          "superset": null
+        },
+        {
+          "exercise": "Press inclinado",
+          "warmup": 1,
+          "sets": 3,
+          "reps": [
+            8,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 120,
+          "superset": null
+        },
+        {
+          "exercise": "Remo en máquina",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            8,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 120,
+          "superset": null
+        },
+        {
+          "exercise": "Curl femoral",
+          "warmup": 0,
+          "sets": 2,
+          "reps": [
+            10,
+            15
+          ],
+          "rir": 2,
+          "rest_s": 90,
+          "superset": null
+        },
+        {
+          "exercise": "Face pull",
+          "warmup": 0,
+          "sets": 2,
+          "reps": [
+            12,
+            15
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": null
+        },
+        {
+          "exercise": "Rueda abdominal",
+          "warmup": 0,
+          "sets": 2,
+          "reps": [
+            8,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": null
+        }
+      ]
+    }
+  ]
+}

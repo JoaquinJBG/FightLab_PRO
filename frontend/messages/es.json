@@ -998,6 +998,10 @@
           "title": "Gimnasio",
           "sub": "Registro en sesión y calendario semanal"
         },
+        "routines": {
+          "title": "Rutinas",
+          "sub": "Tus rutinas, carpetas y programas clásicos"
+        },
         "myRoutine": {
           "title": "Mi rutina",
           "sub": "Tu plan activo de la semana"
@@ -2856,6 +2860,132 @@
       "title": "Ejercicios",
       "sub": "La biblioteca de la app y tus ejercicios propios.",
       "count": "{n, plural, one {# ejercicio} other {# ejercicios}}"
+    }
+  },
+  "routines": {
+    "back": "← Entreno",
+    "title": "Rutinas",
+    "subtitle": "Tus rutinas en carpetas, sin límite. Empieza el entreno desde cualquiera.",
+    "new": "Nueva rutina",
+    "create": "Crear",
+    "cancel": "Cancelar",
+    "delete": "Borrar",
+    "duplicate": "Duplicar",
+    "edit": "Editar",
+    "start": "Empezar entreno",
+    "startShort": "Empezar",
+    "loading": "Cargando…",
+    "loadError": "No se han podido cargar las rutinas. Comprueba la conexión y vuelve a intentarlo.",
+    "saveError": "No se ha podido guardar. Revisa los datos y vuelve a intentarlo.",
+    "notFound": "Esa rutina no existe o no es tuya.",
+    "empty": {
+      "title": "Aún no tienes rutinas",
+      "body": "Crea una desde cero o carga un programa clásico y edítalo a tu gusto."
+    },
+    "card": {
+      "empty": "Sin ejercicios todavía",
+      "counts": "{exercises, plural, one {# ejercicio} other {# ejercicios}} · {sets, plural, one {# serie} other {# series}}",
+      "edited": "Editada por ti",
+      "menu": "Más opciones de {name}",
+      "moveTo": "Carpeta",
+      "deleteConfirm": "¿Borrar «{name}»? No se puede deshacer."
+    },
+    "folders": {
+      "new": "Nueva carpeta",
+      "none": "Sin carpeta",
+      "namePlaceholder": "Nombre de la carpeta",
+      "menu": "Opciones de la carpeta {name}",
+      "rename": "Renombrar",
+      "delete": "Borrar carpeta",
+      "deleteTitle": "¿Qué hacemos con las rutinas de «{name}»?",
+      "deleteKeep": "Borrar solo la carpeta (las rutinas quedan sin carpeta)",
+      "deleteAll": "Borrar la carpeta y sus {n, plural, one {# rutina} other {# rutinas}}",
+      "empty": "Carpeta vacía.",
+      "plan": "Del plan",
+      "program": "Programa"
+    },
+    "reorder": {
+      "label": "Mover",
+      "drag": "Arrastra para mover {name}",
+      "up": "Subir {name}",
+      "down": "Bajar {name}"
+    },
+    "editor": {
+      "newTitle": "Nueva rutina",
+      "editTitle": "Editar rutina",
+      "titlePlaceholder": "Nombre de la rutina",
+      "titleRequired": "Ponle un nombre a la rutina.",
+      "routineNotes": "Notas de la rutina",
+      "folder": "Carpeta",
+      "noExercises": "Añade ejercicios para planificar sus series.",
+      "addExercise": "Añadir ejercicio",
+      "addSet": "Añadir serie",
+      "remove": "Quitar",
+      "removeExercise": "Quitar {name} de la rutina",
+      "removeSet": "Quitar la serie {n}",
+      "notesPlaceholder": "Notas del ejercicio",
+      "notesFor": "Notas de {name}",
+      "rest": "Descanso",
+      "restOff": "Sin temporizador",
+      "effortToggle": "Planificar el esfuerzo en {mode}",
+      "supersetLabel": "Superserie {label}",
+      "supersetWithNext": "Superserie con el siguiente",
+      "supersetRemove": "Separar de la superserie",
+      "save": "Guardar",
+      "saved": "Guardada",
+      "saving": "Guardando…",
+      "saveAndStart": "Guardar y empezar",
+      "invalidNumber": "Escribe un número (con coma o punto, una sola vez).",
+      "outOfRange": "Tiene que estar entre {min} y {max}.",
+      "setTypeFor": "Tipo de la serie {n} de {name}",
+      "repsFor": "Repeticiones de la serie {n}",
+      "repsMaxFor": "Repeticiones máximas de la serie {n}",
+      "kgFor": "Kilos de la serie {n}",
+      "rirFor": "RIR de la serie {n}",
+      "rpeFor": "RPE de la serie {n}",
+      "col": {
+        "set": "Serie",
+        "reps": "Reps",
+        "max": "Máx"
+      },
+      "setType": {
+        "warmup": "Calentamiento",
+        "normal": "Normal",
+        "drop": "Drop set",
+        "failure": "Al fallo"
+      },
+      "setTypeShort": {
+        "warmup": "C",
+        "normal": "N",
+        "drop": "D",
+        "failure": "F"
+      },
+      "effortUse": "Usar {mode}"
+    },
+    "programs": {
+      "title": "Programas clásicos",
+      "sub": "Full body, torso-pierna y empuje-tirón-pierna, listos para cargar",
+      "back": "← Rutinas",
+      "intro": "Cada programa se copia como rutinas tuyas en una carpeta nueva: luego las cambias como quieras.",
+      "days": "{n} días/sem",
+      "load": "Cargar como mis rutinas",
+      "loading": "Cargando…",
+      "level": {
+        "beginner": "Para empezar",
+        "intermediate": "Intermedio",
+        "advanced": "Avanzado"
+      }
+    },
+    "plan": {
+      "title": "Rutinas del plan",
+      "intro": "El plan del coach convertido en rutinas. Puedes editarlas: al llegar un plan nuevo no se pierden tus cambios sin avisarte.",
+      "editedWarning": "Hay un plan nuevo y has cambiado {names}. ¿Qué hacemos?",
+      "keep": "Mantener mi versión y añadir las nuevas",
+      "overwrite": "Sustituir por las del plan nuevo",
+      "regenerate": "Regenerar desde el plan",
+      "blocked": "Hoy el coach no recomienda entrenar: las rutinas del plan no se regeneran hasta que se levante el bloqueo.",
+      "syncError": "No se han podido generar las rutinas del plan.",
+      "syncing": "Generando las rutinas del plan…"
     }
   }
 }
