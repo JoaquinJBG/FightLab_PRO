@@ -177,6 +177,23 @@ describe("Hoy", () => {
     expect((await screen.findByTestId("weight-saved")).textContent).toBe("Guardado: 72,4 kg");
   });
 
+  it("F6: «Hecha» dice que se ha sumado a Nutrición y «Cambiada» lleva a apuntar lo que se comió", async () => {
+    const meals = day().menu!.meals;
+    api(day({
+      menu: {
+        id: 7, start_date: "2026-10-26",
+        meals: [
+          { ...meals[0], mark: { state: "done", change: null }, totals: { kcal: 410, p: 18, c: 60, f: 9, partial: false } },
+          { ...meals[1], mark: { state: "changed", change: "pizza" }, totals: { kcal: 650, p: 40, c: 80, f: 15, partial: false } },
+        ],
+      },
+    }));
+    renderApp(<TodayPage />);
+    expect((await screen.findByTestId("meal-breakfast-diary")).textContent).toBe("Sumada a Nutrición: 410 kcal previstas del plato.");
+    expect(screen.queryByTestId("meal-lunch-diary")).toBeNull();
+    expect(screen.getByTestId("meal-lunch-log").getAttribute("href")).toBe("/nutrition");
+  });
+
   it("F26: con un golpe en la cabeza y una lesión, el plan del día lo dice al momento con su evidencia", async () => {
     api(day({
       plan: {

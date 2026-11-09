@@ -13,9 +13,13 @@ vigoroso cuenta como dos moderados ("1 vigorous minute counts as about 2 moderat
 """
 from datetime import date, datetime, time, timedelta
 
+from coach import foods
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
+
+from userstate.models import UserState
+from userstate.services import validate_value_size
 
 from activities.constants import MAX_ACTIVITIES_PER_DAY
 from activities.models import Activity
@@ -158,7 +162,29 @@ def menu_day(user, day: date) -> tuple[MealPlan, dict] | tuple[None, None]:
     return None, None
 
 
-def _meal_out(meal: dict, mark: MealCheck | None) -> dict:
+def meal_totals(meal: dict, table) -> dict | None:
+    """Las kcal y los macros previstos de una comida del menú, con los totales del motor
+    (`foods.menu_totals`), sin cuentas propias. `None` si la comida no trae ingredientes (comida
+    libre) o ninguno está en la tabla."""
+    items = [foods.parse_item(i) for d in meal.get("dishes") or [] for i in d.get("items") or []]
+    if not items:
+        return None
+    try:
+        totals = foods.menu_totals(items, table)
+    except ValueError:  # una unidad que no casa con la tabla: sin previsión, no se inventa
+        return None
+    if len(totals.unknown) == len(items):
+        return None
+    return {
+        "kcal": round(totals.kcal),
+        "p": round(totals.protein_g),
+        "c": round(totals.carbs_g),
+        "f": round(totals.fat_g),
+        "partial": bool(totals.unknown),
+    }
+
+
+def _meal_out(meal: dict, mark: MealCheck | None, table) -> dict:
     return {
         "meal": meal.get("meal", ""),
         "free": bool(meal.get("free")),
@@ -166,16 +192,78 @@ def _meal_out(meal: dict, mark: MealCheck | None) -> dict:
         "dishes": [d.get("dish", "") for d in meal.get("dishes") or []],
         "eve": meal.get("eve") or None,
         "mark": {"state": STATE_KEYS[mark.state], "change": mark.change or None} if mark else None,
+        "totals": meal_totals(meal, table),
     }
 
 
 def meals_for(user, day: date) -> dict | None:
+    from .menus import menu_table
+
     plan, menu = menu_day(user, day)
     if plan is None:
         return None
     marks = {m.meal: m for m in MealCheck.objects.filter(profile=user.profile, date=day)}
-    meals = [_meal_out(m, marks.get(MEALS.get(m.get("meal", "")))) for m in menu.get("meals") or []]
+    table = menu_table(user)
+    meals = [_meal_out(m, marks.get(MEALS.get(m.get("meal", ""))), table) for m in menu.get("meals") or []]
     return {"id": plan.id, "start_date": plan.start_date.isoformat(), "meals": meals}
+
+
+# ---------------------------------------------------------------- diario de Nutrición (F6)
+
+# Las comidas del diario de Nutrición (`frontend/lib/nutrition.ts`, `MEALS`).
+DIARY_MEALS = {"breakfast": "Desayuno", "lunch": "Comida", "snack": "Snack", "dinner": "Cena"}
+DIARY_SOURCE = "menu"
+
+
+def diary_link(day: date, meal: str) -> str:
+    return f"menu:{day.isoformat()}:{meal}"
+
+
+def sync_diary(user, day: date, meal: str, planned: dict, state: str | None) -> None:
+    """F6, como en ParteDiario: una comida del menú marcada «Hecha» suma al diario de Nutrición
+    sus kcal y macros previstos, como una entrada ligada a la marca (`link`). Si se desmarca, se
+    marca «No hecha» o «Cambiada», la entrada se quita: con «Cambiada» solo cuenta lo que la
+    persona apunte en Nutrición.
+
+    El diario vive en `UserState` (`nutri_<fecha>`, last-write-wins por `updated_at`); aquí solo
+    se quita o se pone la entrada ligada, sin tocar las demás, y se escribe con un `updated_at`
+    posterior al guardado para que los dispositivos adopten esta versión al hidratar."""
+    link = diary_link(day, meal)
+    key = f"nutri_{day.isoformat()}"
+    entry = UserState.objects.select_for_update().filter(profile=user.profile, key=key).first()
+    items = entry.value if entry is not None and isinstance(entry.value, list) else []
+    kept = [i for i in items if not (isinstance(i, dict) and i.get("link") == link)]
+    if state == "done":
+        from .menus import menu_table
+
+        totals = meal_totals(planned, menu_table(user))
+        if totals is not None:
+            name = ", ".join(d.get("dish", "") for d in planned.get("dishes") or [] if d.get("dish"))
+            kept.append({
+                "id": f"menu-{day.isoformat()}-{meal}",
+                "meal": DIARY_MEALS[meal],
+                "name": name[:DISH_MAX] or DIARY_MEALS[meal],
+                "grams": None,
+                "kcal": totals["kcal"],
+                "p": totals["p"],
+                "c": totals["c"],
+                "f": totals["f"],
+                "source": DIARY_SOURCE,
+                "link": link,
+            })
+    if kept == items and entry is not None:
+        return
+    if entry is None and not kept:
+        return
+    validate_value_size(kept)
+    now = timezone.now()
+    if entry is None:
+        entry = UserState(profile=user.profile, key=key)
+    elif entry.updated_at >= now:  # un reloj de cliente adelantado: esta escritura tiene que ganar
+        now = entry.updated_at + timedelta(milliseconds=1)
+    entry.value = kept
+    entry.updated_at = now
+    entry.save()
 
 
 def next_meal(menu: dict | None) -> dict | None:
@@ -351,6 +439,7 @@ def save_day(user, day: date, today: date, values: dict) -> None:
         row.save()
 
 
+@transaction.atomic
 def save_meal(user, day: date, today: date, meal: str, state: str | None, change: str = "") -> None:
     """Marca una comida del menú de `day`; `state: null` quita la marca."""
     check_day(day, today)
@@ -368,6 +457,7 @@ def save_meal(user, day: date, today: date, meal: str, state: str | None, change
     if errors:
         raise ValidationError(errors)
     key = MEALS[meal]
+    sync_diary(user, day, meal, planned[meal], state)
     if state is None:
         MealCheck.objects.filter(profile=user.profile, date=day, meal=key).delete()
         return

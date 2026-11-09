@@ -7,6 +7,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
+import { hydrateUserStatePrefix } from "./user-state";
 import { DAYS } from "./plan";
 
 export const DAY_TYPES = ["gym", "cardio", "rest"] as const;
@@ -36,6 +37,11 @@ const meal = z.object({
   dishes: z.array(z.string()),
   eve: z.string().nullable().optional(),
   mark: z.object({ state: z.enum(MEAL_STATES), change: z.string().nullable() }).nullable(),
+  // F6: kcal y macros previstos del plato (los totales del motor); con «Hecha» se suman a Nutrición
+  totals: z
+    .object({ kcal: z.number(), p: z.number(), c: z.number(), f: z.number(), partial: z.boolean() })
+    .nullable()
+    .optional(),
 });
 export type TodayMeal = z.infer<typeof meal>;
 
@@ -146,7 +152,13 @@ export function useSaveDay() {
 }
 
 export function useMarkMeal() {
-  return useTodayMutation((v: { meal: string; state: MealState | null; change?: string }) => send(`${BASE}/meal`, "PUT", v));
+  // F6: la marca suma o quita la entrada del menú en el diario de Nutrición en el servidor; se trae
+  // ese día al móvil para que Nutrición la enseñe sin esperar.
+  return useTodayMutation(async (v: { meal: string; state: MealState | null; change?: string }) => {
+    const data = await send(`${BASE}/meal`, "PUT", v);
+    await hydrateUserStatePrefix("nutri_", data.date, data.date).catch(() => undefined);
+    return data;
+  });
 }
 
 export function useAddCardio() {

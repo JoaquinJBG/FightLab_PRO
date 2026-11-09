@@ -16,6 +16,7 @@ import {
   loadWater,
   saveWater,
   hydrateRecentNutritionDays,
+  itemSource,
   type Goal,
   type Item,
 } from "@/lib/nutrition";
@@ -321,9 +322,18 @@ export default function NutritionPage() {
                 <ul className="mt-3 flex flex-col gap-1.5 border-t border-[rgba(150,190,255,0.1)] pt-3">
                   {its.map((i) => (
                     <li key={i.id} className="flex items-center justify-between gap-2 text-sm">
-                      <span className="t-body min-w-0 flex-1 text-muted">{i.name}{i.grams ? ` · ${i.grams} g` : ""}</span>
+                      <span className="t-body min-w-0 flex-1 text-muted">
+                        {i.name}{i.grams ? ` · ${i.grams} g` : ""}
+                        <span data-testid="diary-source" data-source={itemSource(i)} className="block text-[10px] text-muted/80">
+                          {t(`source.${itemSource(i)}`)}
+                        </span>
+                      </span>
                       <span className="shrink-0 text-ink">{i.kcal} kcal</span>
-                      {confirmItem === i.id ? (
+                      {itemSource(i) === "menu" ? (
+                        // La entrada del menú va ligada a la marca de Hoy: se quita desmarcando la comida allí
+                        <Link href="/today" aria-label={t("menuUnmark", { name: i.name })}
+                          className="t-label shrink-0 px-1 text-[11px] text-neon">{t("menuUnmarkShort")}</Link>
+                      ) : confirmItem === i.id ? (
                         <button onClick={() => onDeleteItem(i.id)}
                           className="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium text-[#03101c]"
                           style={{ background: "#ff5d80" }}>

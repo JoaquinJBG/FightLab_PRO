@@ -285,6 +285,16 @@ function MealRow({ meal }: { meal: TodayMeal }) {
       {state === "changed" && meal.mark?.change && !changing && (
         <p className="t-body mt-1 text-xs text-muted">{t("changedTo", { what: meal.mark.change })}</p>
       )}
+      {state === "done" && meal.totals && (
+        <p data-testid={`meal-${meal.meal}-diary`} className="t-body mt-1 text-xs text-good">
+          {t("inDiary", { kcal: meal.totals.kcal })}
+        </p>
+      )}
+      {state === "changed" && !changing && (
+        <Link href="/nutrition" data-testid={`meal-${meal.meal}-log`} className="t-label mt-1 block text-xs text-neon underline">
+          {t("logInstead")}
+        </Link>
+      )}
       {changing && (
         <form
           className="mt-2 flex items-end gap-2"

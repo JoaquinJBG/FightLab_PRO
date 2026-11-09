@@ -72,7 +72,7 @@ function AddInner() {
   function addFood() {
     if (!sel || !scaled || saving) return;
     setSaving(true);
-    addItem({ meal, name: sel.name, grams, kcal: scaled.kcal, p: scaled.p, c: scaled.c, f: scaled.f });
+    addItem({ meal, name: sel.name, grams, kcal: scaled.kcal, p: scaled.p, c: scaled.c, f: scaled.f, source: "food" });
     router.push("/nutrition");
   }
 
@@ -90,7 +90,7 @@ function AddInner() {
     const kcal = toInt(qKcal);
     if (kcal <= 0 || saving) return;
     setSaving(true);
-    addItem({ meal, name: qName.trim() || t("quick.defaultName"), grams: null, kcal, p: toInt(qP), c: toInt(qC), f: toInt(qF) });
+    addItem({ meal, name: qName.trim() || t("quick.defaultName"), grams: null, kcal, p: toInt(qP), c: toInt(qC), f: toInt(qF), source: "manual" });
     router.push("/nutrition");
   }
 
@@ -184,7 +184,7 @@ function AddInner() {
     if (!detected || saving) return;
     setSaving(true);
     detected.items.forEach((it) => {
-      addItem({ meal, name: it.name, grams: it.grams, kcal: it.kcal, p: it.p, c: it.c, f: it.f });
+      addItem({ meal, name: it.name, grams: it.grams, kcal: it.kcal, p: it.p, c: it.c, f: it.f, source: "photo" });
     });
     router.push("/nutrition");
   }
@@ -195,7 +195,7 @@ function AddInner() {
     if (saving) return;
     setSaving(true);
     yesterday.forEach((it) => {
-      addItem({ meal, name: it.name, grams: it.grams, kcal: it.kcal, p: it.p, c: it.c, f: it.f });
+      addItem({ meal, name: it.name, grams: it.grams, kcal: it.kcal, p: it.p, c: it.c, f: it.f, source: "yesterday" });
     });
     router.push("/nutrition");
   }
@@ -291,7 +291,7 @@ function AddInner() {
             </div>
           ) : (
             recents.map((r) => (
-              <button key={r.name} onClick={() => { addItem({ meal, ...r }); flash(r.name); }}
+              <button key={r.name} onClick={() => { addItem({ meal, ...r, source: "recent" }); flash(r.name); }}
                 className="glass flex items-center justify-between p-3.5 text-left">
                 <span className="min-w-0">
                   <span className="t-body block text-sm text-ink">{r.name}{r.grams ? ` · ${r.grams} g` : ""}</span>

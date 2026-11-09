@@ -4,6 +4,11 @@
 
 import { hydrateUserState, hydrateUserStatePrefix, rawStringSerde, syncUserState } from "@/lib/user-state";
 
+/** De dónde sale cada entrada del diario (F6). `menu` la pone el servidor al marcar una comida
+ * del menú como «Hecha» en Hoy, con `link` a esa marca; las de antes no traen origen. */
+export const ITEM_SOURCES = ["menu", "food", "manual", "photo", "recent", "yesterday"] as const;
+export type ItemSource = (typeof ITEM_SOURCES)[number];
+
 export type Item = {
   id: string;
   meal: string;
@@ -13,7 +18,14 @@ export type Item = {
   p: number;
   c: number;
   f: number;
+  source?: ItemSource;
+  link?: string;
 };
+
+/** El origen que se enseña de una entrada; las antiguas sin origen cuentan como apuntadas a mano. */
+export function itemSource(item: Pick<Item, "source">): ItemSource {
+  return item.source && (ITEM_SOURCES as readonly string[]).includes(item.source) ? item.source : "manual";
+}
 
 export const MEALS = ["Desayuno", "Comida", "Cena", "Snack"];
 

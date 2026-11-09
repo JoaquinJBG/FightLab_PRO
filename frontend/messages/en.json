@@ -481,7 +481,17 @@
     "menuCard": {
       "title": "Menu and shopping list",
       "body": "Meals for several days, checked by the coach against your targets."
-    }
+    },
+    "source": {
+      "menu": "From the menu: marked “Done” in Today (planned kcal)",
+      "food": "Found in the food table",
+      "manual": "Logged by hand",
+      "photo": "Photo of the plate",
+      "recent": "From your recent foods",
+      "yesterday": "Copied from yesterday"
+    },
+    "menuUnmark": "{name}: remove it by unmarking the meal in Today",
+    "menuUnmarkShort": "In Today"
   },
   "dashboard": {
     "greeting": {
@@ -2659,7 +2669,9 @@
       "changePlaceholder": "For example: pizza and a beer",
       "changeSave": "Save",
       "changedTo": "Instead: {what}",
-      "clear": "Clear"
+      "clear": "Clear",
+      "inDiary": "Added to Nutrition: {kcal} kcal planned for the dish.",
+      "logInstead": "Log what you ate in Nutrition: only what you log counts."
     },
     "cardio": {
       "title": "Cardio",

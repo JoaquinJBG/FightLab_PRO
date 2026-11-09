@@ -481,7 +481,17 @@
     "menuCard": {
       "title": "Menú y lista de la compra",
       "body": "Platos para varios días, comprobados por el coach contra tus objetivos."
-    }
+    },
+    "source": {
+      "menu": "Del menú: marcada «Hecha» en Hoy (kcal previstas)",
+      "food": "Buscado en la tabla de alimentos",
+      "manual": "Apuntado a mano",
+      "photo": "Foto del plato",
+      "recent": "De tus recientes",
+      "yesterday": "Copiado de ayer"
+    },
+    "menuUnmark": "{name}: se quita desmarcando la comida en Hoy",
+    "menuUnmarkShort": "En Hoy"
   },
   "dashboard": {
     "greeting": {
@@ -2659,7 +2669,9 @@
       "changePlaceholder": "Por ejemplo: pizza y una cerveza",
       "changeSave": "Guardar",
       "changedTo": "En su lugar: {what}",
-      "clear": "Quitar la marca"
+      "clear": "Quitar la marca",
+      "inDiary": "Sumada a Nutrición: {kcal} kcal previstas del plato.",
+      "logInstead": "Apunta en Nutrición lo que comiste: solo cuenta lo que apuntes."
     },
     "cardio": {
       "title": "Cardio",
