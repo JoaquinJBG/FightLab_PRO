@@ -1996,7 +1996,8 @@
       "zone": "Esfuerzo RPE {low}-{high}",
       "zoneBpm": "{low}-{high} ppm",
       "options": "Opciones",
-      "excluded": "Fuera de tu plan"
+      "excluded": "Fuera de tu plan",
+      "minSession": "Cada sesión dura al menos {minutes} min: si falta poco, se junta en menos días."
     },
     "nutrition": {
       "kcal": "{kcal} kcal al día",

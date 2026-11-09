@@ -63,6 +63,10 @@ SETS_WITHOUT_LOG = 3
 MIN_SETS, MAX_SETS = 2, 5
 # convention (FightLab): los minutos de cardio por día se redondean hacia arriba de 5 en 5.
 CARDIO_STEP_MIN = 5
+# convention (FightLab, F9): una sesión de cardio del plan dura al menos 20 min. Lo que falta hasta
+# los 150 min se reparte en menos días si no llega a 20 por día, y si falta menos de 20 se propone
+# una sola sesión de 20 (150 es un mínimo, no un tope). Sin esto salían «Cardio moderado · 5 min».
+CARDIO_MIN_SESSION = 20
 # convention (FightLab): un día es de MMA si hubo sesión ese día de la semana en 2 o más de las
 # últimas 4 semanas, y los minutos de MMA cuentan como cardio moderado (el anexo E clasifica el
 # trabajo de combate como moderado o vigoroso; contarlo como moderado es lo prudente).
@@ -349,9 +353,20 @@ CARDIO_OFFERED = ("walking_brisk", "continuous_moderate", "jump_rope", "hiit")
 ALL_OUT = ("sprints", "sit", "rehit")
 
 
+def cardio_split(needed: int, days: list[str]) -> tuple[list[str], int]:
+    """Los días de cardio y los minutos de cada uno para cubrir `needed`, sin sesiones de menos de
+    `CARDIO_MIN_SESSION` (F9). Los días que se usan quedan repartidos por la semana."""
+    if needed <= 0 or not days:
+        return [], 0
+    count = max(1, min(len(days), needed // CARDIO_MIN_SESSION))
+    per_day = max(CARDIO_MIN_SESSION, math.ceil(needed / count / CARDIO_STEP_MIN) * CARDIO_STEP_MIN)
+    chosen = [days[(i * len(days)) // count] for i in range(count)]
+    return chosen, per_day
+
+
 def _cardio(user, flags, today: date, days: list[str], mma_minutes: int, lang: str) -> dict:
     needed = max(0, CARDIO_MODERATE_MIN - mma_minutes)
-    per_day = math.ceil(needed / len(days) / CARDIO_STEP_MIN) * CARDIO_STEP_MIN if needed and days else 0
+    days, per_day = cardio_split(needed, days)
     try:
         zone = next((z for z in zones_data(user, today, lang)["zones"] if z["name"] == "moderate"), None)
     except ProfileIncomplete:
@@ -368,8 +383,10 @@ def _cardio(user, flags, today: date, days: list[str], mma_minutes: int, lang: s
         "minutes_week": CARDIO_MODERATE_MIN,
         "mma_minutes": mma_minutes,
         "minutes_needed": needed,
-        "days": days if per_day else [],
+        "days": days,
         "minutes_per_day": per_day,
+        "min_session": CARDIO_MIN_SESSION,
+        "min_session_convention": "fightlab",
         "intensity": rules.MODERATE,
         "zone": {"rpe": zone["rpe"], "bpm": zone["bpm"]} if zone else None,
         "rule_key": _key(rules.WEEKLY_BASELINE),

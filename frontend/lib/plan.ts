@@ -67,6 +67,10 @@ export const cardio = z.object({
   minutes_needed: z.number(),
   days: z.array(z.enum(DAYS)),
   minutes_per_day: z.number(),
+  // F9: duración mínima de una sesión de cardio del plan (convención de FightLab). Los planes
+  // guardados antes no la traen.
+  min_session: z.number().optional(),
+  min_session_convention: convention.optional(),
   intensity: z.string(),
   zone: z.object({ rpe: z.tuple([z.number(), z.number()]), bpm: z.tuple([z.number(), z.number()]).nullable() }).nullable(),
   rule_key: z.string(),

@@ -267,6 +267,12 @@ export function PlanView({ plan, sessionAction }: { plan: WeeklyPlan; sessionAct
             ? t("cardio.remaining", { minutes: cardio.minutes_needed, perDay: cardio.minutes_per_day, days: cardio.days.length })
             : t("cardio.covered")}
         </p>
+        {cardio.minutes_needed > 0 && cardio.min_session != null && (
+          <p data-testid="cardio-min-session" className="t-body mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
+            {t("cardio.minSession", { minutes: cardio.min_session })}
+            <LineChip ruleKey={null} grades={grades} convention={cardio.min_session_convention ?? "fightlab"} />
+          </p>
+        )}
         {cardio.zone && (
           <p className="t-body mt-1 text-xs text-muted">
             {t("cardio.zone", { low: cardio.zone.rpe[0], high: cardio.zone.rpe[1] })}
