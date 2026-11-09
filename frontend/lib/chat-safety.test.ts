@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 import { createTranslator } from "next-intl";
 import es from "@/messages/es.json";
 import en from "@/messages/en.json";
-import { coachReply, type CoachTr, type Ctx, type Tr } from "./coach-rules";
+import { buildBriefing, buildRecs, coachReply, HEAD_BLOW_RULES, injuryAreas, type CoachTr, type Ctx, type Tr } from "./coach-rules";
 import { detectSafetyTopic } from "./chat-safety";
 import { COMBAT_RULES } from "./combat-rules";
 import { SAFETY_RULES } from "./safety-rules";
@@ -146,5 +146,67 @@ describe("el chat por reglas no anima a entrenar con dolor, golpe en la cabeza o
   test("el golpe en la cabeza manda parar y no hacer contacto; el mareo, al médico", () => {
     expect(coachReply("me dieron un golpe en la cabeza", ctx, TR_ES, listEs)).toMatch(/no entrenes[^]*Nada de sparring/);
     expect(coachReply("I feel dizzy", ctx, TR_EN, listEn)).toMatch(/Stop and do not train today/);
+  });
+});
+
+describe("F26: golpe en la cabeza activo y lesiones guardadas", () => {
+  const blow: Ctx = { ...ctx, noContact: true };
+
+  test("con el golpe activo, cualquier pregunta lo nombra primero, con el bloqueo y la vuelta por fases", () => {
+    for (const q of ["¿entreno fuerte hoy?", "¿cómo va mi carga?", "cómo voy", "me duele la rodilla"]) {
+      const reply = coachReply(q, blow, TR_ES, listEs);
+      expect(reply, q).toMatch(/^Lo primero es el golpe en la cabeza/);
+      expect(reply, q).not.toMatch(GO_HARD);
+      for (const r of HEAD_BLOW_RULES) expect(reply, q).toContain(`[[regla:${r.key}]]`);
+    }
+    // El mareo pide parar e ir al médico ya: va delante del golpe
+    expect(coachReply("estoy mareado", blow, TR_ES, listEs)).toMatch(/^Para y no entrenes hoy[^]*Lo primero es el golpe/);
+  });
+
+  test("el briefing y las recomendaciones del golpe mandan sobre la carga y la recuperación", () => {
+    const b = buildBriefing(blow, TR_ES, listEs);
+    expect(b.blocked).toBe(true);
+    expect(b.text).toMatch(/contacto bloqueado/);
+    expect(b.rules).toEqual(HEAD_BLOW_RULES);
+    expect(b.text).not.toMatch(/buen día para una sesión exigente/);
+    const recs = buildRecs(blow, TR_ES, listEs);
+    expect(recs[0].id).toBe("golpe");
+    expect(recs[0].rule).toEqual(COMBAT_RULES.returnSteps);
+    expect(recs.map((r) => r.id)).not.toContain("ok");
+    // Sin golpe, el briefing no está bloqueado
+    expect(buildBriefing(ctx, TR_ES, listEs).blocked).toBe(false);
+  });
+
+  test("con una lesión guardada, el dolor nombra el dolor y la lesión", () => {
+    const hurt: Ctx = { ...ctx, injuries: ["Rodilla derecha tras sparring"] };
+    const reply = coachReply("me duele la rodilla, ¿entreno hoy?", hurt, TR_ES, listEs);
+    expect(reply).toMatch(/^Tienes guardada una lesión: Rodilla derecha tras sparring\./);
+    expect(reply).toMatch(/Con un dolor nuevo o una lesión/);
+    expect(reply).toContain(`[[regla:${SAFETY_RULES.newPain.key}]]`);
+  });
+
+  test("con una lesión guardada, el entreno lleva su límite, sin «dale duro» y sin bloquear todo", () => {
+    const hurt: Ctx = { ...ctx, injuries: ["hombro"] };
+    const reply = coachReply("¿entreno fuerte hoy?", hurt, TR_ES, listEs);
+    expect(reply).not.toMatch(/dale duro|tienes margen/);
+    expect(reply).toMatch(/Ojo con tu lesión \(hombro\)[^]*el resto, normal/);
+    const b = buildBriefing(hurt, TR_ES, listEs);
+    expect(b.blocked).toBe(false);
+    expect(b.text).toMatch(/Lesión guardada \(hombro\)/);
+    expect(b.rules).toContain(SAFETY_RULES.newPain);
+    const rec = buildRecs(hurt, TR_ES, listEs).find((r) => r.id === "lesion")!;
+    expect(rec.tone).toBe("warn");
+    expect(rec.rule).toEqual(SAFETY_RULES.newPain);
+  });
+
+  test("las lesiones salen del perfil (motivos del motor) y de la memoria del coach, sin repetir", () => {
+    const reasons = [
+      { code: "injury_unassessed", params: { area: "rodilla" } },
+      { code: "injury_managed", params: { area: "hombro", professional: "fisio" } },
+      { code: "parq_review_vigorous", params: {} },
+    ];
+    expect(injuryAreas(reasons, "Rodilla")).toEqual(["rodilla", "hombro"]);
+    expect(injuryAreas(reasons, "codo")).toEqual(["rodilla", "hombro", "codo"]);
+    expect(injuryAreas([], null)).toEqual([]);
   });
 });

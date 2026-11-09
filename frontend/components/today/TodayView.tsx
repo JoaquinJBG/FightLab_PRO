@@ -6,6 +6,8 @@ import { useFormatter, useTranslations } from "next-intl";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { SafetyBanner } from "@/components/safety/SafetyBanner";
 import { ChevronRight } from "@/components/icons";
+import { HEAD_BLOW_RULES } from "@/lib/coach-rules";
+import { SAFETY_RULES } from "@/lib/safety-rules";
 import { parseNum } from "@/lib/checkin";
 import {
   DAY_TYPES,
@@ -98,6 +100,12 @@ function DayPlan({ state }: { state: TodayState }) {
   return (
     <section data-testid="day-plan" className={section}>
       <SectionTitle>{t("title")}</SectionTitle>
+      {plan.no_contact && (
+        <p data-testid="plan-head-blow" className="t-body mt-1 text-sm" style={{ color: "#ff5a6e" }}>
+          {t("headBlow")}
+          {HEAD_BLOW_RULES.map((r) => <span key={r.key}> <EvidenceChip ruleKey={r.key} grade={r.grade} /></span>)}
+        </p>
+      )}
       {plan.entries.length === 0 && <p className="t-body mt-1 text-sm text-muted">{t("rest")}</p>}
       <ul className="mt-1 space-y-2">
         {plan.entries.map((e, i) => (
@@ -108,6 +116,15 @@ function DayPlan({ state }: { state: TodayState }) {
             </span>
             {e.kind === "gym" && e.exercises && e.exercises.length > 0 && (
               <span className="block text-xs text-muted">{e.exercises.join(" · ")}</span>
+            )}
+            {e.kind === "gym" && e.paused && e.paused.length > 0 && (
+              <span data-testid="plan-paused" className="block text-xs text-ink">
+                {t("paused", { exercises: e.paused.join(" · ") })}{" "}
+                <EvidenceChip ruleKey={SAFETY_RULES.newPain.key} grade={SAFETY_RULES.newPain.grade} />
+              </span>
+            )}
+            {e.kind === "mma" && e.contact_blocked && (
+              <span data-testid="plan-contact-blocked" className="block text-xs text-ink">{t("contactBlocked")}</span>
             )}
             {e.kind === "gym" && e.session && (
               <Link href={`/training/gym?plan=${encodeURIComponent(e.session)}`} className="t-label mt-1 inline-flex items-center gap-1 text-neon">

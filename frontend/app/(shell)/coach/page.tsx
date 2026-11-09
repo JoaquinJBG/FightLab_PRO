@@ -9,7 +9,7 @@ import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { comparisonRule, loadBadge, ruleCitations } from "@/lib/load-texts";
 import { computeRecovery } from "@/lib/recovery";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
-import { buildBriefing, buildRecs, coachReply, num, recoveryText, type CoachTr, type Ctx } from "@/lib/coach-rules";
+import { buildBriefing, buildRecs, coachReply, injuryAreas, num, recoveryText, type CoachTr, type Ctx } from "@/lib/coach-rules";
 import { fetchServerMetrics } from "@/lib/activities";
 import { useUserState } from "@/lib/user-state";
 import {
@@ -124,12 +124,16 @@ export default function CoachPage() {
     weighDays,
     cutAllowed: !!safety && !["no_cut_content", "no_weight_targets", "no_deficit", "hold_deficit"].some((f) => safety.flags[f]),
     minor: !!safety?.flags.no_cut_content,
+    // F26: el golpe en la cabeza y las lesiones (del perfil y de la memoria del coach) cuentan al momento
+    noContact: !!safety?.flags.no_contact,
+    injuries: injuryAreas(safety?.reasons ?? [], memory.lesion),
   };
 
-  const recs = buildRecs(ctx, tr)
-    .filter((r) => !dismissed.includes(r.id))
+  const recs = buildRecs(ctx, tr, listFmt)
+    // El aviso del golpe en la cabeza no se descarta: se quita con el alta de un clínico
+    .filter((r) => r.id === "golpe" || !dismissed.includes(r.id))
     .filter((r) => shouldShowRecForFrequency(r.tone, memory.frecuencia_avisos));
-  const briefing = buildBriefing(ctx, tr);
+  const briefing = buildBriefing(ctx, tr, listFmt);
 
   function dismiss(id: string) {
     setDismissed([...dismissed, id]);
@@ -226,7 +230,11 @@ export default function CoachPage() {
           {briefing.rules.map((r) => <span key={r.key}> <EvidenceChip ruleKey={r.key} grade={r.grade} /></span>)}
         </p>
         <div className="mt-3 flex gap-2">
-          <Link href="/training" className="btn btn-tonal btn-sm"><GloveIcon className="h-4 w-4" /> {t("briefing.train")}</Link>
+          {briefing.blocked ? (
+            <Link href="/training/mma" data-testid="briefing-head-blow" className="btn btn-tonal btn-sm">{t("briefing.headBlowAction")}</Link>
+          ) : (
+            <Link href="/training" className="btn btn-tonal btn-sm"><GloveIcon className="h-4 w-4" /> {t("briefing.train")}</Link>
+          )}
           <Link href="/nutrition" className="btn btn-outline btn-sm">{t("briefing.nutrition")}</Link>
         </div>
       </section>

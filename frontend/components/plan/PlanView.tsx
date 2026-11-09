@@ -204,6 +204,19 @@ export function PlanView({ plan, sessionAction }: { plan: WeeklyPlan; sessionAct
         </Section>
       )}
 
+      {plan.live && (plan.live.changed || plan.live.no_contact) && (
+        <section data-testid="plan-live" className="glass mt-4 p-4" style={{ borderColor: "#ff5a6e" }}>
+          <p className="t-title text-ink">{t("live.title")}</p>
+          <p className="t-body mt-1 text-sm text-ink">{t("live.body")}</p>
+          {plan.live.no_contact && (
+            <p data-testid="plan-live-no-contact" className="t-body mt-2 flex flex-wrap items-center gap-2 text-sm text-ink">
+              {t("live.noContact")}
+              <LineChip ruleKey={plan.live.return_rule_key} grades={grades} />
+            </p>
+          )}
+        </section>
+      )}
+
       {plan.deload && (
         <section data-testid="plan-deload" className="glass mt-4 p-4" style={{ borderColor: "#ffd25a" }}>
           <p className="t-title flex flex-wrap items-center gap-2 text-ink">

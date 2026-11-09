@@ -177,6 +177,28 @@ describe("Hoy", () => {
     expect((await screen.findByTestId("weight-saved")).textContent).toBe("Guardado: 72,4 kg");
   });
 
+  it("F26: con un golpe en la cabeza y una lesión, el plan del día lo dice al momento con su evidencia", async () => {
+    api(day({
+      plan: {
+        id: 3, week_start: "2026-10-26", type: "gym", no_contact: true,
+        entries: [
+          { kind: "gym", time: "18:00", session: "A", exercises: ["Sentadilla", "Press banca"], paused: ["Sentadilla"] },
+          { kind: "mma", time: "20:00", contact_blocked: true },
+        ],
+      },
+    }));
+    renderApp(<TodayPage />);
+    const plan = await screen.findByTestId("day-plan");
+    const head = within(plan).getByTestId("plan-head-blow");
+    expect(head.textContent).toContain("el día del golpe no entrenes");
+    expect(within(head).getAllByTestId("evidence-chip")).toHaveLength(2); // el bloqueo y la vuelta por fases
+    const paused = within(plan).getByTestId("plan-paused");
+    expect(paused.textContent).toContain("En pausa por tu lesión");
+    expect(paused.textContent).toContain("Sentadilla");
+    expect(within(paused).getByTestId("evidence-chip")).toBeTruthy();
+    expect(within(plan).getByTestId("plan-contact-blocked").textContent).toContain("Sin contacto");
+  });
+
   it("con no_weight_targets no pide el peso y lo explica", async () => {
     api(day({ weight_blocked: true }));
     renderApp(<TodayPage />);

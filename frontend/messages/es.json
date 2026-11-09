@@ -1328,7 +1328,10 @@
       "unknown": "Aún no te conozco del todo: registra tus entrenos (con RPE) y tus mediciones, y este briefing se volverá tuyo de verdad.",
       "weigh": "Pesaje en {days} días y vas {over} kg por encima: déficit suave, sin recortes agresivos todavía.",
       "train": "Ir a entrenar",
-      "nutrition": "Ver nutrición"
+      "nutrition": "Ver nutrición",
+      "headBlow": "Tienes el contacto bloqueado por un golpe en la cabeza con síntomas. El día del golpe no se entrena; después, nada de sparring, clinch, drills con compañero, grappling en vivo ni entrenos duros hasta que un clínico te dé el alta. La vuelta al contacto va por fases.",
+      "headBlowAction": "Ver el bloqueo",
+      "injury": "Lesión guardada ({areas}): lo que carga esa zona va sin progresión, y sin carga hasta que la valore un médico o un fisioterapeuta. El resto del entreno sigue."
     },
     "recs": {
       "heading": "Recomendaciones",
@@ -1360,6 +1363,16 @@
       "ok": {
         "title": "Sin avisos: todo en orden 👊",
         "whyNoData": "Sin avisos por ahora. Cuantos más entrenos y mediciones registres, más fino seré."
+      },
+      "headBlow": {
+        "title": "Contacto bloqueado tras un golpe en la cabeza",
+        "why": "Hasta que un clínico te dé el alta: ni contacto ni entrenos duros. La vuelta al contacto va por fases, de al menos 24 horas cada una.",
+        "action": "Ver la vuelta al contacto"
+      },
+      "injury": {
+        "title": "Lesión guardada: {areas}",
+        "why": "Sin progresión en lo que carga esa zona y sin carga hasta que la valore un profesional. Si el dolor es agudo, va a peor o notas entumecimiento o debilidad, para y ve a un médico.",
+        "action": "Apuntarla en el check-in"
       }
     },
     "chat": {
@@ -1404,7 +1417,10 @@
         "cardiac": "Para y no entrenes hoy: el dolor u opresión en el pecho, el mareo, el desmayo, la falta de aire o las palpitaciones son señales de aviso. Ve a un médico antes de volver a entrenar. Si es dolor en el pecho en reposo, un desmayo o dolor en el pecho con falta de aire y sudor, llama ya a tu número de emergencias (112 en Europa).",
         "illness": "Con fiebre, dolores por todo el cuerpo o malestar por debajo del cuello, hoy no se entrena: descansa hasta que estés mejor.",
         "pain": "Con un dolor nuevo o una lesión, hoy no cargues esa zona ni entrenes a través del dolor. Si el dolor es agudo, va a peor o notas entumecimiento o debilidad, para y ve a un médico. Apúntalo en el check-in (Señales de alarma → «Dolor nuevo o una lesión») para que el plan le quite carga hasta que lo valore un médico o un fisioterapeuta."
-      }
+      },
+      "headBlowActive": "Lo primero es el golpe en la cabeza que avisaste: hasta que un clínico te dé el alta, nada de sparring ni contacto y nada de entrenar duro; el día del golpe, no entrenes. Caminar y la actividad diaria están bien si no empeoran los síntomas. La vuelta al contacto va por fases y la autoriza un clínico. Si notas dolor de cuello, vómitos, confusión o un dolor de cabeza que va a más, ve a urgencias ya.",
+      "injuryKnown": "Tienes guardada una lesión: {areas}.",
+      "injuryLimit": "Ojo con tu lesión ({areas}): lo que carga esa zona, sin progresión y sin carga hasta que la valore un médico o un fisioterapeuta; el resto, normal."
     },
     "advanced": {
       "title": "Avanzado"
@@ -2022,6 +2038,11 @@
       "body": "La aceptaste en la revisión semanal: series recortadas un {low}-{high} %, las mismas cargas y cada serie a {rir} o más repeticiones del fallo.",
       "rest": "Añade {low}-{high} días de descanso esta semana.",
       "effort": "Termina cada serie a {rir} o más repeticiones del fallo"
+    },
+    "live": {
+      "title": "Ajustado a tu seguridad de hoy",
+      "body": "Desde que preparaste este plan ha cambiado algo de tu seguridad (un golpe en la cabeza o una lesión), y ya está aplicado aquí: lo que no puedes hacer sale tachado o en pausa. Si quieres repartir la semana de otra forma, vuelve a prepararlo.",
+      "noContact": "Sin contacto hasta que un clínico te dé el alta. La vuelta al contacto va por fases, de al menos 24 horas cada una, y la autoriza un clínico: se quita en Entreno → MMA."
     }
   },
   "weeklyReview": {
@@ -2589,7 +2610,10 @@
       "cardio": "Cardio, {minutes} min",
       "mma": "MMA",
       "at": "a las {time}",
-      "openSession": "Empezar la sesión {session}"
+      "openSession": "Empezar la sesión {session}",
+      "headBlow": "Golpe en la cabeza: el día del golpe no entrenes, y hasta que un clínico te dé el alta, nada de contacto ni entrenos duros.",
+      "paused": "En pausa por tu lesión (sin progresión, y sin carga si nadie la ha valorado): {exercises}",
+      "contactBlocked": "Sin contacto: sparring, clinch, drills con compañero y grappling en vivo, fuera hasta el alta de un clínico."
     },
     "dayType": {
       "title": "Qué toca hoy",

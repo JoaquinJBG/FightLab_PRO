@@ -1328,7 +1328,10 @@
       "unknown": "I don't know you well yet: log your workouts (with RPE) and your measurements, and this briefing will become truly yours.",
       "weigh": "Weigh-in in {days} days and you're {over} kg over: gentle deficit, no aggressive cuts yet.",
       "train": "Go train",
-      "nutrition": "View nutrition"
+      "nutrition": "View nutrition",
+      "headBlow": "Contact is blocked after a blow to the head with symptoms. No training on the day of the blow; after that, no sparring, clinch, partner drills, live grappling or hard training until a clinician clears you. The return to contact goes step by step.",
+      "headBlowAction": "See the block",
+      "injury": "Saved injury ({areas}): whatever loads that area gets no progression, and no load until a doctor or physiotherapist assesses it. The rest of your training goes on."
     },
     "recs": {
       "heading": "Recommendations",
@@ -1360,6 +1363,16 @@
       "ok": {
         "title": "No alerts: all good 👊",
         "whyNoData": "No alerts for now. The more workouts and measurements you log, the sharper I get."
+      },
+      "headBlow": {
+        "title": "Contact blocked after a blow to the head",
+        "why": "Until a clinician clears you: no contact and no hard training. The return to contact goes step by step, at least 24 hours per step.",
+        "action": "See the return to contact"
+      },
+      "injury": {
+        "title": "Saved injury: {areas}",
+        "why": "No progression on what loads that area and no load until a professional assesses it. If the pain is sharp, getting worse, or you notice numbness or weakness, stop and see a doctor.",
+        "action": "Log it in the check-in"
       }
     },
     "chat": {
@@ -1404,7 +1417,10 @@
         "cardiac": "Stop and do not train today: chest pain or pressure, dizziness, fainting, breathlessness or palpitations are warning signs. See a doctor before you train again. With chest pain at rest, fainting, or chest pain with breathlessness and sweating, call your emergency number now (112 in Europe).",
         "illness": "With a fever, aches all over or feeling unwell below the neck, no training today: rest until you are better.",
         "pain": "With new pain or an injury, do not load that area today and do not train through the pain. If the pain is sharp, getting worse, or you notice numbness or weakness, stop and see a doctor. Log it in the check-in (Warning signs → “New pain or an injury in some area”) so the plan takes load off it until a doctor or physiotherapist assesses it."
-      }
+      },
+      "headBlowActive": "First, the blow to the head you reported: until a clinician clears you, no sparring, no contact and no hard training; on the day of the blow, do not train. Walking and daily activity are fine if they do not make the symptoms worse. The return to contact goes step by step and a clinician authorises it. With neck pain, vomiting, confusion or a headache that gets worse, go to the emergency department now.",
+      "injuryKnown": "You have a saved injury: {areas}.",
+      "injuryLimit": "Mind your injury ({areas}): whatever loads that area, no progression and no load until a doctor or physiotherapist assesses it; the rest as normal."
     },
     "advanced": {
       "title": "Advanced"
@@ -2022,6 +2038,11 @@
       "body": "You accepted it in the weekly review: sets cut by {low}-{high} %, the same loads and every set {rir} or more reps short of failure.",
       "rest": "Add {low}-{high} rest days this week.",
       "effort": "Stop every set {rir} or more reps short of failure"
+    },
+    "live": {
+      "title": "Adjusted to your safety today",
+      "body": "Something about your safety has changed since you prepared this plan (a blow to the head or an injury), and it is already applied here: what you cannot do is crossed out or paused. If you want to spread the week differently, prepare it again.",
+      "noContact": "No contact until a clinician clears you. The return to contact goes step by step, at least 24 hours per step, and a clinician authorises it: it is lifted under Training → MMA."
     }
   },
   "weeklyReview": {
@@ -2589,7 +2610,10 @@
       "cardio": "Cardio, {minutes} min",
       "mma": "MMA",
       "at": "at {time}",
-      "openSession": "Start session {session}"
+      "openSession": "Start session {session}",
+      "headBlow": "Blow to the head: do not train on the day of the blow, and until a clinician clears you, no contact and no hard training.",
+      "paused": "Paused because of your injury (no progression, and no load if nobody has assessed it): {exercises}",
+      "contactBlocked": "No contact: sparring, clinch, partner drills and live grappling are out until a clinician clears you."
     },
     "dayType": {
       "title": "What's on today",

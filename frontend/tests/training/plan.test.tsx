@@ -68,6 +68,28 @@ describe("Plan de la semana (en)", () => {
     expectClean(container);
   });
 
+  it("F26: el plan activo dice que se ha ajustado a la seguridad de hoy, con la vuelta por fases", () => {
+    const rule = "combat-sports/return-to-contact-follows-a-graded-clinician-supervised-plan";
+    const plan = makePlan({
+      status: "active",
+      live: { changed: true, no_contact: true, no_training: false, return_rule_key: rule },
+      rules: [...makePlan().rules, { key: rule, grade: "strong", title: "Return to contact" }],
+    });
+    state.plan = makeState({ active: plan });
+    renderEn(<WeeklyPlanPage />);
+    const live = screen.getByTestId("plan-live");
+    expect(live.textContent).toContain("Adjusted to your safety today");
+    const noContact = within(live).getByTestId("plan-live-no-contact");
+    expect(noContact.textContent).toContain("No contact until a clinician clears you");
+    expect(within(noContact).getByTestId("evidence-chip").getAttribute("data-grade")).toBe("strong");
+  });
+
+  it("sin cambios de seguridad no hay aviso de ajuste", () => {
+    state.plan = makeState({ active: makePlan({ status: "active", live: { changed: false, no_contact: false, no_training: false, return_rule_key: null } }) });
+    renderEn(<WeeklyPlanPage />);
+    expect(screen.queryByTestId("plan-live")).toBeNull();
+  });
+
   it("aplicar llama a la API con el id del borrador", () => {
     state.plan = makeState({ draft: makePlan() });
     renderEn(<WeeklyPlanPage />);

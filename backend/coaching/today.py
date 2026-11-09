@@ -24,6 +24,7 @@ from . import checkin, rules
 from .bridge.adapters import _tz
 from .models import DayLog, KnowledgeRule, MealCheck, MealPlan, WeeklyPlan
 from .plan import CARDIO_MODERATE_MIN, DAYS
+from .plan import live_safety as plan_live_safety
 from .session_check import EFFORT_SCALE, VIGOROUS_RPE
 from .targets import _key
 
@@ -107,24 +108,39 @@ def planned_type(entries: list[dict]) -> str:
 
 
 def plan_for(user, day: date) -> dict | None:
+    """El plan del día, con los bloqueos de seguridad de ese día ya aplicados (F26): sin contacto
+    tras un golpe en la cabeza con síntomas y sin carga en lo que afecta una lesión."""
     plan = _active_plan(user)
     if plan is None:
         return None
+    live = plan_live_safety(plan, day)
+    schedule = live["training_schedule"] if live else plan.training_schedule or []
     weekday = DAYS[day.weekday()]
-    sessions = {s.get("key"): s for s in plan.sessions or []}
+    sessions = {s.get("key"): s for s in (live["sessions"] if live else plan.sessions or [])}
     entries = []
-    for entry in plan.training_schedule or []:
+    for entry in schedule:
         if entry.get("day") != weekday:
             continue
         out = {"kind": entry.get("kind"), "time": entry.get("time")}
         if entry.get("kind") == "gym":
             session = sessions.get(entry.get("session")) or {}
+            items = session.get("items") or []
             out["session"] = entry.get("session")
-            out["exercises"] = [i.get("exercise") for i in session.get("items") or []]
+            out["exercises"] = [i.get("exercise") for i in items]
+            out["paused"] = [i.get("exercise") for i in items if i.get("action") == "paused"]
         elif entry.get("kind") == "cardio":
             out["minutes"] = entry.get("minutes")
+        elif entry.get("kind") == "mma":
+            out["contact_blocked"] = any("no_contact" in (w.get("blocked_by") or []) for w in entry.get("excluded") or [])
         entries.append(out)
-    return {"id": plan.id, "week_start": plan.week_start.isoformat(), "entries": entries, "type": planned_type(entries)}
+    status = live["status"] if live else {}
+    return {
+        "id": plan.id,
+        "week_start": plan.week_start.isoformat(),
+        "entries": entries,
+        "type": planned_type(entries),
+        "no_contact": bool(status.get("no_contact")),
+    }
 
 
 # ---------------------------------------------------------------- menú

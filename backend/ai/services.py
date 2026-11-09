@@ -118,8 +118,31 @@ NO_CONTACT_NOTE = (
     "clearance (no_contact). Do not suggest sparring, clinch, partner drills, live grappling or any "
     "contact work; say that a clinician decides the return to contact; never state a diagnosis, a "
     "number of days or that they are probably fine. For the warning signs, point to the official "
-    "Concussion Recognition Tool 6. Cite combat-sports/a-head-blow-with-symptoms-sets-no-contact-and-refers."
+    "Concussion Recognition Tool 6. This comes before any load, intensity or readiness advice and "
+    "before anything else they ask: the day of the blow, no training at all; until a clinician "
+    "clears them, no contact and no hard training, only light activity that does not clearly "
+    "worsen the symptoms. The return to contact goes step by step and a clinician authorises the "
+    "contact steps. Cite [[regla:combat-sports/a-head-blow-with-symptoms-sets-no-contact-and-refers]] and "
+    "[[regla:combat-sports/return-to-contact-follows-a-graded-clinician-supervised-plan]]."
 )
+NO_CONTACT_RULES = (
+    "combat-sports/a-head-blow-with-symptoms-sets-no-contact-and-refers",
+    "combat-sports/return-to-contact-follows-a-graded-clinician-supervised-plan",
+)
+INJURY_RULE = "recovery-habits/some-pain-during-exercise-is-acceptable-in-chronic-assessed-pain"
+
+
+def injury_note(areas: list[str]) -> str:
+    """Nota de seguridad con las lesiones activas (las del perfil y la de la memoria del coach)."""
+    return (
+        "The athlete has an active injury, saved in the app: "
+        + json.dumps(areas, ensure_ascii=False)
+        + ". Whenever the question touches training, mention it before load advice. Limit only what "
+        "loads that area: no progression there; if no professional has assessed it, no load on it "
+        "until a GP or physiotherapist does; stop and see a doctor with sharp or worsening pain, "
+        "numbness or weakness. Do not stop the rest of the training because of it. "
+        f"Cite [[regla:{INJURY_RULE}]]."
+    )
 NO_CUT_NOTE = (
     "The athlete is under 18. Give no weight-cut or rapid weight-loss information; say that "
     "sports-medicine consensus discourages weight making in young athletes and suggest a doctor or "

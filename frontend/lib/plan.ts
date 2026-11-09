@@ -113,6 +113,16 @@ export const weeklyPlan = z.object({
   engine_sha: z.string(),
   narrative: z.string(),
   deload: planDeload.nullable().default(null),
+  // F26: los bloqueos de seguridad de hoy ya aplicados al plan hecho (golpe en la cabeza, lesiones)
+  live: z
+    .object({
+      changed: z.boolean(),
+      no_contact: z.boolean(),
+      no_training: z.boolean(),
+      return_rule_key: z.string().nullable(),
+    })
+    .nullable()
+    .optional(),
   created_at: z.string(),
   applied_at: z.string().nullable(),
 });

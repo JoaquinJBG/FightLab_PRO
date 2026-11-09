@@ -22,6 +22,10 @@ const planEntry = z.object({
   session: z.string().nullable().optional(),
   exercises: z.array(z.string()).optional(),
   minutes: z.number().nullable().optional(),
+  // F26: los bloqueos de hoy sobre el plan ya hecho (ejercicios en pausa por una lesión y el
+  // contacto bloqueado por un golpe en la cabeza)
+  paused: z.array(z.string()).optional(),
+  contact_blocked: z.boolean().optional(),
 });
 export type PlanEntry = z.infer<typeof planEntry>;
 
@@ -51,7 +55,10 @@ export const todayState = z.object({
   today: z.string(),
   weekday: z.enum(DAYS),
   plan: z
-    .object({ id: z.number(), week_start: z.string(), entries: z.array(planEntry), type: z.enum(DAY_TYPES) })
+    .object({
+      id: z.number(), week_start: z.string(), entries: z.array(planEntry), type: z.enum(DAY_TYPES),
+      no_contact: z.boolean().optional(),
+    })
     .nullable(),
   day_type: z.enum(DAY_TYPES).nullable(),
   day_type_set: z.boolean(),

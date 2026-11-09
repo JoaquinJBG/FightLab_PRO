@@ -89,9 +89,11 @@ def test_plan_of_the_day_comes_from_the_active_weekly_plan():
     ])
     body = client_for(user).get(URL).json()
     assert body["plan"]["entries"] == [
-        {"kind": "gym", "time": "18:00", "session": "A", "exercises": ["Sentadilla", "Press banca"]},
+        # F26: sin lesiones, nada en pausa
+        {"kind": "gym", "time": "18:00", "session": "A", "exercises": ["Sentadilla", "Press banca"], "paused": []},
         {"kind": "cardio", "time": None, "minutes": 25},
     ]
+    assert body["plan"]["no_contact"] is False
     assert body["day_type"] == "gym" and body["day_type_set"] is False
     friday = client_for(user).get(URL, {"date": (TODAY - timedelta(days=6)).isoformat()}).json()
     assert friday["plan"]["type"] == "cardio"

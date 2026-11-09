@@ -31,7 +31,31 @@ export type Ctx = {
   // Contenido de corte (anexo de combate): nunca para menores ni con los bloqueos de la fase 4
   cutAllowed: boolean;
   minor: boolean;
+  // F26: golpe en la cabeza con síntomas sin el alta de un clínico (`no_contact` de /coach/safety)
+  noContact?: boolean;
+  // F26: lesiones activas (las del perfil, de /coach/safety, y la de «Contarle a mi coach»)
+  injuries?: string[];
 };
+
+// Reglas del bloqueo por un golpe en la cabeza: el bloqueo y la vuelta al contacto por fases (la
+// misma que enseña la tarjeta del golpe, que es por donde se quita con el alta de un clínico).
+export const HEAD_BLOW_RULES: RuleRef[] = [COMBAT_RULES.noContact, COMBAT_RULES.returnSteps];
+
+/** Las zonas lesionadas, sin repetir (el perfil y la memoria del coach pueden decir lo mismo). */
+export function injuryAreas(reasons: { code: string; params: Record<string, unknown> }[], memoryLesion?: string | null): string[] {
+  const areas = reasons
+    .filter((r) => r.code === "injury_unassessed" || r.code === "injury_managed")
+    .map((r) => r.params.area)
+    .filter((a): a is string => typeof a === "string" && a.trim() !== "");
+  if (memoryLesion && memoryLesion.trim()) areas.push(memoryLesion.trim());
+  const seen = new Set<string>();
+  return areas.filter((a) => {
+    const k = a.toLowerCase();
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
 
 export function num(v: string | number | null): number | null {
   if (v === null) return null;
@@ -51,9 +75,20 @@ export function recoveryText(r: Recovery, t: Tr) {
 
 /* --------------------- briefing y recomendaciones por reglas -------------- */
 
-export function buildBriefing(ctx: Ctx, { t, tl, tc }: CoachTr): { text: string; rules: RuleRef[] } {
+export function buildBriefing(ctx: Ctx, { t, tl, tc }: CoachTr, listFmt?: Intl.ListFormat): { text: string; rules: RuleRef[]; blocked: boolean } {
   const bits: string[] = [];
   const rules: RuleRef[] = [];
+  const injuries = ctx.injuries ?? [];
+  // F26: un golpe en la cabeza activo manda sobre la carga y la recuperación.
+  if (ctx.noContact) {
+    bits.push(t("briefing.headBlow"));
+    rules.push(...HEAD_BLOW_RULES);
+    if (injuries.length) {
+      bits.push(t("briefing.injury", { areas: joinAreas(injuries, listFmt) }));
+      rules.push(SAFETY_RULES.newPain);
+    }
+    return { text: bits.join(" "), rules, blocked: true };
+  }
   if (ctx.recovery?.state === "cuidado") {
     bits.push(t("briefing.care"));
   } else if (isBigJump(ctx.metrics)) {
@@ -73,8 +108,14 @@ export function buildBriefing(ctx: Ctx, { t, tl, tc }: CoachTr): { text: string;
       rules.push(COMBAT_RULES.plannedWeight);
     }
   }
-  return { text: bits.join(" "), rules };
+  if (injuries.length) {
+    bits.push(t("briefing.injury", { areas: joinAreas(injuries, listFmt) }));
+    rules.push(SAFETY_RULES.newPain);
+  }
+  return { text: bits.join(" "), rules, blocked: false };
 }
+
+const joinAreas = (areas: string[], listFmt?: Intl.ListFormat) => (listFmt ? listFmt.format(areas) : areas.join(", "));
 
 export type Rec = {
   id: string;
@@ -86,9 +127,33 @@ export type Rec = {
   rule?: RuleRef | null; // la regla del número o del consejo; null = convención de FightLab
 };
 
-export function buildRecs(ctx: Ctx, { t, tl, tc }: CoachTr): Rec[] {
+export function buildRecs(ctx: Ctx, { t, tl, tc }: CoachTr, listFmt?: Intl.ListFormat): Rec[] {
   const recs: Rec[] = [];
   const m = ctx.metrics;
+
+  // F26: el golpe en la cabeza y las lesiones van antes que la carga.
+  if (ctx.noContact) {
+    recs.push({
+      id: "golpe",
+      icon: "rest",
+      tone: "warn",
+      title: t("recs.headBlow.title"),
+      why: t("recs.headBlow.why"),
+      action: { label: t("recs.headBlow.action"), href: "/training/mma" },
+      rule: COMBAT_RULES.returnSteps,
+    });
+  }
+  if (ctx.injuries?.length) {
+    recs.push({
+      id: "lesion",
+      icon: "rest",
+      tone: "warn", // las lesiones se ven aunque el atleta pida pocos avisos
+      title: t("recs.injury.title", { areas: joinAreas(ctx.injuries, listFmt) }),
+      why: t("recs.injury.why"),
+      action: { label: t("recs.injury.action"), href: "/checkin" },
+      rule: SAFETY_RULES.newPain,
+    });
+  }
 
   // Anexo de combate: la semana frente a la media, en palabras neutras. El "salto grande"
   // (30 %) es una convención de FightLab; no hay aviso por quedarse por debajo.
@@ -182,6 +247,18 @@ export function coachReply(text: string, ctx: Ctx, { t, tl, tc }: CoachTr, listF
   // Seguridad primero: con dolor, una lesión, un golpe en la cabeza, mareo o fiebre no hay
   // consejo de carga, sino la misma regla que el check-in y el cribado.
   const topic = detectSafetyTopic(text);
+  const injuries = ctx.injuries ?? [];
+  const areas = listFmt.format(injuries);
+  // F26: con un golpe en la cabeza activo, el golpe va primero en cualquier respuesta (solo el
+  // pecho, el mareo o la fiebre van antes, porque piden parar o ir al médico ya).
+  if (ctx.noContact) {
+    const head = t("reply.headBlowActive") + HEAD_BLOW_RULES.map(cite).join("");
+    return topic === "cardiac" || topic === "illness" ? `${safetyReply(topic, t)} ${head}` : head;
+  }
+  if (topic === "pain" && injuries.length) {
+    // F3: el dolor y la lesión que ya tiene guardada, los dos con nombre
+    return `${t("reply.injuryKnown", { areas })} ${safetyReply(topic, t)}`;
+  }
   if (topic) return safetyReply(topic, t);
   const low = text.toLowerCase();
   const m = ctx.metrics;
@@ -202,8 +279,11 @@ export function coachReply(text: string, ctx: Ctx, { t, tl, tc }: CoachTr, listF
     return t("reply.weightLast", { weight: ctx.weight.toFixed(1) });
   }
   if (/fuerte|intens|sparring|entren|hoy|hard|train|today/.test(low)) {
-    if (rec && ctx.recovery?.state === "cuidado") return t("reply.hardCare", { chips: listFmt.format(rec.chips) });
-    if (isBigJump(m)) return tl("coach.replyHigh", { comparison: acwrTxt });
+    // F26: con una lesión guardada, el consejo de carga lleva su límite (solo lo que afecta a la zona)
+    const limit = injuries.length ? ` ${t("reply.injuryLimit", { areas })}${cite(SAFETY_RULES.newPain)}` : "";
+    if (rec && ctx.recovery?.state === "cuidado") return t("reply.hardCare", { chips: listFmt.format(rec.chips) }) + limit;
+    if (isBigJump(m)) return tl("coach.replyHigh", { comparison: acwrTxt }) + limit;
+    if (injuries.length) return t("reply.hardNormal", { acwr: acwrTxt }) + limit;
     if (ctx.recovery?.state === "listo") return t("reply.hardReady", { acwr: acwrTxt });
     return t("reply.hardNormal", { acwr: acwrTxt });
   }
