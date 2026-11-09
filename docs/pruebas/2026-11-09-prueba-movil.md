@@ -283,3 +283,80 @@ inseguros) y **menor** (detalle). Ninguno bloquea.
   su contraseña sugerida (ver F27), y Chrome a veces guarda solo las contraseñas que sugiere. Conviene
   que el usuario mire en passwords.google.com si hay alguna entrada de `localhost` y la borre: es de una
   cuenta de prueba local, sin valor.
+
+---
+
+## Ronda 3 (9-nov-2026, tarde): `feat/beta-coach` 5301609, arreglos A, F12, F13 y F29
+
+Pasada corta que pidió el jefe de FightLab para comprobar los arreglos. El montaje es el mismo (local,
+el móvil por adb, Chrome 156), con una **base de datos nueva** (`fightlab3`, con las migraciones
+coaching 0010/0011 y tickets 0001) y `seed_demo` otra vez. Antes de empezar no había ningún lock. Había
+un `adb forward tcp:9222` viejo de otra sesión, sin conexiones, y no se tocó: esta ronda usa 9223.
+
+Archivos de prueba: el menú de ejemplo `para-amigo/menu-ejemplo.json` del Entrenador IA (un ejemplo,
+no datos del usuario) y dos CSV de catálogo **inventados** de 5 filas (ids `PRB-00x` y EAN falsos).
+
+### Comprobado: arreglado
+
+| Qué | Resultado |
+|---|---|
+| **F3** dolor sin lesión guardada | «me duele la rodilla después del sparring, ¿entreno hoy?» → «Con un dolor nuevo o una lesión, hoy no cargues esa zona ni entrenes a través del dolor… para y ve a un médico…» ✅ |
+| **F3** con lesión guardada | La misma respuesta. «¿Entreno fuerte hoy?» añade «Ojo con tu lesión (Rodilla derecha tras sparring)…» ✅ |
+| **F26** golpe con síntomas | El chat pone el golpe por delante («Lo primero es el golpe en la cabeza que avisaste… nada de sparring ni contacto y nada de entrenar duro; el día del golpe, no entrenes»). El briefing dice «Tienes el contacto bloqueado…» con «Ver el bloqueo». Hoy enseña la tarjeta y «Plan del día: Golpe en la cabeza: el día del golpe no entrenes». El **plan ya hecho** y Mi rutina pasan sparring, rolls y competición a «Fuera esta semana: sin contacto hasta el alta de un clínico» **sin «Volver a preparar»** ✅ |
+| **F6** | «Hecha» suma al momento en Nutrición (Desayuno 690 kcal, «Del menú: marcada Hecha en Hoy (kcal previstas)»). Quitar la marca vuelve a 0. Al guardar «Cambiada» se restan esas kcal y dice «Apunta en Nutrición lo que comiste» ✅ |
+| **F28** | Hoy: «Hoy hay 2 pesajes: cuenta la media del día, 80,15 kg». Biometría marca los dos («Ese día hay 2 pesajes: cuenta la media del día») y el Resumen enseña 80,2 ✅ |
+| **F29** | Cena «No hecha» → «Preparar otro menú» (con el calamar en «No te gusta» para forzar el cambio) → la cena nueva sale sin marca, con «Antes, con otro plato: No hecha (Calamar a la plancha…). El menú de hoy ha cambiado» ✅ |
+| **F12** importar menú JSON | `schema: 1`: «Importado: Menú 2026-10-27 a 2026-11-09, 14 días, 0 sesiones de batch y 53 cosas en la lista». **Reimportar mantiene lo tachado** (2 de 53, también al recargar) ✅ |
+| **F12** Mi cocina | Menaje (ollas, olla exprés, sartenes, fuegos, air fryer, horno y microondas) y el comensal «Pareja: Cena, sin pescado, salvo gambas». Se guarda y sigue ahí al recargar ✅. En el menú nuevo de 7 días ninguna cena lleva pescado ✅ (pero ver R3-1) |
+| **F12** batch | «Abrir a pantalla completa» abre `/nutrition/menu/batch` con la sesión: 10 platos, 140 min previstos, cronograma por aparato con lo que hay en Mi cocina (y «Sartén · en lugar de Wok»). Reloj de la sesión exacto (15 s → 00:16), temporizador por paso (25 min → 24:57), `wakeLock`. Los pasos marcados y el reloj siguen al recargar (1 de 31) ✅ |
+| **F12** compra y PDF | Casillas que sobreviven a recargar y reimportar. PDF de 29 páginas (menú importado) y de 11 (menú de FightLab), con `[x]` en lo tachado y «Tandas a cocinar» ✅ |
+| **F13** catálogo | Vista previa «Tabla puntuada · 5 filas · 5 productos nuevos · Ninguna fila descartada · 4 bueno · 1 evitar», con las galletas en «Evitar» aunque el archivo dijera `top`. La tabla de equivalencias actualiza los 5 sin duplicar («Equivale a: copos de avena»). En la lista de la compra los productos salen por **sección** (Carne, Cereales, Huevos, Lácteos) con envases y coste. Los sustitutos con las mismas kcal funcionan con los alimentos del motor y con tus productos ✅ |
+| **F7** | «4 de 5 sesiones del plan»: Gimnasio 1 de 2, MMA 2 de 2 y Cardio 1 de 1 cuadran con la lista, ordenada del 3 al 9 de noviembre ✅ |
+| **F9** | El plan activo y el rehecho solo tienen «Cardio moderado · 20 min» ✅ |
+
+### Fallos de la ronda 3, por gravedad
+
+#### R3-1 (molesta). Menú de 7 días con tuppers y batch: de jueves a domingo no hay cena
+- **Pasos:** Mi cocina con un comensal «Cena: sin pescado, salvo gambas», y «calamar» en «No te gusta».
+  Menú → 7 días, tupper en Comida y Cena, «Cocinar los tuppers en una sesión de batch» → Preparar otro
+  menú.
+- **Resultado:** lunes a miércoles tienen 4 comidas, pero **jueves, viernes, sábado y domingo solo
+  tienen Desayuno, Comida y Merienda**. Aun así salen «COMPROBADO» con 2854–2865 kcal (el motor reparte
+  la energía en 3 comidas) y no hay ningún aviso de que falte la cena.
+- **Sospecha:** con la cena sin pescado, sin calamar y sin repetir platos en 7 días se acaban las cenas
+  posibles y el día se queda sin ella en silencio. Debería avisar o relajar la regla de no repetir.
+- Captura: [`40-r3-menu-jueves-sin-cena.jpg`](capturas/40-r3-menu-jueves-sin-cena.jpg).
+
+#### R3-2 (molesta). Compra «por semana» del menú importado: las pestañas no filtran
+- **Pasos:** importar `menu-ejemplo.json` (14 días) → Lista de la compra → «Semana 1» o «Semana 2».
+- **Resultado:** la pestaña se marca, pero las dos semanas enseñan las mismas 53 cosas con las
+  cantidades de los 14 días (por ejemplo, 4460 g de leche en «Semana 1»). El JSON no trae la semana de
+  cada producto, pero sí los platos de cada día. Si no se puede repartir, mejor no enseñar las pestañas.
+- Todo cae en **«Otros»**: sin un catálogo de la cadena no hay secciones. Con el catálogo de F13 sí
+  salen (Carne, Lácteos…), pero solo para los productos con equivalencia.
+- Captura: [`41-r3-compra-semana-sin-filtrar.jpg`](capturas/41-r3-compra-semana-sin-filtrar.jpg).
+
+#### R3-3 (molesta, seguridad leve). Tras el golpe, el plan sigue ofreciendo trabajo «Vigoroso»
+- **Resultado:** tras avisar del golpe, el plan saca el contacto, pero en «Puedes hacer» siguen «Paos a
+  ritmo alto (Vigorosa)» y «Drills a tope (Vigorosa)». El briefing y el chat dicen «nada de entrenar
+  duro hasta que un clínico te dé el alta». Además, la cabecera del Coach sigue diciendo **«LISTO PARA
+  ENTRENAR»** encima del briefing del bloqueo.
+- Capturas: [`42-r3-plan-golpe-vigoroso.jpg`](capturas/42-r3-plan-golpe-vigoroso.jpg),
+  [`43-r3-coach-listo-para-entrenar.jpg`](capturas/43-r3-coach-listo-para-entrenar.jpg).
+
+#### Menores
+| # | Qué pasa |
+|---|---|
+| R3-4 | La lista de la compra y el PDF enseñan tal cual la nota en inglés del JSON: «amounts are for the form each name gives (raw, cooked, drained); a batch is bought once at its servings, `left_over` of them…» (con las comillas de código). Captura 41. |
+| R3-5 | Precio de un envase por unidades: los huevos («12 ud») salen como «1 envase de 12 ud · unos 0,53 €», que es el precio de los 126 g de la receta y no del envase que se compra. Con los envases en gramos el precio sí es el del envase. Captura 44. |
+| R3-6 | En el catálogo, un producto no dice por qué es «Evitar» ni que el archivo lo valoraba distinto (`top`), aunque el backend guarda la valoración del archivo para eso. Tocar el producto no abre detalle. |
+| R3-7 | Sustitutos de 50 g de galletas: el primero es «45 g de patatas fritas de bolsa». Los genéricos del motor no tienen valoración, así que un sustituto poco sano sale arriba. Captura 45. |
+| R3-8 | Con un menú importado, los objetivos del día salen todos como «Convención de FightLab, sin revisar», cuando en un menú de FightLab llevan su evidencia (moderada o fuerte). |
+| R3-9 | Al guardar «Contarle a mi coach», la conversación del chat se vacía (se pierde la pregunta anterior). |
+| R3-10 | Siguen los decimales con punto en Biometría («80.4», «IMC 25.4»), Coach («80.4 KG») y sustitutos («34.1 g proteína»): era el F12 de la primera ronda, no este F12. |
+| R3-11 | La revisión da por «Hecha el 7 de noviembre» la sesión de cardio prevista el 9: cuenta una sesión de antes del día previsto. Puede ser a propósito. |
+
+### Sin probar en esta ronda
+- **Tickets de la compra:** «La subida de fotos de tickets no está configurada en este servidor» (sin
+  R2, como se esperaba en local).
+- La IA real (sin clave) y los avisos push (Chrome sigue con las notificaciones desactivadas en Android).
