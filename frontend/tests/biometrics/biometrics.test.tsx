@@ -159,6 +159,9 @@ describe.each([
     const { container, errors } = renderIn(locale, messages, <BiometricsPage />);
     expectClean(container, errors, locale);
     if (locale === "en") expect(container.textContent).toContain("No weight data");
+    // F28: «← Inicio» lleva a Hoy, que es el inicio
+    expect(container.querySelector('a[href="/today"]')).toBeTruthy();
+    expect(container.querySelector('a[href="/dashboard"]')).toBeNull();
   });
 
   it("rango sin datos pero con historial", () => {

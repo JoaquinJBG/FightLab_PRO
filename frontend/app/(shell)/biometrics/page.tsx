@@ -202,7 +202,7 @@ export default function BiometricsPage() {
 
   return (
     <div className="pt-4">
-      <Link href="/dashboard" className="t-label text-muted">{t("back")}</Link>
+      <Link href="/today" className="t-label text-muted">{t("back")}</Link>
       <div className="mt-2 flex items-center justify-between">
         <h1 className="t-display text-2xl text-ink">{t("title")}</h1>
         <Link href="/biometrics/new" className="btn btn-tonal btn-sm">{t("addMeasurement")}</Link>

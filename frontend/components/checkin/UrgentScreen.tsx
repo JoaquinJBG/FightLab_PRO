@@ -44,7 +44,7 @@ export function UrgentScreen({ result }: { result: CheckinResult }) {
           <p className="t-body mt-3 text-[11px] italic text-muted">{result.safety.deferral_line}</p>
         )}
       </section>
-      <Link href="/dashboard" className="btn btn-tonal mt-4 w-full">
+      <Link href="/today" className="btn btn-tonal mt-4 w-full">
         {t("understood")}
       </Link>
     </div>
