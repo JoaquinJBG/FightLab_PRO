@@ -45,3 +45,12 @@ The code of FightLab Pro (`backend/`, `frontend/`, including the UI message cata
   redistributed: users get it from https://eparmedx.com.
 - The studies, guidelines and books cited as evidence remain under their own copyright and
   licences.
+- The exercise library's third-party media and texts are **excluded** from this licence and from
+  the MIT licence: the images in `frontend/public/exercise-media/` and the wger and Everkinetic
+  steps in `backend/exercises/data/exercise_catalog.json`. They come from wger
+  (https://wger.de) and Everkinetic (https://github.com/everkinetic/data) and keep their own
+  licence (CC BY-SA 3.0 or 4.0) and author, listed per file in
+  `frontend/public/exercise-media/ATTRIBUTION.md` and on the app's Credits screen. The changes
+  made are technical only (resizing, WebP conversion, SVG minification, HTML turned into steps).
+  The steps credited to FightLab in that catalogue (combat drills and a few others) are FightLab
+  Pro's own content under CC BY 4.0.

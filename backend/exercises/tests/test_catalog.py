@@ -3,6 +3,7 @@
 `test_every_image_has_author_and_license` es la garantía de licencias de la F17: falla si alguna
 imagen del catálogo no tiene autor, licencia, enlace a la licencia y a la fuente.
 """
+import json
 from pathlib import Path
 
 import pytest
@@ -38,8 +39,9 @@ def test_entry_shape(entry):
     assert entry["equipment"] and set(entry["equipment"]) <= set(EQUIPMENT)
     for lang in ("es", "en"):
         assert all(isinstance(s, str) and s.strip() for s in entry["instructions"][lang])
-    if entry["instructions"]["es"] or entry["instructions"]["en"]:
-        assert entry["text_credit"], "pasos sin crédito"
+        if entry["instructions"][lang]:
+            assert entry["text_credits"].get(lang), f"pasos en {lang} sin crédito"
+    assert entry["instructions"]["es"] or entry["instructions"]["en"], "sin pasos en ningún idioma"
 
 
 @pytest.mark.parametrize("entry", ENTRIES, ids=lambda e: e["key"])
@@ -57,10 +59,40 @@ def test_every_image_has_author_and_license(entry):
 
 def test_text_credits_are_complete():
     for entry in ENTRIES:
-        credit = entry["text_credit"]
-        if credit and credit["source"] == "wger":
-            assert credit["author"].strip() and credit["license"] in OPEN_LICENSES, entry["key"]
-            assert credit["source_url"].startswith("https://wger.de/"), entry["key"]
+        for lang, credit in entry["text_credits"].items():
+            assert credit["source"] in {"wger", "everkinetic", "fightlab"}, entry["key"]
+            assert credit["author"].strip(), (entry["key"], lang)
+            assert credit["license"] in OPEN_LICENSES, (entry["key"], lang)
+            assert credit["license_url"].startswith("https://creativecommons.org/"), (entry["key"], lang)
+            assert credit["source_url"].startswith("https://"), (entry["key"], lang)
+
+
+def test_library_30_have_images_except_known_gaps():
+    """Los 30 de `LIBRARY` tienen imagen salvo los que no tienen ninguna abierta con autor (lista
+    revisada a mano: si cambia, que sea a propósito)."""
+    from exercises.legacy import legacy_exercise_key
+
+    from .test_legacy import library_names
+
+    without = sorted(
+        key for key in (legacy_exercise_key(n) for n in library_names())
+        if not next(e for e in ENTRIES if e["key"] == key)["images"]
+    )
+    assert without == ["cat:arnold-press", "cat:cable-crunch", "cat:romanian-deadlift"]
+
+
+def test_coverage():
+    by_cat = {c: sum(1 for e in ENTRIES if e["category"] == c) for c in CATEGORIES}
+    assert len(ENTRIES) >= 100
+    assert 30 <= by_cat["mobility"] <= 60
+    assert by_cat["combat"] >= 5
+
+
+def test_no_excluded_sources():
+    """Nada de ExerciseDB, openGym/Gym visual, MuscleWiki ni free-exercise-db."""
+    text = json.dumps(ENTRIES).lower()
+    for banned in ("exercisedb", "opengym", "gymvisual", "gym visual", "musclewiki", "free-exercise-db", "yuhonas"):
+        assert banned not in text, banned
 
 
 def media_files() -> list[Path]:

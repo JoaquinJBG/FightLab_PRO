@@ -79,9 +79,11 @@ export function ExerciseCredits({ exercise }: { exercise: Exercise }) {
             {img.modified ? <span> · {t("modified", { modified: img.modified })}</span> : null}
           </li>
         ))}
-        {tc?.source === "wger" && tc.author && tc.license && (
+        {tc && tc.source !== "fightlab" && tc.author && tc.license && (
           <li>
-            <Ext href={tc.source_url ?? "https://wger.de/"}>{t("textCredit", { author: tc.author, license: tc.license })}</Ext>
+            <Ext href={tc.source_url ?? "https://wger.de/"}>
+              {t("textCredit", { author: tc.author, source: tc.source === "wger" ? "wger" : "Everkinetic", license: tc.license })}
+            </Ext>
             {tc.license_url ? <> · <Ext href={tc.license_url}>{tc.license}</Ext></> : null}
             {tc.modified ? <span> · {t("modified", { modified: tc.modified })}</span> : null}
           </li>

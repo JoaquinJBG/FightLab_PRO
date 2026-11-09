@@ -76,9 +76,11 @@ def _attribution(entry: dict) -> str | None:
     licenses = sorted({img["license"] for img in entry.get("images", [])})
     if authors:
         parts.append(f"{', '.join(authors)} · {', '.join(licenses)}")
-    credit = entry.get("text_credit") or {}
-    if credit.get("source") == "wger":
-        parts.append(f"{credit['author']} (wger) · {credit['license']}")
+    for credit in entry.get("text_credits", {}).values():
+        if credit["source"] != "fightlab":
+            line = f"{credit['author']} ({credit['source']}) · {credit['license']}"
+            if line not in parts:
+                parts.append(line)
     return " / ".join(parts) or None
 
 
@@ -87,9 +89,9 @@ def _source(entry: dict) -> str:
     for img in entry.get("images", []):
         if img["source"] not in sources:
             sources.append(img["source"])
-    credit = entry.get("text_credit") or {}
-    if credit.get("source") and credit["source"] not in sources:
-        sources.append(credit["source"])
+    for credit in entry.get("text_credits", {}).values():
+        if credit["source"] not in sources:
+            sources.append(credit["source"])
     return "+".join(sources) or "fightlab"
 
 
@@ -128,7 +130,8 @@ def serialize_entry(entry: dict, lang: str) -> dict:
         ],
         "instructions": instructions,
         "instructions_lang": instructions_lang,
-        "text_credit": entry.get("text_credit"),
+        # El crédito del texto que se enseña (cada idioma puede tener otro autor y licencia)
+        "text_credit": entry.get("text_credits", {}).get(instructions_lang) if instructions_lang else None,
         "notes": "",
         "source": _source(entry),
         "attribution": _attribution(entry),

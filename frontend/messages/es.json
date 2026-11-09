@@ -24,6 +24,18 @@
     "fightlab": {
       "title": "Licencia de FightLab",
       "body": "FightLab Pro, de Joaquín J Beltrán García. Código bajo MIT (<license>LICENSE</license>); contenido bajo CC BY 4.0 (<licenseContent>LICENSE-CONTENT.md</licenseContent>)."
+    },
+    "exercises": {
+      "title": "Biblioteca de ejercicios",
+      "body": "Las imágenes y parte de los pasos vienen de <wger>wger</wger> y de <ek>Everkinetic</ek>, con licencia <ccbysa>CC BY-SA</ccbysa> y el autor de cada una. No están bajo la licencia del código ni bajo la CC BY 4.0 de FightLab: solo se han redimensionado, pasado a WebP o minificado. Los pasos del combate y algunos más son de FightLab (CC BY 4.0).",
+      "link": "Ver los créditos de cada imagen",
+      "pageTitle": "Créditos de los ejercicios",
+      "intro": "Autor, fuente y licencia de cada imagen y texto de la biblioteca. Toca un nombre para abrir su ficha.",
+      "images": "Imágenes",
+      "texts": "Textos",
+      "loading": "Cargando los créditos…",
+      "error": "No se pudieron cargar los créditos.",
+      "count": "{n, plural, one {# ejercicio con créditos} other {# ejercicios con créditos}}"
     }
   },
   "evidence": {
@@ -2830,7 +2842,7 @@
       "frame": "Fotograma {n} de {total}",
       "credits": "Créditos",
       "imageCredit": "Imagen: {author} ({source}) · {license}",
-      "textCredit": "Texto: {author} (wger) · {license}",
+      "textCredit": "Texto: {author} ({source}) · {license}",
       "ownText": "Texto: FightLab · CC BY 4.0",
       "modified": "Cambios: {modified}",
       "custom": "Ejercicio propio",
