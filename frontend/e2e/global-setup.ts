@@ -52,6 +52,7 @@ SETUPS = {
     "historyScoff": ({}, {"scoff_yes_count": 2}),
     "today": ({"timezone": "Europe/Madrid"}, {}),
     "routines": ({}, {}),
+    "gymLog": ({}, {}),
     "catalogue": ({}, {}),
     "menuImport": ({"timezone": "Europe/Madrid"}, {}),
     "batch": ({"timezone": "Europe/Madrid"}, {}),

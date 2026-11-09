@@ -41,6 +41,8 @@ export const READY_USERS = {
   today: "e2e-today@fightlab.test",
   // F17 R (rutinas y programas): con una lesión sin evaluar que pausa la sentadilla.
   routines: "e2e-routines@fightlab.test",
+  // F17 H (registro, historial y récords): importa de Hevy y entrena desde la rutina importada.
+  gymLog: "e2e-gymlog@fightlab.test",
   // Fase 13: catálogo de cadena privado (CSV inventado) y su valoración.
   catalogue: "e2e-catalogue@fightlab.test",
   // Fase 12: importar menús completos (JSON schema 1 y YAML del coach) y la sesión de batch con el
