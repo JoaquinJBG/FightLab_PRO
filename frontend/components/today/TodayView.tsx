@@ -217,6 +217,11 @@ function Weight({ state }: { state: TodayState }) {
           {t("saved", { kg: format.number(state.weight_kg, { maximumFractionDigits: 2 }) })}
         </p>
       )}
+      {state.day_weight && state.day_weight.count > 1 && (
+        <p data-testid="weight-day-mean" className="t-body mt-1 text-xs text-muted">
+          {t("dayMean", { count: state.day_weight.count, kg: format.number(state.day_weight.kg, { maximumFractionDigits: 2 }) })}
+        </p>
+      )}
       <form onSubmit={submit} className="mt-2 flex items-end gap-2">
         <label className="flex flex-1 flex-col gap-1">
           <span className="t-body text-xs text-muted">{t("label")}</span>

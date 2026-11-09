@@ -177,6 +177,12 @@ describe("Hoy", () => {
     expect((await screen.findByTestId("weight-saved")).textContent).toBe("Guardado: 72,4 kg");
   });
 
+  it("F28: con dos pesajes hoy dice que cuenta la media del día", async () => {
+    api(day({ weight_kg: 80.1, day_weight: { kg: 80.3, count: 2 } }));
+    renderApp(<TodayPage />);
+    expect((await screen.findByTestId("weight-day-mean")).textContent).toBe("Hoy hay 2 pesajes: cuenta la media del día, 80,3 kg.");
+  });
+
   it("F6: «Hecha» dice que se ha sumado a Nutrición y «Cambiada» lleva a apuntar lo que se comió", async () => {
     const meals = day().menu!.meals;
     api(day({

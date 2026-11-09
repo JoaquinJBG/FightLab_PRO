@@ -747,7 +747,8 @@
       "weight": "{n} kg",
       "recovery": "Recovery",
       "unknownDate": "Unknown date",
-      "deleteAria": "Delete entry"
+      "deleteAria": "Delete entry",
+      "dayMean": "There are {count} weigh-ins that day: the day's average counts."
     },
     "photos": {
       "title": "Progress photos",
@@ -2652,7 +2653,8 @@
       "save": "Save",
       "saved": "Saved: {kg} kg",
       "invalid": "Type a number, e.g. 72.4",
-      "blocked": "Weight isn't logged for now: your screening answers turn it off. Everything else works as usual."
+      "blocked": "Weight isn't logged for now: your screening answers turn it off. Everything else works as usual.",
+      "dayMean": "There are {count} weigh-ins today: the day's average counts, {kg} kg."
     },
     "meals": {
       "title": "Menu meals",

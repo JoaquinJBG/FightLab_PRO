@@ -468,9 +468,20 @@ def save_meal(user, day: date, today: date, meal: str, state: str | None, change
     )
 
 
+def day_weight(user, day: date, blocked: bool) -> dict | None:
+    """El peso que cuenta ese día (F28): la media de sus pesajes, con cuántos hubo."""
+    if blocked:
+        return None
+    from .bridge.adapters import daily_weights
+
+    found = next(((kg, n) for d, kg, n in daily_weights(user) if d == day), None)
+    return {"kg": round(found[0], 2), "count": found[1]} if found else None
+
+
 def today_data(user, day: date, today: date) -> dict:
     row = user.profile.day_logs.filter(date=day).first()
     data = checkin.checkin_data(user, day, today)
+    weight_blocked = checkin.weight_tracking_blocked(user, today)
     plan = plan_for(user, day)
     menu = meals_for(user, day)
     set_type = DAY_TYPE_KEYS.get(row.day_type) if row else None
@@ -484,7 +495,8 @@ def today_data(user, day: date, today: date) -> dict:
         "trained": row.trained if row else None,
         "mobility": row.mobility if row else None,
         "weight_kg": data["weight_kg"] if data else None,
-        "weight_blocked": checkin.weight_tracking_blocked(user, today),
+        "weight_blocked": weight_blocked,
+        "day_weight": day_weight(user, day, weight_blocked),
         "menu": menu,
         "next_meal": next_meal(menu),
         "cardio": cardio_for(user, day),

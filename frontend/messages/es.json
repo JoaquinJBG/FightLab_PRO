@@ -747,7 +747,8 @@
       "weight": "{n} kg",
       "recovery": "Recuperación",
       "unknownDate": "Fecha desconocida",
-      "deleteAria": "Borrar entrada"
+      "deleteAria": "Borrar entrada",
+      "dayMean": "Ese día hay {count} pesajes: cuenta la media del día."
     },
     "photos": {
       "title": "Fotos de progreso",
@@ -2652,7 +2653,8 @@
       "save": "Guardar",
       "saved": "Guardado: {kg} kg",
       "invalid": "Escribe un número, p. ej. 72,4",
-      "blocked": "El peso no se apunta por ahora: tus respuestas del cribado lo cierran. Lo demás sigue igual."
+      "blocked": "El peso no se apunta por ahora: tus respuestas del cribado lo cierran. Lo demás sigue igual.",
+      "dayMean": "Hoy hay {count} pesajes: cuenta la media del día, {kg} kg."
     },
     "meals": {
       "title": "Comidas del menú",

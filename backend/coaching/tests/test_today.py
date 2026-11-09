@@ -275,6 +275,27 @@ def test_the_diary_write_wins_over_a_client_clock_slightly_ahead():
     assert entry.updated_at > ahead and len(entry.value) == 1
 
 
+def test_two_weigh_ins_on_the_same_day_count_as_their_mean_everywhere():
+    """F28: el pesaje de Hoy (8:00) y otro de Biometría (11:21) el mismo día. Cuenta la media del
+    día, como la tendencia del motor: Hoy, el último peso (`/coach/safety`) y la tendencia."""
+    from coaching.bridge.adapters import daily_weights, latest_weight
+    from profiles.models import BiometricsLog
+
+    user = athlete(weight=None)
+    client = client_for(user)
+    client.post(URL, {"weight_kg": 80.1}, format="json")
+    BiometricsLog.objects.create(profile=user.profile, weight_kg=80.5, timestamp=datetime.combine(TODAY, time(11, 21), tzinfo=MADRID))
+    body = client.get(URL).json()
+    assert body["weight_kg"] == 80.1  # lo apuntado en Hoy sigue siendo lo de Hoy
+    assert body["day_weight"] == {"kg": 80.3, "count": 2}
+    assert daily_weights(user)[-1][1:] == (pytest.approx(80.3), 2)
+    assert latest_weight(user, TODAY) == (pytest.approx(80.3), TODAY)
+    assert client.get("/api/v1/coach/safety").json()["weight"]["kg"] == pytest.approx(80.3)
+    # Otro día con un solo pesaje: ese pesaje
+    yesterday = client.get(URL, {"date": (TODAY - timedelta(days=1)).isoformat()}).json()
+    assert yesterday["day_weight"] is None
+
+
 def test_meal_marks_are_validated_against_the_menu():
     user = athlete()
     client = client_for(user)

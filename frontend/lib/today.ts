@@ -72,6 +72,8 @@ export const todayState = z.object({
   mobility: z.boolean().nullable(),
   weight_kg: z.number().nullable(),
   weight_blocked: z.boolean(),
+  // F28: el peso que cuenta ese día (la media de sus pesajes) y cuántos hubo
+  day_weight: z.object({ kg: z.number(), count: z.number() }).nullable().optional(),
   menu: z.object({ id: z.number(), start_date: z.string(), meals: z.array(meal) }).nullable(),
   next_meal: z
     .union([

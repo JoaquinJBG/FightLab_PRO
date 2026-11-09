@@ -8,6 +8,7 @@ import { CitedText, type Citation } from "@/components/evidence/CitedText";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { comparisonRule, loadBadge, ruleCitations } from "@/lib/load-texts";
 import { computeRecovery } from "@/lib/recovery";
+import { latestWeightKg } from "@/lib/body-inputs";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
 import { buildBriefing, buildRecs, coachReply, injuryAreas, num, recoveryText, type CoachTr, type Ctx } from "@/lib/coach-rules";
 import { fetchServerMetrics } from "@/lib/activities";
@@ -105,7 +106,8 @@ export default function CoachPage() {
 
   const recovery = computeRecovery(logs);
   const lastWeightLog = weightHidden ? undefined : logs.find((l) => num(l.weight_kg ?? null) !== null);
-  const weight = lastWeightLog ? num(lastWeightLog.weight_kg ?? null) : null;
+  // F28: con dos pesajes el mismo día cuenta la media del día, como en Biometría, Hoy y la tendencia
+  const weight = lastWeightLog ? latestWeightKg(logs) : null;
   const lastWeightDays = lastWeightLog
     ? Math.round((new Date().setHours(0, 0, 0, 0) - new Date(lastWeightLog.timestamp).setHours(0, 0, 0, 0)) / 86_400_000)
     : null;
