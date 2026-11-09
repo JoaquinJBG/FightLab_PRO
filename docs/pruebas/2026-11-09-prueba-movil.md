@@ -11,9 +11,14 @@ cuenta nueva (`prueba2@fightlab.test`) con el alta completa. Contraseñas de pru
 solo en el `.env` local (sin commit). Sin `ANTHROPIC_API_KEY`: el chat responde por reglas.
 
 **Resumen.** La app funciona de punta a punta en el móvil y se puede usar a diario: alta, Hoy,
-check-in, entrenos, plan, revisión, menú con PDF, importar historial y PWA. **Ningún fallo bloquea.**
-Antes de dejar Entrenador IA conviene arreglar **F3** (seguridad del chat por reglas), **F2** (datos
-de gimnasio corruptos) y **F1** (historial que parece borrado).
+check-in, entrenos, deportes, biometría, temporizador, plan, revisión, menú con PDF, importar
+historial, recuperar contraseña y PWA. **Ningún fallo bloquea.** Antes de dejar Entrenador IA conviene
+arreglar **F3 y F26** (seguridad: el chat por reglas no tiene en cuenta el dolor, la lesión ni un golpe
+en la cabeza), **F2** (datos de gimnasio corruptos) y **F1** (historial que parece borrado).
+
+La prueba se hizo en dos rondas: la primera por la mañana y la segunda, a partir de las 11:15, cuando
+el usuario dejó Chrome abierto para seguir (deportes, biometría, herramientas, golpe en la cabeza,
+memoria del coach, gustos del menú y recuperar contraseña).
 
 Hoja de contacto: [`capturas/00-hoja-de-contacto.jpg`](capturas/00-hoja-de-contacto.jpg).
 
@@ -34,7 +39,29 @@ inseguros) y **menor** (detalle). Ninguno bloquea.
 - **Esperado:** el modo por reglas no debería contestar a mensajes con dolor o lesión con un «dale
   duro». Debería llevar a la regla de dolor nuevo o a «para y consulta», como hacen el check-in y el
   cribado.
-- Captura: [`13-coach-reglas-dale-duro.jpg`](capturas/13-coach-reglas-dale-duro.jpg).
+- **Segunda ronda:** se guardó en «Contarle a mi coach» la lesión «Rodilla derecha tras sparring» y se
+  volvió a preguntar «me duele la rodilla, ¿entreno hoy?». Respuesta: «Hoy no es el día de matarte: FC
+  reposo… Técnica de calidad (RPE 5-6) y a dormir». Habla de la FC y la HRV, pero **no menciona ni el
+  dolor ni la lesión guardada**.
+- Capturas: [`13-coach-reglas-dale-duro.jpg`](capturas/13-coach-reglas-dale-duro.jpg),
+  [`33-coach-memoria-y-dolor.jpg`](capturas/33-coach-memoria-y-dolor.jpg).
+
+#### F26. Tras avisar de un golpe en la cabeza con síntomas, el chat y el plan activo no lo tienen en cuenta (seguridad, prioridad alta)
+- **Pasos:** Entreno → MMA → «Avisar de un golpe en la cabeza» → síntomas: Sí, alarma: No → Guardar
+  aviso. La tarjeta dice bien «CONTACTO BLOQUEADO» y Hoy muestra «El día del golpe, no entrenes».
+  Después: Coach → «¿Entreno fuerte hoy?».
+- **Resultado:**
+  - El chat por reglas contesta «Técnica de calidad (RPE 5-6) y a dormir», sin nombrar el golpe,
+    cuando Hoy dice que ese día no se entrena.
+  - El briefing del Coach sigue con «Ir a entrenar».
+  - El plan de la semana **ya activo** sigue ofreciendo el jueves «Sparring duro, Competición, Rolls
+    duros…». Solo al pulsar «Volver a preparar» pasan a «Fuera esta semana: sin contacto hasta el alta
+    de un clínico», y eso sí está bien.
+- **Esperado:** que el aviso de golpe actualice el plan activo (o avise de que hay que rehacerlo) y que
+  el chat por reglas lo ponga por delante de cualquier otra cosa.
+- Capturas: [`30-golpe-contacto-bloqueado.jpg`](capturas/30-golpe-contacto-bloqueado.jpg),
+  [`31-coach-tras-golpe.jpg`](capturas/31-coach-tras-golpe.jpg),
+  [`32-plan-rehecho-tras-golpe.jpg`](capturas/32-plan-rehecho-tras-golpe.jpg).
 
 #### F2. El peso de una serie admite texto mal formado y corrompe el entreno
 - **Pasos:** Entreno → Gimnasio → Empezar entreno → Sentadilla → «toca para copiar» la serie anterior
@@ -57,7 +84,9 @@ inseguros) y **menor** (detalle). Ninguno bloquea.
   las 10. No se pierden datos, pero parece que se ha borrado el historial. Se ha reproducido 2 veces.
 - **Relacionado:** en Gimnasio, «Últimos entrenos» solo muestra la sesión hecha en este móvil. Las 4
   sesiones de gimnasio de la demo, que están en el servidor, no aparecen ni al recargar. Puede ser la
-  misma causa: la lista sale de la caché local y no del servidor.
+  misma causa: la lista sale de la caché local y no del servidor. Pasa lo mismo en Deportes: «Tu
+  actividad» solo enseña la carrera de hoy y no las 5 sesiones de deporte de la demo
+  ([`27-deporte-solo-sesion-local.jpg`](capturas/27-deporte-solo-sesion-local.jpg)).
 - Capturas: [`08-mma-lista-antes.jpg`](capturas/08-mma-lista-antes.jpg) →
   [`09-mma-lista-tras-guardar.jpg`](capturas/09-mma-lista-tras-guardar.jpg) →
   [`10-mma-lista-tras-recargar.jpg`](capturas/10-mma-lista-tras-recargar.jpg).
@@ -106,8 +135,10 @@ inseguros) y **menor** (detalle). Ninguno bloquea.
 #### F9. El plan propone «Cardio moderado · 5 min» (por confirmar)
 - **Dónde:** el plan de la demo tiene lunes, miércoles y sábado con «Cardio moderado · 5 min», y Hoy
   muestra «Plan del día: Cardio, 5 min». Una sesión de 5 minutos no tiene sentido. Puede venir del
-  motor (lo que falta para llegar a 150 min repartido) o de `seed_demo`. Hay que mirarlo con una cuenta
-  real antes de dar el plan por bueno.
+  motor (lo que falta para llegar a 150 min repartido) o de `seed_demo`. **Segunda ronda:** con 124 de
+  150 min ya hechos, «Volver a preparar» deja esos días en «Descanso». Eso apunta al motor: reparte lo
+  que falta hasta 150 en sesiones sueltas, aunque salgan de 5 minutos. Conviene poner un mínimo por
+  sesión (por ejemplo 20 min) o juntar lo que falta en menos días.
 - Captura: [`06-hoy-demo.jpg`](capturas/06-hoy-demo.jpg).
 
 ### Menor
@@ -119,7 +150,7 @@ inseguros) y **menor** (detalle). Ninguno bloquea.
 | F12 | Decimales con punto en la interfaz en español: «92.5 kg», «80.1 KG» (Coach y chat), «610.938» (¿miles o decimales?). Fecha de nacimiento en ISO en Perfil («1990-06-15») y fechas ISO en el PDF. | Gimnasio, Coach, Perfil, PDF |
 | F13 | Perfil muestra «ATHLETE» en inglés con la app en español. | Perfil |
 | F14 | Error de hidratación de React #418 en la consola en `/training` y `/training/load` (el HTML del servidor no coincide con el del cliente, probablemente la carga leída de `localStorage`). | Consola (CDP) |
-| F15 | Tras «Cerrar sesión», la URL es `/login?reason=expired` (no ha caducado) y siguen saliendo peticiones a `/me`, `/me/profile` y `/coach/safety` que dan 401. | Consola y log del BFF |
+| F15 | Tras «Cerrar sesión» a propósito, la pantalla de entrada dice **«Sesión caducada. Vuelve a iniciar sesión para continuar.»** (URL `/login?reason=expired`), y siguen saliendo peticiones a `/me`, `/me/profile` y `/coach/safety` que dan 401. | [`35-cerrar-sesion-caducada.jpg`](capturas/35-cerrar-sesion-caducada.jpg) |
 | F16 | El icono de la PWA es una «F» y el logo de la app dice «FL». | [`23-pwa-instalar.jpg`](capturas/23-pwa-instalar.jpg) |
 | F17 | Importar con solo archivos ilegibles dice «No hay nada nuevo que importar: todo lo de los archivos ya estaba» y deja el botón «Importar». | [`21-importar-archivos-malos.jpg`](capturas/21-importar-archivos-malos.jpg) |
 | F18 | La barra flotante del descanso entre series tapa el botón «Terminar entreno». | [`11-gym-peso-malformado.jpg`](capturas/11-gym-peso-malformado.jpg) |
@@ -130,6 +161,10 @@ inseguros) y **menor** (detalle). Ninguno bloquea.
 | F23 | Con una lesión en el alta, la tarjeta de seguridad ocupa toda la primera pantalla de Hoy cada día. | [`05-alta-nueva-hoy.jpg`](capturas/05-alta-nueva-hoy.jpg) |
 | F24 | Redondeo: Nutrición dice proteína 160 g y Menú «al menos 161 g». | Nutrición, Menú |
 | F25 | `docker-compose.yml` no lanza `createcachetable`: sin esa tabla, el registro da 500 y la app dice «No se pudo registrar». El README sí lo pone. | Entorno local |
+| F27 | «Elige una contraseña nueva» no tiene un campo de usuario (oculto, con `autocomplete="username"`). Chrome no sabe de qué cuenta es: sugiere su propia contraseña y después pide «Añade tu nombre de usuario». En la prueba, Chrome puso su contraseña sugerida en los dos campos y fue la que se guardó en la cuenta de prueba. | Recuperar contraseña |
+| F28 | Hay dos pesajes el mismo día (el de Hoy a las 8:00 y uno de Biometría a las 11:21) y no queda claro cuál cuenta. Biometría también usa punto decimal («80.3 kg», «IMC 25.4»), y «← Inicio» lleva a `/dashboard`. | [`28-biometria-guardada.jpg`](capturas/28-biometria-guardada.jpg) |
+| F29 | Al preparar otro menú con la cena de hoy marcada «No hecha», la marca pasa al plato nuevo (de «Calamar…» a «Solomillo de cerdo…»), un plato que nunca estuvo en el día. | Hoy, tras «Preparar otro menú» |
+| F30 | Varios `POST /auth/refresh` seguidos (4 a la vez) al volver a la app: parece que varias peticiones renuevan el token a la vez en lugar de esperar a una sola. | Log del backend |
 
 ---
 
@@ -167,6 +202,27 @@ inseguros) y **menor** (detalle). Ninguno bloquea.
   Los nombres de los platos siguen en español porque son datos.
 - **Cron de avisos:** `/api/cron/tick` responde 401 sin secreto o con uno malo, y 200 con el bueno
   (`enabled: true`, llega al backend).
+- **Deportes:** el cronómetro de Correr (intensidad, kcal en vivo) **sigue contando con la app en
+  segundo plano** (52 s reales, 00:52 en pantalla). «Mantén para parar» funciona con pulsación larga.
+  La sesión se guarda con RPE y formato, y suma al cardio de Hoy (vigoroso ×2) junto con el MMA.
+  [`26-deporte-cronometro.jpg`](capturas/26-deporte-cronometro.jpg)
+- **Biometría:** la nueva medición guarda peso (la coma pasa a punto sin problema), FC en reposo y HRV,
+  y activa el estado de readiness («Tómatelo suave»). Tendencia e IMC con su evidencia, gráfica por
+  rangos, y borrar pide confirmación en dos toques («¿Borrar?»).
+- **Herramientas:** el temporizador de asaltos (preset Tabata 8 × 20 s/10 s) cambia bien entre
+  Prepárate, Trabajo y Descanso, va **exacto** frente al reloj (12 muestras cada 2 s) y pide
+  `wakeLock` para que no se apague la pantalla.
+  [`29-timer-rounds.jpg`](capturas/29-timer-rounds.jpg)
+- **Golpe en la cabeza:** la tarjeta «Contacto bloqueado» explica la vuelta al contacto en 6 pasos con
+  el CRT6 oficial, y Hoy muestra el aviso de seguridad. «Volver a preparar» el plan saca todo el
+  contacto con su motivo (ver F26 para lo que falla).
+- **Memoria del coach:** «Contarle a mi coach» guarda la lesión, el objetivo de peso y el tono, y los
+  enseña como etiquetas.
+- **Menú:** valorar un plato («No lo repetiría»), guardar gustos («No te gusta: calamar») y preparar
+  otro menú de 3 días en 5,5 s. **Ni el kéfir ni el calamar vuelven a salir.**
+  [`34-menu-nuevo-gustos.jpg`](capturas/34-menu-nuevo-gustos.jpg)
+- **Recuperar contraseña:** el email llega (por consola), el enlace abre «Elige una contraseña nueva»,
+  la cambia, y se entra con la nueva (ver F27).
 - **PWA:** se instala desde el menú de Chrome («Instalar y crear acceso directo» → Instalar, WebAPK) y
   se abre desde el icono a pantalla completa (`display-mode: standalone`) en `/today`.
 - **Rendimiento (en local, no representa Render):** cada pantalla carga en 0,8–1,25 s hasta
@@ -194,9 +250,10 @@ inseguros) y **menor** (detalle). Ninguno bloquea.
 - **Entorno alojado** (Render dormido, cookies entre Vercel y Render, Neon): fuera del alcance de esta
   prueba local.
 - **Tema claro u oscuro:** no hay ajuste de tema; la app solo tiene tema oscuro.
-- **Sin probar por tiempo:** Deportes, Biometría, Herramientas (temporizador de asaltos), «Avisar de un
-  golpe en la cabeza», cambiar un plato del menú, gustos y búsqueda de productos, «Olvidé mi
-  contraseña» y «Contarle a mi coach».
+- **Búsqueda de productos del súper (Open Food Facts):** está apagada sin `COACH_OFF_CONTACT`, como
+  dice `DEPLOY.md`.
+- **Sonido del temporizador** (aviso de fin de asalto): no se puede oír por adb.
+- **Fotos** (de progreso y de tickets): no se han subido para no tocar la galería del móvil.
 
 ---
 
@@ -221,3 +278,8 @@ inseguros) y **menor** (detalle). Ninguno bloquea.
 - Lo que queda en el móvil: la PWA de prueba «FightLab Pro» (WebAPK de `localhost`, que sin el PC no
   abre nada) y una pestaña de Chrome en `localhost:3456`. No se han quitado para no tocar nada que
   pudiera ser de antes: el usuario puede desinstalar ese icono y cerrar la pestaña.
+- **Gestor de contraseñas de Google:** Chrome ofreció tres veces guardar contraseñas de `localhost`. Las
+  tres se cerraron sin guardar (deslizar, «Cancelar»). Pero en «Elige una contraseña nueva» Chrome puso
+  su contraseña sugerida (ver F27), y Chrome a veces guarda solo las contraseñas que sugiere. Conviene
+  que el usuario mire en passwords.google.com si hay alguna entrada de `localhost` y la borre: es de una
+  cuenta de prueba local, sin valor.
