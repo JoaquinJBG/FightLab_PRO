@@ -2682,8 +2682,14 @@
       "android": "Android: en Chrome, con la app instalada o abierta en el navegador.",
       "ios": "iPhone y iPad: solo con la app añadida a la pantalla de inicio (Compartir → Añadir a pantalla de inicio), con iOS 16.4 o posterior.",
       "iosNow": "Estás en iPhone o iPad desde el navegador: añade primero la app a la pantalla de inicio (Compartir → Añadir a pantalla de inicio) y ábrela desde ahí.",
-      "unsupported": "Este navegador no admite avisos. En Android usa Chrome; en iPhone, añade la app a la pantalla de inicio (iOS 16.4+).",
-      "denied": "Has bloqueado los avisos para esta web. Actívalos en los ajustes del navegador (permisos del sitio → Notificaciones) y vuelve aquí."
+      "unsupported": "Este navegador no admite avisos. En Android usa Chrome; en iPhone, añade la app a la pantalla de inicio (iOS 16.4+)."
+    },
+    "help": {
+      "titleDefault": "No se han activado los avisos: el navegador no ha dado permiso.",
+      "titleDenied": "Has bloqueado los avisos para esta web.",
+      "android": "Android: toca el candado de la barra de direcciones → Permisos → Notificaciones → Permitir. Si no sale ninguna pregunta, las notificaciones de Chrome están apagadas en el móvil: Ajustes → Aplicaciones → Chrome → Notificaciones, y actívalas. Con la app instalada, mira también Ajustes → Aplicaciones → FightLab → Notificaciones.",
+      "ios": "iPhone y iPad: los avisos solo funcionan con la app en la pantalla de inicio (Compartir → Añadir a pantalla de inicio, iOS 16.4 o posterior) y abierta desde ese icono. Si ya la tienes así, mira Ajustes → Notificaciones → FightLab.",
+      "retry": "Cuando lo cambies, vuelve aquí y toca «Activar los avisos aquí»."
     },
     "device": {
       "title": "Este dispositivo",

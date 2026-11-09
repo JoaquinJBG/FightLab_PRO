@@ -2682,8 +2682,14 @@
       "android": "Android: in Chrome, with the app installed or open in the browser.",
       "ios": "iPhone and iPad: only with the app added to the home screen (Share → Add to Home Screen), on iOS 16.4 or later.",
       "iosNow": "You're on iPhone or iPad in the browser: first add the app to the home screen (Share → Add to Home Screen) and open it from there.",
-      "unsupported": "This browser doesn't support reminders. On Android use Chrome; on iPhone, add the app to the home screen (iOS 16.4+).",
-      "denied": "You've blocked notifications for this site. Allow them in the browser settings (site permissions → Notifications) and come back."
+      "unsupported": "This browser doesn't support reminders. On Android use Chrome; on iPhone, add the app to the home screen (iOS 16.4+)."
+    },
+    "help": {
+      "titleDefault": "Reminders aren't on: the browser didn't give permission.",
+      "titleDenied": "You've blocked notifications for this site.",
+      "android": "Android: tap the padlock in the address bar → Permissions → Notifications → Allow. If no prompt appears, Chrome's notifications are off on the phone: Settings → Apps → Chrome → Notifications, and turn them on. With the app installed, also check Settings → Apps → FightLab → Notifications.",
+      "ios": "iPhone and iPad: reminders only work with the app on the Home Screen (Share → Add to Home Screen, iOS 16.4 or later) and opened from that icon. If it's already there, check Settings → Notifications → FightLab.",
+      "retry": "Once you've changed it, come back and tap “Turn on reminders here”."
     },
     "device": {
       "title": "This device",

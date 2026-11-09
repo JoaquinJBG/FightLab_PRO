@@ -23,7 +23,10 @@ type Permission = NotificationPermission | "unknown";
 
 const noSubscribe = () => () => {};
 const readPermission = (): Permission => (typeof Notification === "undefined" ? "unknown" : Notification.permission);
-type Notice = "error" | "denied" | "testSent" | "testFailed" | null;
+// "denied" / "blocked": se pidió el permiso y no quedó concedido. Chrome puede dejarlo en
+// `default` sin preguntar (notificaciones apagadas en Android: "blocked") o en `denied`; en los
+// dos casos se explica cómo activarlo (F8 de la prueba en móvil).
+type Notice = "error" | "denied" | "blocked" | "testSent" | "testFailed" | null;
 
 const section = "glass rise mt-4 p-4";
 
@@ -43,6 +46,21 @@ function Switch({ id, checked, onChange, label, body }: { id: string; checked: b
         className="mt-1 h-5 w-5 shrink-0 accent-[#35e6ff]"
       />
     </label>
+  );
+}
+
+/** Cómo dar el permiso de avisos a mano, en Android y en iPhone. */
+function PermissionHelp({ denied }: { denied: boolean }) {
+  const t = useTranslations("reminders.help");
+  return (
+    <div data-testid="reminders-permission-help" role="alert" className="mt-3 rounded-2xl border border-[rgba(255,210,90,0.3)] bg-[rgba(255,210,90,0.06)] p-3">
+      <p className="t-label text-warn">{denied ? t("titleDenied") : t("titleDefault")}</p>
+      <ul className="t-body mt-2 list-disc space-y-1.5 pl-4 text-xs text-ink">
+        <li>{t("android")}</li>
+        <li>{t("ios")}</li>
+      </ul>
+      <p className="t-body mt-2 text-xs text-muted">{t("retry")}</p>
+    </div>
   );
 }
 
@@ -87,8 +105,8 @@ export function RemindersSettings() {
       if (permission === "granted") {
         setDevice("on");
         qc.invalidateQueries({ queryKey: ["push"] });
-      } else if (permission === "denied") {
-        setNotice("denied");
+      } else {
+        setNotice(permission === "denied" ? "denied" : "blocked");
       }
     } catch {
       setNotice("error");
@@ -150,12 +168,12 @@ export function RemindersSettings() {
             </button>
           )}
           {state && <p className="t-body mt-2 text-[11px] text-muted">{t("device.devices", { count: state.devices })}</p>}
-          {!notice && permission === "denied" && device !== "on" && (
-            <p role="alert" className="t-body mt-2 text-xs text-warn">{t("support.denied")}</p>
+          {device !== "on" && (notice === "denied" || notice === "blocked" || (!notice && permission === "denied")) && (
+            <PermissionHelp denied={notice === "denied" || permission === "denied"} />
           )}
-          {notice && (
+          {notice && notice !== "denied" && notice !== "blocked" && (
             <p role={notice === "testSent" ? "status" : "alert"} className={`t-body mt-2 text-xs ${notice === "testSent" ? "text-good" : "text-warn"}`}>
-              {notice === "denied" ? t("support.denied") : notice === "error" ? t("device.error") : t(`device.${notice}`)}
+              {notice === "error" ? t("device.error") : t(`device.${notice}`)}
             </p>
           )}
         </section>
