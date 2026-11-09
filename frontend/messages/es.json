@@ -2111,7 +2111,9 @@
       "intake": "Comiste de media {mean} kcal en {days, plural, one {# día registrado} other {# días registrados}}; tu objetivo es {target} kcal ({diff} kcal).",
       "intakeNoTarget": "Comiste de media {mean} kcal en {days, plural, one {# día registrado} other {# días registrados}}.",
       "intakeNone": "Sin ingesta registrada esta semana: anótala en el check-in para comparar con tu objetivo.",
-      "intakeBlocked": "Por seguridad no comparamos lo que comes con un objetivo de calorías."
+      "intakeBlocked": "Por seguridad no comparamos lo que comes con un objetivo de calorías.",
+      "doneOn": "Hecha el {date}",
+      "extra": "Fuera del plan"
     },
     "weight": {
       "ok": "Tendencia: {kg} kg de media la última semana; {rate} kg por semana ({pct} % por semana) en {days} días.",

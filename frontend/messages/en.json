@@ -2111,7 +2111,9 @@
       "intake": "You ate {mean} kcal on average over {days, plural, one {# logged day} other {# logged days}}; your target is {target} kcal ({diff} kcal).",
       "intakeNoTarget": "You ate {mean} kcal on average over {days, plural, one {# logged day} other {# logged days}}.",
       "intakeNone": "No intake logged this week: add it in the check-in to compare it with your target.",
-      "intakeBlocked": "For safety, what you eat is not compared with a calorie target."
+      "intakeBlocked": "For safety, what you eat is not compared with a calorie target.",
+      "doneOn": "Done on {date}",
+      "extra": "Not in the plan"
     },
     "weight": {
       "ok": "Trend: {kg} kg average over the last week; {rate} kg a week ({pct} % a week) over {days} days.",
