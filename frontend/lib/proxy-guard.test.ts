@@ -76,6 +76,13 @@ describe("isPrefixAllowed", () => {
     expect(isPrefixAllowed(["me"])).toBe(true);
     expect(isPrefixAllowed(["activities", "sync"])).toBe(true);
     expect(isPrefixAllowed(["ai", "coach", "chat"])).toBe(true);
+    // Gimnasio de la F17: biblioteca de ejercicios, rutinas y programas
+    expect(isPrefixAllowed(["gym", "exercises"])).toBe(true);
+  });
+
+  test("la ficha de un ejercicio va sin «:» (cat/<slug>): un segmento con «:» no pasa", () => {
+    expect(isPathSafe(["gym", "exercises", "cat", "barbell-bench-press"])).toBe(true);
+    expect(isPathSafe(["gym", "exercises", "cat:barbell-bench-press"])).toBe(false);
   });
 
   test("bloquea cualquier otro prefijo, incluido /admin y /health (tiene su propia ruta estática)", () => {

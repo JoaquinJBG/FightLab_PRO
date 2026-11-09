@@ -1001,6 +1001,10 @@
         "review": {
           "title": "Weekly review",
           "sub": "Adherence, weight, calories and deload, with their rules"
+        },
+        "exercises": {
+          "title": "Exercises",
+          "sub": "Library with images, steps and your own exercises"
         }
       }
     },
@@ -2709,6 +2713,137 @@
     "hours": {
       "title": "When they arrive",
       "body": "Times follow your profile time zone ({tz}), and each reminder arrives at some point within its hour (22:00 to 22:59, for example). The free server only wakes up at fixed hours, chosen for Spain with and without summer time: if you live in another zone, the reminder arrives at the closest of those hours to its own, earlier or later, but it isn't lost."
+    }
+  },
+  "exercises": {
+    "muscles": {
+      "chest": "Chest",
+      "lats": "Lats",
+      "upper_back": "Upper back",
+      "traps": "Traps",
+      "lower_back": "Lower back",
+      "front_delts": "Front delts",
+      "side_delts": "Side delts",
+      "rear_delts": "Rear delts",
+      "biceps": "Biceps",
+      "triceps": "Triceps",
+      "forearms": "Forearms",
+      "abs": "Abs",
+      "obliques": "Obliques",
+      "quads": "Quads",
+      "hamstrings": "Hamstrings",
+      "glutes": "Glutes",
+      "adductors": "Adductors",
+      "abductors": "Abductors",
+      "calves": "Calves",
+      "neck": "Neck",
+      "hip_flexors": "Hip flexors",
+      "full_body": "Full body",
+      "cardio": "Cardio"
+    },
+    "equipment": {
+      "barbell": "Barbell",
+      "dumbbell": "Dumbbells",
+      "kettlebell": "Kettlebell",
+      "machine": "Machine",
+      "cable": "Cable",
+      "smith_machine": "Smith machine",
+      "ez_bar": "EZ bar",
+      "bench": "Bench",
+      "pull_up_bar": "Pull-up bar",
+      "band": "Resistance band",
+      "plate": "Plate",
+      "medicine_ball": "Medicine ball",
+      "suspension": "Suspension (TRX)",
+      "heavy_bag": "Heavy bag",
+      "jump_rope": "Jump rope",
+      "mat": "Mat",
+      "bodyweight": "Bodyweight",
+      "other": "Other"
+    },
+    "categories": {
+      "strength": "Strength",
+      "mobility": "Mobility",
+      "combat": "Combat",
+      "cardio": "Cardio"
+    },
+    "picker": {
+      "title": "Add exercise",
+      "titleMultiple": "Add exercises",
+      "search": "Search exercise",
+      "searchAria": "Search the exercise library",
+      "muscleFilter": "Muscle",
+      "equipmentFilter": "Equipment",
+      "allMuscles": "All muscles",
+      "allEquipment": "All equipment",
+      "recent": "Recent",
+      "all": "All exercises",
+      "results": "{n, plural, one {# exercise} other {# exercises}}",
+      "noResults": "No exercise matches that search.",
+      "loading": "Loading the library…",
+      "error": "Couldn't load the exercise library.",
+      "retry": "Retry",
+      "close": "Close",
+      "add": "Add",
+      "addN": "Add ({n})",
+      "create": "Create exercise",
+      "createNamed": "Create “{name}”",
+      "custom": "Custom",
+      "info": "Open {name}",
+      "select": "Choose {name}"
+    },
+    "form": {
+      "titleNew": "New exercise",
+      "titleEdit": "Edit exercise",
+      "name": "Name",
+      "namePlaceholder": "For example, Meadows row",
+      "primary": "Primary muscle",
+      "secondary": "Secondary muscles (optional)",
+      "equipment": "Equipment",
+      "notes": "Notes (optional)",
+      "notesPlaceholder": "How you do it, machine settings…",
+      "save": "Save",
+      "create": "Create and add",
+      "createOnly": "Create",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "nameRequired": "Give the exercise a name.",
+      "primaryRequired": "Choose at least one primary muscle.",
+      "error": "Couldn't save. Try again."
+    },
+    "detail": {
+      "back": "Back",
+      "notFound": "This exercise doesn't exist or is gone.",
+      "error": "Couldn't load the exercise.",
+      "primary": "Primary muscle",
+      "secondary": "Secondary",
+      "equipment": "Equipment",
+      "category": "Type",
+      "steps": "How to do it",
+      "noSteps": "No written steps for this exercise yet.",
+      "stepsInEnglish": "These steps are only in English for now.",
+      "stepsInSpanish": "These steps are only in Spanish for now.",
+      "notes": "Your notes",
+      "noImage": "No openly licensed image yet.",
+      "pause": "Stop the animation",
+      "play": "Animate",
+      "frame": "Frame {n} of {total}",
+      "credits": "Credits",
+      "imageCredit": "Image: {author} ({source}) · {license}",
+      "textCredit": "Text: {author} (wger) · {license}",
+      "ownText": "Text: FightLab · CC BY 4.0",
+      "modified": "Changes: {modified}",
+      "custom": "Custom exercise",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirm": "Delete “{name}”? Sets you already logged keep their name.",
+      "deleteYes": "Yes, delete",
+      "deleteError": "Couldn't delete. Try again."
+    },
+    "library": {
+      "title": "Exercises",
+      "sub": "The app's library and your own exercises.",
+      "count": "{n, plural, one {# exercise} other {# exercises}}"
     }
   }
 }
