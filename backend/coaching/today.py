@@ -13,6 +13,7 @@ vigoroso cuenta como dos moderados ("1 vigorous minute counts as about 2 moderat
 """
 from datetime import date, datetime, time, timedelta
 
+from coach.text import fold
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
@@ -146,7 +147,23 @@ def menu_day(user, day: date) -> tuple[MealPlan, dict] | tuple[None, None]:
     return None, None
 
 
+def planned_dish(meal: dict) -> str:
+    """Lo que pone el menú en una comida, como se guarda en `MealCheck.dish`."""
+    return ", ".join(d.get("dish", "") for d in meal.get("dishes") or [])[:DISH_MAX]
+
+
+def mark_applies(mark: MealCheck, meal: dict) -> bool:
+    """F29: una marca solo vale para el plato que se marcó. Si después el menú de ese día cambia
+    (otro menú preparado o importado), la marca no pasa al plato nuevo, que nunca estuvo en el
+    día. Las marcas sin plato apuntado (historial de ParteDiario antiguo) siguen valiendo."""
+    return not mark.dish or fold(mark.dish) == fold(planned_dish(meal))
+
+
 def _meal_out(meal: dict, mark: MealCheck | None) -> dict:
+    previous = None
+    if mark is not None and not mark_applies(mark, meal):
+        previous = {"state": STATE_KEYS[mark.state], "change": mark.change or None, "dish": mark.dish}
+        mark = None
     return {
         "meal": meal.get("meal", ""),
         "free": bool(meal.get("free")),
@@ -156,6 +173,7 @@ def _meal_out(meal: dict, mark: MealCheck | None) -> dict:
         "prep": meal.get("prep") or [],
         "eve": eve_list(meal.get("eve")),
         "mark": {"state": STATE_KEYS[mark.state], "change": mark.change or None} if mark else None,
+        "previous_mark": previous,
     }
 
 
@@ -385,7 +403,7 @@ def save_meal(user, day: date, today: date, meal: str, state: str | None, change
         MealCheck.objects.filter(profile=user.profile, date=day, meal=key).delete()
         return
     # `dish`: lo que ponía el menú, como en el historial importado de ParteDiario.
-    dish = ", ".join(d.get("dish", "") for d in planned[meal].get("dishes") or [])[:DISH_MAX]
+    dish = planned_dish(planned[meal])
     MealCheck.objects.update_or_create(
         profile=user.profile, date=day, meal=key, defaults={"state": STATES[state], "change": change, "dish": dish}
     )

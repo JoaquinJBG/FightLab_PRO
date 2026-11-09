@@ -2787,7 +2787,8 @@
       "changeSave": "Guardar",
       "changedTo": "En su lugar: {what}",
       "clear": "Quitar la marca",
-      "prep": "Ese día: {list}"
+      "prep": "Ese día: {list}",
+      "previousMark": "Antes, con otro plato: {state} ({dish}). El menú de hoy ha cambiado; marca este plato."
     },
     "cardio": {
       "title": "Cardio",

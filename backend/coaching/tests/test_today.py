@@ -202,6 +202,46 @@ def test_meals_of_the_menu_with_marks_and_next_meal():
     assert rows == {"desayuno": ("hecho", "Avena con yogur"), "cena": ("no_hecho", "")}
 
 
+def test_f29_a_mark_does_not_move_to_a_new_dish_when_the_menu_changes():
+    """F29 (prueba en el móvil): con la cena marcada «No hecha», preparar otro menú ponía la marca
+    en el plato nuevo, que nunca estuvo en el día. La marca es del plato que se marcó."""
+    user = athlete()
+    menu(user)
+    client = client_for(user)
+    client.put(URL + "/meal", {"meal": "breakfast", "state": "skipped"}, format="json")
+    plan = MealPlan.objects.get(profile=user.profile)
+    # Otro menú para el mismo día: el desayuno cambia de plato; la comida sigue igual.
+    days_ = plan.days
+    days_[-1]["meals"][0]["dishes"][0]["dish"] = "Tostada con tomate"
+    plan.days = days_
+    plan.save()
+    breakfast = client.get(URL).json()["menu"]["meals"][0]
+    assert breakfast["dishes"] == ["Tostada con tomate"]
+    assert breakfast["mark"] is None
+    assert breakfast["previous_mark"] == {"state": "skipped", "change": None, "dish": "Avena con yogur"}
+    assert client.get(URL).json()["next_meal"]["meal"] == "breakfast"
+    # Marcar el plato nuevo guarda su nombre y vuelve a valer.
+    body = client.put(URL + "/meal", {"meal": "breakfast", "state": "done"}, format="json").json()
+    assert body["menu"]["meals"][0]["mark"] == {"state": "done", "change": None}
+    assert body["menu"]["meals"][0]["previous_mark"] is None
+    assert MealCheck.objects.get(profile=user.profile, meal="desayuno").dish == "Tostada con tomate"
+
+
+def test_a_mark_without_dish_from_the_old_history_still_counts():
+    user = athlete()
+    menu(user)
+    MealCheck.objects.create(profile=user.profile, date=TODAY, meal="desayuno", state="hecho", dish="")
+    meal = client_for(user).get(URL).json()["menu"]["meals"][0]
+    assert meal["mark"] == {"state": "done", "change": None} and meal["previous_mark"] is None
+
+
+def test_same_dish_with_other_case_keeps_its_mark():
+    user = athlete()
+    menu(user)
+    MealCheck.objects.create(profile=user.profile, date=TODAY, meal="desayuno", state="no_hecho", dish="AVENA CON YOGUR")
+    assert client_for(user).get(URL).json()["menu"]["meals"][0]["mark"]["state"] == "skipped"
+
+
 def test_meal_marks_are_validated_against_the_menu():
     user = athlete()
     client = client_for(user)

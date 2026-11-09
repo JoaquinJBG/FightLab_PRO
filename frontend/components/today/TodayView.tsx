@@ -250,6 +250,11 @@ function MealRow({ meal }: { meal: TodayMeal }) {
         {meal.tupper && <span className="badge">{t("tupper")}</span>}
       </div>
       <p className="t-body text-sm text-muted">{meal.free ? t("free") : meal.dishes.join(", ")}</p>
+      {meal.previous_mark && (
+        <p data-testid={`meal-${meal.meal}-previous`} className="t-body text-[11px] text-muted">
+          {t("previousMark", { state: t(`states.${meal.previous_mark.state}`), dish: meal.previous_mark.dish })}
+        </p>
+      )}
       {meal.eve.length > 0 && <p className="t-body text-[11px] text-neon">{t("eve", { task: meal.eve.join("; ") })}</p>}
       {meal.prep.length > 0 && <p className="t-body text-[11px] text-ink">{t("prep", { list: meal.prep.join("; ") })}</p>}
       <div className="mt-2 flex gap-2" role="group" aria-label={mealName(tMenu, meal.meal)}>

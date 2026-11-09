@@ -35,6 +35,8 @@ const meal = z.object({
   // Fase 12: una lista de tareas (antes, un texto).
   eve: z.preprocess((v) => (typeof v === "string" ? [v] : v ?? []), z.array(z.string())),
   mark: z.object({ state: z.enum(MEAL_STATES), change: z.string().nullable() }).nullable(),
+  // F29: la marca de un plato que ya no está en el menú de ese día (no pasa al plato nuevo).
+  previous_mark: z.object({ state: z.enum(MEAL_STATES), change: z.string().nullable(), dish: z.string() }).nullable().optional(),
 });
 export type TodayMeal = z.infer<typeof meal>;
 

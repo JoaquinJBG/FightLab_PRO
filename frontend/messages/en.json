@@ -2787,7 +2787,8 @@
       "changeSave": "Save",
       "changedTo": "Instead: {what}",
       "clear": "Clear",
-      "prep": "On the day: {list}"
+      "prep": "On the day: {list}",
+      "previousMark": "Before, with another dish: {state} ({dish}). Today's menu changed; mark this dish."
     },
     "cardio": {
       "title": "Cardio",

@@ -110,6 +110,18 @@ describe("Hoy", () => {
     expect(within(tasks[2]).getByTestId("evidence-chip").dataset.variant).toBe("evidence");
   });
 
+  it("F29: la marca de un plato que ya no está en el menú no pasa al plato nuevo", async () => {
+    const base = day();
+    const meals = base.menu!.meals.map((m, i) => (i === 0
+      ? { ...m, dishes: ["Tostada con tomate"], mark: null, previous_mark: { state: "skipped" as const, change: null, dish: "Avena con yogur" } }
+      : m));
+    api(day({ menu: { ...base.menu!, meals } }));
+    renderApp(<TodayPage />);
+    const previous = await screen.findByTestId("meal-breakfast-previous");
+    expect(previous.textContent).toContain("No hecha (Avena con yogur)");
+    expect(screen.getByTestId("meal-breakfast-skipped").getAttribute("aria-pressed")).toBe("false");
+  });
+
   it("sin tareas para esta noche no sale la tarjeta", async () => {
     api(day({ tonight: { date: "2026-10-30", rule_key: "x", tasks: [] } }));
     renderApp(<TodayPage />);
