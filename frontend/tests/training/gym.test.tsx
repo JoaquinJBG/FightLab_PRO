@@ -12,6 +12,8 @@ vi.mock("next/navigation", () => ({
 }));
 vi.mock("@/lib/activities", () => ({
   enqueueActivity: vi.fn(), fetchServerMetrics: vi.fn(async () => null),
+  saveActivityNow: vi.fn(async () => ({ status: "queued" })), firstReason: () => null,
+  rejectedActivities: () => [], dismissRejected: vi.fn(),
   // historial del servidor (beta): sin respuesta, "Última vez"/PR salen del local
   fetchServerActivities: vi.fn(async () => null), pendingQueueItems: () => [], mergeByClientId: (...xs: unknown[][]) => xs.flat(),
 }));
@@ -20,6 +22,8 @@ vi.mock("@/lib/session-check", async (orig) => ({ ...(await orig<typeof import("
 // Sin datos del servidor: "Última vez" sale del navegador (F9 tiene su propio test, gymStats.test.tsx)
 vi.mock("@/lib/strength", async (orig) => ({ ...(await orig<typeof import("@/lib/strength")>()), useLastStats: () => ({ data: undefined }) }));
 vi.mock("@/lib/plan", () => ({ useWeeklyPlan: () => ({ data: undefined }) }));
+// Récords de antes del entreno (F17): sin datos del servidor
+vi.mock("@/lib/gym-api", async (orig) => ({ ...(await orig<typeof import("@/lib/gym-api")>()), useRecords: () => ({ data: undefined }) }));
 
 beforeEach(() => { localStorage.clear(); nav.focus = null; nav.push.mockClear(); });
 
@@ -71,12 +75,9 @@ describe("Sesión de gimnasio (en)", () => {
     expect(screen.getByText("Rest between sets")).toBeTruthy();
     expectClean(container);
 
+    // F17: «+ Añadir ejercicio» abre el selector de la biblioteca (rama E, con sus propias pruebas)
     fireEvent.click(screen.getByText("+ Add exercise"));
-    const input = screen.getByPlaceholderText("Search: press, row, squat…");
-    fireEvent.change(input, { target: { value: "curl" } });
-    expect(screen.getByText("Hammer curl")).toBeTruthy();
-    fireEvent.change(input, { target: { value: "zzz" } });
-    expect(screen.getByText("No results.")).toBeTruthy();
+    expect(screen.getByTestId("exercise-picker")).toBeTruthy();
     expectClean(container);
   });
 

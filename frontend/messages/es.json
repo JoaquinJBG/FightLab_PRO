@@ -1217,6 +1217,78 @@
       "includes": {
         "one_rm_test": "Un test de 1RM",
         "plyometrics": "Pliometría (saltos)"
+      },
+      "setTypeAria": "Tipo de la serie {n}: {type}. Toca para cambiarlo",
+      "setTypes": {
+        "normal": "Normal",
+        "warmup": "Calentamiento",
+        "drop": "Drop set",
+        "failure": "Al fallo"
+      },
+      "setTypeShort": {
+        "normal": "N",
+        "warmup": "C",
+        "drop": "D",
+        "failure": "F"
+      },
+      "rpeAria": "RPE, serie {n}",
+      "rirAria": "RIR, serie {n}",
+      "issues": {
+        "kgBad": "Peso ilegible: escribe un número con una sola coma.",
+        "kgMax": "Más de 1000 kg no es posible: revisa el peso. Esta serie no se guardará así.",
+        "repsMax": "Más de 1000 repeticiones no es posible: revisa las reps.",
+        "rpeRange": "El RPE va de 1 a 10.",
+        "rirRange": "El RIR va de 0 a 10.",
+        "kgHigh": "Más de 500 kg: ¿seguro? Revisa que no sobre una cifra.",
+        "repsHigh": "Más de 100 repeticiones: ¿seguro?"
+      },
+      "records": {
+        "weight": "Récord de peso",
+        "e1rm": "Récord de e1RM",
+        "volume": "Récord de volumen",
+        "reps": "Récord de reps a ese peso"
+      },
+      "newRecord": "Nuevo récord en {name}: {what}",
+      "recordsBroken": "{n, plural, one {# récord batido} other {# récords batidos}}",
+      "restOver": "Descanso terminado: a por la siguiente serie",
+      "saving": "Guardando…",
+      "saveRejected": "El servidor no ha aceptado el entreno.",
+      "saveRejectedWhy": "No se ha guardado: {reason} Corrígelo y vuelve a guardar; no se ha perdido nada.",
+      "impossibleNotSaved": "{n} serie(s) con un peso o unas reps imposibles no se guardarán.",
+      "updateRoutine": "Actualizar la rutina «{title}» con lo hecho hoy",
+      "routineLoadError": "No se ha podido cargar la rutina. Puedes añadir los ejercicios a mano.",
+      "routineBlocked": "Hoy el coach no recomienda entrenar: mira el aviso de seguridad en Hoy antes de empezar.",
+      "routinePaused": "En pausa por una lesión: {names}. Sáltalos o cámbialos.",
+      "effortMode": "Esfuerzo por serie",
+      "supersetLabel": "Superserie {group}",
+      "supersetWithNext": "Superserie con el siguiente",
+      "supersetRemove": "Sacar de la superserie",
+      "supersetNext": "Siguiente de la superserie: {name} →",
+      "exerciseMenu": "Opciones de {name}",
+      "addNote": "Nota",
+      "moveUp": "Subir",
+      "moveDown": "Bajar",
+      "notePlaceholder": "Nota del ejercicio (agarre, máquina, molestias…)",
+      "noteAria": "Nota de {name}",
+      "exerciseRest": "Descanso de este ejercicio",
+      "exerciseRestAria": "Descanso de {name}",
+      "restDefault": "Por defecto ({s} s)",
+      "restOff": "Sin descanso",
+      "setCol": "Serie",
+      "removeLastSet": "Quitar la última serie de {name}",
+      "plates": {
+        "open": "Discos",
+        "title": "Calculadora de discos",
+        "close": "Cerrar ✕",
+        "target": "Peso total (kg)",
+        "bar": "Barra (kg)",
+        "available": "Discos disponibles (kg)",
+        "empty": "Escribe el peso total para ver los discos.",
+        "belowBar": "El peso es menor que la barra ({bar} kg).",
+        "perSide": "En cada lado",
+        "barOnly": "Solo la barra",
+        "remainder": "Faltan {kg} kg por lado con estos discos: carga {loaded} kg.",
+        "use": "Usar {kg} kg en la serie"
       }
     },
     "myRoutine": {

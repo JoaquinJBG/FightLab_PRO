@@ -11,7 +11,15 @@ export type SetType = "warmup" | "normal" | "drop" | "failure";
 
 /** Una serie mientras se registra (texto tal cual se escribe). `type`, `rpe` y `rir` son de F17:
     las sesiones guardadas antes no los tienen. */
-export type SetEntry = { kg: string; reps: string; done: boolean; type?: SetType; rpe?: string; rir?: string };
+export type SetEntry = {
+  kg: string;
+  reps: string;
+  done: boolean;
+  type?: SetType;
+  rpe?: string;
+  rir?: string;
+  pr?: ("weight" | "e1rm" | "volume" | "reps")[]; // récords batidos con esta serie
+};
 /** Un ejercicio del entreno. `key` es la clave del contrato (`cat:…` o `custom:…`); `restS`, el
     descanso tras sus series; `superset`, el grupo de superserie (null: suelto). */
 export type ExerciseEntry = {

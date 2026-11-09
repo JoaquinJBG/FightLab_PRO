@@ -1217,6 +1217,78 @@
       "includes": {
         "one_rm_test": "A 1RM test",
         "plyometrics": "Plyometrics (jumps)"
+      },
+      "setTypeAria": "Set {n} type: {type}. Tap to change it",
+      "setTypes": {
+        "normal": "Normal",
+        "warmup": "Warm-up",
+        "drop": "Drop set",
+        "failure": "To failure"
+      },
+      "setTypeShort": {
+        "normal": "N",
+        "warmup": "W",
+        "drop": "D",
+        "failure": "F"
+      },
+      "rpeAria": "RPE, set {n}",
+      "rirAria": "RIR, set {n}",
+      "issues": {
+        "kgBad": "Unreadable weight: type a number with a single decimal point.",
+        "kgMax": "More than 1000 kg is not possible: check the weight. This set won't be saved like this.",
+        "repsMax": "More than 1000 reps is not possible: check the reps.",
+        "rpeRange": "RPE goes from 1 to 10.",
+        "rirRange": "RIR goes from 0 to 10.",
+        "kgHigh": "More than 500 kg: are you sure? Check for an extra digit.",
+        "repsHigh": "More than 100 reps: are you sure?"
+      },
+      "records": {
+        "weight": "Weight record",
+        "e1rm": "e1RM record",
+        "volume": "Volume record",
+        "reps": "Rep record at that weight"
+      },
+      "newRecord": "New record on {name}: {what}",
+      "recordsBroken": "{n, plural, one {# record broken} other {# records broken}}",
+      "restOver": "Rest over: next set",
+      "saving": "Saving…",
+      "saveRejected": "The server didn't accept the workout.",
+      "saveRejectedWhy": "Not saved: {reason} Fix it and save again; nothing was lost.",
+      "impossibleNotSaved": "{n} set(s) with an impossible weight or reps won't be saved.",
+      "updateRoutine": "Update the routine “{title}” with today's workout",
+      "routineLoadError": "Couldn't load the routine. You can add the exercises by hand.",
+      "routineBlocked": "Today the coach doesn't recommend training: check the safety notice in Today before starting.",
+      "routinePaused": "Paused because of an injury: {names}. Skip or swap them.",
+      "effortMode": "Effort per set",
+      "supersetLabel": "Superset {group}",
+      "supersetWithNext": "Superset with next",
+      "supersetRemove": "Remove from superset",
+      "supersetNext": "Next in the superset: {name} →",
+      "exerciseMenu": "Options for {name}",
+      "addNote": "Note",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "notePlaceholder": "Exercise note (grip, machine, discomfort…)",
+      "noteAria": "Note for {name}",
+      "exerciseRest": "Rest for this exercise",
+      "exerciseRestAria": "Rest for {name}",
+      "restDefault": "Default ({s} s)",
+      "restOff": "No rest",
+      "setCol": "Set",
+      "removeLastSet": "Remove the last set of {name}",
+      "plates": {
+        "open": "Plates",
+        "title": "Plate calculator",
+        "close": "Close ✕",
+        "target": "Total weight (kg)",
+        "bar": "Bar (kg)",
+        "available": "Available plates (kg)",
+        "empty": "Type the total weight to see the plates.",
+        "belowBar": "The weight is less than the bar ({bar} kg).",
+        "perSide": "On each side",
+        "barOnly": "Bar only",
+        "remainder": "{kg} kg per side missing with these plates: load {loaded} kg.",
+        "use": "Use {kg} kg for the set"
       }
     },
     "myRoutine": {
