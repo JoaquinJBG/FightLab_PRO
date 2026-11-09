@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#05070e">
+  <title>FightLab Pro · Sin conexión</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: #04060c; }
+    body {
+      min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px 16px;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #e8eefc;
+    }
+    main {
+      width: 100%; max-width: 400px; padding: 24px; border-radius: 24px; text-align: center;
+      background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.045));
+      border: 1px solid rgba(150,190,255,0.18);
+    }
+    img { width: 72px; height: 72px; border-radius: 18px; }
+    h1 { margin: 16px 0 8px; font-size: 22px; }
+    p { margin: 0 0 12px; font-size: 15px; line-height: 1.45; color: #a9b6d3; }
+    .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+    button, a {
+      display: block; width: 100%; min-height: 44px; padding: 12px 16px; border-radius: 14px; font: inherit;
+      font-weight: 600; text-decoration: none; cursor: pointer;
+    }
+    button { border: 0; color: #03101c; background: linear-gradient(180deg, #45e9ff, #3b74ff); }
+    a { color: #45e9ff; border: 1px solid rgba(69,233,255,0.4); background: transparent; }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="/icon.svg" alt="">
+    <h1 data-i18n="title">Sin conexión</h1>
+    <p data-i18n="body">No hay red y esta pantalla no estaba guardada en el móvil. Lo que ya hayas apuntado está a salvo.</p>
+    <p data-i18n="pending">Si dejaste algo pendiente de enviar, se enviará solo al volver la red.</p>
+    <div class="actions">
+      <button type="button" id="retry" data-i18n="retry">Reintentar</button>
+      <a href="/today" data-i18n="today">Ir a Hoy</a>
+    </div>
+  </main>
+  <script>
+    // Página propia sin conexión del service worker (F5). Idioma: el de la app (cookie flp_lang),
+    // si no el del navegador; en español por defecto.
+    (function () {
+      var en = {
+        title: "You're offline",
+        body: "There's no connection and this screen wasn't saved on your phone. Whatever you've already logged is safe.",
+        pending: "If something was waiting to be sent, it will go out by itself once you're back online.",
+        retry: "Try again",
+        today: "Go to Today",
+        doc: "FightLab Pro · Offline"
+      };
+      var m = /(?:^|;\s*)flp_lang=(es|en)/.exec(document.cookie || "");
+      var lang = m ? m[1] : ((navigator.language || "es").toLowerCase().indexOf("en") === 0 ? "en" : "es");
+      if (lang === "en") {
+        document.documentElement.lang = "en";
+        document.title = en.doc;
+        var nodes = document.querySelectorAll("[data-i18n]");
+        for (var i = 0; i < nodes.length; i++) nodes[i].textContent = en[nodes[i].getAttribute("data-i18n")];
+      }
+      document.getElementById("retry").addEventListener("click", function () { location.reload(); });
+      window.addEventListener("online", function () { location.reload(); });
+    })();
+  </script>
+</body>
+</html>

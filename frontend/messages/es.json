@@ -2167,6 +2167,12 @@
       "body": "Un cambio no se pudo guardar en tu cuenta (datos no válidos o límite alcanzado). Sigue en este dispositivo.",
       "close": "Cerrar"
     },
+    "offline": {
+      "title": "Sin conexión",
+      "idle": "Lo que cambies ahora se enviará solo al volver la red.",
+      "pending": "{count, plural, one {# cambio pendiente de enviar} other {# cambios pendientes de enviar}}: se envía solo al volver la red.",
+      "sending": "{count, plural, one {Enviando # cambio pendiente…} other {Enviando # cambios pendientes…}}"
+    },
     "gate": {
       "slow": "El servidor tarda en responder.",
       "error": "No se pudo cargar tu perfil.",

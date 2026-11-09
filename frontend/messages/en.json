@@ -2167,6 +2167,12 @@
       "body": "A change couldn't be saved to your account (invalid data or limit reached). It's still on this device.",
       "close": "Close"
     },
+    "offline": {
+      "title": "Offline",
+      "idle": "Anything you change now will be sent once you're back online.",
+      "pending": "{count, plural, one {# change waiting to be sent} other {# changes waiting to be sent}}: it goes out by itself once you're back online.",
+      "sending": "{count, plural, one {Sending # pending change…} other {Sending # pending changes…}}"
+    },
     "gate": {
       "slow": "The server is taking a while to respond.",
       "error": "Couldn't load your profile.",

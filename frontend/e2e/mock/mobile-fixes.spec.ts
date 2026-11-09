@@ -38,3 +38,29 @@ test("F4: el chat del coach ocupa la pantalla y con el teclado se ve la última 
   await expect(chat).toHaveAttribute("data-expanded", "false");
   await expect(page.getByTestId("tab-bar")).toBeVisible();
 });
+
+test("F5: sin conexión, las pantallas ya abiertas cargan su armazón y las demás, la página propia", async ({ page, context, session }) => {
+  void session;
+  // Solo contra el build (`pnpm start`, como en la CI): con `next dev` los archivos de la app
+  // cambian en cada carga y la copia guardada no llega a arrancar.
+  test.skip(!process.env.CI, "necesita el build de producción (CI=1)");
+  await page.goto("/today");
+  // El service worker toma el control (la primera visita lo instala; se recarga para que la sirva él)
+  await page.evaluate(async () => { await navigator.serviceWorker.ready; });
+  await page.reload();
+  await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
+  await expect(page.getByTestId("tab-bar")).toBeVisible();
+
+  await context.setOffline(true);
+  // Hoy ya se abrió con red: sin ella abre la app (armazón y barra) con el aviso de sin conexión
+  await page.goto("/today");
+  await expect(page.getByTestId("tab-bar")).toBeVisible();
+  await expect(page.getByTestId("offline-notice")).toContainText("Sin conexión");
+  // Una pantalla que no estaba guardada: página propia, no la de Chrome
+  await page.goto("/training/plan");
+  await expect(page.getByRole("heading", { name: "Sin conexión" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Ir a Hoy" })).toHaveAttribute("href", "/today");
+  // (La vuelta de la red no se prueba aquí: Playwright no siempre devuelve la red al service
+  // worker al quitar el modo sin conexión. Lo cubre la prueba del service worker en vitest.)
+});
