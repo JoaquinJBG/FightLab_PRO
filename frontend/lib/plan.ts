@@ -67,6 +67,10 @@ export const cardio = z.object({
   minutes_needed: z.number(),
   days: z.array(z.enum(DAYS)),
   minutes_per_day: z.number(),
+  // F9: duración mínima de una sesión de cardio del plan (convención de FightLab). Los planes
+  // guardados antes no la traen.
+  min_session: z.number().optional(),
+  min_session_convention: convention.optional(),
   intensity: z.string(),
   zone: z.object({ rpe: z.tuple([z.number(), z.number()]), bpm: z.tuple([z.number(), z.number()]).nullable() }).nullable(),
   rule_key: z.string(),
@@ -113,6 +117,16 @@ export const weeklyPlan = z.object({
   engine_sha: z.string(),
   narrative: z.string(),
   deload: planDeload.nullable().default(null),
+  // F26: los bloqueos de seguridad de hoy ya aplicados al plan hecho (golpe en la cabeza, lesiones)
+  live: z
+    .object({
+      changed: z.boolean(),
+      no_contact: z.boolean(),
+      no_training: z.boolean(),
+      return_rule_key: z.string().nullable(),
+    })
+    .nullable()
+    .optional(),
   created_at: z.string(),
   applied_at: z.string().nullable(),
 });

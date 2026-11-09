@@ -1,6 +1,7 @@
 import { defineConfig } from "@playwright/test";
 
-const PORT = 3100;
+// E2E_PORT por si el 3100 está ocupado en local (otro servidor de desarrollo).
+const PORT = Number(process.env.E2E_PORT ?? 3100);
 const isCI = !!process.env.CI;
 
 // Un proyecto por ancho de móvil. El backend no hace falta: los specs mockean

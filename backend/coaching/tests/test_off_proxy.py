@@ -108,14 +108,17 @@ def test_user_agent_is_fightlab_with_the_configured_contact(net, contact):
 
 
 def test_urls_match_the_coach_module(contact):
-    """Contrato con `coach.off`: las mismas URL que construiría el motor."""
+    """Contrato con `coach.off`: las mismas URL que construiría el motor, con los dos campos que
+    pide la valoración de la fase 13 (`EXTRA_FIELDS`) al final de `fields`."""
     seen = []
     with mock.patch.object(off, "_get_json", side_effect=lambda url: seen.append(url) or {"hits": []}):
         off.search(["revuelto", "verduras"], "Hacendado", language="es")
         off.product(BARCODE)
     terms = off_proxy.search_terms(["revuelto", "verduras"], "Hacendado")
-    assert seen[0] == off_proxy.search_url(terms, "es")
-    assert seen[1] == off_proxy.product_url(BARCODE)
+    extra = "%2C" + "%2C".join(off_proxy.EXTRA_FIELDS)
+    assert off_proxy.search_url(terms, "es") == seen[0].replace("%2Cnutriments", "%2Cnutriments" + extra)
+    assert off_proxy.product_url(BARCODE) == seen[1].replace("%2Cnutriments", "%2Cnutriments" + extra)
+    assert off_proxy.FIELDS[: len(off.FIELDS)] == off.FIELDS
 
 
 def test_products_are_cached(net, contact):
@@ -161,6 +164,29 @@ def test_search_api_keeps_attribution(net, contact, today_fixed):
     body = resp.json()
     assert body["source"] == "Open Food Facts (unverified)" and body["licence"] == "ODbL"
     assert body["hits"][0]["url"].startswith("https://world.openfoodfacts.org/product/")
+    # Fase 13: cada resultado lleva su valoración (sin Nutri-Score ni saturada: sin datos).
+    assert body["hits"][0]["rating"]["rating"] == "sin datos"
+
+
+RATED_RAW = {**RAW, "nutriscore_grade": "a", "categories_tags": ["en:frozen-foods", "en:vegetables"],
+             "nutriments": {**RAW["nutriments"], "saturated-fat_100g": 0.2, "sugars_100g": 2.5, "salt_100g": 0.3}}
+
+
+def test_off_products_are_rated_with_the_same_engine(net, contact, today_fixed):
+    """Los productos del proxy (F8) se valoran como los de la cadena, y se guarda lo que hace falta."""
+    net.side_effect = lambda *a, **k: answer({"status": "success", "code": BARCODE, "product": RATED_RAW})
+    user = make_user()
+    c = client_for(user)
+    looked = c.get(f"/api/v1/coach/products/lookup/{BARCODE}").json()
+    assert looked["product"]["rating"]["rating"] == "bueno"
+    assert looked["product"]["rating"]["nutriscore"] == "A"
+    assert looked["product"]["rating"]["rule_key"].startswith("food-products/")
+    assert c.post("/api/v1/coach/products", {"barcode": BARCODE}, format="json").status_code == 201
+    row = CatalogueProduct.objects.get(profile=user.profile)
+    assert (row.nutriscore, row.sugars_g, row.saturates_g, row.salt_g) == ("A", 2.5, 0.2, 0.3)
+    assert row.off_tags == ["en:frozen-foods", "en:vegetables"]
+    listed = c.get("/api/v1/coach/products").json()["products"][0]
+    assert listed["rating"]["rating"] == "bueno" and listed["rating"]["lights"]["salt"] == "green"
 
 
 # ---------------------------------------------------------------- catálogo

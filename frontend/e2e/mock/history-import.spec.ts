@@ -15,7 +15,7 @@ const preview = {
   sets: [],
   discarded: [{ code: "out_of_range", field: "weight_kg", count: 1, examples: ["2026-10-21"] }],
   weight_blocked: { active: false, count: 0, fields: [] },
-  notices: [{ code: "menus_later", count: 1 }],
+  notices: [{ code: "tickets_not_in_backup", count: 1 }],
 };
 
 test("importar el historial: revisar, elegir qué hacer con el conflicto e importar", async ({ page, session }) => {

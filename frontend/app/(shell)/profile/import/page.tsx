@@ -56,7 +56,10 @@ function Summary({ result }: { result: HistoryResult }) {
   const items = Object.entries(result.items).filter(([, n]) => n > 0);
   const reviewLines = (["new", "conflict", "unchanged", "kept_app"] as const).filter((k) => result.reviews[k] > 0);
   const sets = result.sets.filter((s) => s.result);
-  const nothing = d.written === 0 && d.conflict === 0 && result.reviews.written === 0 && result.reviews.conflict === 0 && sets.every((s) => s.result!.sets.imported === 0);
+  const menus = result.menus;
+  const menuLines = menus ? (["new", "replaced", "kept", "invalid", "checks"] as const).filter((k) => menus[k] > 0) : [];
+  const nothing = d.written === 0 && d.conflict === 0 && result.reviews.written === 0 && result.reviews.conflict === 0 && sets.every((s) => s.result!.sets.imported === 0)
+    && !(menus && (menus.new > 0 || menus.replaced > 0));
   const read = result.files.filter((f) => f.kind);
   return (
     <section data-testid="history-summary" data-dry-run={result.dry_run} className="glass neon-edge mt-4 p-4">
@@ -94,9 +97,10 @@ function Summary({ result }: { result: HistoryResult }) {
           </ul>
         </div>
       )}
-      {(reviewLines.length > 0 || sets.length > 0) && (
+      {(reviewLines.length > 0 || sets.length > 0 || menuLines.length > 0) && (
         <ul className="t-body mt-2 flex flex-col gap-0.5 text-xs text-muted">
           {reviewLines.map((k) => <li key={k} data-testid={`history-reviews-${k}`}>{t(`reviews.${k}`, { n: result.reviews[k] })}</li>)}
+          {menus && menuLines.map((k) => <li key={`menus-${k}`} data-testid={`history-menus-${k}`}>{t(`menus.${k}`, { n: menus[k] })}</li>)}
           {sets.map((s, i) => (
             <li key={`${s.name}-${i}`} data-testid="history-sets">
               {t("sets.line", { name: s.name, n: s.result!.sets.imported })}
@@ -210,6 +214,14 @@ export default function HistoryImportPage() {
           <li>{t("help.later")}</li>
         </ul>
       </div>
+
+      <Link href="/profile/import/catalogue" data-testid="catalogue-import-link" className="glass mt-3 flex items-center justify-between gap-3 p-4">
+        <span className="min-w-0">
+          <span className="t-label block text-ink">{t("catalogue.title")}</span>
+          <span className="t-body block text-[11px] text-muted">{t("catalogue.hint")}</span>
+        </span>
+        <span aria-hidden className="text-neon">→</span>
+      </Link>
 
       <label className="glass mt-3 flex flex-col gap-2 p-4">
         <span className="t-label text-ink">{t("files", { max: MAX_HISTORY_FILES, mb: MAX_FILE_MB })}</span>

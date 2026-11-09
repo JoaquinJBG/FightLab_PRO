@@ -1,5 +1,6 @@
 "use client";
 
+import { dailyWeights, localDay } from "@/lib/body-inputs";
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
@@ -147,16 +148,16 @@ export default function BiometricsPage() {
 
   // puntos de peso ascendentes en el rango elegido
   const { pts, trend } = useMemo(() => {
-    const asc = logs
-      .map((l) => ({ t: new Date(l.timestamp).getTime(), w: num(l.weight_kg ?? null) }))
-      .filter((p): p is Pt => p.w !== null && Number.isFinite(p.t))
-      .sort((a, b) => a.t - b.t);
+    // F28: un punto por día, la media de sus pesajes (como la tendencia del servidor)
+    const asc: Pt[] = dailyWeights(logs).map((d) => ({ t: d.t, w: d.kg }));
     const cut = range === null ? -Infinity : nowMs - range * 86_400_000;
     const filtered = asc.filter((p) => p.t >= cut);
     return { pts: filtered, trend: trendSeries(filtered) };
   }, [logs, range, nowMs]);
 
   const trendNow = trendData?.status === "ok" ? trendData.weight_kg : null;
+  // F28: cuántos pesajes hay cada día, para decir en el historial que cuenta la media
+  const weighCount = new Map(dailyWeights(logs).map((d) => [d.day, d.count]));
 
   // IMC calculado (peso de tendencia + altura del perfil)
   const heightCm = profileData?.height_cm ?? null;
@@ -329,6 +330,7 @@ export default function BiometricsPage() {
           <div className="mt-2 flex flex-col gap-2">
             {logs.map((l) => {
               const w = num(l.weight_kg ?? null);
+              const sameDay = w !== null ? weighCount.get(localDay(l.timestamp)) ?? 1 : 1;
               const extras: string[] = [];
               if (l.resting_heart_rate != null) extras.push(t("history.rhr", { n: l.resting_heart_rate }));
               if (l.hrv_ms != null) extras.push(t("history.hrv", { n: l.hrv_ms }));
@@ -348,6 +350,9 @@ export default function BiometricsPage() {
                     <p className="t-body text-[11px] text-muted">
                       {fmtEntry(new Date(l.timestamp).getTime(), locale, t("history.unknownDate"))}{extras.length > 0 ? ` · ${extras.join(" · ")}` : ""}
                     </p>
+                    {sameDay > 1 && (
+                      <p data-testid="history-day-mean" className="t-body text-[11px] text-neon">{t("history.dayMean", { count: sameDay })}</p>
+                    )}
                   </div>
                   {confirmId === l.id ? (
                     <button onClick={() => onDelete(l.id)} disabled={del.isPending}

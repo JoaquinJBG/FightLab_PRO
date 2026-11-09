@@ -1,0 +1,89 @@
+# Traducción al español de backend/knowledge_fightlab/batch-cooking.md, de FightLab Pro
+# (Joaquín J Beltrán García), CC BY 4.0. Ver LICENSE-CONTENT.md.
+# Formato y cómo se actualiza: backend/knowledge_translations/README.md.
+# status: machine = traducción sin revisar por una persona.
+
+lang: es
+origin: fightlab
+file: batch-cooking
+rules:
+- key: batch-cooking/order-the-batch-session-from-longest-to-shortest-in-parallel-by-appliance
+  source_hash: 987b140e23ee23b6254c1dfe33c886e821a0e59b113bca06369422f2fdfab9a5
+  status: machine
+  heading: Ordena la sesión de batch de lo más largo a lo más corto, en paralelo por aparato
+  rule_text: |-
+    En una sesión de batch, empieza por lo que más tarda (legumbres, guisos, caldos), sigue con lo demás y acaba con lo rápido (aliños, picar); mantén el horno trabajando mientras cocinan los fuegos y friega en los tiempos de espera. FightLab monta el cronograma de la sesión así: en cada momento empieza, entre los pasos listos, el del plato al que más le queda, en el primer aparato libre de su tipo, y solo con los aparatos del perfil de cocina del usuario. El método de reparto, los fuegos compartidos por todo lo que va en la placa y las sustituciones cuando falta un aparato (olla en lugar de olla exprés, con el triple de tiempo; horno en lugar de air fryer, con 1,25 veces; sartén y wok entre sí) son convenciones de FightLab, y la pantalla marca el paso sustituido.
+  applies_to: |-
+    Quien cocina en casa varios platos de la semana en una sola sesión. Las guías están escritas para cocinas domésticas españolas; ningún estudio ha medido el orden.
+  conflicts: |-
+    Son guías de cocina, no evidencia: ninguna fuente compara un orden con otro. Los tiempos dependen de la receta, la cantidad y el aparato, así que el cronograma es un plan para seguir con criterio, no una prescripción. El llenado máximo de una olla exprés lo marca su manual, que este archivo no da.
+- key: batch-cooking/cool-cooked-food-and-refrigerate-it-within-2-hours-rice-within-1-hour
+  source_hash: 3b38126887416b22d051460298e095922e19178a89054ce50a4680cbc87d499e
+  status: machine
+  heading: Enfría lo cocinado y mételo en la nevera antes de 2 horas; el arroz, antes de 1 hora
+  rule_text: |-
+    Después de la sesión, enfría la comida deprisa y métela en la nevera antes de que pasen 2 horas desde que se cocinó: repártela en raciones, usa recipientes poco profundos (5 cm como mucho) y no los apiles, para que circule el aire. El arroz cocido, lo antes posible, idealmente antes de 1 hora. La nevera tiene que estar a 0-5 °C.
+  applies_to: |-
+    Comida cocinada en casa. Son normas generales de higiene de las agencias, no ligadas a una población.
+  conflicts: |-
+    AESAN dice que se refrigere enseguida, mientras que la FSA dice que no se meta caliente en la nevera, sino que se enfríe antes; las dos ponen el mismo límite de 2 horas. FightLab sigue el límite de 2 horas y, para el arroz, la hora de la FSA. Con calor el límite es más corto (EROSKI Consumer).
+- key: batch-cooking/eat-from-the-fridge-within-2-days-and-freeze-the-rest-the-same-day
+  source_hash: e7910ce6020b6c8d8551dfbe82579d9a163b75f22b4bb6d2a03f79f7ca6b36d2
+  status: machine
+  heading: Come de la nevera en 2 días y congela el resto el mismo día
+  rule_text: |-
+    Lo del batch que se come en los 2 días siguientes a la sesión sale de la nevera; lo que se come después se congela el mismo día que se cocina y se descongela la víspera (ver "Descongela en la nevera la noche antes"). El arroz cocido, como mucho 1 día en la nevera. Con la sesión el domingo, lunes y martes salen de la nevera y de miércoles a viernes, del congelador; ese reparto y los límites de 2 días y 1 día tal como los aplica la app son convenciones de FightLab basadas en el consejo más prudente de las agencias.
+  applies_to: |-
+    Platos cocinados guardados a 0-5 °C en casa.
+  conflicts: |-
+    Las agencias no coinciden en los días de nevera: 48 horas (FSA, OCU) frente a 3-4 días (USDA). EROSKI Consumer da 3-4 días a los guisos y 4-6 al arroz, lo que contradice el día de la FSA para el arroz; FightLab sigue a la FSA. Los límites son de seguridad, no de calidad: lo congelado sigue siendo seguro, pero pierde calidad poco a poco.
+- key: batch-cooking/do-not-freeze-potatoes-mayonnaise-fried-food-or-yogurt-sauces
+  source_hash: 3f7f6d67b4cb0d60c49d29e38f73bc192e65417bb35cfc31cf2ecc2ed6a16459
+  status: machine
+  heading: No congeles patatas, mayonesa, fritos ni salsas con yogur
+  rule_text: |-
+    No congeles platos que dependan de patatas, huevos con cáscara, alimentos muy grasos, mayonesa, fritos o rebozados, ni verdura para comer cruda: pierden textura o sabor. Congela los curris y las salsas sin el yogur ni la nata ligera y añádelos al recalentar. Enfría la comida en la nevera antes de meterla en el congelador, y congela a -18 °C o menos. Cuando un plato que la app manda al congelador nombra uno de estos alimentos, el menú lo avisa; la lista de palabras del aviso es una convención de FightLab.
+  applies_to: |-
+    Congelación en casa de platos cocinados.
+  conflicts: |-
+    Son límites de calidad, no de seguridad: la comida es segura, solo sabe o se nota peor. Un guiso con patatas se puede comer de la nevera, o congelar sin las patatas. La OCU también dice que la patata y el tomate no congelan bien.
+- key: batch-cooking/defrost-in-the-fridge-the-night-before
+  source_hash: a981ed92bd12ac39140613f0ab2a7090a7b7c95b2d0705ad85f74c6ad5ce67e7
+  status: machine
+  heading: Descongela en la nevera la noche antes
+  rule_text: |-
+    Pasa la ración congelada de mañana a la parte más fría de la nevera la noche antes, en una bandeja o un recipiente que recoja el líquido, y cómela en las 24 horas siguientes a descongelarse. Nunca a temperatura ambiente. Si hay que descongelarla en el microondas, a la potencia más baja, y se cocina o recalienta enseguida. No vuelvas a congelar lo descongelado salvo que se haya cocinado a más de 70 °C durante al menos 2 minutos. FightLab lo recuerda a las 22:00 de la víspera; la hora del aviso es una convención de FightLab.
+  applies_to: |-
+    Platos cocinados e ingredientes crudos congelados en casa.
+  conflicts: |-
+    Las raciones grandes o compactas pueden necesitar más de una noche; las 12 horas de AESAN son un mínimo.
+- key: batch-cooking/reheat-until-steaming-hot-throughout-and-reheat-rice-only-once
+  source_hash: c054fde82f624b494a5252e2efe575b326b6c8f04b29c987fe22ba13c7b85d4f
+  status: machine
+  heading: Recalienta hasta que humee por dentro y el arroz solo una vez
+  rule_text: |-
+    Recalienta la comida del batch hasta que humee por dentro, al menos a 74 °C en el centro si tienes termómetro, y lleva las sopas y salsas a ebullición. El arroz, recalentado solo una vez, y un plato cocinado que se congeló, descongeló y volvió a congelar, solo una vez más. FightLab pide recalentar cada ración del batch una sola vez; extender el "solo una vez" a todos los platos es una convención de FightLab, más estricta que las fuentes.
+  applies_to: |-
+    Recalentado de platos cocinados en casa, en cualquier aparato.
+  conflicts: |-
+    Ninguna de las dos páginas de la FSA consultadas da una regla general de "recalentar las sobras solo una vez", y el USDA permite volver a congelar las sobras tras recalentarlas a 165 °F, algo más laxo que la FSA. Recalentar no hace segura la comida mal enfriada: la toxina del arroz resiste el calor (AESAN).
+- key: batch-cooking/check-air-fried-meat-with-a-thermometer
+  source_hash: a40942ba46e5d6d401cb920db8dbb87e2cd2b04d8adc79ce92327693f5b8118f
+  status: machine
+  heading: Comprueba con termómetro la carne hecha en la air fryer
+  rule_text: |-
+    Cuando hagas carne en la air fryer (o en el horno), en la sesión o para cenar, mira el centro con un termómetro de cocina, porque el dorado de fuera no dice si está hecha: pollo y pavo, 74 °C; piezas enteras de cerdo, 63 °C y 3 minutos de reposo; carne picada, 71 °C. No llenes la cesta de más y remueve o da la vuelta a mitad.
+  applies_to: |-
+    Carne cocinada en casa en freidoras de aire; las temperaturas son las mínimas internas del USDA.
+  conflicts: |-
+    Algunas guías de cocina dicen que hay que precalentar la air fryer, pero Bosch dice que sus modelos no lo necesitan; manda el manual del fabricante. Las cifras en °C de la página de Nebraska para el huevo y el pescado están mal (pone 73,9 °C para los 145 °F del pescado), así que aquí solo se usan las de la carne.
+- key: batch-cooking/label-each-container-with-the-dish-and-the-date-first-in-first-out
+  source_hash: 913f95aee5c31a2f51474370c726229fc490394484540a9f31d009dbe90aa1f4
+  status: machine
+  heading: Etiqueta cada envase con el plato y la fecha; lo primero que entra es lo primero que sale
+  rule_text: |-
+    Reparte el batch en envases individuales o de una comida, herméticos y aptos para alimentos, y etiqueta cada uno con el plato y la fecha en que se cocinó o se congeló. En el congelador, lo que entró primero sale primero.
+  applies_to: |-
+    Conservación en casa de lo cocinado en batch.
+  conflicts: |-
+    La FSA no habla de "lo primero que entra, lo primero que sale"; AESAN sí.

@@ -493,7 +493,17 @@
     "menuCard": {
       "title": "Menu and shopping list",
       "body": "Meals for several days, checked by the coach against your targets."
-    }
+    },
+    "source": {
+      "menu": "From the menu: marked “Done” in Today (planned kcal)",
+      "food": "Found in the food table",
+      "manual": "Logged by hand",
+      "photo": "Photo of the plate",
+      "recent": "From your recent foods",
+      "yesterday": "Copied from yesterday"
+    },
+    "menuUnmark": "{name}: remove it by unmarking the meal in Today",
+    "menuUnmarkShort": "In Today"
   },
   "dashboard": {
     "greeting": {
@@ -749,7 +759,8 @@
       "weight": "{n} kg",
       "recovery": "Recovery",
       "unknownDate": "Unknown date",
-      "deleteAria": "Delete entry"
+      "deleteAria": "Delete entry",
+      "dayMean": "There are {count} weigh-ins that day: the day's average counts."
     },
     "photos": {
       "title": "Progress photos",
@@ -1002,10 +1013,6 @@
           "title": "Gym",
           "sub": "In-session logging and weekly calendar"
         },
-        "routines": {
-          "title": "Routines",
-          "sub": "Your routines, folders and classic programs"
-        },
         "myRoutine": {
           "title": "My routine",
           "sub": "Your active plan for the week"
@@ -1021,6 +1028,10 @@
         "review": {
           "title": "Weekly review",
           "sub": "Adherence, weight, calories and deload, with their rules"
+        },
+        "routines": {
+          "title": "Routines",
+          "sub": "Your routines, folders and classic programs"
         },
         "exercises": {
           "title": "Exercises",
@@ -1502,7 +1513,10 @@
       "unknown": "I don't know you well yet: log your workouts (with RPE) and your measurements, and this briefing will become truly yours.",
       "weigh": "Weigh-in in {days} days and you're {over} kg over: gentle deficit, no aggressive cuts yet.",
       "train": "Go train",
-      "nutrition": "View nutrition"
+      "nutrition": "View nutrition",
+      "headBlow": "Contact is blocked after a blow to the head with symptoms. No training on the day of the blow; after that, no sparring, clinch, partner drills, live grappling or hard training until a clinician clears you. The return to contact goes step by step.",
+      "headBlowAction": "See the block",
+      "injury": "Saved injury ({areas}): whatever loads that area gets no progression, and no load until a doctor or physiotherapist assesses it. The rest of your training goes on."
     },
     "recs": {
       "heading": "Recommendations",
@@ -1534,6 +1548,16 @@
       "ok": {
         "title": "No alerts: all good 👊",
         "whyNoData": "No alerts for now. The more workouts and measurements you log, the sharper I get."
+      },
+      "headBlow": {
+        "title": "Contact blocked after a blow to the head",
+        "why": "Until a clinician clears you: no contact and no hard training. The return to contact goes step by step, at least 24 hours per step.",
+        "action": "See the return to contact"
+      },
+      "injury": {
+        "title": "Saved injury: {areas}",
+        "why": "No progression on what loads that area and no load until a professional assesses it. If the pain is sharp, getting worse, or you notice numbness or weakness, stop and see a doctor.",
+        "action": "Log it in the check-in"
       }
     },
     "chat": {
@@ -1572,7 +1596,16 @@
       "summary": "Your snapshot today: {parts}. Want today's plan?",
       "summaryNone": "I don't have any data on you yet. Start by logging a workout or your weight and we'll talk.",
       "thanks": "Get to work. Log the session when you finish and I'll add it to your load. 🥊",
-      "default": "I'm listening. Ask me about today's training, your load, your weight or your recovery — I'll answer with your real numbers."
+      "default": "I'm listening. Ask me about today's training, your load, your weight or your recovery — I'll answer with your real numbers.",
+      "safety": {
+        "headBlow": "Your head comes first: after a possible blow to the head, do not train today, even if you feel fine. No sparring or contact until a doctor has assessed you. With neck pain, repeated vomiting, a seizure, confusion or a headache that gets worse, go to the emergency department now and do not stay alone. Report it under Training → MMA → “Report a blow to the head”.",
+        "cardiac": "Stop and do not train today: chest pain or pressure, dizziness, fainting, breathlessness or palpitations are warning signs. See a doctor before you train again. With chest pain at rest, fainting, or chest pain with breathlessness and sweating, call your emergency number now (112 in Europe).",
+        "illness": "With a fever, aches all over or feeling unwell below the neck, no training today: rest until you are better.",
+        "pain": "With new pain or an injury, do not load that area today and do not train through the pain. If the pain is sharp, getting worse, or you notice numbness or weakness, stop and see a doctor. Log it in the check-in (Warning signs → “New pain or an injury in some area”) so the plan takes load off it until a doctor or physiotherapist assesses it."
+      },
+      "headBlowActive": "First, the blow to the head you reported: until a clinician clears you, no sparring, no contact and no hard training; on the day of the blow, do not train. Walking and daily activity are fine if they do not make the symptoms worse. The return to contact goes step by step and a clinician authorises it. With neck pain, vomiting, confusion or a headache that gets worse, go to the emergency department now.",
+      "injuryKnown": "You have a saved injury: {areas}.",
+      "injuryLimit": "Mind your injury ({areas}): whatever loads that area, no progression and no load until a doctor or physiotherapist assesses it; the rest as normal."
     },
     "advanced": {
       "title": "Advanced"
@@ -2148,7 +2181,8 @@
       "zone": "Effort RPE {low}-{high}",
       "zoneBpm": "{low}-{high} bpm",
       "options": "Options",
-      "excluded": "Not in your plan"
+      "excluded": "Not in your plan",
+      "minSession": "Each session lasts at least {minutes} min: when little is left, it goes into fewer days."
     },
     "nutrition": {
       "kcal": "{kcal} kcal a day",
@@ -2190,6 +2224,11 @@
       "body": "You accepted it in the weekly review: sets cut by {low}-{high} %, the same loads and every set {rir} or more reps short of failure.",
       "rest": "Add {low}-{high} rest days this week.",
       "effort": "Stop every set {rir} or more reps short of failure"
+    },
+    "live": {
+      "title": "Adjusted to your safety today",
+      "body": "Something about your safety has changed since you prepared this plan (a blow to the head or an injury), and it is already applied here: what you cannot do is crossed out or paused. If you want to spread the week differently, prepare it again.",
+      "noContact": "No contact until a clinician clears you. The return to contact goes step by step, at least 24 hours per step, and a clinician authorises it: it is lifted under Training → MMA."
     }
   },
   "weeklyReview": {
@@ -2258,7 +2297,9 @@
       "intake": "You ate {mean} kcal on average over {days, plural, one {# logged day} other {# logged days}}; your target is {target} kcal ({diff} kcal).",
       "intakeNoTarget": "You ate {mean} kcal on average over {days, plural, one {# logged day} other {# logged days}}.",
       "intakeNone": "No intake logged this week: add it in the check-in to compare it with your target.",
-      "intakeBlocked": "For safety, what you eat is not compared with a calorie target."
+      "intakeBlocked": "For safety, what you eat is not compared with a calorie target.",
+      "doneOn": "Done on {date}",
+      "extra": "Not in the plan"
     },
     "weight": {
       "ok": "Trend: {kg} kg average over the last week; {rate} kg a week ({pct} % a week) over {days} days.",
@@ -2370,7 +2411,8 @@
       "tupper": "To take in a lunchbox",
       "generate": "Prepare menu",
       "regenerate": "Prepare another menu",
-      "generating": "Preparing…"
+      "generating": "Preparing…",
+      "batch": "Cook the lunchbox meals in a batch session"
     },
     "meals": {
       "breakfast": "Breakfast",
@@ -2394,7 +2436,8 @@
       "fat": "Fat: at least {g} g",
       "fibre": "Fibre: at least {g} g",
       "margin": "A day passes from your calorie target up to {pct}% above it",
-      "noRepeat": "No dish comes back within {days} days"
+      "noRepeat": "No dish comes back within {days} days",
+      "changed": "This menu was prepared with your targets on that day. Today your protein is at least {g} g: prepare another menu to adjust it."
     },
     "day": {
       "ok": "Checked",
@@ -2402,7 +2445,18 @@
       "totals": "{kcal} kcal · protein {p} g · fat {f} g · carbs {c} g · fibre {fib} g",
       "seasoning": "Seasoning: {list}",
       "source": "Original recipe",
-      "offProduct": "Open Food Facts"
+      "offProduct": "Open Food Facts",
+      "prep": "On the day: {list}",
+      "eve": "The evening before:",
+      "defrost": "move {dish} from the freezer to the fridge",
+      "storage": {
+        "fridge": "From the fridge",
+        "freezer": "From the freezer"
+      },
+      "noFreeze": "Does not freeze well: {list}",
+      "free": "Free meal",
+      "freeBudget": "Free meal (about {kcal} kcal)",
+      "fileTotals": "Menu totals: {kcal} kcal · protein {p} g (not checked against your targets)"
     },
     "status": {
       "ok": "on target",
@@ -2435,7 +2489,8 @@
         "intolerance": "intolerance",
         "disliked": "you dislike it",
         "untried": "you have not tried it",
-        "never_again": "you would not repeat it"
+        "never_again": "you would not repeat it",
+        "diner": "a diner does not eat it"
       },
       "net": "The coach matches by name: it knows no synonyms or hidden ingredients. Always read the labels."
     },
@@ -2454,7 +2509,35 @@
       "ml": "{n} ml",
       "pantry": "At home (not bought): {list}",
       "unknown": "Not in the table: {list}",
-      "note": "Amounts are for the form each name gives (raw, cooked, drained)."
+      "note": "Amounts are for the form each name gives (raw, cooked, drained).",
+      "progress": "{checked} of {total}",
+      "week": {
+        "0": "All",
+        "1": "Week 1",
+        "2": "Week 2"
+      },
+      "weekTag": {
+        "1": "W1",
+        "2": "W2",
+        "both": "W1 and W2"
+      },
+      "forTwo": "for two: {amount}",
+      "other": "Other",
+      "product": "{chain}: {product}",
+      "rating": {
+        "bueno": "good",
+        "regular": "fair",
+        "evitar": "avoid",
+        "sin_datos": "no data to rate it",
+        "no_aplica": "not rated (does not apply)"
+      },
+      "batches": "Batches to cook",
+      "batchLine": "{dish}: {servings} servings ({left} spare)",
+      "fromMenu": "List, sections and packs as they came in the menu.",
+      "fromEngine": "List worked out by the engine from the menu's dishes.",
+      "review": "Check: the label's kcal do not match its macros (more than 15 % apart).",
+      "packs": "{n, plural, one {# pack} other {# packs}} of {pack}",
+      "price": "about {price}"
     },
     "tastes": {
       "title": "Your tastes",
@@ -2500,7 +2583,114 @@
       "hint": "The menu, the recipes with their links and the shopping list, to print or keep on your phone.",
       "error": "Could not prepare the PDF.",
       "no_calorie_targets": "With your safety notes there are no calorie targets any more, so there is no menu PDF."
-    }
+    },
+    "header": {
+      "range": "From {start} to {end}",
+      "source": {
+        "generated": "Prepared by FightLab (simulated LLM and engine)",
+        "json": "Imported (app JSON)",
+        "yaml": "Imported (coach YAML)",
+        "partediario": "Imported from the ParteDiario backup"
+      },
+      "others": "Saved menus",
+      "option": "Menu from {start}",
+      "kitchenHint": "Fill in your equipment in Profile → My kitchen so the timeline only uses your appliances."
+    },
+    "batch": {
+      "title": "Batch sessions",
+      "session": "{date} · {minutes} min",
+      "open": "Open full screen",
+      "eve": "The evening before: {list}",
+      "rebuilt": "The menu's timeline uses an appliance you do not have: it was rebuilt with your equipment.",
+      "missing": "No appliance in your kitchen for: {step}",
+      "unchecked": "No equipment in your profile: the timeline was not checked against your appliances.",
+      "substituted": "instead of {what}",
+      "appliances": {
+        "pressure_cooker": "Pressure cooker",
+        "pot": "Pot",
+        "wok": "Wok",
+        "frying_pan": "Frying pan",
+        "air_fryer": "Air fryer",
+        "oven": "Oven",
+        "microwave": "Microwave",
+        "hands": "Hands free"
+      },
+      "rules": {
+        "order": "Timeline: longest to shortest, in parallel by appliance.",
+        "cool": "Cool and refrigerate within 2 h; rice within 1 h.",
+        "fridge": "Monday and Tuesday from the fridge; Wednesday to Friday from the freezer.",
+        "no_freeze": "Do not freeze potatoes, mayonnaise, fried food or yogurt sauces.",
+        "defrost": "Defrost in the fridge the night before.",
+        "reheat": "Reheat once, until steaming hot inside (74 °C).",
+        "air_fryer": "Air-fried meat: chicken 74 °C, pork 63 °C, mince 71 °C, with a thermometer.",
+        "label": "Label with dish and date; first in, first out."
+      },
+      "conventionNote": "The split by appliance and the appliance swaps are FightLab conventions."
+    },
+    "batchScreen": {
+      "title": "Batch on {date}",
+      "close": "Exit",
+      "loading": "Loading the session…",
+      "none": "That batch session was not found.",
+      "progress": "{done} of {total} steps",
+      "elapsed": "Session time",
+      "planned": "Planned: {minutes} min",
+      "start": "Start",
+      "pause": "Pause",
+      "resume": "Resume",
+      "reset": "Reset",
+      "confirmReset": "Reset the clock and the ticks of this session?",
+      "startsIn": "starts in {time}",
+      "laneDone": "Done",
+      "steps": "Steps",
+      "slot": "min {from}-{to}",
+      "now": "Now",
+      "late": "Running late",
+      "timer": "{minutes} min",
+      "timerDone": "Time!",
+      "session": "Session {n}"
+    },
+    "tickets": {
+      "title": "Shopping receipts",
+      "loading": "Loading…",
+      "off": "Receipt photo upload is not set up on this server.",
+      "privacy": "Photos are stored privately and only you can see them; they are compressed before upload.",
+      "camera": "Take photo",
+      "gallery": "Choose photo",
+      "uploading": "Uploading…",
+      "line": "Receipt of {date} ({kb} KB)",
+      "empty": "No receipts for this menu yet.",
+      "delete": "Delete",
+      "confirmDelete": "Delete this receipt and its photo?",
+      "close": "Close",
+      "photoAlt": "Receipt photo",
+      "errors": {
+        "tickets_not_configured": "Receipt photo upload is not set up on this server.",
+        "ticket_too_large": "The photo is too large: try another one.",
+        "ticket_not_image": "The file is not a valid photo.",
+        "too_many_tickets": "You have reached the maximum number of receipts: delete one.",
+        "tickets_unavailable": "Could not store or open the photo right now: try again later.",
+        "generic": "Could not complete that."
+      }
+    },
+    "import": {
+      "title": "Import a menu",
+      "intro": "A JSON from the app (schema 1) or a menu.yaml from the coach. If you already had it, it is replaced and the ticked shopping items stay.",
+      "choose": "Choose file",
+      "importing": "Importing…",
+      "imported": "Imported: {title}, {days} days, {sessions} batch sessions and {items} shopping items.",
+      "replaced": "Replaced: {title}, {days} days; {kept} ticked items kept.",
+      "startTaken": "Another menu starts on that day. Replace it?",
+      "replace": "Replace",
+      "errors": {
+        "import_invalid": "The file is not a menu that can be imported.",
+        "import_too_long": "An imported menu covers 1 to 35 days.",
+        "free_meal_refused": "No free meal after a positive eating-disorder screen: this menu is not imported.",
+        "generic": "Could not import the menu."
+      }
+    },
+    "kitchenLink": "My kitchen: equipment and diners",
+    "kitchenLinkHint": "The batch timeline uses your appliances and menus respect each diner."
   },
   "sessionCheck": {
     "title": "Vigorous session: best reviewed first",
@@ -2696,14 +2886,15 @@
     },
     "blocked": "Because of your safety profile, FightLab does not save weight, waist or kcal (same as the check-in): {n, plural, one {# value is not imported} other {# values are not imported}}. Everything else is.",
     "notices": {
-      "menus_later": "{n, plural, one {# menu} other {# menus}} in the backup: not imported now, they will come with the full menus.",
-      "shopping_later": "{n, plural, one {# ticked shopping item} other {# ticked shopping items}}: they will come with the menus.",
-      "tickets_later": "{n, plural, one {# receipt photo} other {# receipt photos}}: the backup does not carry the photos; they will come with the menus.",
       "cardio_no_load": "Imported cardio has no effort rating (RPE), so it does not add to your training load.",
       "heart_hidden": "Watch heart-rate data is saved but not shown yet.",
       "quad_to_soreness": "Quadriceps aches go to “legs” in the check-in aches, with a note.",
       "same_day_in_several_files": "{n, plural, one {# day was in more than one file} other {# days were in more than one file}}: the last one wins.",
-      "reviews_targets_rule": "Coach reviews are kept as history. Only the most recent one counts for your kcal targets, and only if its week ended 28 days ago or less."
+      "reviews_targets_rule": "Coach reviews are kept as history. Only the most recent one counts for your kcal targets, and only if its week ended 28 days ago or less.",
+      "tickets_not_in_backup": "{n, plural, one {# receipt photo} other {# receipt photos}}: the backup does not carry the photos. Upload them again in the menu's shopping list.",
+      "menus_invalid": "{n, plural, one {# menu in the backup could not be read} other {# menus in the backup could not be read}}.",
+      "menus_start_taken": "{n, plural, one {# menu starts on the same day as another of yours and was not imported} other {# menus start on the same day as others of yours and were not imported}}: import them with “the file wins”.",
+      "menus_free_meal_refused": "{n, plural, one {# menu has free meals} other {# menus have free meals}} and is not imported after a positive eating-disorder screen."
     },
     "fileErrors": {
       "title": "Files that could not be read",
@@ -2735,6 +2926,17 @@
       "target": "Target: {kcal} kcal",
       "deficit": "in deficit",
       "noDeficit": "no deficit"
+    },
+    "catalogue": {
+      "title": "Store catalogue",
+      "hint": "Your supermarket products with their rating, for shopping and swaps."
+    },
+    "menus": {
+      "new": "{n, plural, one {# new menu} other {# new menus}}",
+      "replaced": "{n, plural, one {# menu replaced} other {# menus replaced}}",
+      "kept": "{n, plural, one {# menu was already there and is kept as it was} other {# menus were already there and are kept as they were}}",
+      "invalid": "{n, plural, one {# menu could not be read} other {# menus could not be read}}",
+      "checks": "{n, plural, one {# shopping item ticked} other {# shopping items ticked}}"
     }
   },
   "today": {
@@ -2762,7 +2964,10 @@
       "cardio": "Cardio, {minutes} min",
       "mma": "MMA",
       "at": "at {time}",
-      "openSession": "Start session {session}"
+      "openSession": "Start session {session}",
+      "headBlow": "Blow to the head: do not train on the day of the blow, and until a clinician clears you, no contact and no hard training.",
+      "paused": "Paused because of your injury (no progression, and no load if nobody has assessed it): {exercises}",
+      "contactBlocked": "No contact: sparring, clinch, partner drills and live grappling are out until a clinician clears you."
     },
     "dayType": {
       "title": "What's on today",
@@ -2788,7 +2993,8 @@
       "save": "Save",
       "saved": "Saved: {kg} kg",
       "invalid": "Type a number, e.g. 72.4",
-      "blocked": "Weight isn't logged for now: your screening answers turn it off. Everything else works as usual."
+      "blocked": "Weight isn't logged for now: your screening answers turn it off. Everything else works as usual.",
+      "dayMean": "There are {count} weigh-ins today: the day's average counts, {kg} kg."
     },
     "meals": {
       "title": "Menu meals",
@@ -2805,7 +3011,11 @@
       "changePlaceholder": "For example: pizza and a beer",
       "changeSave": "Save",
       "changedTo": "Instead: {what}",
-      "clear": "Clear"
+      "clear": "Clear",
+      "prep": "On the day: {list}",
+      "previousMark": "Before, with another dish: {state} ({dish}). Today's menu changed; mark this dish.",
+      "inDiary": "Added to Nutrition: {kcal} kcal planned for the dish.",
+      "logInstead": "Log what you ate in Nutrition: only what you log counts."
     },
     "cardio": {
       "title": "Cardio",
@@ -2841,6 +3051,11 @@
       "today": "Today's log",
       "weigh": "Weigh in",
       "nextMeal": "Next meal"
+    },
+    "tonight": {
+      "title": "For tonight",
+      "defrost": "Move {dish} from the freezer to the fridge",
+      "batch": "batch"
     }
   },
   "reminders": {
@@ -2888,6 +3103,179 @@
     "hours": {
       "title": "When they arrive",
       "body": "Times follow your profile time zone ({tz}), and each reminder arrives at some point within its hour (22:00 to 22:59, for example). The free server only wakes up at fixed hours, chosen for Spain with and without summer time: if you live in another zone, the reminder arrives at the closest of those hours to its own, earlier or later, but it isn't lost."
+    }
+  },
+  "chainCatalogue": {
+    "back": "← Import",
+    "title": "Store catalogue",
+    "subtitle": "Upload your supermarket's product table (for example the one from the AI coach). FightLab rates each product, picks the pack for the shopping list and estimates the cost.",
+    "help": {
+      "title": "What you can upload",
+      "scored": "The scored table (.csv): store id, EAN, name, brand, category, pack, price per kilo and values per 100 g, with Nutri-Score and rating.",
+      "table": "The app table (.csv): which product stands in for each generic food (equivale_a). Upload it after the scored table and the two are merged.",
+      "reimport": "You can upload them again: products are matched by store id or EAN, updated without duplicates, and an empty cell never wipes what was there.",
+      "private": "The catalogue is kept in your account only and nobody else sees it. FightLab downloads nothing from the store or any other site: it only reads the file you upload."
+    },
+    "chain": "Store",
+    "file": "CSV file (up to {mb} MB)",
+    "check": "Check file",
+    "reading": "Reading…",
+    "checkFirst": "Check the file first: you will see what goes in before anything is saved.",
+    "import": "Import",
+    "importing": "Importing…",
+    "preview": "This is what would be imported",
+    "done": "Imported",
+    "loading": "Loading…",
+    "formats": {
+      "scored": "Scored table",
+      "table": "App table"
+    },
+    "rowsRead": "{n, plural, one {# row read} other {# rows read}} for {chain}",
+    "summary": {
+      "toAdd": "{n, plural, one {# new product} other {# new products}}",
+      "added": "{n, plural, one {# product added} other {# products added}}",
+      "toUpdate": "{n, plural, one {# product gets updated} other {# products get updated}}",
+      "updatedDone": "{n, plural, one {# product updated} other {# products updated}}",
+      "unchanged": "{n, plural, one {# product was already the same} other {# products were already the same}}",
+      "discarded": "{n, plural, =0 {No rows discarded} one {# row discarded} other {# rows discarded}}"
+    },
+    "discarded": {
+      "no_key": "{n, plural, one {# row} other {# rows}} with no store id or EAN",
+      "no_name": "{n, plural, one {# row} other {# rows}} with no name",
+      "bad_number": "{n, plural, one {# row} other {# rows}} with an unreadable number in {field}",
+      "out_of_range": "{n, plural, one {# row} other {# rows}} with an impossible value in {field}",
+      "duplicate_in_file": "{n, plural, one {# repeated row} other {# repeated rows}} in the file (the first one stays)",
+      "generic": "{n, plural, one {# row discarded} other {# rows discarded}}",
+      "lines": "lines {lines}"
+    },
+    "notices": {
+      "ean_invalid": "{n, plural, one {# invalid EAN was ignored} other {# invalid EANs were ignored}}; the product goes in by its id.",
+      "ref_invalid": "{n, plural, one {# invalid store id was ignored} other {# invalid store ids were ignored}}.",
+      "ean_taken": "{n, plural, one {# EAN already belonged} other {# EANs already belonged}} to another product and was not used.",
+      "saturates_dropped": "{n, plural, one {# product had} other {# products had}} more saturated fat than fat: that value is not used."
+    },
+    "ratingsTitle": "FightLab rating",
+    "counts": {
+      "good": "{n} good",
+      "fair": "{n} fair",
+      "avoid": "{n} avoid",
+      "noData": "{n} no data",
+      "notFood": "{n} not applicable"
+    },
+    "reviewCount": "{n, plural, one {# product whose kcal do not match} other {# products whose kcal do not match}} the macros (over 15%): flagged for review.",
+    "differences": {
+      "title": "{n, plural, one {# rating differs} other {# ratings differ}} from the file",
+      "intro": "FightLab rates every product again with its own engine; this is what changes.",
+      "line": "{name}: the file says {file}, FightLab says {engine}"
+    },
+    "rating": {
+      "good": "Good",
+      "fair": "Fair",
+      "avoid": "Avoid",
+      "noData": "No data",
+      "notFood": "Not applicable",
+      "review": "Review"
+    },
+    "rulesLink": "The rules and their sources:",
+    "list": {
+      "title": "Your catalogue",
+      "empty": "You have not imported any products yet.",
+      "total": "{n, plural, one {# product} other {# products}} from {chains}",
+      "search": "Search your catalogue",
+      "filter": "Filter by rating",
+      "all": "All",
+      "pricePerKg": "{price}/{unit}",
+      "kcal": "{kcal} kcal per {per}",
+      "equivalent": "Stands in for: {food}",
+      "more": "And {n} more: search to find them.",
+      "delete": "Delete the whole catalogue",
+      "deleteConfirm": "Delete {n, plural, one {the product} other {the # products}}? This cannot be undone; you can import them again.",
+      "deleteYes": "Yes, delete",
+      "cancel": "Cancel"
+    },
+    "how": {
+      "title": "How products are rated",
+      "food": "Foods, per 100 g: high above {sugars} g sugars, {saturates} g saturated fat or {salt} g salt.",
+      "drink": "Drinks, per 100 ml: high above {sugars} g sugars, {saturates} g saturated fat or {salt} g salt.",
+      "items": {
+        "nutriscore_good": "Nutri-Score A or B and no red: good.",
+        "nutriscore_avoid": "Nutri-Score D or E: avoid.",
+        "fats_nutriscore_only": "Oils, nuts and seeds: only the Nutri-Score counts.",
+        "energy_factors": "Expected energy: 4 kcal per gram of protein and carbohydrate, 9 of fat and 2 of fibre.",
+        "energy_tolerance": "Flagged for review when the kcal are more than 15% off.",
+        "rating_combination": "Red for sugars or saturated fat, or two reds: avoid; the rest, fair.",
+        "fruit_sugar_ignored": "Fruit sugar does not count unless it has added sugar, syrup, chocolate or honey.",
+        "not_food_categories": "Alcohol, soft drinks, coffee and tea, baby food, sweets and seasonings: not applicable."
+      },
+      "source": {
+        "fsa_2016": "Source: UK FSA guidance (2016)",
+        "nutriscore_2023": "Source: Nutri-Score (2023)",
+        "eu_1169_2011": "Source: Regulation (EU) 1169/2011",
+        "convention": "FightLab convention"
+      }
+    },
+    "substitutes": {
+      "title": "Swaps with the same kcal",
+      "intro": "Type a food (the engine's name or one of your products) and the grams: you get others with the same energy and a similar macro split.",
+      "food": "Food",
+      "grams": "Grams",
+      "go": "Find",
+      "for": "For {grams} g of {name} ({kcal} kcal):",
+      "line": "{grams} g of {name} · {kcal} kcal · {protein} g protein",
+      "none": "No similar swaps.",
+      "unknown": "I do not know that food. Try the engine's exact name (e.g. “chicken breast, raw”) or a product from your catalogue.",
+      "error": "Could not look for swaps.",
+      "penaltyNote": "Products to avoid go last. Ordering by macros is a convention:"
+    },
+    "errors": {
+      "missing_file": "Choose a file.",
+      "too_large": "The file is larger than {mb} MB.",
+      "not_csv": "Upload a .csv file.",
+      "unknown_columns": "Unrecognised columns ({columns}). Upload the scored table or the app table.",
+      "empty_file": "The file is empty.",
+      "bad_encoding": "The file's text cannot be read (save it as UTF-8).",
+      "too_many_rows": "The file has more than {max} rows.",
+      "throttled": "Too many attempts in a row. Wait a minute.",
+      "server": "Could not finish. Try again."
+    }
+  },
+  "kitchen": {
+    "link": "My kitchen",
+    "back": "← Profile",
+    "title": "My kitchen",
+    "intro": "Your equipment and who eats at home. The batch timeline uses it and menus respect it.",
+    "loading": "Loading…",
+    "error": "Could not save or read your kitchen.",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved.",
+    "equipment": {
+      "title": "Equipment",
+      "intro": "How many of each you have. The timeline only uses what you have.",
+      "pots": "Pots",
+      "pressure_cookers": "Pressure cookers",
+      "frying_pans": "Frying pans",
+      "burners_large": "Large burners",
+      "burners_small": "Small burners",
+      "wok": "Wok",
+      "air_fryer": "Air fryer",
+      "oven": "Oven",
+      "microwave": "Microwave",
+      "air_fryer_model": "Air fryer model (optional)"
+    },
+    "diners": {
+      "title": "Diners",
+      "intro": "Who eats at home and what they do not eat at each meal. For example: dinner without fish, except prawns.",
+      "name": "Name",
+      "remove": "Remove",
+      "meals": "At these meals (none ticked: all of them)",
+      "exclude": "Without…",
+      "excludeHint": "fish, pork…",
+      "allow": "Except…",
+      "allowHint": "prawns…",
+      "addRestriction": "Add another restriction",
+      "add": "Add diner",
+      "categories": "Words that cover groups: {list}. The list is FightLab's and is not complete: what it does not name is not flagged."
     }
   },
   "exercises": {

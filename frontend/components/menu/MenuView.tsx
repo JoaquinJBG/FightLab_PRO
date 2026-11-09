@@ -1,10 +1,16 @@
 "use client";
 
+import { roundGrams } from "@/lib/nutrition";
+import { useTargets } from "@/lib/hooks";
 import { useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { intlLocale } from "@/lib/locale";
+import { BatchRuleChip, BatchSessions } from "./BatchSessions";
+import { ShoppingList } from "./ShoppingList";
+import { TicketsCard } from "./TicketsCard";
 import {
+  BATCH_RULES,
   RATINGS,
   downloadMenuPdf,
   MenuError,
@@ -14,6 +20,7 @@ import {
   type MenuDay,
   type MenuDish,
   type MenuItem,
+  type MenuMeal,
   type Rating,
 } from "@/lib/menu";
 
@@ -60,6 +67,13 @@ function Targets({ menu }: { menu: Menu }) {
   const t = useTranslations("menu.targets");
   const f = useFormat();
   const tg = menu.targets;
+  // F24: el menú guarda los objetivos con los que se preparó; si los de hoy han cambiado (otro
+  // peso, por ejemplo), se dice, en vez de enseñar dos cifras distintas sin explicación.
+  const { data: current } = useTargets();
+  const now = current?.kind === "ok" && current.data.macros ? current.data.macros : null;
+  const proteinNow = now ? roundGrams(now.protein_g) : null;
+  // Un menú importado sin objetivos de kcal en el perfil no trae los objetivos con que comprobarlo.
+  if (tg.kcal == null || tg.protein_g == null || tg.fat_min_g == null || tg.fibre_g == null) return null;
   const row = (key: string, text: string, rule: string | null) => (
     <p key={key} data-testid="menu-target" data-key={key} className="t-body flex flex-wrap items-center gap-2 text-sm text-ink">
       <span>{text}</span>
@@ -69,9 +83,12 @@ function Targets({ menu }: { menu: Menu }) {
   return (
     <Section title={t("title")} testId="menu-targets">
       {row("kcal", t("kcal", { kcal: f.n(tg.kcal) }), "kcal")}
-      {row("protein_g", t("protein", { g: f.n(tg.protein_g) }), "protein_g")}
-      {row("fat_g", t("fat", { g: f.n(tg.fat_min_g) }), "fat_g")}
-      {row("fibre_g", t("fibre", { g: f.n(tg.fibre_g) }), "fibre_g")}
+      {row("protein_g", t("protein", { g: f.n(roundGrams(tg.protein_g)) }), "protein_g")}
+      {row("fat_g", t("fat", { g: f.n(roundGrams(tg.fat_min_g)) }), "fat_g")}
+      {row("fibre_g", t("fibre", { g: f.n(roundGrams(tg.fibre_g)) }), "fibre_g")}
+      {proteinNow !== null && proteinNow !== roundGrams(tg.protein_g) && (
+        <p data-testid="menu-targets-changed" className="t-body text-xs text-muted">{t("changed", { g: f.n(proteinNow) })}</p>
+      )}
       {row("margin", t("margin", { pct: f.n(menu.conventions.kcal_margin * 100) }), null)}
       {row("repeat", t("noRepeat", { days: menu.conventions.no_repeat_days }), null)}
     </Section>
@@ -140,25 +157,71 @@ function Dish({ dish }: { dish: MenuDish }) {
   );
 }
 
+/** De la nevera o del congelador, con su regla; y si no congela bien, el aviso. */
+function Storage({ meal, menu }: { meal: MenuMeal; menu: Menu }) {
+  const t = useTranslations("menu.day");
+  const st = meal.storage;
+  if (!st) return null;
+  const rule = st.where === "freezer" ? BATCH_RULES.defrost : BATCH_RULES.fridge;
+  return (
+    <span className="flex flex-wrap items-center gap-1.5">
+      <span data-testid="meal-storage" data-where={st.where} className="badge">{t(`storage.${st.where}`)}</span>
+      <BatchRuleChip menu={menu} ruleKey={rule} />
+      {st.no_freeze && st.no_freeze.length > 0 && (
+        <span data-testid="meal-no-freeze" className="t-label text-warn">{t("noFreeze", { list: st.no_freeze.join(", ") })}</span>
+      )}
+    </span>
+  );
+}
+
+function mealName(t: ReturnType<typeof useTranslations>, meal: MenuMeal): string {
+  if (meal.label) return meal.label;
+  return t.has(`meals.${meal.meal}`) ? t(`meals.${meal.meal}`) : meal.meal;
+}
+
 function Day({ day, menu }: { day: MenuDay; menu: Menu }) {
   const t = useTranslations("menu");
   const f = useFormat();
   const tot = day.check?.totals;
+  const fileTotals = day.totals;
   return (
     <article data-testid="menu-day" data-date={day.date} data-ok={day.check?.ok ? "true" : "false"} className="glass mt-3 p-4">
       <div className="flex items-center justify-between gap-2">
         <p className="t-title text-ink first-letter:uppercase">{f.date(day.date)}</p>
         {day.check?.ok && <span className="badge badge-neon">{t("day.ok")}</span>}
       </div>
+      {day.eve.length > 0 && (
+        <ul data-testid="day-eve" className="mt-2 flex flex-col gap-0.5">
+          {day.eve.map((task, i) => (
+            <li key={i} className="t-body flex flex-wrap items-center gap-1.5 text-xs text-ink">
+              <span className="text-muted">{t("day.eve")}</span>
+              <span>{task.text ?? t("day.defrost", { dish: task.dish ?? "" })}</span>
+              {task.rule_key && <BatchRuleChip menu={menu} ruleKey={task.rule_key} />}
+            </li>
+          ))}
+        </ul>
+      )}
       {day.meals.map((meal, i) => (
-        <div key={`${meal.meal}-${i}`} className="mt-3">
-          <p className="t-label text-muted">
-            {t.has(`meals.${meal.meal}`) ? t(`meals.${meal.meal}`) : meal.meal}
-            {meal.tupper && <span className="badge ml-2">{t("day.tupper")}</span>}
-          </p>
+        <div key={`${meal.meal}-${i}`} data-testid="menu-meal" data-meal={meal.meal} className="mt-3">
+          <div className="t-label flex flex-wrap items-center gap-2 text-muted">
+            <span>{mealName(t, meal)}</span>
+            {meal.tupper && <span className="badge">{t("day.tupper")}</span>}
+            <Storage meal={meal} menu={menu} />
+          </div>
+          {meal.free && (
+            <p data-testid="meal-free" className="t-body mt-1 text-sm text-ink">
+              {meal.free_budget_kcal ? t("day.freeBudget", { kcal: f.n(meal.free_budget_kcal) }) : t("day.free")}
+            </p>
+          )}
+          {meal.prep.length > 0 && <p className="t-body mt-0.5 text-[11px] text-ink">{t("day.prep", { list: meal.prep.join("; ") })}</p>}
           {meal.dishes.map((d) => <Dish key={d.dish} dish={d} />)}
         </div>
       ))}
+      {!day.check && fileTotals && fileTotals.kcal != null && (
+        <p data-testid="menu-file-totals" className="stat mt-3 border-t border-[rgba(150,190,255,0.1)] pt-2 text-sm text-ink">
+          {t("day.fileTotals", { kcal: f.n(fileTotals.kcal ?? 0), p: f.n(fileTotals.protein_g ?? 0) })}
+        </p>
+      )}
       {tot && day.check && (
         <div className="mt-3 border-t border-[rgba(150,190,255,0.1)] pt-2">
           <p data-testid="menu-totals" className="stat text-sm text-ink">
@@ -268,18 +331,43 @@ function PdfButton({ id }: { id: number }) {
   );
 }
 
-/** El menú guardado: objetivos, días comprobados por el motor, rechazos, avisos y la compra. */
+function Header({ menu }: { menu: Menu }) {
+  const t = useTranslations("menu.header");
+  const f = useFormat();
+  const last = menu.end_date ?? menu.days[menu.days.length - 1]?.date ?? menu.start_date;
+  return (
+    <section data-testid="menu-header" data-source={menu.source} className="glass mt-4 p-4">
+      {menu.title && <p className="t-title text-ink">{menu.title}</p>}
+      <p className="t-body text-xs text-muted first-letter:uppercase">{t("range", { start: f.date(menu.start_date), end: f.date(last) })}</p>
+      <p className="t-label mt-1 text-muted">{t(`source.${menu.source}`)}</p>
+      {menu.notes.length > 0 && (
+        <ul className="mt-2 flex list-disc flex-col gap-0.5 pl-4">
+          {menu.notes.map((n, i) => <li key={i} className="t-body text-xs text-ink">{n}</li>)}
+        </ul>
+      )}
+      {!menu.kitchen_filled && menu.batch_sessions.length > 0 && (
+        <p data-testid="menu-kitchen-hint" className="t-body mt-2 text-xs text-warn">{t("kitchenHint")}</p>
+      )}
+    </section>
+  );
+}
+
+/** El menú guardado: objetivos, días comprobados por el motor, sesiones de batch, rechazos, avisos,
+ * la compra y los tickets. */
 export function MenuView({ menu }: { menu: Menu }) {
   const t = useTranslations("menu");
   return (
-    <div data-testid="menu" data-provider={menu.provider}>
+    <div data-testid="menu" data-provider={menu.provider} data-menu-id={menu.id}>
+      <Header menu={menu} />
       {menu.provider === "fake" && <p data-testid="menu-simulated" className="t-body mt-3 text-[11px] text-muted">{t("simulated")}</p>}
       <Targets menu={menu} />
+      <BatchSessions menu={menu} />
       {menu.days.map((d) => <Day key={d.date} day={d} menu={menu} />)}
       <p className="t-body mt-2 text-[11px] text-muted">{t("rateHint")}</p>
       <Rejected menu={menu} />
       <TasteFlags menu={menu} />
-      <Shopping menu={menu} />
+      {menu.shopping_list ? <ShoppingList list={menu.shopping_list} menuId={menu.id} /> : <Shopping menu={menu} />}
+      <TicketsCard planId={menu.id} />
       <PdfButton id={menu.id} />
       <p className="t-label mt-3 text-muted">{t("engine", { sha: menu.engine_sha })}</p>
     </div>

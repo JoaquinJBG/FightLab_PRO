@@ -89,6 +89,22 @@
 - Los productos que se busquen en OFF (proxy de F8) se valoran igual y llevan atribución ODbL.
 - **Depende de F12** para la lista de la compra; el catálogo y el motor pueden empezar a la vez.
 
+**Hecho en `feat/coach-f13-mercadona` (2026-11-09):**
+
+- Modelo propio `ChainProduct` (por perfil, privado), aparte de `CatalogueProduct` (OFF, ODbL):
+  la clave es el id de la tienda o el EAN, trae precio, formato y `equivale_a`, y borrar el
+  catálogo no toca lo guardado de OFF. Importación en Perfil → Importar → Catálogo de la cadena,
+  con vista previa (nuevos, actualizados, sin cambios, descartados con motivo y línea, valoraciones
+  y diferencias con la del archivo). Una celda vacía no borra lo guardado: la tabla puntuada y la
+  de la app se juntan.
+- Motor en `backend/coaching/product_rating.py`; reglas y fuentes en
+  `backend/knowledge_fightlab/food-products.md` (F145 a F148: guía FSA 2016, informe Nutri-Score
+  2022, documentación de OFF y anexo XIV del Reglamento 1169/2011), con traducción.
+- Uso: enganche `settings.SHOPPING_CHAIN_PROVIDER` = `coaching.chain_catalogue.chain_product` (acordado con F12),
+  además de `product_for` / `shopping_for` (y `POST /coach/chain-products/shopping`)
+  para la lista de la compra de F12; `GET /coach/substitutes` para los sustitutos isocalóricos.
+- Los CSV de cadena están en `.gitignore`; las pruebas usan productos inventados.
+
 ### Fase 14: menús con IA a coste 0
 
 Opciones:

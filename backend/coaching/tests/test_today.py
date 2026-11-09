@@ -12,6 +12,8 @@ from rest_framework.test import APIClient
 from activities.models import Activity
 from coaching import today as days
 from coaching.models import DailyCheckin, DayLog, MealCheck, MealPlan, WeeklyPlan
+from django.utils import timezone
+from userstate.models import UserState
 
 from .helpers import TODAY, client_for, fix_today, make_user
 
@@ -89,9 +91,11 @@ def test_plan_of_the_day_comes_from_the_active_weekly_plan():
     ])
     body = client_for(user).get(URL).json()
     assert body["plan"]["entries"] == [
-        {"kind": "gym", "time": "18:00", "session": "A", "exercises": ["Sentadilla", "Press banca"]},
+        # F26: sin lesiones, nada en pausa
+        {"kind": "gym", "time": "18:00", "session": "A", "exercises": ["Sentadilla", "Press banca"], "paused": []},
         {"kind": "cardio", "time": None, "minutes": 25},
     ]
+    assert body["plan"]["no_contact"] is False
     assert body["day_type"] == "gym" and body["day_type_set"] is False
     friday = client_for(user).get(URL, {"date": (TODAY - timedelta(days=6)).isoformat()}).json()
     assert friday["plan"]["type"] == "cardio"
@@ -200,6 +204,153 @@ def test_meals_of_the_menu_with_marks_and_next_meal():
     assert body["menu"]["meals"][1]["mark"] is None
     rows = {m.meal: (m.state, m.dish) for m in MealCheck.objects.filter(profile=user.profile)}
     assert rows == {"desayuno": ("hecho", "Avena con yogur"), "cena": ("no_hecho", "")}
+
+
+def test_f29_a_mark_does_not_move_to_a_new_dish_when_the_menu_changes():
+    """F29 (prueba en el móvil): con la cena marcada «No hecha», preparar otro menú ponía la marca
+    en el plato nuevo, que nunca estuvo en el día. La marca es del plato que se marcó."""
+    user = athlete()
+    menu(user)
+    client = client_for(user)
+    client.put(URL + "/meal", {"meal": "breakfast", "state": "skipped"}, format="json")
+    plan = MealPlan.objects.get(profile=user.profile)
+    # Otro menú para el mismo día: el desayuno cambia de plato; la comida sigue igual.
+    days_ = plan.days
+    days_[-1]["meals"][0]["dishes"][0]["dish"] = "Tostada con tomate"
+    plan.days = days_
+    plan.save()
+    breakfast = client.get(URL).json()["menu"]["meals"][0]
+    assert MealCheck.objects.get(profile=user.profile, meal="desayuno").dish == "Avena con yogur"  # no se reescribe
+    assert breakfast["dishes"] == ["Tostada con tomate"]
+    assert breakfast["mark"] is None
+    assert breakfast["previous_mark"] == {"state": "skipped", "change": None, "dish": "Avena con yogur"}
+    assert client.get(URL).json()["next_meal"]["meal"] == "breakfast"
+    # Marcar el plato nuevo guarda su nombre y vuelve a valer.
+    body = client.put(URL + "/meal", {"meal": "breakfast", "state": "done"}, format="json").json()
+    assert body["menu"]["meals"][0]["mark"] == {"state": "done", "change": None}
+    assert body["menu"]["meals"][0]["previous_mark"] is None
+    assert MealCheck.objects.get(profile=user.profile, meal="desayuno").dish == "Tostada con tomate"
+
+
+def test_f29_past_days_keep_their_marks_and_a_new_menu_does_not_rewrite_them():
+    user = athlete()
+    yesterday = TODAY - timedelta(days=1)
+    plan = menu(user, day=yesterday)
+    MealCheck.objects.create(profile=user.profile, date=yesterday, meal="desayuno", state="no_hecho", dish="Avena con yogur")
+    days_ = plan.days
+    days_[0]["meals"][0]["dishes"][0]["dish"] = "Tostada con tomate"
+    plan.days = days_
+    plan.save()
+    meal = client_for(user).get(URL, {"date": yesterday.isoformat()}).json()["menu"]["meals"][0]
+    assert meal["mark"] == {"state": "skipped", "change": None} and meal["previous_mark"] is None
+    # La marca guardada no se borra ni se reescribe.
+    row = MealCheck.objects.get(profile=user.profile, date=yesterday, meal="desayuno")
+    assert (row.state, row.dish) == ("no_hecho", "Avena con yogur")
+
+
+def test_a_mark_without_dish_from_the_old_history_still_counts():
+    user = athlete()
+    menu(user)
+    MealCheck.objects.create(profile=user.profile, date=TODAY, meal="desayuno", state="hecho", dish="")
+    meal = client_for(user).get(URL).json()["menu"]["meals"][0]
+    assert meal["mark"] == {"state": "done", "change": None} and meal["previous_mark"] is None
+
+
+def test_same_dish_with_other_case_keeps_its_mark():
+    user = athlete()
+    menu(user)
+    MealCheck.objects.create(profile=user.profile, date=TODAY, meal="desayuno", state="no_hecho", dish="AVENA CON YOGUR")
+    assert client_for(user).get(URL).json()["menu"]["meals"][0]["mark"]["state"] == "skipped"
+
+
+def real_menu(user):
+    """Un menú con alimentos de la tabla del motor, para que tenga kcal previstas."""
+    meals = [
+        {"meal": "breakfast", "dishes": [{"dish": "Avena con yogur", "items": ["copos de avena=60", "arroz blanco, cocido=100"]}]},
+        {"meal": "lunch", "dishes": [{"dish": "Arroz", "items": ["arroz blanco, cocido=200"]}]},
+        {"meal": "dinner", "free": True, "dishes": []},
+    ]
+    return MealPlan.objects.create(profile=user.profile, start_date=MONDAY, days=[{"date": TODAY.isoformat(), "meals": meals}])
+
+
+def diary(user, day=TODAY):
+    entry = UserState.objects.filter(profile=user.profile, key=f"nutri_{day.isoformat()}").first()
+    return entry.value if entry else []
+
+
+def test_a_done_meal_adds_its_planned_kcal_to_the_nutrition_diary_and_unmarking_removes_it():
+    """F6 (como ParteDiario): «Hecha» suma al diario las kcal y macros previstas del plato, como una
+    entrada ligada a la marca; desmarcar, «No hecha» o «Cambiada» la quitan y lo demás se queda."""
+    user = athlete()
+    real_menu(user)
+    UserState.objects.create(
+        profile=user.profile, key=f"nutri_{TODAY.isoformat()}", updated_at=timezone.now(),
+        value=[{"id": "a1", "meal": "Snack", "name": "Plátano", "grams": 120, "kcal": 107, "p": 1, "c": 27, "f": 0}],
+    )
+    client = client_for(user)
+    body = client.get(URL).json()
+    breakfast = body["menu"]["meals"][0]
+    assert breakfast["totals"]["kcal"] > 0 and {"p", "c", "f"} <= set(breakfast["totals"])
+    assert body["menu"]["meals"][2]["totals"] is None  # comida libre: sin previsión
+
+    client.put(URL + "/meal", {"meal": "breakfast", "state": "done"}, format="json")
+    items = diary(user)
+    assert [i["id"] for i in items] == ["a1", f"menu-{TODAY.isoformat()}-breakfast"]
+    added = items[1]
+    assert added["source"] == "menu" and added["link"] == f"menu:{TODAY.isoformat()}:breakfast"
+    assert added["meal"] == "Desayuno" and added["name"] == "Avena con yogur"
+    assert (added["kcal"], added["p"], added["c"], added["f"]) == tuple(breakfast["totals"][k] for k in ("kcal", "p", "c", "f"))
+
+    # Marcar otra vez no la duplica
+    client.put(URL + "/meal", {"meal": "breakfast", "state": "done"}, format="json")
+    assert len(diary(user)) == 2
+
+    # Quitar la marca la quita; lo apuntado a mano se queda
+    client.put(URL + "/meal", {"meal": "breakfast", "state": None}, format="json")
+    assert [i["id"] for i in diary(user)] == ["a1"]
+
+    # «Cambiada» solo cuenta lo que se apunte: la entrada del menú se va
+    client.put(URL + "/meal", {"meal": "breakfast", "state": "done"}, format="json")
+    client.put(URL + "/meal", {"meal": "breakfast", "state": "changed", "change": "tostadas"}, format="json")
+    assert [i["id"] for i in diary(user)] == ["a1"]
+    client.put(URL + "/meal", {"meal": "breakfast", "state": "done"}, format="json")
+    client.put(URL + "/meal", {"meal": "breakfast", "state": "skipped"}, format="json")
+    assert [i["id"] for i in diary(user)] == ["a1"]
+
+    # Una comida libre marcada como hecha no inventa nada
+    client.put(URL + "/meal", {"meal": "dinner", "state": "done"}, format="json")
+    assert [i["id"] for i in diary(user)] == ["a1"]
+
+
+def test_the_diary_write_wins_over_a_client_clock_slightly_ahead():
+    user = athlete()
+    real_menu(user)
+    ahead = timezone.now() + timedelta(minutes=3)
+    UserState.objects.create(profile=user.profile, key=f"nutri_{TODAY.isoformat()}", updated_at=ahead, value=[])
+    client_for(user).put(URL + "/meal", {"meal": "breakfast", "state": "done"}, format="json")
+    entry = UserState.objects.get(profile=user.profile, key=f"nutri_{TODAY.isoformat()}")
+    assert entry.updated_at > ahead and len(entry.value) == 1
+
+
+def test_two_weigh_ins_on_the_same_day_count_as_their_mean_everywhere():
+    """F28: el pesaje de Hoy (8:00) y otro de Biometría (11:21) el mismo día. Cuenta la media del
+    día, como la tendencia del motor: Hoy, el último peso (`/coach/safety`) y la tendencia."""
+    from coaching.bridge.adapters import daily_weights, latest_weight
+    from profiles.models import BiometricsLog
+
+    user = athlete(weight=None)
+    client = client_for(user)
+    client.post(URL, {"weight_kg": 80.1}, format="json")
+    BiometricsLog.objects.create(profile=user.profile, weight_kg=80.5, timestamp=datetime.combine(TODAY, time(11, 21), tzinfo=MADRID))
+    body = client.get(URL).json()
+    assert body["weight_kg"] == 80.1  # lo apuntado en Hoy sigue siendo lo de Hoy
+    assert body["day_weight"] == {"kg": 80.3, "count": 2}
+    assert daily_weights(user)[-1][1:] == (pytest.approx(80.3), 2)
+    assert latest_weight(user, TODAY) == (pytest.approx(80.3), TODAY)
+    assert client.get("/api/v1/coach/safety").json()["weight"]["kg"] == pytest.approx(80.3)
+    # Otro día con un solo pesaje: ese pesaje
+    yesterday = client.get(URL, {"date": (TODAY - timedelta(days=1)).isoformat()}).json()
+    assert yesterday["day_weight"] is None
 
 
 def test_meal_marks_are_validated_against_the_menu():

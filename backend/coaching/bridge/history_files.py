@@ -6,8 +6,10 @@ Formatos que se reconocen (el contenido manda; la extensión solo desempata):
   (las claves son las columnas del CSV y los valores cerrados van por su nombre de constante:
   `PASEO`, `MOLESTIA_LEVE`, `GIMNASIO`…), `meal_checks`, `cardio_sessions`, `menus`,
   `shopping_checks` y `ticket_photos`. Una copia de antes de la v1.6 no trae `cardio_sessions`:
-  el cardio va dentro de cada día y pasa a una sesión, como hace la app al restaurarla. Los menús,
-  la lista de la compra y las fotos no se leen aquí (fase 12); solo se cuentan.
+  el cardio va dentro de cada día y pasa a una sesión, como hace la app al restaurarla. Los menús
+  (`{id, title, start, end, json}`, con el JSON `schema: 1` dentro) y lo tachado de la lista
+  (`{menu_id, item}`) se guardan tal cual para `coaching.menu_import` (fase 12). Las fotos de los
+  tickets no vienen en la copia: solo se cuentan.
 - **CSV semanal de ParteDiario** (UTF-8, punto decimal, fechas ISO, `true`/`false`, celda vacía =
   no apuntado, RFC 4180). Las columnas se leen por su nombre: pueden faltar las opcionales y
   llegar otras nuevas al final. Los valores cerrados van por su texto (`Paseo con la perra`,
@@ -106,6 +108,10 @@ class ParsedFile:
     discarded: dict = field(default_factory=dict)
     # Lo que el archivo trae y esta fase no importa: código → cuántos.
     notices: Counter = field(default_factory=Counter)
+    # Fase 12: los menús de la copia de ParteDiario (`(id, título, JSON schema 1)`) y lo tachado
+    # de su lista de la compra (`(id del menú, artículo)`).
+    menus: list = field(default_factory=list)
+    shopping_checks: list = field(default_factory=list)
 
     def discard(self, code: str, column: str = "", when: str = "") -> None:
         self.discarded.setdefault((code, column), []).append(when)
@@ -251,9 +257,13 @@ def parse_backup(name: str, text: str) -> ParsedFile:
             continue
         record_for(day).meals[meal] = (state, _text(o.get("change")), "")
 
-    for key, code in (("menus", "menus_later"), ("shopping_checks", "shopping_later"), ("ticket_photos", "tickets_later")):
-        if objects(key):
-            out.notices[code] = len(root[key])
+    for o in objects("menus"):
+        out.menus.append((_text(o.get("id")), _text(o.get("title")), o.get("json")))
+    for o in objects("shopping_checks"):
+        if _text(o.get("menu_id")) and _text(o.get("item")):
+            out.shopping_checks.append((_text(o.get("menu_id")), _text(o.get("item"))))
+    if objects("ticket_photos"):
+        out.notices["tickets_not_in_backup"] = len(root["ticket_photos"])
     out.days = sorted(days.values(), key=lambda r: r.date)
     return out
 

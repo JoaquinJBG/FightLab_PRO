@@ -23,6 +23,7 @@ urlpatterns = [
     path("api/v1/", include("notifications.urls")),
     path("api/v1/", include("exercises.urls")),
     path("api/v1/", include("routines.urls")),
+    path("api/v1/", include("tickets.urls")),
 ]
 
 if settings.ADMIN_URL:

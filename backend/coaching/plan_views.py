@@ -62,8 +62,8 @@ class PlanView(APIView):
             blocked, days = _blocked(exc, lang), None
         return Response({
             "week_start": week.isoformat(),
-            "active": plans.plan_data(active, lang) if active else None,
-            "draft": plans.plan_data(draft, lang) if draft else None,
+            "active": plans.plan_data(active, lang, today) if active else None,
+            "draft": plans.plan_data(draft, lang, today) if draft else None,
             "defaults": days,
             "blocked": blocked,
         })
