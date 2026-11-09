@@ -1,0 +1,1204 @@
+{
+ "version": 1,
+ "exercises": [
+  {
+   "key": "cat:barbell-bench-press",
+   "category": "strength",
+   "names": {
+    "es": "Press banca",
+    "en": "Bench press (barbell)"
+   },
+   "aliases": {
+    "es": [
+     "press de banca",
+     "press banca con barra",
+     "press plano"
+    ],
+    "en": [
+     "Bench Press (Barbell)",
+     "barbell bench press",
+     "flat bench press",
+     "bench press"
+    ]
+   },
+   "legacy_names": [
+    "Press banca"
+   ],
+   "primary_muscles": [
+    "chest"
+   ],
+   "secondary_muscles": [
+    "triceps",
+    "front_delts"
+   ],
+   "equipment": [
+    "barbell",
+    "bench"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:incline-barbell-bench-press",
+   "category": "strength",
+   "names": {
+    "es": "Press inclinado",
+    "en": "Incline bench press (barbell)"
+   },
+   "aliases": {
+    "es": [
+     "press banca inclinado",
+     "press inclinado con barra"
+    ],
+    "en": [
+     "Incline Bench Press (Barbell)",
+     "incline bench press"
+    ]
+   },
+   "legacy_names": [
+    "Press inclinado"
+   ],
+   "primary_muscles": [
+    "chest"
+   ],
+   "secondary_muscles": [
+    "front_delts",
+    "triceps"
+   ],
+   "equipment": [
+    "barbell",
+    "bench"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:dumbbell-bench-press",
+   "category": "strength",
+   "names": {
+    "es": "Press con mancuernas",
+    "en": "Dumbbell bench press"
+   },
+   "aliases": {
+    "es": [
+     "press banca con mancuernas",
+     "press plano con mancuernas"
+    ],
+    "en": [
+     "Bench Press (Dumbbell)",
+     "dumbbell press"
+    ]
+   },
+   "legacy_names": [
+    "Press con mancuernas"
+   ],
+   "primary_muscles": [
+    "chest"
+   ],
+   "secondary_muscles": [
+    "triceps",
+    "front_delts"
+   ],
+   "equipment": [
+    "dumbbell",
+    "bench"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:dumbbell-fly",
+   "category": "strength",
+   "names": {
+    "es": "Aperturas",
+    "en": "Dumbbell fly"
+   },
+   "aliases": {
+    "es": [
+     "aperturas con mancuernas",
+     "aperturas de pecho"
+    ],
+    "en": [
+     "Chest Fly (Dumbbell)",
+     "dumbbell flyes",
+     "chest fly"
+    ]
+   },
+   "legacy_names": [
+    "Aperturas"
+   ],
+   "primary_muscles": [
+    "chest"
+   ],
+   "secondary_muscles": [
+    "front_delts"
+   ],
+   "equipment": [
+    "dumbbell",
+    "bench"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:dips",
+   "category": "strength",
+   "names": {
+    "es": "Fondos",
+    "en": "Dips"
+   },
+   "aliases": {
+    "es": [
+     "fondos en paralelas",
+     "fondos de pecho"
+    ],
+    "en": [
+     "Chest Dip",
+     "Triceps Dip",
+     "parallel bar dips"
+    ]
+   },
+   "legacy_names": [
+    "Fondos"
+   ],
+   "primary_muscles": [
+    "chest",
+    "triceps"
+   ],
+   "secondary_muscles": [
+    "front_delts"
+   ],
+   "equipment": [
+    "bodyweight"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:pull-up",
+   "category": "strength",
+   "names": {
+    "es": "Dominadas",
+    "en": "Pull-up"
+   },
+   "aliases": {
+    "es": [
+     "dominadas pronas"
+    ],
+    "en": [
+     "Pull Up",
+     "pullups",
+     "pull ups"
+    ]
+   },
+   "legacy_names": [
+    "Dominadas"
+   ],
+   "primary_muscles": [
+    "lats"
+   ],
+   "secondary_muscles": [
+    "biceps",
+    "upper_back",
+    "rear_delts"
+   ],
+   "equipment": [
+    "pull_up_bar",
+    "bodyweight"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:lat-pulldown",
+   "category": "strength",
+   "names": {
+    "es": "Jalón al pecho",
+    "en": "Lat pulldown"
+   },
+   "aliases": {
+    "es": [
+     "jalón dorsal",
+     "jalón en polea alta"
+    ],
+    "en": [
+     "Lat Pulldown (Cable)",
+     "lat pull down"
+    ]
+   },
+   "legacy_names": [
+    "Jalón al pecho"
+   ],
+   "primary_muscles": [
+    "lats"
+   ],
+   "secondary_muscles": [
+    "biceps",
+    "upper_back"
+   ],
+   "equipment": [
+    "cable",
+    "machine"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:barbell-row",
+   "category": "strength",
+   "names": {
+    "es": "Remo con barra",
+    "en": "Bent-over row (barbell)"
+   },
+   "aliases": {
+    "es": [
+     "remo inclinado con barra",
+     "remo con barra inclinado"
+    ],
+    "en": [
+     "Bent Over Row (Barbell)",
+     "barbell row",
+     "bent over row"
+    ]
+   },
+   "legacy_names": [
+    "Remo con barra",
+    "Remo"
+   ],
+   "primary_muscles": [
+    "upper_back",
+    "lats"
+   ],
+   "secondary_muscles": [
+    "biceps",
+    "rear_delts",
+    "lower_back"
+   ],
+   "equipment": [
+    "barbell"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:seated-machine-row",
+   "category": "strength",
+   "names": {
+    "es": "Remo en máquina",
+    "en": "Seated row (machine)"
+   },
+   "aliases": {
+    "es": [
+     "remo sentado en máquina",
+     "remo sentado"
+    ],
+    "en": [
+     "Seated Row (Machine)",
+     "machine row"
+    ]
+   },
+   "legacy_names": [
+    "Remo en máquina"
+   ],
+   "primary_muscles": [
+    "upper_back",
+    "lats"
+   ],
+   "secondary_muscles": [
+    "biceps",
+    "rear_delts"
+   ],
+   "equipment": [
+    "machine"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:deadlift",
+   "category": "strength",
+   "names": {
+    "es": "Peso muerto",
+    "en": "Deadlift (barbell)"
+   },
+   "aliases": {
+    "es": [
+     "peso muerto convencional",
+     "peso muerto con barra"
+    ],
+    "en": [
+     "Deadlift (Barbell)",
+     "conventional deadlift",
+     "deadlift"
+    ]
+   },
+   "legacy_names": [
+    "Peso muerto"
+   ],
+   "primary_muscles": [
+    "glutes",
+    "hamstrings",
+    "lower_back"
+   ],
+   "secondary_muscles": [
+    "quads",
+    "traps",
+    "forearms"
+   ],
+   "equipment": [
+    "barbell"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:face-pull",
+   "category": "strength",
+   "names": {
+    "es": "Face pull",
+    "en": "Face pull"
+   },
+   "aliases": {
+    "es": [
+     "face pull en polea",
+     "jalón a la cara"
+    ],
+    "en": [
+     "Face Pull (Cable)"
+    ]
+   },
+   "legacy_names": [
+    "Face pull"
+   ],
+   "primary_muscles": [
+    "rear_delts"
+   ],
+   "secondary_muscles": [
+    "traps",
+    "upper_back"
+   ],
+   "equipment": [
+    "cable",
+    "band"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:barbell-back-squat",
+   "category": "strength",
+   "names": {
+    "es": "Sentadilla",
+    "en": "Squat (barbell)"
+   },
+   "aliases": {
+    "es": [
+     "sentadilla con barra",
+     "sentadilla trasera"
+    ],
+    "en": [
+     "Squat (Barbell)",
+     "back squat",
+     "barbell squat"
+    ]
+   },
+   "legacy_names": [
+    "Sentadilla"
+   ],
+   "primary_muscles": [
+    "quads",
+    "glutes"
+   ],
+   "secondary_muscles": [
+    "adductors",
+    "hamstrings",
+    "lower_back"
+   ],
+   "equipment": [
+    "barbell"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:leg-press",
+   "category": "strength",
+   "names": {
+    "es": "Prensa",
+    "en": "Leg press"
+   },
+   "aliases": {
+    "es": [
+     "prensa de piernas",
+     "prensa inclinada"
+    ],
+    "en": [
+     "Leg Press (Machine)"
+    ]
+   },
+   "legacy_names": [
+    "Prensa"
+   ],
+   "primary_muscles": [
+    "quads",
+    "glutes"
+   ],
+   "secondary_muscles": [
+    "hamstrings",
+    "adductors"
+   ],
+   "equipment": [
+    "machine"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:romanian-deadlift",
+   "category": "strength",
+   "names": {
+    "es": "Peso muerto rumano",
+    "en": "Romanian deadlift"
+   },
+   "aliases": {
+    "es": [
+     "rumano"
+    ],
+    "en": [
+     "Romanian Deadlift (Barbell)",
+     "Romanian Deadlift (Dumbbell)",
+     "RDL"
+    ]
+   },
+   "legacy_names": [
+    "Peso muerto rumano"
+   ],
+   "primary_muscles": [
+    "hamstrings",
+    "glutes"
+   ],
+   "secondary_muscles": [
+    "lower_back"
+   ],
+   "equipment": [
+    "barbell",
+    "dumbbell"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:lunge",
+   "category": "strength",
+   "names": {
+    "es": "Zancadas",
+    "en": "Lunge"
+   },
+   "aliases": {
+    "es": [
+     "zancada",
+     "zancadas con mancuernas"
+    ],
+    "en": [
+     "Lunge (Dumbbell)",
+     "Walking Lunge",
+     "lunges"
+    ]
+   },
+   "legacy_names": [
+    "Zancadas"
+   ],
+   "primary_muscles": [
+    "quads",
+    "glutes"
+   ],
+   "secondary_muscles": [
+    "hamstrings",
+    "adductors"
+   ],
+   "equipment": [
+    "dumbbell",
+    "bodyweight"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:leg-extension",
+   "category": "strength",
+   "names": {
+    "es": "Extensión de cuádriceps",
+    "en": "Leg extension"
+   },
+   "aliases": {
+    "es": [
+     "extensiones de cuádriceps",
+     "extensión de piernas"
+    ],
+    "en": [
+     "Leg Extension (Machine)"
+    ]
+   },
+   "legacy_names": [
+    "Extensión de cuádriceps"
+   ],
+   "primary_muscles": [
+    "quads"
+   ],
+   "secondary_muscles": [],
+   "equipment": [
+    "machine"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:leg-curl",
+   "category": "strength",
+   "names": {
+    "es": "Curl femoral",
+    "en": "Leg curl"
+   },
+   "aliases": {
+    "es": [
+     "curl femoral tumbado",
+     "curl femoral sentado",
+     "curl de isquios"
+    ],
+    "en": [
+     "Lying Leg Curl (Machine)",
+     "Seated Leg Curl (Machine)",
+     "hamstring curl"
+    ]
+   },
+   "legacy_names": [
+    "Curl femoral"
+   ],
+   "primary_muscles": [
+    "hamstrings"
+   ],
+   "secondary_muscles": [
+    "calves"
+   ],
+   "equipment": [
+    "machine"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:standing-calf-raise",
+   "category": "strength",
+   "names": {
+    "es": "Gemelos",
+    "en": "Calf raise"
+   },
+   "aliases": {
+    "es": [
+     "elevación de talones",
+     "gemelos de pie",
+     "elevaciones de gemelos"
+    ],
+    "en": [
+     "Standing Calf Raise",
+     "Calf Raise (Machine)",
+     "calf raises"
+    ]
+   },
+   "legacy_names": [
+    "Gemelos"
+   ],
+   "primary_muscles": [
+    "calves"
+   ],
+   "secondary_muscles": [],
+   "equipment": [
+    "machine",
+    "bodyweight"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:overhead-press",
+   "category": "strength",
+   "names": {
+    "es": "Press militar",
+    "en": "Overhead press (barbell)"
+   },
+   "aliases": {
+    "es": [
+     "press de hombro con barra",
+     "press militar de pie"
+    ],
+    "en": [
+     "Overhead Press (Barbell)",
+     "military press",
+     "OHP",
+     "shoulder press"
+    ]
+   },
+   "legacy_names": [
+    "Press militar"
+   ],
+   "primary_muscles": [
+    "front_delts"
+   ],
+   "secondary_muscles": [
+    "triceps",
+    "side_delts",
+    "traps"
+   ],
+   "equipment": [
+    "barbell"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:dumbbell-lateral-raise",
+   "category": "strength",
+   "names": {
+    "es": "Elevaciones laterales",
+    "en": "Lateral raise"
+   },
+   "aliases": {
+    "es": [
+     "elevaciones laterales con mancuernas",
+     "laterales"
+    ],
+    "en": [
+     "Lateral Raise (Dumbbell)",
+     "side raise"
+    ]
+   },
+   "legacy_names": [
+    "Elevaciones laterales"
+   ],
+   "primary_muscles": [
+    "side_delts"
+   ],
+   "secondary_muscles": [
+    "traps"
+   ],
+   "equipment": [
+    "dumbbell"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:rear-delt-fly",
+   "category": "strength",
+   "names": {
+    "es": "Pájaros",
+    "en": "Rear delt fly"
+   },
+   "aliases": {
+    "es": [
+     "pájaros con mancuernas",
+     "aperturas inversas",
+     "vuelos posteriores"
+    ],
+    "en": [
+     "Rear Delt Reverse Fly (Dumbbell)",
+     "reverse fly",
+     "bent over lateral raise"
+    ]
+   },
+   "legacy_names": [
+    "Pájaros"
+   ],
+   "primary_muscles": [
+    "rear_delts"
+   ],
+   "secondary_muscles": [
+    "upper_back",
+    "traps"
+   ],
+   "equipment": [
+    "dumbbell"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:arnold-press",
+   "category": "strength",
+   "names": {
+    "es": "Press Arnold",
+    "en": "Arnold press"
+   },
+   "aliases": {
+    "es": [
+     "press arnold con mancuernas"
+    ],
+    "en": [
+     "Arnold Press (Dumbbell)"
+    ]
+   },
+   "legacy_names": [
+    "Press Arnold"
+   ],
+   "primary_muscles": [
+    "front_delts"
+   ],
+   "secondary_muscles": [
+    "side_delts",
+    "triceps"
+   ],
+   "equipment": [
+    "dumbbell"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:biceps-curl",
+   "category": "strength",
+   "names": {
+    "es": "Curl bíceps",
+    "en": "Biceps curl"
+   },
+   "aliases": {
+    "es": [
+     "curl de bíceps",
+     "curl con mancuernas",
+     "curl con barra"
+    ],
+    "en": [
+     "Bicep Curl (Dumbbell)",
+     "Bicep Curl (Barbell)",
+     "bicep curl",
+     "dumbbell curl"
+    ]
+   },
+   "legacy_names": [
+    "Curl bíceps"
+   ],
+   "primary_muscles": [
+    "biceps"
+   ],
+   "secondary_muscles": [
+    "forearms"
+   ],
+   "equipment": [
+    "dumbbell",
+    "barbell"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:hammer-curl",
+   "category": "strength",
+   "names": {
+    "es": "Curl martillo",
+    "en": "Hammer curl"
+   },
+   "aliases": {
+    "es": [
+     "curl de martillo"
+    ],
+    "en": [
+     "Hammer Curl (Dumbbell)"
+    ]
+   },
+   "legacy_names": [
+    "Curl martillo"
+   ],
+   "primary_muscles": [
+    "biceps"
+   ],
+   "secondary_muscles": [
+    "forearms"
+   ],
+   "equipment": [
+    "dumbbell"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:triceps-extension",
+   "category": "strength",
+   "names": {
+    "es": "Extensión de tríceps",
+    "en": "Triceps extension"
+   },
+   "aliases": {
+    "es": [
+     "extensiones de tríceps",
+     "jalón de tríceps",
+     "tríceps en polea"
+    ],
+    "en": [
+     "Triceps Extension (Cable)",
+     "Triceps Pushdown",
+     "triceps pushdown",
+     "overhead triceps extension"
+    ]
+   },
+   "legacy_names": [
+    "Extensión de tríceps",
+    "Extensión tríceps"
+   ],
+   "primary_muscles": [
+    "triceps"
+   ],
+   "secondary_muscles": [],
+   "equipment": [
+    "cable",
+    "dumbbell"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:skull-crusher",
+   "category": "strength",
+   "names": {
+    "es": "Press francés",
+    "en": "Skull crusher"
+   },
+   "aliases": {
+    "es": [
+     "press francés con barra z",
+     "rompecráneos"
+    ],
+    "en": [
+     "Skullcrusher (Barbell)",
+     "Skullcrusher (EZ Bar)",
+     "lying triceps extension"
+    ]
+   },
+   "legacy_names": [
+    "Press francés"
+   ],
+   "primary_muscles": [
+    "triceps"
+   ],
+   "secondary_muscles": [],
+   "equipment": [
+    "ez_bar",
+    "barbell",
+    "bench"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:plank",
+   "category": "strength",
+   "names": {
+    "es": "Plancha",
+    "en": "Plank"
+   },
+   "aliases": {
+    "es": [
+     "plancha abdominal",
+     "plancha frontal"
+    ],
+    "en": [
+     "front plank"
+    ]
+   },
+   "legacy_names": [
+    "Plancha"
+   ],
+   "primary_muscles": [
+    "abs"
+   ],
+   "secondary_muscles": [
+    "obliques",
+    "lower_back"
+   ],
+   "equipment": [
+    "bodyweight",
+    "mat"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:cable-crunch",
+   "category": "strength",
+   "names": {
+    "es": "Crunch en polea",
+    "en": "Cable crunch"
+   },
+   "aliases": {
+    "es": [
+     "crunch en polea alta",
+     "encogimientos en polea"
+    ],
+    "en": [
+     "Cable Crunch",
+     "kneeling cable crunch"
+    ]
+   },
+   "legacy_names": [
+    "Crunch en polea"
+   ],
+   "primary_muscles": [
+    "abs"
+   ],
+   "secondary_muscles": [
+    "obliques"
+   ],
+   "equipment": [
+    "cable"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:ab-wheel-rollout",
+   "category": "strength",
+   "names": {
+    "es": "Rueda abdominal",
+    "en": "Ab wheel rollout"
+   },
+   "aliases": {
+    "es": [
+     "rueda de abdominales",
+     "rodillo abdominal"
+    ],
+    "en": [
+     "Ab Wheel",
+     "ab rollout"
+    ]
+   },
+   "legacy_names": [
+    "Rueda abdominal"
+   ],
+   "primary_muscles": [
+    "abs"
+   ],
+   "secondary_muscles": [
+    "lats",
+    "lower_back"
+   ],
+   "equipment": [
+    "other"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  },
+  {
+   "key": "cat:leg-raise",
+   "category": "strength",
+   "names": {
+    "es": "Elevaciones de piernas",
+    "en": "Leg raise"
+   },
+   "aliases": {
+    "es": [
+     "elevación de piernas",
+     "elevaciones de piernas colgado",
+     "elevaciones de piernas tumbado"
+    ],
+    "en": [
+     "Hanging Leg Raise",
+     "Lying Leg Raise",
+     "leg raises"
+    ]
+   },
+   "legacy_names": [
+    "Elevaciones de piernas"
+   ],
+   "primary_muscles": [
+    "abs"
+   ],
+   "secondary_muscles": [
+    "hip_flexors"
+   ],
+   "equipment": [
+    "bodyweight",
+    "pull_up_bar"
+   ],
+   "instructions": {
+    "es": [],
+    "en": []
+   },
+   "text_credit": null,
+   "images": [],
+   "wger_id": null,
+   "everkinetic": null
+  }
+ ]
+}
