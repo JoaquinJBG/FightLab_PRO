@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "userstate",
     "coaching",
     "notifications",
+    "exercises",
     "routines",
 ]
 
