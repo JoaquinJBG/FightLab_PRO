@@ -112,6 +112,7 @@ Opciones:
 1. **F10 y F11 a la vez**: son las que sustituyen el uso diario de ParteDiario.
 2. **F12**, y **F13** a la vez con ella (catálogo y motor; el enlace con la lista de la compra al final de F12).
 3. **F14**.
+4. **F15** (estudio) y después **F16** (app Android), cuando el usuario lo diga.
 
 Cada fase: rama propia desde `feat/beta-coach`, push normal, sin PR, pruebas (pytest, vitest, E2E,
 tsc, build y la CI de la beta) y textos en es/en. Al terminar, se juntan en `feat/beta-coach`.
@@ -125,7 +126,25 @@ tsc, build y la CI de la beta) y textos en es/en. Al terminar, se juntan en `fea
   con Capacitor (con plugin de Health Connect, más mantenimiento). También: permisos de Health Connect,
   publicación (APK propio o Play Store), firma, actualizaciones y coste 0.
 - Resultado: un documento con la recomendación y un prototipo mínimo solo si el usuario lo pide.
-- **Después de F11.**
+- **Después de F11.** El usuario ya ha elegido Capacitor para la F16 (abajo): el estudio se centra
+  en el plugin de Health Connect, el widget y la publicación, y sus conclusiones son la entrada de la F16.
+
+### Fase 16 (apuntada, sin empezar): app Android con Capacitor
+
+- **Cuándo:** después de dejar la app funcional (F12 y la subida a producción). No se empieza hasta
+  que el usuario lo diga.
+- **Qué:** una app Android hecha con **Capacitor** que envuelve la PWA de FightLab, la misma URL de
+  producción. No es una app nueva: las pantallas y la lógica siguen en la PWA.
+- **Widget de la pantalla de inicio** que sustituye al de ParteDiario (Glance): parte rápido del
+  día y lo pendiente de Hoy. Es código nativo (Kotlin) dentro del proyecto Capacitor y lee la misma
+  API del backend con la sesión del usuario.
+- **Health Connect:** FC en reposo, media y máxima, y minutos por zona
+  (`fc_reposo,fc_media,fc_max,min_z1..z3`, como ParteDiario), enviados a FightLab. Se apoya en el
+  estudio de la **F15** (plugin, permisos y qué datos se guardan).
+- **Avisos:** decidir en el estudio si siguen por Web Push o pasan a notificaciones nativas.
+- **iPhone:** sin cambios, sigue con la PWA.
+- **Publicación:** APK propio o Play Store, firma y actualizaciones a coste 0, según el estudio F15.
+  Cualquier cuenta o pago (por ejemplo, la cuota de Google Play) lo decide el usuario.
 
 ## Decisiones del usuario (2026-11-03)
 
@@ -136,6 +155,9 @@ tsc, build y la CI de la beta) y textos en es/en. Al terminar, se juntan en `fea
    `docs/DEPLOY.md` cuando se haga la F11).
 4. **Fotos de tickets:** en **Cloudflare R2** (decidido tras el estudio de abajo). Va en la F12.
 5. **Health Connect:** fase de estudio F15 (arriba).
+6. **App Android (2026-11-09):** apuntada como F16, con Capacitor envolviendo la PWA, el widget
+   que sustituye al de ParteDiario y Health Connect (con el estudio F15). La PWA sigue igual para
+   iPhone. Se empieza después de dejar la app funcional.
 
 ## Fotos de tickets solo en el móvil (IndexedDB de la PWA)
 
