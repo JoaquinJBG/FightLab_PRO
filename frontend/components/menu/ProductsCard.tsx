@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { RatingBadge } from "@/components/catalogue/RatingBadge";
 import { useAddProduct, useCatalogue, useProductSearch, useRemoveProduct } from "@/lib/menu";
 
 // Errores del proxy de Open Food Facts que se explican con su propio texto.
@@ -53,6 +54,7 @@ export function ProductsCard() {
             <li key={p.barcode} className="flex items-center justify-between gap-2">
               <span className="min-w-0">
                 <span className="t-body block text-sm text-ink">{p.name ?? p.barcode}{p.brand ? ` · ${p.brand}` : ""}</span>
+                {p.rating && <span className="mt-0.5 block"><RatingBadge rating={p.rating.rating} check={p.rating.check} bare /></span>}
                 <a href={p.url} target="_blank" rel="noopener noreferrer" className="t-label text-neon underline">{t("unverified")}</a>
               </span>
               <button type="button" onClick={() => add.mutate({ barcode: p.barcode })} disabled={add.isPending} className="btn btn-outline btn-sm shrink-0">
@@ -70,6 +72,7 @@ export function ProductsCard() {
           <li key={p.barcode} data-testid="catalogue-product" className="flex items-center justify-between gap-2">
             <span className="min-w-0">
               <span className="t-body block text-sm text-ink">{p.product_name}</span>
+              {p.rating && <span className="mt-0.5 block"><RatingBadge rating={p.rating.rating} check={p.rating.check} ruleKey={p.rating.rule_key} /></span>}
               <a href={p.url} target="_blank" rel="noopener noreferrer" className="t-label text-neon underline">{t("unverified")}</a>
             </span>
             <button type="button" onClick={() => remove.mutate(p.barcode)} aria-label={t("remove", { name: p.product_name })} className="t-label px-1 text-muted hover:text-bad">✕</button>

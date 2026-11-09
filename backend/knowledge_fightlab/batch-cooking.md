@@ -8,14 +8,14 @@ Grades are used as in combat-sports.md. Here **strong** means that several food-
 
 ## Key rules at a glance
 
-- Start the longest cooking first and run the oven and the hob in parallel; the app's per-appliance timeline and its substitutions are FightLab conventions. (emerging) [F145], [F146]
-- Cool cooked food quickly and refrigerate it within 2 hours in shallow, unstacked containers; chill rice ideally within 1 hour. (strong) [F147], [F148], [F149], [F150], [F151]
-- Eat batch food from the fridge within 2 days (rice within 1 day) and freeze the rest the same day; the Monday-Tuesday fridge, Wednesday-Friday freezer split is a FightLab convention. (moderate) [F148], [F152], [F153], [F149], [F154]
-- Do not freeze potatoes, mayonnaise, fried food, eggs in shell or yogurt and single-cream sauces; cool food in the fridge before freezing it at -18 °C. (moderate) [F154], [F155]
-- Defrost in the fridge, starting the night before; never at room temperature; use within 24 hours. (strong) [F154], [F148]
-- Reheat until steaming hot throughout, at least 74 °C; reheat rice and refrozen cooked food only once. (strong) [F147], [F149], [F148], [F153]
-- Check air-fried meat with a thermometer: poultry 74 °C, whole cuts of pork 63 °C with a 3-minute rest, minced meat 71 °C. (moderate) [F156], [F153], [F157]
-- Label each container with the dish and the date, use the oldest first, and freeze in portions. (moderate) [F154], [F148], [F155]
+- Start the longest cooking first and run the oven and the hob in parallel; the app's per-appliance timeline and its substitutions are FightLab conventions. (emerging) [F149], [F150]
+- Cool cooked food quickly and refrigerate it within 2 hours in shallow, unstacked containers; chill rice ideally within 1 hour. (strong) [F151], [F152], [F153], [F154], [F155]
+- Eat batch food from the fridge within 2 days (rice within 1 day) and freeze the rest the same day; the Monday-Tuesday fridge, Wednesday-Friday freezer split is a FightLab convention. (moderate) [F152], [F156], [F157], [F153], [F158]
+- Do not freeze potatoes, mayonnaise, fried food, eggs in shell or yogurt and single-cream sauces; cool food in the fridge before freezing it at -18 °C. (moderate) [F158], [F159]
+- Defrost in the fridge, starting the night before; never at room temperature; use within 24 hours. (strong) [F158], [F152]
+- Reheat until steaming hot throughout, at least 74 °C; reheat rice and refrozen cooked food only once. (strong) [F151], [F153], [F152], [F157]
+- Check air-fried meat with a thermometer: poultry 74 °C, whole cuts of pork 63 °C with a 3-minute rest, minced meat 71 °C. (moderate) [F160], [F157], [F161]
+- Label each container with the dish and the date, use the oldest first, and freeze in portions. (moderate) [F158], [F152], [F159]
 
 ## Planning the session
 
@@ -25,7 +25,7 @@ Grades are used as in combat-sports.md. Here **strong** means that several food-
 **Grade:** emerging
 **Applies to:** Home cooks preparing several dishes for the week in one session. The guides are written for Spanish home kitchens; no study measured the order.
 **Individual variation / conflicts:** These are cooking guides, not evidence: no source tests one order against another. Cooking times depend on the recipe, the amount and the appliance, so the timeline is a plan to follow with judgement, not a prescription. A pressure cooker's manual governs its maximum fill, which this file does not state.
-**Sources:** [F145], [F146]
+**Sources:** [F149], [F150]
 
 ## Storing and freezing
 
@@ -35,7 +35,7 @@ Grades are used as in combat-sports.md. Here **strong** means that several food-
 **Grade:** strong
 **Applies to:** Cooked food at home. The agencies' advice is general food hygiene, not tied to a population.
 **Individual variation / conflicts:** AESAN says to refrigerate immediately, while the FSA says not to put hot food straight into the fridge but to cool it first; both set the same 2-hour limit. FightLab follows the 2-hour limit and, for rice, the FSA's 1 hour. In hot weather the limit is shorter (EROSKI Consumer).
-**Sources:** [F147], [F148], [F149], [F150], [F151]
+**Sources:** [F151], [F152], [F153], [F154], [F155]
 
 ### Eat from the fridge within 2 days and freeze the rest the same day
 **Rule:** Batch food eaten in the 2 days after the session comes from the fridge; anything eaten later is frozen on the day it is cooked and thawed the night before (see "Defrost in the fridge the night before"). Cooked rice stays in the fridge for 1 day at most. With a Sunday session this means Monday and Tuesday from the fridge and Wednesday to Friday from the freezer; that split, and the 2-day and 1-day limits as applied by the app, are FightLab conventions built on the most cautious agency advice.
@@ -43,7 +43,7 @@ Grades are used as in combat-sports.md. Here **strong** means that several food-
 **Grade:** moderate
 **Applies to:** Cooked dishes stored at 0-5 °C at home.
 **Individual variation / conflicts:** The agencies disagree on fridge time: 48 hours (FSA, OCU) against 3-4 days (USDA). EROSKI Consumer gives 3-4 days for stews and 4-6 days for rice, which contradicts the FSA's 1 day for rice; FightLab follows the FSA. The limits are about safety, not quality: frozen food stays safe but slowly loses quality.
-**Sources:** [F148], [F152], [F153], [F149], [F154]
+**Sources:** [F152], [F156], [F157], [F153], [F158]
 
 ### Do not freeze potatoes, mayonnaise, fried food or yogurt sauces
 **Rule:** Do not freeze dishes that rely on potatoes, eggs in shell, very fatty food, mayonnaise, fried or breaded food, or vegetables meant to be eaten raw: they lose texture or flavour. Freeze curries and sauces without yogurt or single cream and add those after reheating. Cool food in the fridge before it goes into the freezer, and freeze at -18 °C or below. When a dish the app schedules for the freezer names one of these foods, the menu flags it; the word list behind the flag is a FightLab convention.
@@ -51,7 +51,7 @@ Grades are used as in combat-sports.md. Here **strong** means that several food-
 **Grade:** moderate
 **Applies to:** Home freezing of cooked dishes.
 **Individual variation / conflicts:** These are quality limits, not safety limits: the food is safe, it just tastes or feels worse. A stew with potatoes can be eaten from the fridge, or frozen without the potatoes. OCU also notes that potato and tomato do not freeze well.
-**Sources:** [F154], [F155]
+**Sources:** [F158], [F159]
 
 ### Defrost in the fridge the night before
 **Rule:** Move tomorrow's frozen portion to the coldest part of the fridge the night before, on a tray or in a container that catches the liquid, and eat it within 24 hours of thawing. Never thaw at room temperature. If it has to be thawed in the microwave, use the lowest power and cook or reheat it straight away. Do not refreeze thawed food unless it has been cooked above 70 °C for at least 2 minutes. FightLab reminds the user at 22:00 the evening before; the reminder hour is a FightLab convention.
@@ -59,7 +59,7 @@ Grades are used as in combat-sports.md. Here **strong** means that several food-
 **Grade:** strong
 **Applies to:** Frozen cooked dishes and raw ingredients at home.
 **Individual variation / conflicts:** Large or dense portions may need more than one night; AESAN's 12 hours is a minimum.
-**Sources:** [F154], [F148]
+**Sources:** [F158], [F152]
 
 ### Reheat until steaming hot throughout and reheat rice only once
 **Rule:** Reheat batch food until it is steaming hot all the way through, at least 74 °C in the centre if there is a thermometer, and bring soups and sauces to the boil. Reheat rice only once, and a cooked dish that has been frozen, thawed and refrozen only once more. FightLab asks for each batch portion to be reheated once; extending "only once" to every dish is a FightLab convention, stricter than the sources.
@@ -67,7 +67,7 @@ Grades are used as in combat-sports.md. Here **strong** means that several food-
 **Grade:** strong
 **Applies to:** Reheating cooked dishes at home, in any appliance.
 **Individual variation / conflicts:** Neither FSA page opened gives a general "reheat any leftover only once" rule, and the USDA allows refreezing leftovers after reheating them to 165 °F, which is looser than the FSA. Reheating does not make badly cooled food safe: the rice toxin survives heat (AESAN).
-**Sources:** [F147], [F149], [F148], [F153]
+**Sources:** [F151], [F153], [F152], [F157]
 
 ### Check air-fried meat with a thermometer
 **Rule:** When meat is cooked in an air fryer (or oven) in the session or for dinner, check the centre with a food thermometer, because browning on the outside does not show doneness: poultry 74 °C, whole cuts of pork 63 °C followed by a 3-minute rest, and minced meat 71 °C. Do not overfill the basket, and stir or turn halfway.
@@ -75,7 +75,7 @@ Grades are used as in combat-sports.md. Here **strong** means that several food-
 **Grade:** moderate
 **Applies to:** Meat cooked at home in air fryers; the temperatures are USDA minimum internal temperatures.
 **Individual variation / conflicts:** Some cooking guides say to preheat the air fryer, but Bosch says its models need no preheating; the manufacturer's manual governs. The Nebraska page's °C figures for eggs and fish are wrong (fish is given as 73.9 °C for 145 °F), so only the meat figures are used here.
-**Sources:** [F156], [F153], [F157]
+**Sources:** [F160], [F157], [F161]
 
 ### Label each container with the dish and the date, first in first out
 **Rule:** Portion batch food into individual or meal-size containers, airtight and made for food, and label each one with the dish and the date it was cooked or frozen. In the freezer, what went in first comes out first.
@@ -83,4 +83,4 @@ Grades are used as in combat-sports.md. Here **strong** means that several food-
 **Grade:** moderate
 **Applies to:** Home storage of batch-cooked food.
 **Individual variation / conflicts:** The FSA does not mention first in, first out; AESAN does.
-**Sources:** [F154], [F148], [F155]
+**Sources:** [F158], [F152], [F159]

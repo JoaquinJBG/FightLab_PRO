@@ -89,6 +89,22 @@
 - Los productos que se busquen en OFF (proxy de F8) se valoran igual y llevan atribución ODbL.
 - **Depende de F12** para la lista de la compra; el catálogo y el motor pueden empezar a la vez.
 
+**Hecho en `feat/coach-f13-mercadona` (2026-11-09):**
+
+- Modelo propio `ChainProduct` (por perfil, privado), aparte de `CatalogueProduct` (OFF, ODbL):
+  la clave es el id de la tienda o el EAN, trae precio, formato y `equivale_a`, y borrar el
+  catálogo no toca lo guardado de OFF. Importación en Perfil → Importar → Catálogo de la cadena,
+  con vista previa (nuevos, actualizados, sin cambios, descartados con motivo y línea, valoraciones
+  y diferencias con la del archivo). Una celda vacía no borra lo guardado: la tabla puntuada y la
+  de la app se juntan.
+- Motor en `backend/coaching/product_rating.py`; reglas y fuentes en
+  `backend/knowledge_fightlab/food-products.md` (F145 a F148: guía FSA 2016, informe Nutri-Score
+  2022, documentación de OFF y anexo XIV del Reglamento 1169/2011), con traducción.
+- Uso: enganche `settings.SHOPPING_CHAIN_PROVIDER` = `coaching.chain_catalogue.chain_product` (acordado con F12),
+  además de `product_for` / `shopping_for` (y `POST /coach/chain-products/shopping`)
+  para la lista de la compra de F12; `GET /coach/substitutes` para los sustitutos isocalóricos.
+- Los CSV de cadena están en `.gitignore`; las pruebas usan productos inventados.
+
 ### Fase 14: menús con IA a coste 0
 
 Opciones:
@@ -113,6 +129,26 @@ Opciones:
 2. **F12**, y **F13** a la vez con ella (catálogo y motor; el enlace con la lista de la compra al final de F12).
 3. **F14**.
 4. **F15** (estudio) y después **F16** (app Android), cuando el usuario lo diga.
+
+**Cambio de prioridad (2026-11-09).** El usuario necesita sustituir **Hevy** (con lo que Hevy tiene
+de pago) y **Entrenador IA** para poder usar FightLab a diario. Pasan por delante:
+- **F17 «Gimnasio de verdad»**, la máxima prioridad, en paralelo con los arreglos A y B, F12 y F13.
+  Se divide en tres ramas que no tocan los mismos archivos:
+  - **F17-E, ejercicios y biblioteca:** ejercicios propios sin límite, con músculo principal y
+    secundario y material; biblioteca wger + everkinetic con imágenes y créditos (estudio
+    `docs/estudios/2026-11-09-biblioteca-ejercicios.md`); búsqueda y filtros en es/en.
+  - **F17-R, rutinas y programas:** rutinas y plantillas sin límite (crear, editar, duplicar,
+    reordenar y carpetas), programas clásicos (full body de 3 días, torso-pierna y
+    empuje-tirón-pierna), y el plan por reglas genera rutinas del mismo modelo.
+  - **F17-H, registro, historial y récords:** empezar el entreno desde una rutina; tipos de serie;
+    RPE o RIR por serie; superseries; notas y descanso por ejercicio; calculadora de discos;
+    historial y calendario desde el servidor (arregla F1 de raíz, junto con F2 y F18); gráfica por
+    ejercicio; récords con aviso; e importar de Hevy con sus rutinas.
+- **Nutrición, para igualar a Entrenador IA:** F6 (arreglos A), F12 y F13 juntas, el **escáner de
+  código de barras** con la cámara y **F14** justo después de F12.
+- **F18, rutinas generadas con IA:** un formulario y la clave gratuita de Gemini del propio usuario;
+  el motor valida los números. Va después de F17.
+- **Producción:** cuando esté todo esto y el usuario lo haya probado en el móvil, siempre con su OK.
 
 Cada fase: rama propia desde `feat/beta-coach`, push normal, sin PR, pruebas (pytest, vitest, E2E,
 tsc, build y la CI de la beta) y textos en es/en. Al terminar, se juntan en `feat/beta-coach`.

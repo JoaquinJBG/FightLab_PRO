@@ -51,6 +51,7 @@ SETUPS = {
     "history": ({}, {}),
     "historyScoff": ({}, {"scoff_yes_count": 2}),
     "today": ({"timezone": "Europe/Madrid"}, {}),
+    "catalogue": ({}, {}),
     "menuImport": ({"timezone": "Europe/Madrid"}, {}),
     "batch": ({"timezone": "Europe/Madrid"}, {}),
 }

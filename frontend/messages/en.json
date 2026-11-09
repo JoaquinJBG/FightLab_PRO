@@ -2706,6 +2706,10 @@
       "deficit": "in deficit",
       "noDeficit": "no deficit"
     },
+    "catalogue": {
+      "title": "Store catalogue",
+      "hint": "Your supermarket products with their rating, for shopping and swaps."
+    },
     "menus": {
       "new": "{n, plural, one {# new menu} other {# new menus}}",
       "replaced": "{n, plural, one {# menu replaced} other {# menus replaced}}",
@@ -2871,6 +2875,140 @@
     "hours": {
       "title": "When they arrive",
       "body": "Times follow your profile time zone ({tz}), and each reminder arrives at some point within its hour (22:00 to 22:59, for example). The free server only wakes up at fixed hours, chosen for Spain with and without summer time: if you live in another zone, the reminder arrives at the closest of those hours to its own, earlier or later, but it isn't lost."
+    }
+  },
+  "chainCatalogue": {
+    "back": "← Import",
+    "title": "Store catalogue",
+    "subtitle": "Upload your supermarket's product table (for example the one from the AI coach). FightLab rates each product, picks the pack for the shopping list and estimates the cost.",
+    "help": {
+      "title": "What you can upload",
+      "scored": "The scored table (.csv): store id, EAN, name, brand, category, pack, price per kilo and values per 100 g, with Nutri-Score and rating.",
+      "table": "The app table (.csv): which product stands in for each generic food (equivale_a). Upload it after the scored table and the two are merged.",
+      "reimport": "You can upload them again: products are matched by store id or EAN, updated without duplicates, and an empty cell never wipes what was there.",
+      "private": "The catalogue is kept in your account only and nobody else sees it. FightLab downloads nothing from the store or any other site: it only reads the file you upload."
+    },
+    "chain": "Store",
+    "file": "CSV file (up to {mb} MB)",
+    "check": "Check file",
+    "reading": "Reading…",
+    "checkFirst": "Check the file first: you will see what goes in before anything is saved.",
+    "import": "Import",
+    "importing": "Importing…",
+    "preview": "This is what would be imported",
+    "done": "Imported",
+    "loading": "Loading…",
+    "formats": {
+      "scored": "Scored table",
+      "table": "App table"
+    },
+    "rowsRead": "{n, plural, one {# row read} other {# rows read}} for {chain}",
+    "summary": {
+      "toAdd": "{n, plural, one {# new product} other {# new products}}",
+      "added": "{n, plural, one {# product added} other {# products added}}",
+      "toUpdate": "{n, plural, one {# product gets updated} other {# products get updated}}",
+      "updatedDone": "{n, plural, one {# product updated} other {# products updated}}",
+      "unchanged": "{n, plural, one {# product was already the same} other {# products were already the same}}",
+      "discarded": "{n, plural, =0 {No rows discarded} one {# row discarded} other {# rows discarded}}"
+    },
+    "discarded": {
+      "no_key": "{n, plural, one {# row} other {# rows}} with no store id or EAN",
+      "no_name": "{n, plural, one {# row} other {# rows}} with no name",
+      "bad_number": "{n, plural, one {# row} other {# rows}} with an unreadable number in {field}",
+      "out_of_range": "{n, plural, one {# row} other {# rows}} with an impossible value in {field}",
+      "duplicate_in_file": "{n, plural, one {# repeated row} other {# repeated rows}} in the file (the first one stays)",
+      "generic": "{n, plural, one {# row discarded} other {# rows discarded}}",
+      "lines": "lines {lines}"
+    },
+    "notices": {
+      "ean_invalid": "{n, plural, one {# invalid EAN was ignored} other {# invalid EANs were ignored}}; the product goes in by its id.",
+      "ref_invalid": "{n, plural, one {# invalid store id was ignored} other {# invalid store ids were ignored}}.",
+      "ean_taken": "{n, plural, one {# EAN already belonged} other {# EANs already belonged}} to another product and was not used.",
+      "saturates_dropped": "{n, plural, one {# product had} other {# products had}} more saturated fat than fat: that value is not used."
+    },
+    "ratingsTitle": "FightLab rating",
+    "counts": {
+      "good": "{n} good",
+      "fair": "{n} fair",
+      "avoid": "{n} avoid",
+      "noData": "{n} no data",
+      "notFood": "{n} not applicable"
+    },
+    "reviewCount": "{n, plural, one {# product whose kcal do not match} other {# products whose kcal do not match}} the macros (over 15%): flagged for review.",
+    "differences": {
+      "title": "{n, plural, one {# rating differs} other {# ratings differ}} from the file",
+      "intro": "FightLab rates every product again with its own engine; this is what changes.",
+      "line": "{name}: the file says {file}, FightLab says {engine}"
+    },
+    "rating": {
+      "good": "Good",
+      "fair": "Fair",
+      "avoid": "Avoid",
+      "noData": "No data",
+      "notFood": "Not applicable",
+      "review": "Review"
+    },
+    "rulesLink": "The rules and their sources:",
+    "list": {
+      "title": "Your catalogue",
+      "empty": "You have not imported any products yet.",
+      "total": "{n, plural, one {# product} other {# products}} from {chains}",
+      "search": "Search your catalogue",
+      "filter": "Filter by rating",
+      "all": "All",
+      "pricePerKg": "{price}/{unit}",
+      "kcal": "{kcal} kcal per {per}",
+      "equivalent": "Stands in for: {food}",
+      "more": "And {n} more: search to find them.",
+      "delete": "Delete the whole catalogue",
+      "deleteConfirm": "Delete {n, plural, one {the product} other {the # products}}? This cannot be undone; you can import them again.",
+      "deleteYes": "Yes, delete",
+      "cancel": "Cancel"
+    },
+    "how": {
+      "title": "How products are rated",
+      "food": "Foods, per 100 g: high above {sugars} g sugars, {saturates} g saturated fat or {salt} g salt.",
+      "drink": "Drinks, per 100 ml: high above {sugars} g sugars, {saturates} g saturated fat or {salt} g salt.",
+      "items": {
+        "nutriscore_good": "Nutri-Score A or B and no red: good.",
+        "nutriscore_avoid": "Nutri-Score D or E: avoid.",
+        "fats_nutriscore_only": "Oils, nuts and seeds: only the Nutri-Score counts.",
+        "energy_factors": "Expected energy: 4 kcal per gram of protein and carbohydrate, 9 of fat and 2 of fibre.",
+        "energy_tolerance": "Flagged for review when the kcal are more than 15% off.",
+        "rating_combination": "Red for sugars or saturated fat, or two reds: avoid; the rest, fair.",
+        "fruit_sugar_ignored": "Fruit sugar does not count unless it has added sugar, syrup, chocolate or honey.",
+        "not_food_categories": "Alcohol, soft drinks, coffee and tea, baby food, sweets and seasonings: not applicable."
+      },
+      "source": {
+        "fsa_2016": "Source: UK FSA guidance (2016)",
+        "nutriscore_2023": "Source: Nutri-Score (2023)",
+        "eu_1169_2011": "Source: Regulation (EU) 1169/2011",
+        "convention": "FightLab convention"
+      }
+    },
+    "substitutes": {
+      "title": "Swaps with the same kcal",
+      "intro": "Type a food (the engine's name or one of your products) and the grams: you get others with the same energy and a similar macro split.",
+      "food": "Food",
+      "grams": "Grams",
+      "go": "Find",
+      "for": "For {grams} g of {name} ({kcal} kcal):",
+      "line": "{grams} g of {name} · {kcal} kcal · {protein} g protein",
+      "none": "No similar swaps.",
+      "unknown": "I do not know that food. Try the engine's exact name (e.g. “chicken breast, raw”) or a product from your catalogue.",
+      "error": "Could not look for swaps.",
+      "penaltyNote": "Products to avoid go last. Ordering by macros is a convention:"
+    },
+    "errors": {
+      "missing_file": "Choose a file.",
+      "too_large": "The file is larger than {mb} MB.",
+      "not_csv": "Upload a .csv file.",
+      "unknown_columns": "Unrecognised columns ({columns}). Upload the scored table or the app table.",
+      "empty_file": "The file is empty.",
+      "bad_encoding": "The file's text cannot be read (save it as UTF-8).",
+      "too_many_rows": "The file has more than {max} rows.",
+      "throttled": "Too many attempts in a row. Wait a minute.",
+      "server": "Could not finish. Try again."
     }
   },
   "kitchen": {

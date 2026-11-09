@@ -470,6 +470,12 @@ class CatalogueProduct(models.Model):
     fetched_on = models.DateField()
     source = models.CharField(max_length=60, default="Open Food Facts (unverified)")
     unverified = models.BooleanField(default=True)
+    # Fase 13: lo que pide la valoración (`product_rating`). Vacío en los guardados antes de F13.
+    saturates_g = models.FloatField(null=True, blank=True)
+    sugars_g = models.FloatField(null=True, blank=True)
+    salt_g = models.FloatField(null=True, blank=True)
+    nutriscore = models.CharField(max_length=1, blank=True, default="")
+    off_tags = models.JSONField(default=list, blank=True)  # `categories_tags` de OFF
 
     class Meta:
         ordering = ["product_name"]
@@ -477,6 +483,69 @@ class CatalogueProduct(models.Model):
 
     def __str__(self) -> str:
         return f"CatalogueProduct<{self.profile_id} {self.barcode}>"
+
+
+class ChainProduct(models.Model):
+    """Un producto de una cadena de súper que el usuario importa de su propio archivo (fase 13).
+
+    Es privado: cada fila es de un perfil y no se enseña a nadie más. Los datos salen del archivo
+    del usuario (por ejemplo la tabla puntuada del Entrenador IA, hecha con fuentes sin licencia
+    para redistribuirlas), así que FightLab no los descarga, no los publica y no los trae en el
+    repositorio: solo guarda lo que sube cada uno. Va aparte de `CatalogueProduct` (Open Food
+    Facts, ODbL, uno por código de barras) porque la clave es el id de la tienda, muchos no tienen
+    EAN, trae precio y formato, y "borrar el catálogo" no debe tocar lo guardado de OFF.
+
+    Por 100 g, o por 100 ml en bebidas (`per`). Un valor vacío es "sin dato", nunca cero.
+    `rating`, `label_check` ("revisar" si las kcal no cuadran) y `reasons` los pone el motor (`product_rating`, versión `rating_version`);
+    `file_rating` es lo que traía el archivo, para enseñar la diferencia.
+    """
+
+    profile = models.ForeignKey("profiles.UserProfile", on_delete=models.CASCADE, related_name="chain_products")
+    chain = models.CharField(max_length=80)
+    chain_ref = models.CharField(max_length=40, blank=True, default="")  # id del producto en la tienda
+    ean = models.CharField(max_length=14, blank=True, default="")
+    name = models.CharField(max_length=200)
+    alias = models.CharField(max_length=200, blank=True, default="")  # `name_es` de la tabla corta
+    brand = models.CharField(max_length=120, blank=True, default="")
+    category = models.CharField(max_length=120, blank=True, default="")
+    pack = models.CharField(max_length=120, blank=True, default="")  # el formato de venta
+    price_per_kg = models.FloatField(null=True, blank=True)  # €/kg, o €/l en bebidas
+    equivalent_of = models.CharField(max_length=200, blank=True, default="")  # alimento genérico
+    equivalent_key = models.CharField(max_length=200, blank=True, default="", db_index=True)
+    per = models.CharField(max_length=6, default="100 g")
+    drink = models.BooleanField(null=True, blank=True)  # None: lo deduce el motor
+    kcal = models.FloatField(null=True, blank=True)
+    protein_g = models.FloatField(null=True, blank=True)
+    carbs_g = models.FloatField(null=True, blank=True)
+    fat_g = models.FloatField(null=True, blank=True)
+    fibre_g = models.FloatField(null=True, blank=True)
+    saturates_g = models.FloatField(null=True, blank=True)
+    sugars_g = models.FloatField(null=True, blank=True)
+    salt_g = models.FloatField(null=True, blank=True)
+    nutriscore = models.CharField(max_length=1, blank=True, default="")
+    nova = models.PositiveSmallIntegerField(null=True, blank=True)
+    source = models.CharField(max_length=500, blank=True, default="")  # la columna `fuente`
+    file_rating = models.CharField(max_length=12, blank=True, default="")
+    rating = models.CharField(max_length=12, blank=True, default="")
+    label_check = models.CharField(max_length=8, blank=True, default="")
+    reasons = models.JSONField(default=list, blank=True)
+    rating_version = models.PositiveSmallIntegerField(default=0)
+    imported_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["profile", "chain", "chain_ref"], condition=~models.Q(chain_ref=""), name="uniq_chain_product_ref"
+            ),
+            models.UniqueConstraint(
+                fields=["profile", "chain", "ean"], condition=~models.Q(ean=""), name="uniq_chain_product_ean"
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"ChainProduct<{self.profile_id} {self.chain} {self.chain_ref or self.ean}>"
 
 
 class MealPlan(models.Model):

@@ -402,8 +402,9 @@ TICKETS_STORAGE = env("TICKETS_STORAGE", default="r2")
 
 # --- Lista de la compra: producto de la cadena (enganche F12 → F13) ---
 # Ruta con puntos de la función `chain_product(user, food_key, grams)` que elige el producto y el
-# formato de la cadena (ver coaching/shopping.py). La pone la F13; sin ella, no hay producto.
-SHOPPING_CHAIN_PROVIDER = None
+# formato de la cadena (ver coaching/shopping.py). Es la de la F13: lee el catálogo privado del
+# usuario; con None no hay producto.
+SHOPPING_CHAIN_PROVIDER = "coaching.chain_catalogue.chain_product"
 
 # --- IA (Anthropic) ---
 # Sin clave, los endpoints de IA responden 503 y el frontend degrada a reglas/simulado
