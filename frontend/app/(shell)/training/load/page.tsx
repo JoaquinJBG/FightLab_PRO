@@ -95,13 +95,15 @@ export default function LoadPage() {
   const t = useTranslations("training.load");
   const tl = useTranslations("load");
   const { data: logs = [] } = useBiometrics();
-  // Perezoso: pintura inmediata con lo local sin setState síncrono en el efecto
-  // (react-hooks/set-state-in-effect); loadMetrics() ya guarda typeof window por dentro.
-  const [metrics, setMetrics] = useState<LoadMetrics | null>(() => loadMetrics());
+  // loadMetrics() lee localStorage: solo después de montar, para que el primer render sea igual
+  // que el HTML del servidor (error de hidratación #418, F14).
+  const [metrics, setMetrics] = useState<LoadMetrics | null>(null);
   const [open, setOpen] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMetrics(loadMetrics());
     // El servidor manda en todas las métricas agregadas, incluida la banda: si responde, sustituye.
     fetchServerMetrics().then((m) => { if (alive && m) setMetrics(m); });
     return () => { alive = false; };

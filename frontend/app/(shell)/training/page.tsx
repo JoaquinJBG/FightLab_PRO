@@ -27,12 +27,13 @@ const cards = [
 
 export default function TrainingHubPage() {
   const t = useTranslations("training.index");
-  // Perezoso: loadMetrics() lee localStorage y solo debe correr en el cliente
-  // (guarda typeof window por dentro); así no hay setState síncrono en el
-  // efecto (react-hooks/set-state-in-effect) y la primera pintura ya es real.
-  const [metrics, setMetrics] = useState<LoadMetrics | null>(() => loadMetrics());
+  // loadMetrics() lee localStorage: solo después de montar. Leído en el primer render, el HTML
+  // del servidor (sin localStorage) no coincidía con el del cliente (error #418, F14).
+  const [metrics, setMetrics] = useState<LoadMetrics | null>(null);
   useEffect(() => {
     let alive = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMetrics(loadMetrics());
     fetchServerMetrics().then((m) => { if (alive && m) setMetrics(m); });
     return () => { alive = false; };
   }, []);
