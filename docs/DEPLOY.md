@@ -122,6 +122,11 @@ Salvo que se diga lo contrario, el valor es texto plano (no secreto) y va como
 | `VAPID_PUBLIC_KEY` | No | No | Avisos con Web Push (sección 7b). La clave **pública** de `npx web-push generate-vapid-keys`; la misma que `NEXT_PUBLIC_VAPID_PUBLIC_KEY` en Vercel. Sin las tres `VAPID_*`, los avisos quedan apagados y la app lo explica |
 | `VAPID_PRIVATE_KEY` | No | **Sí** | La clave **privada** del mismo par. Solo va en Render, nunca en Vercel ni en git |
 | `VAPID_SUBJECT` | No | No | Contacto del proyecto para los servicios de push: la URL de la app (`https://<tu-proyecto>.vercel.app`) o un `mailto:` del proyecto. Nunca un correo personal (el repo es público y el valor viaja en cada aviso). Tiene que empezar por `https://` o `mailto:` o el backend no arranca |
+| `R2_ACCOUNT_ID` | No | No | Fotos de tickets en Cloudflare R2 (sección 7c). El ID de la cuenta de Cloudflare. Sin las cuatro `R2_*` obligatorias, la subida de tickets queda apagada y la app lo explica |
+| `R2_ACCESS_KEY_ID` | No | No | Access Key ID del token de API de R2 (sección 7c) |
+| `R2_SECRET_ACCESS_KEY` | No | **Sí** | Secret Access Key del mismo token. Solo va en Render, nunca en Vercel ni en git |
+| `R2_BUCKET` | No | No | Nombre del bucket privado, p. ej. `fightlab-tickets` |
+| `R2_SIGNED_URL_SECONDS` | No | No | Caducidad de las URLs firmadas de las fotos, de 60 a 3600 s. `600` (10 min) por defecto |
 | `PORT` | — | — | La pone Render sola; no la definas |
 
 > `render.yaml` de este repo trae ya fijas `DEBUG`, `NUM_PROXIES`, `AI_MODEL_CHAT`,
@@ -382,6 +387,58 @@ app añadida a la pantalla de inicio y con iOS 16.4 o posterior.
 Variables nuevas, en resumen: en Render `VAPID_PUBLIC_KEY`,
 `VAPID_PRIVATE_KEY` y `VAPID_SUBJECT`; en Vercel
 `NEXT_PUBLIC_VAPID_PUBLIC_KEY` y `CRON_SECRET`. Todas opcionales.
+
+---
+
+## 7c. Fotos de tickets en Cloudflare R2 (opcional, fase 12)
+
+La lista de la compra deja guardar la foto de cada ticket. Las fotos van a
+**Cloudflare R2** (10 GB gratis), no a Neon. Sin las variables `R2_*` la subida
+queda apagada y la app lo dice; el resto de la lista funciona igual.
+
+**Cómo funciona.**
+
+- **Bucket privado**, sin acceso público ni dominio público. Las fotos se ven
+  con **URLs firmadas** que caducan (10 min por defecto,
+  `R2_SIGNED_URL_SECONDS`) y que solo pide el dueño del ticket a través del
+  backend (`GET /api/v1/tickets/<id>/url`).
+- **Compresión y límite**: el móvil reduce y comprime la foto (unos 300 KB)
+  antes de subirla; el backend rechaza lo que pase de 2 MB y la vuelve a
+  guardar como JPEG sin EXIF ni GPS. Un contador de uso avisa a los
+  superusuarios (por correo y en el log) cuando las fotos pasan del 80 % de
+  los 10 GB gratis; en el admin de Django, *Ticket photos* enseña el total.
+- **Borrado**: al borrar un ticket se borra su foto de R2, y al borrar la
+  cuenta, todas las del usuario.
+- **Pruebas**: con un almacenamiento falso en memoria; ninguna llamada real a
+  R2. **Ninguna credencial va en el repo**, que es público.
+
+Variables (backend, en Render; ninguna va en Vercel ni con `NEXT_PUBLIC_`):
+
+| Variable | Qué es |
+|---|---|
+| `R2_ACCOUNT_ID` | ID de la cuenta de Cloudflare (sale en la URL del panel y en R2 → Overview) |
+| `R2_ACCESS_KEY_ID` | Access Key ID del token de API de R2 |
+| `R2_SECRET_ACCESS_KEY` | Secret Access Key del mismo token (secreto) |
+| `R2_BUCKET` | Nombre del bucket, p. ej. `fightlab-tickets` |
+| `R2_SIGNED_URL_SECONDS` | Opcional, caducidad de las URLs firmadas (por defecto 600) |
+
+### Pasos (ya tienes cuenta de Cloudflare)
+
+1. Cloudflare → **R2 Object Storage** → **Create bucket** → nombre
+   `fightlab-tickets`, ubicación automática o UE. No actives el acceso público
+   ni un dominio personalizado.
+2. R2 → **Manage R2 API Tokens** → **Create API token** → permiso **Object
+   Read & Write**, limitado a ese bucket → crear. Copia el **Access Key ID** y
+   el **Secret Access Key**: el secreto solo se ve una vez.
+3. En Render, en el servicio del backend (el de prueba primero), añade las
+   variables de la tabla y redespliega.
+4. **En el móvil:** Nutrición → Menú → Compra → *Tickets* → haz una foto. Si
+   sale "La subida de fotos de tickets no está configurada", revisa que las
+   cuatro primeras variables estén en el servicio que usa la app.
+
+El cliente S3 es `boto3` (Apache-2.0), versión fijada en
+`backend/requirements.txt`; son ruedas Python puras y la imagen
+`python:3.12-slim` las instala sin paquetes del sistema.
 
 ---
 
