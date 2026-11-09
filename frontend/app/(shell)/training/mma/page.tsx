@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { intlLocale } from "@/lib/locale";
 import { GloveIcon, InfoIcon } from "@/components/icons";
-import {
-  deleteServerActivities, enqueueActivity, fetchServerActivities, pendingQueueItems, mergeByClientId,
-  type ServerActivity, type SyncItem,
-} from "@/lib/activities";
+import { deleteServerActivities, enqueueActivity, type ServerActivity, type SyncItem } from "@/lib/activities";
+import { useActivityHistory } from "@/lib/activity-history";
+import { RejectedNotice } from "@/components/gym/RejectedNotice";
 import { isContactWork } from "@/lib/combat";
 import { COMBAT_RULES } from "@/lib/combat-rules";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
@@ -88,6 +87,9 @@ function sessFromPending(item: SyncItem): Sess {
   };
 }
 
+// Historial del servidor (F17, F1): la caché local solo si el servidor no responde.
+const MMA_SOURCE = { fromServer: sessFromServer, fromPending: sessFromPending, local: loadSess };
+
 const fmtDate = (ts: number, locale: string, t: Tr) => {
   const d = new Date(ts);
   const time = d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
@@ -123,29 +125,11 @@ export default function MmaPage() {
   const [rpe, setRpe] = useState(6);
   const [partner, setPartner] = useState("");
   const [notes, setNotes] = useState("");
-  const [sessions, setSessions] = useState<Sess[]>([]);
   const [savedFlash, setSavedFlash] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  useEffect(() => {
-    // Lectura síncrona de localStorage tras montar: no existe en el servidor
-    // (evita el desajuste de hidratación). Pre-existente a este cambio.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSessions(loadSess());
-  }, []);
-
-  // Historial + stats del mes: local (inmediato) y luego fusionado con el
-  // servidor, para que funcione en otro dispositivo. Fallback local si no responde.
-  useEffect(() => {
-    let alive = true;
-    fetchServerActivities("MMA").then((server) => {
-      if (!alive || !server) return;
-      const pending = pendingQueueItems("MMA").map(sessFromPending);
-      const merged = mergeByClientId(loadSess(), pending, server.map(sessFromServer));
-      merged.sort((a, b) => b.ts - a.ts);
-      setSessions(merged.slice(0, 200));
-    });
-    return () => { alive = false; };
-  }, []);
+  // Historial + stats del mes desde el servidor, paginado (F17, F1 de raíz)
+  const history = useActivityHistory("MMA", MMA_SOURCE);
+  const sessions = history.items;
 
   const load = minutes * rpe;
 
@@ -187,7 +171,7 @@ export default function MmaPage() {
       note: notes.trim().slice(0, 2000),
       detail: { art, work_type: workType, partner: partner.trim() || null },
     });
-    setSessions(all);
+    history.add(s); // se AÑADE a lo que hay: el historial no «desaparece» (F1)
     setPartner("");
     setNotes("");
     setSavedFlash(true);
@@ -283,6 +267,8 @@ export default function MmaPage() {
         <button className="btn btn-primary mt-3 w-full" onClick={saveSession}>{savedFlash ? t("log.saved") : t("log.save")}</button>
       </div>
 
+      <RejectedNotice kind="MMA" />
+
       {/* Golpe en la cabeza: aviso y bloqueo del contacto (anexo de combate) */}
       <HeadBlowCard />
 
@@ -318,7 +304,7 @@ export default function MmaPage() {
             <p className="t-eyebrow text-muted">{t("history.title")}</p>
             {confirmDelete ? (
               <button
-                onClick={() => { localStorage.removeItem(KEY); setSessions([]); void deleteServerActivities("MMA"); setConfirmDelete(false); }}
+                onClick={() => { localStorage.removeItem(KEY); history.clear(); void deleteServerActivities("MMA"); setConfirmDelete(false); }}
                 className="t-label text-bad"
               >
                 {t("history.deleteConfirm")}
@@ -346,8 +332,12 @@ export default function MmaPage() {
               </div>
             ))}
           </div>
+          {history.hasMore && (
+            <button type="button" onClick={history.loadMore} disabled={history.loading} className="btn btn-tonal btn-sm mt-3 min-h-11 w-full">{t("history.more")}</button>
+          )}
         </div>
       )}
+      {history.offline && <p className="t-body mt-3 text-[11px] text-muted">{t("history.offline")}</p>}
 
     </div>
   );

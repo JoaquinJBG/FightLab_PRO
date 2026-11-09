@@ -54,7 +54,17 @@ export type GymSession = {
   exercises: SavedExercise[];
   /** Id de la sesión en el servidor (para abrir su detalle). */
   serverId?: number;
+  /** Título guardado (las importadas y las de una rutina no tienen foco). */
+  title?: string;
+  /** Resumen de las series guardadas en el servidor (F17): manda sobre el desglose de `detail`. */
+  summary?: { exercises: number; sets: number; volume_kg: number } | null;
 };
+
+/** Ejercicios, series y kg de una sesión: los del servidor si los hay; si no, los del desglose. */
+export function sessionCounts(s: GymSession): { exercises: number; sets: number; volume: number } {
+  if (s.summary) return { exercises: s.summary.exercises, sets: s.summary.sets, volume: Math.round(s.summary.volume_kg) };
+  return { exercises: s.exercises.length, sets: s.exercises.reduce((a, x) => a + x.sets.length, 0), volume: s.volume };
+}
 
 export type LiveGym = {
   startedAt: number;
@@ -204,7 +214,8 @@ function gymSessionFromDetail(
 const endTs = (startedAt: string, durationSec: number) => new Date(startedAt).getTime() + durationSec * 1000;
 
 export function gymSessionFromServer(a: ServerActivity): GymSession {
-  return gymSessionFromDetail(a.client_id, endTs(a.started_at, a.duration_sec), a.duration_sec, a.rpe, a.detail);
+  const s = gymSessionFromDetail(a.client_id ?? `srv-${a.id}`, endTs(a.started_at, a.duration_sec), a.duration_sec, a.rpe, a.detail);
+  return { ...s, serverId: a.id, title: a.title, summary: a.summary ?? null, volume: a.summary ? Math.round(a.summary.volume_kg) : s.volume };
 }
 
 export function gymSessionFromPending(item: SyncItem): GymSession {

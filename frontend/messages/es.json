@@ -867,7 +867,9 @@
         "rpe": "RPE {n}",
         "au": "{n} AU",
         "deleteConfirm": "¿Borrar todo?",
-        "untitled": "Deporte"
+        "untitled": "Deporte",
+        "more": "Ver más sesiones",
+        "offline": "Sin conexión con el servidor: ves lo guardado en este dispositivo."
       },
       "weightNoteMissing": "Pon tu peso para estimar las kcal.",
       "weightNoteNone": "Sin un peso registrado, las kcal no se estiman.",
@@ -960,7 +962,9 @@
         "delete": "Borrar",
         "session": "Sesión",
         "withPartner": "con {partner}",
-        "deleteConfirm": "¿Borrar todo?"
+        "deleteConfirm": "¿Borrar todo?",
+        "more": "Ver más sesiones",
+        "offline": "Sin conexión con el servidor: ves lo guardado en este dispositivo."
       },
       "chat": {
         "open": "Abrir chat del coach",
@@ -1158,7 +1162,14 @@
         "row": "Remo",
         "tricepsExtensionShort": "Extensión tríceps"
       },
-      "importLink": "Importar de Hevy o CSV"
+      "importLink": "Importar de Hevy o CSV",
+      "more": "Ver más entrenos",
+      "historyOffline": "Sin conexión con el servidor: ves lo guardado en este dispositivo.",
+      "pendingUpload": "pendiente de subir",
+      "savedOk": "Entreno guardado en tu cuenta.",
+      "savedQueued": "Entreno guardado en este dispositivo: se subirá en cuanto haya conexión.",
+      "routinesLink": "Rutinas",
+      "recordsLink": "Récords y progreso"
     },
     "gymSession": {
       "loading": "Cargando…",
@@ -1289,7 +1300,8 @@
         "barOnly": "Solo la barra",
         "remainder": "Faltan {kg} kg por lado con estos discos: carga {loaded} kg.",
         "use": "Usar {kg} kg en la serie"
-      }
+      },
+      "removeSet": "Quitar la serie {n}"
     },
     "myRoutine": {
       "back": "← Entreno",
@@ -1387,6 +1399,76 @@
         "monotony": "Cómo de iguales son tus cargas diarias (media/desviación de los últimos 7 días). Muy alta = poca variación, más riesgo; alterna días duros y suaves.",
         "strain": "Tensión = carga semanal × monotonía. Mide el estrés acumulado total de la semana."
       }
+    },
+    "history": {
+      "rejected": "No se pudo guardar «{title}»: {reason}",
+      "droppedSets": "«{title}» se guardó sin {n} serie(s) con valores imposibles.",
+      "untitled": "Sesión",
+      "noReason": "el servidor no dio el motivo.",
+      "dismiss": "Cerrar"
+    },
+    "calendar": {
+      "prev": "Mes anterior",
+      "next": "Mes siguiente",
+      "offline": "Sin conexión con el servidor",
+      "trainedDays": "{n, plural, =0 {Ningún día entrenado} one {# día entrenado} other {# días entrenados}}",
+      "dayAria": "{date}: {n, plural, one {# sesión} other {# sesiones}}",
+      "kinds": {
+        "GYM": "Gimnasio",
+        "MMA": "MMA",
+        "SPORT": "Deporte"
+      },
+      "loading": "Cargando…",
+      "untitled": "Sesión"
+    },
+    "gymHistory": {
+      "back": "← Gimnasio",
+      "notFound": "Este entreno no existe o ya se borró.",
+      "titleAria": "Título del entreno",
+      "imported": "importado",
+      "exercises": "ejercicios",
+      "notePlaceholder": "Nota del entreno",
+      "noteAria": "Nota del entreno",
+      "edit": "Editar",
+      "editHint": "Las series sin reps o con valores imposibles no se guardan.",
+      "addSet": "+ Serie",
+      "delete": "Borrar entreno",
+      "deleteConfirm": "¿Borrar este entreno? No se puede deshacer.",
+      "saveError": "No se pudo guardar el cambio.",
+      "deleteError": "No se pudo borrar. Inténtalo de nuevo."
+    },
+    "gymRecords": {
+      "back": "← Gimnasio",
+      "title": "Récords",
+      "intro": "Tus mejores marcas por ejercicio, sin contar los calentamientos. El e1RM es una estimación.",
+      "search": "Buscar ejercicio",
+      "loading": "Cargando…",
+      "error": "No se pudieron cargar los récords.",
+      "empty": "Aún no hay récords: registra un entreno.",
+      "line": "Peso {weight} kg · e1RM {e1rm} kg · mejor serie {volume} kg · {sessions, plural, one {# sesión} other {# sesiones}}"
+    },
+    "gymProgress": {
+      "back": "← Récords",
+      "title": "Progreso",
+      "metric": "Qué ver",
+      "metrics": {
+        "e1rm": "e1RM",
+        "weight": "Peso máximo",
+        "volume": "Volumen",
+        "bestSet": "Mejor serie (kg × reps)"
+      },
+      "loading": "Cargando…",
+      "error": "No se pudo cargar el progreso.",
+      "empty": "Aún no hay series de trabajo de este ejercicio.",
+      "e1rmNote": "e1RM: Epley con las repeticiones en reserva, una estimación.",
+      "lastBest": "Mejor serie de la última sesión ({date}): {kg} kg × {reps}",
+      "records": "Récords",
+      "maxWeight": "Peso máximo",
+      "bestE1rm": "Mejor e1RM",
+      "bestSetVolume": "Mejor serie (volumen)",
+      "bestSessionVolume": "Mejor sesión (volumen)",
+      "repsByWeight": "Más reps a cada peso",
+      "reps": "{n} reps"
     }
   },
   "coach": {

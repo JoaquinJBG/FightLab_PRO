@@ -7,7 +7,7 @@ import { sanitizeDecimal, sanitizeInt, setIssue, type RecordKind } from "@/lib/g
 /** Una fila de serie del gimnasio (F17): tipo (toca para cambiarlo), kg, reps, RPE o RIR y ✓.
     Debajo, «anterior» para copiarla, el aviso si un valor es imposible o raro (F2) y los récords. */
 export function SetRow({
-  index, label, set, effort, preview, onChange, onCycleType, onDone, onUsePreview, records,
+  index, label, set, effort, preview, onChange, onCycleType, onDone, onUsePreview, records, onRemove,
 }: {
   index: number;
   label: string; // número entre las normales o el tipo (warmup, drop, failure)
@@ -19,6 +19,8 @@ export function SetRow({
   onDone: () => void;
   onUsePreview?: () => void;
   records?: RecordKind[];
+  /** Al editar un entreno guardado: en lugar del ✓, quitar la serie. */
+  onRemove?: () => void;
 }) {
   const t = useTranslations("training.gymSession");
   const n = index + 1;
@@ -44,6 +46,10 @@ export function SetRow({
       <input value={(effort === "rpe" ? set.rpe : set.rir) ?? ""} onFocus={select}
         onChange={(e) => onChange(effort === "rpe" ? { rpe: sanitizeDecimal(e.target.value).slice(0, 4) } : { rir: sanitizeDecimal(e.target.value).slice(0, 4) })}
         inputMode="decimal" placeholder="—" aria-label={t(effort === "rpe" ? "rpeAria" : "rirAria", { n })} className={inputCls} />
+      {onRemove ? (
+        <button type="button" onClick={onRemove} aria-label={t("removeSet", { n })}
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(150,190,255,0.25)] text-sm text-muted">✕</button>
+      ) : (
       <button type="button" onClick={onDone} aria-label={t("setDone", { n })} aria-pressed={set.done} disabled={blocked}
         className="flex h-11 w-11 items-center justify-center rounded-full border text-sm transition-colors disabled:opacity-40"
         style={set.done
@@ -51,6 +57,7 @@ export function SetRow({
           : { borderColor: "rgba(150,190,255,0.25)", color: "var(--color-muted)" }}>
         ✓
       </button>
+      )}
       {issue && (
         <p role={issue.level === "error" ? "alert" : "status"} data-testid="set-issue"
           className={`t-body col-span-5 -mt-1 text-[11px] ${issue.level === "error" ? "text-[#ff8a8a]" : "text-[#ffd08a]"}`}>

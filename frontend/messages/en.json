@@ -867,7 +867,9 @@
         "rpe": "RPE {n}",
         "au": "{n} AU",
         "deleteConfirm": "Delete everything?",
-        "untitled": "Sport"
+        "untitled": "Sport",
+        "more": "Show more sessions",
+        "offline": "No connection to the server: you're seeing what's saved on this device."
       },
       "weightNoteMissing": "Enter your weight to estimate kcal.",
       "weightNoteNone": "Kcal aren't estimated without a logged weight.",
@@ -960,7 +962,9 @@
         "delete": "Delete",
         "session": "Session",
         "withPartner": "with {partner}",
-        "deleteConfirm": "Delete everything?"
+        "deleteConfirm": "Delete everything?",
+        "more": "Show more sessions",
+        "offline": "No connection to the server: you're seeing what's saved on this device."
       },
       "chat": {
         "open": "Open coach chat",
@@ -1158,7 +1162,14 @@
         "row": "Row",
         "tricepsExtensionShort": "Triceps extension"
       },
-      "importLink": "Import from Hevy or CSV"
+      "importLink": "Import from Hevy or CSV",
+      "more": "Show more workouts",
+      "historyOffline": "No connection to the server: you're seeing what's saved on this device.",
+      "pendingUpload": "waiting to upload",
+      "savedOk": "Workout saved to your account.",
+      "savedQueued": "Workout saved on this device: it will upload as soon as there's a connection.",
+      "routinesLink": "Routines",
+      "recordsLink": "Records and progress"
     },
     "gymSession": {
       "loading": "Loading…",
@@ -1289,7 +1300,8 @@
         "barOnly": "Bar only",
         "remainder": "{kg} kg per side missing with these plates: load {loaded} kg.",
         "use": "Use {kg} kg for the set"
-      }
+      },
+      "removeSet": "Remove set {n}"
     },
     "myRoutine": {
       "back": "← Training",
@@ -1387,6 +1399,76 @@
         "monotony": "How similar your daily loads are (mean/deviation over the last 7 days). Very high = little variation, more risk; alternate hard and easy days.",
         "strain": "Strain = weekly load × monotony. It measures your total accumulated stress for the week."
       }
+    },
+    "history": {
+      "rejected": "Couldn't save “{title}”: {reason}",
+      "droppedSets": "“{title}” was saved without {n} set(s) with impossible values.",
+      "untitled": "Session",
+      "noReason": "the server gave no reason.",
+      "dismiss": "Dismiss"
+    },
+    "calendar": {
+      "prev": "Previous month",
+      "next": "Next month",
+      "offline": "No connection to the server",
+      "trainedDays": "{n, plural, =0 {No training days} one {# training day} other {# training days}}",
+      "dayAria": "{date}: {n, plural, one {# session} other {# sessions}}",
+      "kinds": {
+        "GYM": "Gym",
+        "MMA": "MMA",
+        "SPORT": "Sport"
+      },
+      "loading": "Loading…",
+      "untitled": "Session"
+    },
+    "gymHistory": {
+      "back": "← Gym",
+      "notFound": "This workout doesn't exist or was deleted.",
+      "titleAria": "Workout title",
+      "imported": "imported",
+      "exercises": "exercises",
+      "notePlaceholder": "Workout note",
+      "noteAria": "Workout note",
+      "edit": "Edit",
+      "editHint": "Sets without reps or with impossible values aren't saved.",
+      "addSet": "+ Set",
+      "delete": "Delete workout",
+      "deleteConfirm": "Delete this workout? This can't be undone.",
+      "saveError": "Couldn't save the change.",
+      "deleteError": "Couldn't delete it. Try again."
+    },
+    "gymRecords": {
+      "back": "← Gym",
+      "title": "Records",
+      "intro": "Your best marks per exercise, not counting warm-ups. e1RM is an estimate.",
+      "search": "Search exercise",
+      "loading": "Loading…",
+      "error": "Couldn't load the records.",
+      "empty": "No records yet: log a workout.",
+      "line": "Weight {weight} kg · e1RM {e1rm} kg · best set {volume} kg · {sessions, plural, one {# session} other {# sessions}}"
+    },
+    "gymProgress": {
+      "back": "← Records",
+      "title": "Progress",
+      "metric": "What to show",
+      "metrics": {
+        "e1rm": "e1RM",
+        "weight": "Heaviest weight",
+        "volume": "Volume",
+        "bestSet": "Best set (kg × reps)"
+      },
+      "loading": "Loading…",
+      "error": "Couldn't load the progress.",
+      "empty": "No working sets of this exercise yet.",
+      "e1rmNote": "e1RM: Epley with reps in reserve, an estimate.",
+      "lastBest": "Best set of the last session ({date}): {kg} kg × {reps}",
+      "records": "Records",
+      "maxWeight": "Heaviest weight",
+      "bestE1rm": "Best e1RM",
+      "bestSetVolume": "Best set (volume)",
+      "bestSessionVolume": "Best session (volume)",
+      "repsByWeight": "Most reps at each weight",
+      "reps": "{n} reps"
     }
   },
   "coach": {

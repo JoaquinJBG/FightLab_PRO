@@ -36,7 +36,7 @@ describe("Gimnasio (en)", () => {
   it("calendario y últimos entrenos, con foco y ejercicios traducidos", () => {
     localStorage.setItem(GYM_SESS_KEY, JSON.stringify([session]));
     const { container } = renderEn(<GymPage />);
-    expect(screen.getByText("Gym")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Gym" })).toBeTruthy();
     expect(screen.getByText("Your week")).toBeTruthy();
     expect(screen.getByText("Mon")).toBeTruthy();
     expect(screen.getByText("Recent workouts")).toBeTruthy();
