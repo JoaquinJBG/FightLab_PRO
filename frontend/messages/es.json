@@ -1001,6 +1001,10 @@
         "review": {
           "title": "Revisión semanal",
           "sub": "Adherencia, peso, calorías y descarga, con su regla"
+        },
+        "exercises": {
+          "title": "Ejercicios",
+          "sub": "Biblioteca con imágenes, pasos y tus ejercicios propios"
         }
       }
     },
@@ -2709,6 +2713,137 @@
     "hours": {
       "title": "A qué hora llegan",
       "body": "Las horas son las de tu zona horaria del perfil ({tz}), y cada aviso llega en algún momento de su hora (de 22:00 a 22:59, por ejemplo). El servidor gratuito solo se despierta a unas horas fijas, elegidas para España con y sin horario de verano: si vives en otra zona, el aviso llega a la hora más cercana a la suya en que se despierta, antes o después, pero no se pierde."
+    }
+  },
+  "exercises": {
+    "muscles": {
+      "chest": "Pecho",
+      "lats": "Dorsales",
+      "upper_back": "Espalda alta",
+      "traps": "Trapecio",
+      "lower_back": "Lumbar",
+      "front_delts": "Deltoides anterior",
+      "side_delts": "Deltoides lateral",
+      "rear_delts": "Deltoides posterior",
+      "biceps": "Bíceps",
+      "triceps": "Tríceps",
+      "forearms": "Antebrazos",
+      "abs": "Abdominales",
+      "obliques": "Oblicuos",
+      "quads": "Cuádriceps",
+      "hamstrings": "Isquiotibiales",
+      "glutes": "Glúteos",
+      "adductors": "Aductores",
+      "abductors": "Abductores",
+      "calves": "Gemelos",
+      "neck": "Cuello",
+      "hip_flexors": "Flexores de cadera",
+      "full_body": "Cuerpo entero",
+      "cardio": "Cardio"
+    },
+    "equipment": {
+      "barbell": "Barra",
+      "dumbbell": "Mancuernas",
+      "kettlebell": "Kettlebell",
+      "machine": "Máquina",
+      "cable": "Polea",
+      "smith_machine": "Multipower",
+      "ez_bar": "Barra Z",
+      "bench": "Banco",
+      "pull_up_bar": "Barra de dominadas",
+      "band": "Banda elástica",
+      "plate": "Disco",
+      "medicine_ball": "Balón medicinal",
+      "suspension": "Suspensión (TRX)",
+      "heavy_bag": "Saco",
+      "jump_rope": "Comba",
+      "mat": "Esterilla",
+      "bodyweight": "Peso corporal",
+      "other": "Otro"
+    },
+    "categories": {
+      "strength": "Fuerza",
+      "mobility": "Movilidad",
+      "combat": "Combate",
+      "cardio": "Cardio"
+    },
+    "picker": {
+      "title": "Añadir ejercicio",
+      "titleMultiple": "Añadir ejercicios",
+      "search": "Buscar ejercicio",
+      "searchAria": "Buscar en la biblioteca de ejercicios",
+      "muscleFilter": "Músculo",
+      "equipmentFilter": "Material",
+      "allMuscles": "Todos los músculos",
+      "allEquipment": "Todo el material",
+      "recent": "Recientes",
+      "all": "Todos los ejercicios",
+      "results": "{n, plural, one {# ejercicio} other {# ejercicios}}",
+      "noResults": "Ningún ejercicio con esa búsqueda.",
+      "loading": "Cargando la biblioteca…",
+      "error": "No se pudo cargar la biblioteca de ejercicios.",
+      "retry": "Reintentar",
+      "close": "Cerrar",
+      "add": "Añadir",
+      "addN": "Añadir ({n})",
+      "create": "Crear ejercicio",
+      "createNamed": "Crear «{name}»",
+      "custom": "Propio",
+      "info": "Ver la ficha de {name}",
+      "select": "Elegir {name}"
+    },
+    "form": {
+      "titleNew": "Nuevo ejercicio",
+      "titleEdit": "Editar ejercicio",
+      "name": "Nombre",
+      "namePlaceholder": "Por ejemplo, remo Meadows",
+      "primary": "Músculo principal",
+      "secondary": "Músculos secundarios (opcional)",
+      "equipment": "Material",
+      "notes": "Notas (opcional)",
+      "notesPlaceholder": "Cómo lo haces, ajustes de la máquina…",
+      "save": "Guardar",
+      "create": "Crear y añadir",
+      "createOnly": "Crear",
+      "cancel": "Cancelar",
+      "saving": "Guardando…",
+      "nameRequired": "Pon un nombre al ejercicio.",
+      "primaryRequired": "Elige al menos un músculo principal.",
+      "error": "No se pudo guardar. Inténtalo de nuevo."
+    },
+    "detail": {
+      "back": "Volver",
+      "notFound": "Este ejercicio no existe o ya no está.",
+      "error": "No se pudo cargar el ejercicio.",
+      "primary": "Músculo principal",
+      "secondary": "Secundarios",
+      "equipment": "Material",
+      "category": "Tipo",
+      "steps": "Cómo se hace",
+      "noSteps": "Aún no hay pasos escritos para este ejercicio.",
+      "stepsInEnglish": "Estos pasos solo están en inglés por ahora.",
+      "stepsInSpanish": "Estos pasos solo están en español por ahora.",
+      "notes": "Tus notas",
+      "noImage": "Sin imagen con licencia abierta todavía.",
+      "pause": "Parar la animación",
+      "play": "Animar",
+      "frame": "Fotograma {n} de {total}",
+      "credits": "Créditos",
+      "imageCredit": "Imagen: {author} ({source}) · {license}",
+      "textCredit": "Texto: {author} (wger) · {license}",
+      "ownText": "Texto: FightLab · CC BY 4.0",
+      "modified": "Cambios: {modified}",
+      "custom": "Ejercicio propio",
+      "edit": "Editar",
+      "delete": "Borrar",
+      "deleteConfirm": "¿Borrar «{name}»? Las series que ya registraste se quedan con su nombre.",
+      "deleteYes": "Sí, borrar",
+      "deleteError": "No se pudo borrar. Inténtalo de nuevo."
+    },
+    "library": {
+      "title": "Ejercicios",
+      "sub": "La biblioteca de la app y tus ejercicios propios.",
+      "count": "{n, plural, one {# ejercicio} other {# ejercicios}}"
     }
   }
 }
