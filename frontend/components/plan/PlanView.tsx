@@ -1,5 +1,6 @@
 "use client";
 
+import { roundGrams } from "@/lib/nutrition";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
@@ -304,7 +305,7 @@ export function PlanView({ plan, sessionAction }: { plan: WeeklyPlan; sessionAct
               ["fibre", nutrition.macros.fibre_g, "fibre_g"],
             ] as const).map(([key, g, ruleName]) => (
               <p key={key} className="t-body flex flex-wrap items-center gap-2 text-xs text-ink">
-                {t(`nutrition.${key}`, { g: n(Math.round(g)) })}
+                {t(`nutrition.${key}`, { g: n(roundGrams(g)) })}
                 {ruleName && (nutrition.rules?.[ruleName] ?? []).slice(0, 1).map((k) => <LineChip key={k} ruleKey={k} grades={grades} />)}
               </p>
             ))}

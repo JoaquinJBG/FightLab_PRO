@@ -17,6 +17,7 @@ import {
   saveWater,
   hydrateRecentNutritionDays,
   itemSource,
+  roundGrams,
   type Goal,
   type Item,
 } from "@/lib/nutrition";
@@ -245,13 +246,13 @@ export default function NutritionPage() {
           <p data-testid="no-targets-note" className="t-body mt-3 text-xs text-muted">{t("noTargetsNote")}</p>
         )}
         <div className="mt-4 grid grid-cols-3 gap-3" data-testid="macros">
-          <Bar label={t("protein")} val={sum.p} target={macros ? Math.round(macros.protein_g) : null} color="#45e9ff" rule={rules.protein_g?.[0]} />
-          <Bar label={t("carbs")} val={sum.c} target={macros ? Math.round(macros.carbs_g) : null} color="#7b5cff" />
-          <Bar label={t("fat")} val={sum.f} target={macros ? Math.round(macros.fat_g) : null} color="#ffd25a" rule={rules.fat_g?.[0]} />
+          <Bar label={t("protein")} val={sum.p} target={macros ? roundGrams(macros.protein_g) : null} color="#45e9ff" rule={rules.protein_g?.[0]} />
+          <Bar label={t("carbs")} val={sum.c} target={macros ? roundGrams(macros.carbs_g) : null} color="#7b5cff" />
+          <Bar label={t("fat")} val={sum.f} target={macros ? roundGrams(macros.fat_g) : null} color="#ffd25a" rule={rules.fat_g?.[0]} />
         </div>
         {macros && (
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="t-body text-[11px] text-muted">{t("fibreLine", { grams: Math.round(macros.fibre_g) })}</span>
+            <span className="t-body text-[11px] text-muted">{t("fibreLine", { grams: roundGrams(macros.fibre_g) })}</span>
             {rules.fibre_g?.[0] && <EvidenceChip ruleKey={rules.fibre_g[0].key} grade={rules.fibre_g[0].grade} />}
           </div>
         )}

@@ -2261,7 +2261,8 @@
       "fat": "Fat: at least {g} g",
       "fibre": "Fibre: at least {g} g",
       "margin": "A day passes from your calorie target up to {pct}% above it",
-      "noRepeat": "No dish comes back within {days} days"
+      "noRepeat": "No dish comes back within {days} days",
+      "changed": "This menu was prepared with your targets on that day. Today your protein is at least {g} g: prepare another menu to adjust it."
     },
     "day": {
       "ok": "Checked",

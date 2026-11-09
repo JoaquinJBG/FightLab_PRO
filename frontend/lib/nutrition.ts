@@ -56,6 +56,13 @@ const EN_NAMES: Record<string, string> = {
   "Bol de avena con plátano": "Oat bowl with banana",
 };
 
+/** F24: los gramos de un objetivo de macros (proteína, grasa, hidratos, fibra) como se enseñan en
+ * Nutrición, el Menú y el Plan: al gramo entero más cercano. Una sola función para todos, para que
+ * la misma cifra del servidor nunca salga distinta en dos pantallas. */
+export function roundGrams(grams: number): number {
+  return Math.round(grams);
+}
+
 export function foodName(name: string, locale: string): string {
   return locale === "en" ? (EN_NAMES[name] ?? name) : name;
 }

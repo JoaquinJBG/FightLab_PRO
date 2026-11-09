@@ -2261,7 +2261,8 @@
       "fat": "Grasa: al menos {g} g",
       "fibre": "Fibra: al menos {g} g",
       "margin": "Un día vale desde tu objetivo de kcal hasta un {pct} % más",
-      "noRepeat": "Ningún plato se repite en {days} días"
+      "noRepeat": "Ningún plato se repite en {days} días",
+      "changed": "Este menú se preparó con tus objetivos de ese día. Hoy tu proteína es de al menos {g} g: prepara otro menú para ajustarlo."
     },
     "day": {
       "ok": "Comprobado",

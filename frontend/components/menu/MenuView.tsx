@@ -1,5 +1,7 @@
 "use client";
 
+import { roundGrams } from "@/lib/nutrition";
+import { useTargets } from "@/lib/hooks";
 import { useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
@@ -60,6 +62,11 @@ function Targets({ menu }: { menu: Menu }) {
   const t = useTranslations("menu.targets");
   const f = useFormat();
   const tg = menu.targets;
+  // F24: el menú guarda los objetivos con los que se preparó; si los de hoy han cambiado (otro
+  // peso, por ejemplo), se dice, en vez de enseñar dos cifras distintas sin explicación.
+  const { data: current } = useTargets();
+  const now = current?.kind === "ok" && current.data.macros ? current.data.macros : null;
+  const proteinNow = now ? roundGrams(now.protein_g) : null;
   const row = (key: string, text: string, rule: string | null) => (
     <p key={key} data-testid="menu-target" data-key={key} className="t-body flex flex-wrap items-center gap-2 text-sm text-ink">
       <span>{text}</span>
@@ -69,9 +76,12 @@ function Targets({ menu }: { menu: Menu }) {
   return (
     <Section title={t("title")} testId="menu-targets">
       {row("kcal", t("kcal", { kcal: f.n(tg.kcal) }), "kcal")}
-      {row("protein_g", t("protein", { g: f.n(tg.protein_g) }), "protein_g")}
-      {row("fat_g", t("fat", { g: f.n(tg.fat_min_g) }), "fat_g")}
-      {row("fibre_g", t("fibre", { g: f.n(tg.fibre_g) }), "fibre_g")}
+      {row("protein_g", t("protein", { g: f.n(roundGrams(tg.protein_g)) }), "protein_g")}
+      {row("fat_g", t("fat", { g: f.n(roundGrams(tg.fat_min_g)) }), "fat_g")}
+      {row("fibre_g", t("fibre", { g: f.n(roundGrams(tg.fibre_g)) }), "fibre_g")}
+      {proteinNow !== null && proteinNow !== roundGrams(tg.protein_g) && (
+        <p data-testid="menu-targets-changed" className="t-body text-xs text-muted">{t("changed", { g: f.n(proteinNow) })}</p>
+      )}
       {row("margin", t("margin", { pct: f.n(menu.conventions.kcal_margin * 100) }), null)}
       {row("repeat", t("noRepeat", { days: menu.conventions.no_repeat_days }), null)}
     </Section>
