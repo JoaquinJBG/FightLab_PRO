@@ -202,12 +202,14 @@ def product_for(user, generic: str, chain: str | None = None) -> ChainProduct | 
 def chain_product(user, food_key: str, grams: float) -> dict | None:
     """El enganche de la lista de la compra de F12 (`settings.SHOPPING_CHAIN_PROVIDER`).
 
-    `food_key` es la clave del alimento del motor; se traduce a sus nombres es/en. `None` si la
-    clave no es de ningún alimento o el usuario no tiene producto para él."""
-    food = _engine_food(str(food_key or "").strip())
-    if food is None:
+    `food_key` es la clave o el nombre (es o en) del alimento del motor; si no es del motor (la
+    lista de un menú importado trae nombres libres) se busca tal cual en `equivale_a`. `None` si
+    el usuario no tiene producto para él."""
+    key = str(food_key or "").strip()
+    if not key:
         return None
-    product = product_for(user, food.name_es)
+    food = _engine_food(key)
+    product = product_for(user, food.name_es if food is not None else key)
     if product is None:
         return None
     grams = max(float(grams or 0), 0.0)

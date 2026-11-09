@@ -49,6 +49,7 @@ TEXTS = {
         "eve_title": "Para mañana",
         "eve_tasks": "Deja hecho: {tasks}",
         "eve_generic_title": "Prepara lo de mañana",
+        "defrost": "pasa {dish} del congelador a la nevera",
         "eve_generic": "Mañana: {summary}. Mira en Hoy si hay que dejar algo listo.",
         "mobility_title": "Movilidad",
         "mobility": "Si aún no la has hecho hoy, es buen momento. Márcala luego en Hoy.",
@@ -67,6 +68,7 @@ TEXTS = {
         "eve_title": "For tomorrow",
         "eve_tasks": "Get ready: {tasks}",
         "eve_generic_title": "Get tomorrow ready",
+        "defrost": "move {dish} from the freezer to the fridge",
         "eve_generic": "Tomorrow: {summary}. Check Today in case something needs doing tonight.",
         "mobility_title": "Mobility",
         "mobility": "If you haven't done it yet today, now's a good time. Tick it in Today afterwards.",
@@ -108,7 +110,9 @@ def _eve(user, local: datetime) -> dict | None:
     t = texts(user.profile)
     tomorrow = local.date() + timedelta(days=1)
     _, menu = days.menu_day(user, tomorrow)
-    tasks = [str(m["eve"]).strip() for m in (menu or {}).get("meals") or [] if m.get("eve")]
+    # Fase 12: las tareas `eve` del menú (una lista por comida), las de la sesión de batch de mañana
+    # y pasar a la nevera lo congelado que se come mañana (`coaching.batch.eve_tasks`).
+    tasks = [x.get("text") or t["defrost"].format(dish=x.get("dish") or "") for x in days.tonight(user, local.date())["tasks"]]
     tasks = [x for x in tasks if x]
     if tasks:
         shown = "; ".join(tasks[:MAX_EVE_ITEMS]) + ("…" if len(tasks) > MAX_EVE_ITEMS else "")

@@ -41,4 +41,8 @@ export const READY_USERS = {
   today: "e2e-today@fightlab.test",
   // Fase 13: catálogo de cadena privado (CSV inventado) y su valoración.
   catalogue: "e2e-catalogue@fightlab.test",
+  // Fase 12: importar menús completos (JSON schema 1 y YAML del coach) y la sesión de batch con el
+  // menaje del usuario. Sin menús ni cocina al empezar.
+  menuImport: "e2e-menu-import@fightlab.test",
+  batch: "e2e-batch@fightlab.test",
 };

@@ -2196,7 +2196,8 @@
       "tupper": "To take in a lunchbox",
       "generate": "Prepare menu",
       "regenerate": "Prepare another menu",
-      "generating": "Preparing…"
+      "generating": "Preparing…",
+      "batch": "Cook the lunchbox meals in a batch session"
     },
     "meals": {
       "breakfast": "Breakfast",
@@ -2228,7 +2229,18 @@
       "totals": "{kcal} kcal · protein {p} g · fat {f} g · carbs {c} g · fibre {fib} g",
       "seasoning": "Seasoning: {list}",
       "source": "Original recipe",
-      "offProduct": "Open Food Facts"
+      "offProduct": "Open Food Facts",
+      "prep": "On the day: {list}",
+      "eve": "The evening before:",
+      "defrost": "move {dish} from the freezer to the fridge",
+      "storage": {
+        "fridge": "From the fridge",
+        "freezer": "From the freezer"
+      },
+      "noFreeze": "Does not freeze well: {list}",
+      "free": "Free meal",
+      "freeBudget": "Free meal (about {kcal} kcal)",
+      "fileTotals": "Menu totals: {kcal} kcal · protein {p} g (not checked against your targets)"
     },
     "status": {
       "ok": "on target",
@@ -2261,7 +2273,8 @@
         "intolerance": "intolerance",
         "disliked": "you dislike it",
         "untried": "you have not tried it",
-        "never_again": "you would not repeat it"
+        "never_again": "you would not repeat it",
+        "diner": "a diner does not eat it"
       },
       "net": "The coach matches by name: it knows no synonyms or hidden ingredients. Always read the labels."
     },
@@ -2280,7 +2293,30 @@
       "ml": "{n} ml",
       "pantry": "At home (not bought): {list}",
       "unknown": "Not in the table: {list}",
-      "note": "Amounts are for the form each name gives (raw, cooked, drained)."
+      "note": "Amounts are for the form each name gives (raw, cooked, drained).",
+      "progress": "{checked} of {total}",
+      "week": {
+        "0": "All",
+        "1": "Week 1",
+        "2": "Week 2"
+      },
+      "weekTag": {
+        "1": "W1",
+        "2": "W2",
+        "both": "W1 and W2"
+      },
+      "forTwo": "for two: {amount}",
+      "other": "Other",
+      "product": "{chain}: {product}",
+      "rating": {
+        "bueno": "good",
+        "regular": "fair",
+        "evitar": "avoid"
+      },
+      "batches": "Batches to cook",
+      "batchLine": "{dish}: {servings} servings ({left} spare)",
+      "fromMenu": "List, sections and packs as they came in the menu.",
+      "fromEngine": "List worked out by the engine from the menu's dishes."
     },
     "tastes": {
       "title": "Your tastes",
@@ -2326,7 +2362,114 @@
       "hint": "The menu, the recipes with their links and the shopping list, to print or keep on your phone.",
       "error": "Could not prepare the PDF.",
       "no_calorie_targets": "With your safety notes there are no calorie targets any more, so there is no menu PDF."
-    }
+    },
+    "header": {
+      "range": "From {start} to {end}",
+      "source": {
+        "generated": "Prepared by FightLab (simulated LLM and engine)",
+        "json": "Imported (app JSON)",
+        "yaml": "Imported (coach YAML)",
+        "partediario": "Imported from the ParteDiario backup"
+      },
+      "others": "Saved menus",
+      "option": "Menu from {start}",
+      "kitchenHint": "Fill in your equipment in Profile → My kitchen so the timeline only uses your appliances."
+    },
+    "batch": {
+      "title": "Batch sessions",
+      "session": "{date} · {minutes} min",
+      "open": "Open full screen",
+      "eve": "The evening before: {list}",
+      "rebuilt": "The menu's timeline uses an appliance you do not have: it was rebuilt with your equipment.",
+      "missing": "No appliance in your kitchen for: {step}",
+      "unchecked": "No equipment in your profile: the timeline was not checked against your appliances.",
+      "substituted": "instead of {what}",
+      "appliances": {
+        "pressure_cooker": "Pressure cooker",
+        "pot": "Pot",
+        "wok": "Wok",
+        "frying_pan": "Frying pan",
+        "air_fryer": "Air fryer",
+        "oven": "Oven",
+        "microwave": "Microwave",
+        "hands": "Hands free"
+      },
+      "rules": {
+        "order": "Timeline: longest to shortest, in parallel by appliance.",
+        "cool": "Cool and refrigerate within 2 h; rice within 1 h.",
+        "fridge": "Monday and Tuesday from the fridge; Wednesday to Friday from the freezer.",
+        "no_freeze": "Do not freeze potatoes, mayonnaise, fried food or yogurt sauces.",
+        "defrost": "Defrost in the fridge the night before.",
+        "reheat": "Reheat once, until steaming hot inside (74 °C).",
+        "air_fryer": "Air-fried meat: chicken 74 °C, pork 63 °C, mince 71 °C, with a thermometer.",
+        "label": "Label with dish and date; first in, first out."
+      },
+      "conventionNote": "The split by appliance and the appliance swaps are FightLab conventions."
+    },
+    "batchScreen": {
+      "title": "Batch on {date}",
+      "close": "Exit",
+      "loading": "Loading the session…",
+      "none": "That batch session was not found.",
+      "progress": "{done} of {total} steps",
+      "elapsed": "Session time",
+      "planned": "Planned: {minutes} min",
+      "start": "Start",
+      "pause": "Pause",
+      "resume": "Resume",
+      "reset": "Reset",
+      "confirmReset": "Reset the clock and the ticks of this session?",
+      "startsIn": "starts in {time}",
+      "laneDone": "Done",
+      "steps": "Steps",
+      "slot": "min {from}-{to}",
+      "now": "Now",
+      "late": "Running late",
+      "timer": "{minutes} min",
+      "timerDone": "Time!",
+      "session": "Session {n}"
+    },
+    "tickets": {
+      "title": "Shopping receipts",
+      "loading": "Loading…",
+      "off": "Receipt photo upload is not set up on this server.",
+      "privacy": "Photos are stored privately and only you can see them; they are compressed before upload.",
+      "camera": "Take photo",
+      "gallery": "Choose photo",
+      "uploading": "Uploading…",
+      "line": "Receipt of {date} ({kb} KB)",
+      "empty": "No receipts for this menu yet.",
+      "delete": "Delete",
+      "confirmDelete": "Delete this receipt and its photo?",
+      "close": "Close",
+      "photoAlt": "Receipt photo",
+      "errors": {
+        "tickets_not_configured": "Receipt photo upload is not set up on this server.",
+        "ticket_too_large": "The photo is too large: try another one.",
+        "ticket_not_image": "The file is not a valid photo.",
+        "too_many_tickets": "You have reached the maximum number of receipts: delete one.",
+        "tickets_unavailable": "Could not store or open the photo right now: try again later.",
+        "generic": "Could not complete that."
+      }
+    },
+    "import": {
+      "title": "Import a menu",
+      "intro": "A JSON from the app (schema 1) or a menu.yaml from the coach. If you already had it, it is replaced and the ticked shopping items stay.",
+      "choose": "Choose file",
+      "importing": "Importing…",
+      "imported": "Imported: {title}, {days} days, {sessions} batch sessions and {items} shopping items.",
+      "replaced": "Replaced: {title}, {days} days; {kept} ticked items kept.",
+      "startTaken": "Another menu starts on that day. Replace it?",
+      "replace": "Replace",
+      "errors": {
+        "import_invalid": "The file is not a menu that can be imported.",
+        "import_too_long": "An imported menu covers 1 to 35 days.",
+        "free_meal_refused": "No free meal after a positive eating-disorder screen: this menu is not imported.",
+        "generic": "Could not import the menu."
+      }
+    },
+    "kitchenLink": "My kitchen: equipment and diners",
+    "kitchenLinkHint": "The batch timeline uses your appliances and menus respect each diner."
   },
   "sessionCheck": {
     "title": "Vigorous session: best reviewed first",
@@ -2517,14 +2660,15 @@
     },
     "blocked": "Because of your safety profile, FightLab does not save weight, waist or kcal (same as the check-in): {n, plural, one {# value is not imported} other {# values are not imported}}. Everything else is.",
     "notices": {
-      "menus_later": "{n, plural, one {# menu} other {# menus}} in the backup: not imported now, they will come with the full menus.",
-      "shopping_later": "{n, plural, one {# ticked shopping item} other {# ticked shopping items}}: they will come with the menus.",
-      "tickets_later": "{n, plural, one {# receipt photo} other {# receipt photos}}: the backup does not carry the photos; they will come with the menus.",
       "cardio_no_load": "Imported cardio has no effort rating (RPE), so it does not add to your training load.",
       "heart_hidden": "Watch heart-rate data is saved but not shown yet.",
       "quad_to_soreness": "Quadriceps aches go to “legs” in the check-in aches, with a note.",
       "same_day_in_several_files": "{n, plural, one {# day was in more than one file} other {# days were in more than one file}}: the last one wins.",
-      "reviews_targets_rule": "Coach reviews are kept as history. Only the most recent one counts for your kcal targets, and only if its week ended 28 days ago or less."
+      "reviews_targets_rule": "Coach reviews are kept as history. Only the most recent one counts for your kcal targets, and only if its week ended 28 days ago or less.",
+      "tickets_not_in_backup": "{n, plural, one {# receipt photo} other {# receipt photos}}: the backup does not carry the photos. Upload them again in the menu's shopping list.",
+      "menus_invalid": "{n, plural, one {# menu in the backup could not be read} other {# menus in the backup could not be read}}.",
+      "menus_start_taken": "{n, plural, one {# menu starts on the same day as another of yours and was not imported} other {# menus start on the same day as others of yours and were not imported}}: import them with “the file wins”.",
+      "menus_free_meal_refused": "{n, plural, one {# menu has free meals} other {# menus have free meals}} and is not imported after a positive eating-disorder screen."
     },
     "fileErrors": {
       "title": "Files that could not be read",
@@ -2560,6 +2704,13 @@
     "catalogue": {
       "title": "Store catalogue",
       "hint": "Your supermarket products with their rating, for shopping and swaps."
+    },
+    "menus": {
+      "new": "{n, plural, one {# new menu} other {# new menus}}",
+      "replaced": "{n, plural, one {# menu replaced} other {# menus replaced}}",
+      "kept": "{n, plural, one {# menu was already there and is kept as it was} other {# menus were already there and are kept as they were}}",
+      "invalid": "{n, plural, one {# menu could not be read} other {# menus could not be read}}",
+      "checks": "{n, plural, one {# shopping item ticked} other {# shopping items ticked}}"
     }
   },
   "today": {
@@ -2630,7 +2781,8 @@
       "changePlaceholder": "For example: pizza and a beer",
       "changeSave": "Save",
       "changedTo": "Instead: {what}",
-      "clear": "Clear"
+      "clear": "Clear",
+      "prep": "On the day: {list}"
     },
     "cardio": {
       "title": "Cardio",
@@ -2666,6 +2818,11 @@
       "today": "Today's log",
       "weigh": "Weigh in",
       "nextMeal": "Next meal"
+    },
+    "tonight": {
+      "title": "For tonight",
+      "defrost": "Move {dish} from the freezer to the fridge",
+      "batch": "batch"
     }
   },
   "reminders": {
@@ -2847,6 +3004,45 @@
       "too_many_rows": "The file has more than {max} rows.",
       "throttled": "Too many attempts in a row. Wait a minute.",
       "server": "Could not finish. Try again."
+    }
+  },
+  "kitchen": {
+    "link": "My kitchen",
+    "back": "← Profile",
+    "title": "My kitchen",
+    "intro": "Your equipment and who eats at home. The batch timeline uses it and menus respect it.",
+    "loading": "Loading…",
+    "error": "Could not save or read your kitchen.",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved.",
+    "equipment": {
+      "title": "Equipment",
+      "intro": "How many of each you have. The timeline only uses what you have.",
+      "pots": "Pots",
+      "pressure_cookers": "Pressure cookers",
+      "frying_pans": "Frying pans",
+      "burners_large": "Large burners",
+      "burners_small": "Small burners",
+      "wok": "Wok",
+      "air_fryer": "Air fryer",
+      "oven": "Oven",
+      "microwave": "Microwave",
+      "air_fryer_model": "Air fryer model (optional)"
+    },
+    "diners": {
+      "title": "Diners",
+      "intro": "Who eats at home and what they do not eat at each meal. For example: dinner without fish, except prawns.",
+      "name": "Name",
+      "remove": "Remove",
+      "meals": "At these meals (none ticked: all of them)",
+      "exclude": "Without…",
+      "excludeHint": "fish, pork…",
+      "allow": "Except…",
+      "allowHint": "prawns…",
+      "addRestriction": "Add another restriction",
+      "add": "Add diner",
+      "categories": "Words that cover groups: {list}. The list is FightLab's and is not complete: what it does not name is not flagged."
     }
   }
 }

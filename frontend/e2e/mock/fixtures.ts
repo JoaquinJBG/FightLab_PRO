@@ -1,5 +1,6 @@
 import { test as base, expect, type Page } from "@playwright/test";
 
+const ORIGIN = `http://localhost:${process.env.E2E_PORT ?? 3100}`; // el de playwright.config.ts
 export const TEST_UID = "1"; // = ME.id: claimDeviceOwner purga si el dueño no coincide
 
 const PROFILE = {
@@ -43,8 +44,8 @@ type Seed = Record<string, unknown>;
     y /api/proxy/* mockeado. `extraState` se serializa a `flp_*`. */
 export async function loginAsTestUser(page: Page, extraState: Seed = {}) {
   await page.context().addCookies([
-    { name: "fl_refresh", value: "e2e", url: "http://localhost:3100" },
-    { name: "fl_access", value: "e2e", url: "http://localhost:3100" },
+    { name: "fl_refresh", value: "e2e", url: ORIGIN },
+    { name: "fl_access", value: "e2e", url: ORIGIN },
   ]);
 
   await page.addInitScript(

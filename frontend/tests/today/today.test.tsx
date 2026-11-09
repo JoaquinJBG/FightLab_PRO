@@ -39,8 +39,8 @@ function day(over: Partial<TodayState> = {}): TodayState {
     menu: {
       id: 7, start_date: "2026-10-26",
       meals: [
-        { meal: "breakfast", free: false, tupper: false, dishes: ["Avena con yogur"], eve: null, mark: null },
-        { meal: "lunch", free: false, tupper: true, dishes: ["Arroz con pollo"], eve: "Sacar el pollo", mark: null },
+        { meal: "breakfast", free: false, tupper: false, dishes: ["Avena con yogur"], prep: [], eve: [], mark: null },
+        { meal: "lunch", free: false, tupper: true, dishes: ["Arroz con pollo"], prep: [], eve: ["Sacar el pollo"], mark: null },
       ],
     },
     next_meal: { all_done: false, meal: "breakfast", free: false, dishes: ["Avena con yogur"] },
@@ -94,6 +94,27 @@ describe("Hoy", () => {
     expect(sessions[0].textContent).toContain("Paseo");
     expect(sessions[1].textContent).toContain("Desde Deportes");
     expect(screen.getByRole("link", { name: /resumen/i }).getAttribute("href")).toBe("/dashboard");
+  });
+
+  it("para esta noche: tareas de la víspera, la sesión de batch de mañana y descongelar con su regla (F12)", async () => {
+    api(day({ tonight: { date: "2026-10-30", rule_key: "batch-cooking/defrost-in-the-fridge-the-night-before", tasks: [
+      { kind: "batch", text: "Comprar lo de la lista" },
+      { kind: "meal", meal: "lunch", text: "Remojar las lentejas" },
+      { kind: "defrost", meal: "lunch", dish: "Lentejas con pollo", rule_key: "batch-cooking/defrost-in-the-fridge-the-night-before" },
+    ] } }));
+    renderApp(<TodayPage />);
+    const tonight = await screen.findByTestId("today-tonight");
+    const tasks = within(tonight).getAllByTestId("tonight-task");
+    expect(tasks.map((t) => t.dataset.kind)).toEqual(["batch", "meal", "defrost"]);
+    expect(tasks[2].textContent).toContain("Pasa Lentejas con pollo del congelador a la nevera");
+    expect(within(tasks[2]).getByTestId("evidence-chip").dataset.variant).toBe("evidence");
+  });
+
+  it("sin tareas para esta noche no sale la tarjeta", async () => {
+    api(day({ tonight: { date: "2026-10-30", rule_key: "x", tasks: [] } }));
+    renderApp(<TodayPage />);
+    await screen.findByTestId("next-meal");
+    expect(screen.queryByTestId("today-tonight")).toBeNull();
   });
 
   it("los botones de entreno, movilidad y tipo de día guardan en el parte", async () => {

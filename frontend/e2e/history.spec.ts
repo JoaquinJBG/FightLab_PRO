@@ -72,9 +72,9 @@ test("importar el historial: revisar, conservar lo de FightLab, importar y reimp
   await expect(page.getByTestId("history-days-new")).toHaveText("5 días nuevos");
   await expect(page.getByTestId("history-days-conflict")).toHaveText("1 día en conflicto");
   await expect(page.getByTestId("history-reviews-new")).toHaveText("1 revisión del coach nueva");
-  // El peso imposible se descarta con su motivo; los menús se dejan para la fase 12.
+  // El peso imposible se descarta con su motivo; el menú de la copia (vacío) no se puede leer.
   await expect(page.locator('[data-testid="history-discarded"][data-field="weight_kg"]')).toContainText("peso: 1 valor fuera de rango");
-  await expect(page.locator('[data-testid="history-notice"][data-code="menus_later"]')).toBeVisible();
+  await expect(page.locator('[data-testid="history-notice"][data-code="menus_invalid"]')).toBeVisible();
   // Nada se ha guardado aún.
   const before = await (await page.request.get(`/api/proxy/coach/checkin?date=${day(6)}`)).json();
   expect(before.checkin).toBeNull();

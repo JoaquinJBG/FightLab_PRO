@@ -27,19 +27,21 @@ def annex(db):
     return load("--dir", str(ANNEX), "--origin", "fightlab")
 
 
-def test_loads_the_63_rules_and_148_sources(annex):
+def test_loads_the_71_rules_and_161_sources(annex):
+    # 60 de combate (E.4), 3 de productos (fase 13) y 8 de batch cooking (fase 12).
     rules = KnowledgeRule.objects.filter(origin="fightlab")
-    assert rules.count() == 63  # 60 de combate y 3 de productos (fase 13)
+    assert rules.count() == 71
+    assert rules.filter(file="batch-cooking").count() == 8
     assert not rules.filter(retired=True).exists()
-    assert KnowledgeSource.objects.filter(origin="fightlab").count() == 148
-    assert set(KnowledgeSource.objects.values_list("sid", flat=True)) == {f"F{n:03d}" for n in range(1, 149)}
-    assert "reglas: 63 altas" in annex and "fuentes: 148 altas" in annex
+    assert KnowledgeSource.objects.filter(origin="fightlab").count() == 161
+    assert set(KnowledgeSource.objects.values_list("sid", flat=True)) == {f"F{n:03d}" for n in range(1, 162)}
+    assert "reglas: 71 altas" in annex and "fuentes: 161 altas" in annex
     assert "fuentes citadas que no existen" not in annex
 
 
 def test_grades_match_the_annex(annex):
     grades = Counter(KnowledgeRule.objects.filter(origin="fightlab").values_list("grade", flat=True))
-    assert grades == {"strong": 7, "moderate": 17, "emerging": 39}
+    assert grades == {"strong": 10, "moderate": 21, "emerging": 40}
 
 
 def test_every_rule_has_its_fxxx_source_ids_and_they_resolve(annex):
@@ -50,7 +52,7 @@ def test_every_rule_has_its_fxxx_source_ids_and_they_resolve(annex):
         assert all(re.fullmatch(r"F\d{3}", s) for s in rule.source_ids), rule.key
         assert set(rule.source_ids) <= sids, rule.key
         cited |= set(rule.source_ids)
-    assert cited == {f"F{n:03d}" for n in range(1, 149)}  # cada fuente se cita
+    assert cited == {f"F{n:03d}" for n in range(1, 162)}  # cada fuente se cita
 
 
 def test_rule_fields_and_checked_date_are_parsed(annex):
@@ -60,6 +62,16 @@ def test_rule_fields_and_checked_date_are_parsed(annex):
     assert rule.grade and rule.rule_text and rule.evidence and rule.applies_to
     assert rule.checked_on.isoformat() == "2026-10-29"
     assert rule.engine_sha == ""  # no es del motor
+
+
+def test_batch_rules_keys_match_the_app(annex):
+    from coaching import batch
+
+    keys = set(KnowledgeRule.objects.filter(file="batch-cooking").values_list("key", flat=True))
+    assert keys == set(batch.RULES.values())
+    rule = KnowledgeRule.objects.get(key=batch.RULES["cool"])
+    assert rule.checked_on.isoformat() == "2026-11-09"
+    assert rule.grade == "strong" and rule.source_ids[0] == "F151"
 
 
 def test_dropped_claims_is_not_loaded_as_rules(annex):
@@ -72,6 +84,6 @@ def test_loading_the_annex_is_idempotent_and_leaves_upstream_alone(real_knowledg
     assert upstream > 400
     load("--dir", str(ANNEX), "--origin", "fightlab")
     out = load("--dir", str(ANNEX), "--origin", "fightlab")
-    assert "reglas: 0 altas, 0 cambios, 0 bajas (63 sin cambios)" in out
+    assert "reglas: 0 altas, 0 cambios, 0 bajas (71 sin cambios)" in out
     assert KnowledgeRule.objects.filter(origin="upstream").count() == upstream
     assert KnowledgeRule.objects.filter(origin="upstream", retired=True).count() == 0

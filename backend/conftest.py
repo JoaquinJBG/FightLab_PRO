@@ -18,3 +18,14 @@ def _reset_throttle_cache_between_tests(settings):
     cache.clear()
     yield
     cache.clear()
+
+
+@pytest.fixture(autouse=True)
+def _tickets_in_memory(settings):
+    """Las fotos de tickets (F12) nunca van a R2 en las pruebas: almacenamiento falso en memoria."""
+    from tickets.storage import MemoryStorage
+
+    settings.TICKETS_STORAGE = "memory"
+    MemoryStorage.reset()
+    yield
+    MemoryStorage.reset()

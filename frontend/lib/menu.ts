@@ -4,6 +4,10 @@
 // motor del coach comprueba cada día contra los objetivos: aquí solo se pinta, se guardan los
 // gustos y se valoran los platos. Los productos del súper salen de Open Food Facts por el proxy
 // del servidor, que puede no estar configurado (`off_not_configured`).
+//
+// Fase 12: menús completos (JSON `schema: 1` y YAML del coach importados), sesiones de batch con su
+// cronograma por aparato, nevera o congelador de cada tupper, tareas de la víspera y la lista de la
+// compra por sección, con formato, semana y casillas.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
@@ -27,12 +31,23 @@ export const menuItem = z.object({
 });
 export type MenuItem = z.infer<typeof menuItem>;
 
+export const APPLIANCES = ["pressure_cooker", "pot", "wok", "frying_pan", "air_fryer", "oven", "microwave", "hands"] as const;
+export type Appliance = (typeof APPLIANCES)[number];
+
+const batchStep = z.union([
+  z.string(),
+  z.object({ step: z.string(), min: z.number().optional(), where: z.string().optional(), where_label: z.string().optional() }),
+]);
+
 export const menuDish = z.object({
+  id: z.string().nullable().optional(),
   dish: z.string(),
   source: z.string().nullable(),
   servings: z.number(),
   seasoning: z.array(z.string()),
   steps: z.array(z.string()),
+  steps_batch: z.array(batchStep).optional().default([]),
+  storage: z.record(z.string(), z.unknown()).nullable().optional(),
   items: z.array(menuItem),
 });
 export type MenuDish = z.infer<typeof menuDish>;
@@ -50,10 +65,45 @@ const totals = z.object({
 const check = z.object({ kcal: status, protein_g: status, fat_g: status, fibre_g: status });
 export type DayCheck = z.infer<typeof check>;
 
+export const mealStorage = z.object({
+  where: z.enum(["fridge", "freezer"]),
+  days: z.number(),
+  rice: z.boolean(),
+  rules: z.array(z.string()),
+  no_freeze: z.array(z.string()).optional(),
+  session_date: z.string().optional(),
+});
+export type MealStorage = z.infer<typeof mealStorage>;
+
+export const eveTask = z.object({
+  kind: z.enum(["meal", "batch", "defrost"]),
+  text: z.string().optional(),
+  meal: z.string().nullable().optional(),
+  dish: z.string().optional(),
+  rule_key: z.string().optional(),
+});
+export type EveTask = z.infer<typeof eveTask>;
+
+export const menuMeal = z.object({
+  meal: z.string(),
+  label: z.string().nullable().optional(),
+  tupper: z.boolean(),
+  free: z.boolean(),
+  free_budget_kcal: z.number().nullable().optional(),
+  dish_id: z.string().nullable().optional(),
+  prep: z.array(z.string()).optional().default([]),
+  eve: z.array(z.string()).optional().default([]),
+  storage: mealStorage.nullable().optional(),
+  dishes: z.array(menuDish),
+});
+export type MenuMeal = z.infer<typeof menuMeal>;
+
 export const menuDay = z.object({
   date: z.string(),
-  meals: z.array(z.object({ meal: z.string(), tupper: z.boolean(), free: z.boolean(), dishes: z.array(menuDish) })),
+  meals: z.array(menuMeal),
+  totals: z.record(z.string(), z.number().nullable()).nullable().optional(),
   check: z.object({ date: z.string(), totals, check, ok: z.boolean() }).passthrough().nullable(),
+  eve: z.array(eveTask).optional().default([]),
 });
 export type MenuDay = z.infer<typeof menuDay>;
 
@@ -77,9 +127,84 @@ const tasteFlag = z.object({
   blocking: z.boolean(),
 });
 
+export const timelineStep = z.object({
+  min: z.number(),
+  until: z.number(),
+  where: z.string(),
+  where_label: z.string().optional(),
+  step: z.string(),
+  dish: z.string().optional(),
+  substituted_from: z.string().optional(),
+});
+export type TimelineStep = z.infer<typeof timelineStep>;
+
+export const batchSession = z.object({
+  date: z.string(),
+  dishes: z.array(z.object({ id: z.string(), name: z.string(), batch_servings: z.number().nullable().optional() })),
+  eve: z.array(z.string()),
+  timeline: z.array(timelineStep),
+  total_min: z.number(),
+  appliances: z.array(z.string()),
+  missing: z.array(z.object({ dish: z.string(), step: z.string(), where: z.string() })),
+  rebuilt: z.boolean(),
+  checked: z.boolean(),
+  rules: z.array(z.string()),
+});
+export type BatchSession = z.infer<typeof batchSession>;
+
+export const shoppingLine = z.object({
+  key: z.string(),
+  name: z.string(),
+  amount: z.number().nullable(),
+  amount_two: z.number().nullable(),
+  unit: z.enum(["g", "ml"]),
+  section: z.string(),
+  pack: z.string().nullable().optional(),
+  chain: z.string().nullable().optional(),
+  when: z.array(z.number()),
+  dishes: z.array(z.string()),
+  batches: z.unknown().optional(),
+  product: z.object({
+    chain: z.string().optional(),
+    product: z.string().optional(),
+    pack: z.string().optional(),
+    packs: z.number().optional(),
+    section: z.string().optional(),
+    rating: z.string().nullable().optional(),
+    price: z.number().nullable().optional(),
+  }).passthrough().nullable(),
+  checked: z.boolean(),
+});
+export type ShoppingLine = z.infer<typeof shoppingLine>;
+
+export const shoppingList = z.object({
+  source: z.enum(["menu", "engine"]),
+  sections: z.array(z.object({ section: z.string(), items: z.array(shoppingLine) })),
+  weeks: z.array(z.number()),
+  note: z.string(),
+  total: z.number(),
+  checked: z.number(),
+  unknown: z.array(z.string()),
+  pantry_skipped: z.array(z.string()),
+  batches: z.array(z.object({ dish: z.string(), servings: z.number(), dates: z.array(z.string()), left_over: z.number() })),
+});
+export type ShoppingList = z.infer<typeof shoppingList>;
+
+export const MENU_SOURCES = ["generated", "json", "yaml", "partediario"] as const;
+
 export const menu = z.object({
   id: z.number(),
+  menu_id: z.string().nullable().optional(),
+  title: z.string().optional().default(""),
+  source: z.enum(MENU_SOURCES).optional().default("generated"),
+  notes: z.array(z.string()).optional().default([]),
   start_date: z.string(),
+  end_date: z.string().optional(),
+  imported_at: z.string().nullable().optional(),
+  batch_sessions: z.array(batchSession).optional().default([]),
+  kitchen_filled: z.boolean().optional().default(false),
+  batch_rules: z.array(ruleRef).optional().default([]),
+  shopping_list: shoppingList.optional(),
   provider: z.string(),
   days: z.array(menuDay),
   rejected: z.array(rejectedDay),
@@ -90,7 +215,7 @@ export const menu = z.object({
     fat_min_g: z.number(),
     fibre_g: z.number(),
     in_deficit: z.boolean(),
-  }).passthrough(),
+  }).partial().passthrough(),
   rules: z.record(z.string(), z.array(ruleRef)),
   shopping: z.object({
     chains: z.array(z.object({
@@ -136,13 +261,21 @@ export const menuState = z.object({
   blocked: z.object({ code: z.literal("no_calorie_targets"), reasons: z.array(coachReason) }).nullable(),
   missing: z.string().nullable(),
   menu: menu.nullable(),
+  menus: z.array(z.object({
+    id: z.number(),
+    title: z.string(),
+    start_date: z.string(),
+    end_date: z.string().nullable(),
+    source: z.string(),
+    menu_id: z.string().nullable(),
+  })).optional().default([]),
   tastes,
   max_days: z.number(),
   meals: z.array(z.enum(MEALS)),
 });
 export type MenuState = z.infer<typeof menuState>;
 
-export type MenuRequest = { start_date: string; days: number; meals: MealKey[]; tupper_meals: MealKey[] };
+export type MenuRequest = { start_date: string; days: number; meals: MealKey[]; tupper_meals: MealKey[]; batch?: boolean };
 
 /** Error de la API con su código (`menu_rejected`, `no_calorie_targets`, `off_not_configured`…). */
 export class MenuError extends Error {
@@ -171,11 +304,90 @@ async function send(path: string, method: string, body?: unknown) {
 
 const BASE = "/api/proxy/coach";
 
-export function useMenu() {
+/** El último menú guardado o, con `id`, otro de los guardados. */
+export function useMenu(id?: number | null) {
   return useQuery<MenuState>({
-    queryKey: ["menu"],
-    queryFn: async () => menuState.parse(await send(`${BASE}/menu`, "GET")),
+    queryKey: id ? ["menu", id] : ["menu"],
+    queryFn: async () => menuState.parse(await send(`${BASE}/menu${id ? `?id=${id}` : ""}`, "GET")),
+    // Al cambiar de menú se sigue viendo el anterior hasta que llega el nuevo (no se desmonta la
+    // pantalla, p. ej. el aviso de "importado").
+    placeholderData: (previous) => previous,
   });
+}
+
+// ---------------------------------------------------------------- importar (fase 12)
+
+export const MENU_ACCEPT = ".json,.yaml,.yml,application/json,application/x-yaml,text/yaml";
+export const MAX_MENU_MB = 2;
+
+export const importResponse = z.object({
+  summary: z.object({
+    menu_id: z.string(),
+    title: z.string(),
+    start: z.string(),
+    end: z.string(),
+    days: z.number(),
+    dishes: z.number(),
+    batch_sessions: z.number(),
+    shopping_items: z.number(),
+    source: z.string(),
+  }),
+  replaced: z.boolean(),
+  kept_checks: z.number(),
+  menu,
+});
+export type ImportResponse = z.infer<typeof importResponse>;
+
+/** Importa un menú (JSON `schema: 1` o YAML del coach). `start_taken` (409): otro menú empieza
+ * ese día; se repite con `replaceStart` para sustituirlo. */
+export function useImportMenu() {
+  const qc = useQueryClient();
+  return useMutation<ImportResponse, MenuError, { file: File; replaceStart?: boolean }>({
+    mutationFn: async ({ file, replaceStart }) => {
+      if (file.size > MAX_MENU_MB * 1024 * 1024) throw new MenuError("import_invalid", "");
+      const form = new FormData();
+      form.append("file", file);
+      if (replaceStart) form.append("replace_start", "true");
+      const res = await fetch(`${BASE}/menu/import`, { method: "POST", credentials: "include", body: form });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new MenuError(typeof data?.code === "string" ? data.code : String(res.status), typeof data?.detail === "string" ? data.detail : "", data);
+      }
+      return importResponse.parse(data);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["menu"] });
+      qc.invalidateQueries({ queryKey: ["today"] });
+    },
+  });
+}
+
+export function useDeleteMenu() {
+  const qc = useQueryClient();
+  return useMutation<unknown, MenuError, number>({
+    mutationFn: async (id) => {
+      const res = await fetch(`${BASE}/menu/${id}`, { method: "DELETE", credentials: "include" });
+      if (!res.ok) throw new MenuError(String(res.status), "");
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["menu"] }),
+  });
+}
+
+/** Tacha o destacha una línea de la lista de la compra (se guarda en el servidor). */
+export function useShoppingCheck(menuId: number) {
+  const qc = useQueryClient();
+  return useMutation<ShoppingList, MenuError, { item: string; checked: boolean }>({
+    mutationFn: async (body) => shoppingList.parse(await send(`${BASE}/menu/${menuId}/shopping`, "PUT", body)),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["menu"] }),
+  });
+}
+
+/** Una línea por semana elegida (`0` = todas): las que no dicen semana van siempre. */
+export function filterByWeek(list: ShoppingList, week: number): ShoppingList["sections"] {
+  if (!week) return list.sections;
+  return list.sections
+    .map((s) => ({ ...s, items: s.items.filter((i) => i.when.length === 0 || i.when.includes(week)) }))
+    .filter((s) => s.items.length > 0);
 }
 
 export function useGenerateMenu() {
@@ -333,4 +545,23 @@ export async function downloadMenuPdf(id: number): Promise<void> {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+// Las reglas de batch cooking del anexo de FightLab (`knowledge_fightlab/batch-cooking.md`) y el
+// nombre corto con que se traducen en la app.
+export const BATCH_RULES = {
+  order: "batch-cooking/order-the-batch-session-from-longest-to-shortest-in-parallel-by-appliance",
+  cool: "batch-cooking/cool-cooked-food-and-refrigerate-it-within-2-hours-rice-within-1-hour",
+  fridge: "batch-cooking/eat-from-the-fridge-within-2-days-and-freeze-the-rest-the-same-day",
+  no_freeze: "batch-cooking/do-not-freeze-potatoes-mayonnaise-fried-food-or-yogurt-sauces",
+  defrost: "batch-cooking/defrost-in-the-fridge-the-night-before",
+  reheat: "batch-cooking/reheat-until-steaming-hot-throughout-and-reheat-rice-only-once",
+  air_fryer: "batch-cooking/check-air-fried-meat-with-a-thermometer",
+  label: "batch-cooking/label-each-container-with-the-dish-and-the-date-first-in-first-out",
+} as const;
+export type BatchRuleName = keyof typeof BATCH_RULES;
+
+export function batchRuleName(key: string): BatchRuleName | null {
+  const hit = Object.entries(BATCH_RULES).find(([, k]) => k === key);
+  return hit ? (hit[0] as BatchRuleName) : null;
 }

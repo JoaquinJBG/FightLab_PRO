@@ -40,6 +40,10 @@ export const historyResult = z.object({
   reviews: z.object({
     total: z.number(), new: z.number(), conflict: z.number(), unchanged: z.number(), kept_app: z.number(), written: z.number(),
   }),
+  // Fase 12: los menús de la copia de ParteDiario y lo tachado de sus listas.
+  menus: z.object({
+    total: z.number(), new: z.number(), replaced: z.number(), kept: z.number(), invalid: z.number(), checks: z.number(),
+  }).optional(),
   sets: z.array(z.object({
     name: z.string(),
     // `coach_sessions` es el `sessions.csv` del coach; el resto, como en la fase 9.
@@ -90,7 +94,7 @@ export function useImportHistory() {
     },
     onSuccess: (result) => {
       if (result.dry_run) return;
-      for (const key of ["checkin", "trend", "targets", "biometrics", "weigh-in", "weekly-review", "weekly-plan", "strength-last", "strength-sets"]) {
+      for (const key of ["menu", "today", "checkin", "trend", "targets", "biometrics", "weigh-in", "weekly-review", "weekly-plan", "strength-last", "strength-sets"]) {
         qc.invalidateQueries({ queryKey: [key] });
       }
     },

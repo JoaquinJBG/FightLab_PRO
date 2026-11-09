@@ -9,7 +9,7 @@ import { splitWords, type Menu, type MenuState } from "@/lib/menu";
 // el estado de cada objetivo, su chip de evidencia, los días rechazados y la lista de la compra.
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
   useSearchParams: () => new URLSearchParams(),
 }));
 
@@ -18,19 +18,26 @@ const item = (name: string, amount: number) => ({ name, amount, unit: "g" as con
 
 const MENU: Menu = {
   id: 3,
+  title: "",
+  source: "generated",
+  notes: [],
+  batch_sessions: [],
+  kitchen_filled: false,
+  batch_rules: [],
   start_date: "2026-10-29",
   provider: "fake",
   days: [{
     date: "2026-10-29",
     meals: [
-      { meal: "breakfast", tupper: false, free: false, dishes: [{ dish: "Oats with Greek yoghurt and raspberries", source: null, servings: 1, seasoning: ["cinnamon"], steps: [], items: [item("rolled oats", 72)] }] },
-      { meal: "lunch", tupper: true, free: false, dishes: [{ dish: "Lentil stew with chicken and vegetables", source: "https://example.invalid/receta", servings: 1, seasoning: [], steps: [], items: [item("lentils, cooked", 300)] }] },
+      { meal: "breakfast", tupper: false, free: false, prep: [], eve: [], dishes: [{ dish: "Oats with Greek yoghurt and raspberries", source: null, servings: 1, seasoning: ["cinnamon"], steps: [], steps_batch: [], items: [item("rolled oats", 72)] }] },
+      { meal: "lunch", tupper: true, free: false, prep: [], eve: [], dishes: [{ dish: "Lentil stew with chicken and vegetables", source: "https://example.invalid/receta", servings: 1, seasoning: [], steps: [], steps_batch: [], items: [item("lentils, cooked", 300)] }] },
     ],
     check: {
       date: "2026-10-29", ok: true,
       totals: { kcal: 2700, protein_g: 150, carbs_g: 300, fat_g: 80, fibre_g: 40, unknown: [], missing: {} },
       check: { kcal: "ok", protein_g: "ok", fat_g: "ok", fibre_g: "ok" },
     },
+    eve: [],
   }],
   rejected: [{ date: "2026-10-30", check: { kcal: "under", protein_g: "ok", fat_g: "ok", fibre_g: "ok" }, unknown: [], repeats: false, blocking: [{ kind: "allergy", entry: "peanut" }], empty: false }],
   taste_flags: [{ date: "2026-10-29", dish: "Lentil stew with chicken and vegetables", kind: "disliked", where: "item", entry: "onion", text: "onion", blocking: false }],
@@ -52,7 +59,7 @@ const TASTES = {
 };
 
 const state = (extra: Partial<MenuState> = {}): MenuState => ({
-  today: "2026-10-29", blocked: null, missing: null, menu: MENU, tastes: TASTES, max_days: 7,
+  today: "2026-10-29", blocked: null, missing: null, menu: MENU, menus: [], tastes: TASTES, max_days: 7,
   meals: ["breakfast", "lunch", "dinner", "snack"], ...extra,
 });
 
