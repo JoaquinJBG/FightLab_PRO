@@ -16,7 +16,7 @@ from tickets.storage import MemoryStorage, R2Storage, get_storage
 
 pytestmark = pytest.mark.django_db
 
-URL = "/api/v1/tickets"
+URL = "/api/v1/coach/tickets"
 
 
 def jpeg(size=(800, 1200), gps=True) -> bytes:

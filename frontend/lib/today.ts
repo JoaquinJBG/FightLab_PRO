@@ -27,10 +27,13 @@ export type PlanEntry = z.infer<typeof planEntry>;
 
 const meal = z.object({
   meal: z.string(),
+  label: z.string().nullable().optional(),
   free: z.boolean(),
   tupper: z.boolean(),
   dishes: z.array(z.string()),
-  eve: z.string().nullable().optional(),
+  prep: z.array(z.string()).optional().default([]),
+  // Fase 12: una lista de tareas (antes, un texto).
+  eve: z.preprocess((v) => (typeof v === "string" ? [v] : v ?? []), z.array(z.string())),
   mark: z.object({ state: z.enum(MEAL_STATES), change: z.string().nullable() }).nullable(),
 });
 export type TodayMeal = z.infer<typeof meal>;
@@ -82,6 +85,19 @@ export const todayState = z.object({
     }),
     types: z.array(z.object({ key: z.string(), vigorous: z.boolean() })),
   }),
+  // Fase 12: lo que hay que dejar hecho esta noche para mañana (tareas `eve` del menú, de la sesión
+  // de batch de mañana y pasar a la nevera lo congelado que se come mañana).
+  tonight: z.object({
+    date: z.string(),
+    rule_key: z.string(),
+    tasks: z.array(z.object({
+      kind: z.enum(["meal", "batch", "defrost"]),
+      text: z.string().optional(),
+      meal: z.string().nullable().optional(),
+      dish: z.string().optional(),
+      rule_key: z.string().optional(),
+    })),
+  }).optional(),
 });
 export type TodayState = z.infer<typeof todayState>;
 

@@ -1,10 +1,10 @@
 """API de fotos de tickets (fase 12). Solo el dueño ve, pide la URL firmada o borra un ticket.
 
-- `GET /tickets?plan=<id>`: si la subida está encendida y los tickets (sin URL: se piden aparte).
-- `POST /tickets` (multipart: `image`, `taken_on`, `plan`, `note`): sube una foto. Sin R2,
+- `GET /coach/tickets?plan=<id>`: si la subida está encendida y los tickets (sin URL: se piden aparte).
+- `POST /coach/tickets` (multipart: `image`, `taken_on`, `plan`, `note`): sube una foto. Sin R2,
   `503 tickets_not_configured`; más de 2 MB, `413 ticket_too_large`.
-- `GET /tickets/<id>/url`: una URL firmada que caduca a los `R2_SIGNED_URL_SECONDS`.
-- `DELETE /tickets/<id>`: borra el ticket y su foto de R2.
+- `GET /coach/tickets/<id>/url`: una URL firmada que caduca a los `R2_SIGNED_URL_SECONDS`.
+- `DELETE /coach/tickets/<id>`: borra el ticket y su foto de R2.
 """
 from django.http import Http404
 from rest_framework import serializers, status

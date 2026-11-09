@@ -2196,7 +2196,8 @@
       "tupper": "Para llevar en tupper",
       "generate": "Preparar menú",
       "regenerate": "Preparar otro menú",
-      "generating": "Preparando…"
+      "generating": "Preparando…",
+      "batch": "Cocinar los tuppers en una sesión de batch"
     },
     "meals": {
       "breakfast": "Desayuno",
@@ -2228,7 +2229,18 @@
       "totals": "{kcal} kcal · proteína {p} g · grasa {f} g · hidratos {c} g · fibra {fib} g",
       "seasoning": "Para aliñar: {list}",
       "source": "Receta original",
-      "offProduct": "Open Food Facts"
+      "offProduct": "Open Food Facts",
+      "prep": "Ese día: {list}",
+      "eve": "La víspera:",
+      "defrost": "pasa {dish} del congelador a la nevera",
+      "storage": {
+        "fridge": "De la nevera",
+        "freezer": "Del congelador"
+      },
+      "noFreeze": "No congela bien: {list}",
+      "free": "Comida libre",
+      "freeBudget": "Comida libre (unas {kcal} kcal)",
+      "fileTotals": "Totales del menú: {kcal} kcal · proteína {p} g (sin comprobar con tus objetivos)"
     },
     "status": {
       "ok": "bien",
@@ -2261,7 +2273,8 @@
         "intolerance": "intolerancia",
         "disliked": "no te gusta",
         "untried": "no lo has probado",
-        "never_again": "no lo repetirías"
+        "never_again": "no lo repetirías",
+        "diner": "un comensal no lo come"
       },
       "net": "El coach compara por nombre: no conoce sinónimos ni ingredientes ocultos. Lee siempre las etiquetas."
     },
@@ -2280,7 +2293,30 @@
       "ml": "{n} ml",
       "pantry": "En casa (no se compra): {list}",
       "unknown": "Sin datos en la tabla: {list}",
-      "note": "Las cantidades son para la forma que dice cada nombre (crudo, cocido, escurrido)."
+      "note": "Las cantidades son para la forma que dice cada nombre (crudo, cocido, escurrido).",
+      "progress": "{checked} de {total}",
+      "week": {
+        "0": "Todo",
+        "1": "Semana 1",
+        "2": "Semana 2"
+      },
+      "weekTag": {
+        "1": "S1",
+        "2": "S2",
+        "both": "S1 y S2"
+      },
+      "forTwo": "para dos: {amount}",
+      "other": "Otros",
+      "product": "{chain}: {product}",
+      "rating": {
+        "bueno": "bueno",
+        "regular": "regular",
+        "evitar": "evitar"
+      },
+      "batches": "Tandas a cocinar",
+      "batchLine": "{dish}: {servings} raciones ({left} de sobra)",
+      "fromMenu": "Lista, secciones y formatos tal como venían en el menú.",
+      "fromEngine": "Lista calculada por el motor con los platos del menú."
     },
     "tastes": {
       "title": "Tus gustos",
@@ -2326,7 +2362,114 @@
       "hint": "El menú, las recetas con su enlace y la lista de la compra, para imprimir o llevar en el móvil.",
       "error": "No se ha podido preparar el PDF.",
       "no_calorie_targets": "Con tus avisos de seguridad ya no hay objetivos de kcal, así que no hay PDF del menú."
-    }
+    },
+    "header": {
+      "range": "Del {start} al {end}",
+      "source": {
+        "generated": "Preparado por FightLab (LLM simulado y motor)",
+        "json": "Importado (JSON de la app)",
+        "yaml": "Importado (YAML del coach)",
+        "partediario": "Importado de la copia de ParteDiario"
+      },
+      "others": "Menús guardados",
+      "option": "Menú del {start}",
+      "kitchenHint": "Rellena tu menaje en Perfil → Mi cocina para que el cronograma use solo tus aparatos."
+    },
+    "batch": {
+      "title": "Sesiones de batch",
+      "session": "{date} · {minutes} min",
+      "open": "Abrir a pantalla completa",
+      "eve": "La víspera: {list}",
+      "rebuilt": "El cronograma del menú usa un aparato que no tienes: se ha rehecho con tu menaje.",
+      "missing": "Sin aparato en tu cocina para: {step}",
+      "unchecked": "Sin menaje en tu perfil: el cronograma no se ha comprobado con tus aparatos.",
+      "substituted": "en lugar de {what}",
+      "appliances": {
+        "pressure_cooker": "Olla exprés",
+        "pot": "Olla",
+        "wok": "Wok",
+        "frying_pan": "Sartén",
+        "air_fryer": "Air fryer",
+        "oven": "Horno",
+        "microwave": "Microondas",
+        "hands": "Manos libres"
+      },
+      "rules": {
+        "order": "Cronograma: de lo más largo a lo más corto, en paralelo por aparato.",
+        "cool": "Enfría y a la nevera antes de 2 h; el arroz, antes de 1 h.",
+        "fridge": "Lunes y martes, de la nevera; de miércoles a viernes, del congelador.",
+        "no_freeze": "No congeles patatas, mayonesa, fritos ni salsas con yogur.",
+        "defrost": "Descongela en la nevera la noche antes.",
+        "reheat": "Recalienta una vez, hasta que humee por dentro (74 °C).",
+        "air_fryer": "Carne en la air fryer: pollo 74 °C, cerdo 63 °C, picada 71 °C, con termómetro.",
+        "label": "Etiqueta con plato y fecha; lo primero que entra es lo primero que sale."
+      },
+      "conventionNote": "El reparto por aparato y los cambios de aparato son convención de FightLab."
+    },
+    "batchScreen": {
+      "title": "Batch del {date}",
+      "close": "Salir",
+      "loading": "Cargando la sesión…",
+      "none": "No se encuentra esa sesión de batch.",
+      "progress": "{done} de {total} pasos",
+      "elapsed": "Tiempo de sesión",
+      "planned": "Previsto: {minutes} min",
+      "start": "Empezar",
+      "pause": "Pausa",
+      "resume": "Seguir",
+      "reset": "Reiniciar",
+      "confirmReset": "¿Reiniciar el reloj y las marcas de esta sesión?",
+      "startsIn": "empieza en {time}",
+      "laneDone": "Terminado",
+      "steps": "Pasos",
+      "slot": "min {from}-{to}",
+      "now": "Ahora",
+      "late": "Con retraso",
+      "timer": "{minutes} min",
+      "timerDone": "¡Tiempo!",
+      "session": "Sesión {n}"
+    },
+    "tickets": {
+      "title": "Tickets de la compra",
+      "loading": "Cargando…",
+      "off": "La subida de fotos de tickets no está configurada en este servidor.",
+      "privacy": "Las fotos se guardan en privado y solo las ves tú; se comprimen antes de subirlas.",
+      "camera": "Hacer foto",
+      "gallery": "Elegir foto",
+      "uploading": "Subiendo…",
+      "line": "Ticket del {date} ({kb} KB)",
+      "empty": "Aún no hay tickets de este menú.",
+      "delete": "Borrar",
+      "confirmDelete": "¿Borrar este ticket y su foto?",
+      "close": "Cerrar",
+      "photoAlt": "Foto del ticket",
+      "errors": {
+        "tickets_not_configured": "La subida de fotos de tickets no está configurada en este servidor.",
+        "ticket_too_large": "La foto pesa demasiado: prueba con otra.",
+        "ticket_not_image": "El archivo no es una foto válida.",
+        "too_many_tickets": "Has llegado al máximo de tickets: borra alguno.",
+        "tickets_unavailable": "No se ha podido guardar ni abrir la foto ahora: inténtalo más tarde.",
+        "generic": "No se ha podido completar."
+      }
+    },
+    "import": {
+      "title": "Importar un menú",
+      "intro": "Un JSON de la app (schema 1) o un menu.yaml del coach. Si ya lo tenías, se sustituye y se queda lo tachado de la lista.",
+      "choose": "Elegir archivo",
+      "importing": "Importando…",
+      "imported": "Importado: {title}, {days} días, {sessions} sesiones de batch y {items} cosas en la lista.",
+      "replaced": "Sustituido: {title}, {days} días; se mantienen {kept} cosas tachadas.",
+      "startTaken": "Ya hay otro menú que empieza ese día. ¿Lo sustituyes?",
+      "replace": "Sustituir",
+      "errors": {
+        "import_invalid": "El archivo no es un menú que se pueda importar.",
+        "import_too_long": "Un menú importado es de 1 a 35 días.",
+        "free_meal_refused": "Sin comida libre tras un cribado de TCA positivo: este menú no se importa.",
+        "generic": "No se ha podido importar el menú."
+      }
+    },
+    "kitchenLink": "Mi cocina: menaje y comensales",
+    "kitchenLinkHint": "El cronograma de batch usa tus aparatos y los menús respetan a cada comensal."
   },
   "sessionCheck": {
     "title": "Sesión vigorosa: mejor con revisión",
@@ -2517,14 +2660,15 @@
     },
     "blocked": "Por tu perfil de seguridad, FightLab no guarda peso, cintura ni kcal (igual que en el check-in): {n, plural, one {# dato no se importa} other {# datos no se importan}}. El resto, sí.",
     "notices": {
-      "menus_later": "{n, plural, one {# menú} other {# menús}} de la copia: no se importan ahora, llegarán con los menús completos.",
-      "shopping_later": "{n, plural, one {# artículo tachado} other {# artículos tachados}} de la lista de la compra: llegarán con los menús.",
-      "tickets_later": "{n, plural, one {# foto de ticket} other {# fotos de tickets}}: la copia no trae las fotos; irán con los menús.",
       "cardio_no_load": "El cardio importado no lleva esfuerzo (RPE), así que no suma a la carga de entrenamiento.",
       "heart_hidden": "Las pulsaciones del reloj se guardan, pero aún no se muestran.",
       "quad_to_soreness": "Las molestias del cuádriceps pasan a «piernas» en las molestias del check-in, con una nota.",
       "same_day_in_several_files": "{n, plural, one {# día venía en más de un archivo} other {# días venían en más de un archivo}}: gana el último.",
-      "reviews_targets_rule": "Las revisiones del coach quedan como historial. Para tus objetivos de kcal solo cuenta la más reciente, y solo si su semana acabó hace 28 días o menos."
+      "reviews_targets_rule": "Las revisiones del coach quedan como historial. Para tus objetivos de kcal solo cuenta la más reciente, y solo si su semana acabó hace 28 días o menos.",
+      "tickets_not_in_backup": "{n, plural, one {# foto de ticket} other {# fotos de tickets}}: la copia no trae las fotos. Súbelas otra vez en la lista de la compra del menú.",
+      "menus_invalid": "{n, plural, one {# menú de la copia no se ha podido leer} other {# menús de la copia no se han podido leer}}.",
+      "menus_start_taken": "{n, plural, one {# menú empieza el mismo día que otro tuyo y no se ha importado} other {# menús empiezan el mismo día que otros tuyos y no se han importado}}: impórtalos con «gana el archivo».",
+      "menus_free_meal_refused": "{n, plural, one {# menú trae comidas libres} other {# menús traen comidas libres}} y no se importan tras un cribado de TCA positivo."
     },
     "fileErrors": {
       "title": "Archivos que no se han podido leer",
@@ -2556,6 +2700,13 @@
       "target": "Objetivo: {kcal} kcal",
       "deficit": "en déficit",
       "noDeficit": "sin déficit"
+    },
+    "menus": {
+      "new": "{n, plural, one {# menú nuevo} other {# menús nuevos}}",
+      "replaced": "{n, plural, one {# menú sustituido} other {# menús sustituidos}}",
+      "kept": "{n, plural, one {# menú ya estaba y se queda como está} other {# menús ya estaban y se quedan como están}}",
+      "invalid": "{n, plural, one {# menú no se ha podido leer} other {# menús no se han podido leer}}",
+      "checks": "{n, plural, one {# cosa tachada en la lista} other {# cosas tachadas en la lista}}"
     }
   },
   "today": {
@@ -2626,7 +2777,8 @@
       "changePlaceholder": "Por ejemplo: pizza y una cerveza",
       "changeSave": "Guardar",
       "changedTo": "En su lugar: {what}",
-      "clear": "Quitar la marca"
+      "clear": "Quitar la marca",
+      "prep": "Ese día: {list}"
     },
     "cardio": {
       "title": "Cardio",
@@ -2662,6 +2814,11 @@
       "today": "Parte de hoy",
       "weigh": "Pesarme",
       "nextMeal": "Próxima comida"
+    },
+    "tonight": {
+      "title": "Para esta noche",
+      "defrost": "Pasa {dish} del congelador a la nevera",
+      "batch": "batch"
     }
   },
   "reminders": {
@@ -2709,6 +2866,45 @@
     "hours": {
       "title": "A qué hora llegan",
       "body": "Las horas son las de tu zona horaria del perfil ({tz}), y cada aviso llega en algún momento de su hora (de 22:00 a 22:59, por ejemplo). El servidor gratuito solo se despierta a unas horas fijas, elegidas para España con y sin horario de verano: si vives en otra zona, el aviso llega a la hora más cercana a la suya en que se despierta, antes o después, pero no se pierde."
+    }
+  },
+  "kitchen": {
+    "link": "Mi cocina",
+    "back": "← Perfil",
+    "title": "Mi cocina",
+    "intro": "Tu menaje y quién come en casa. Lo usa el cronograma de batch y lo respetan los menús.",
+    "loading": "Cargando…",
+    "error": "No se ha podido guardar ni leer tu cocina.",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "saved": "Guardado.",
+    "equipment": {
+      "title": "Menaje",
+      "intro": "Cuántos tienes de cada uno. El cronograma solo usa lo que tengas.",
+      "pots": "Ollas",
+      "pressure_cookers": "Ollas exprés",
+      "frying_pans": "Sartenes",
+      "burners_large": "Fuegos grandes",
+      "burners_small": "Fuegos pequeños",
+      "wok": "Wok",
+      "air_fryer": "Air fryer",
+      "oven": "Horno",
+      "microwave": "Microondas",
+      "air_fryer_model": "Modelo de la air fryer (opcional)"
+    },
+    "diners": {
+      "title": "Comensales",
+      "intro": "Quién come en casa y qué no come en cada comida. Por ejemplo: cena sin pescado, salvo gambas.",
+      "name": "Nombre",
+      "remove": "Quitar",
+      "meals": "En estas comidas (ninguna marcada: en todas)",
+      "exclude": "Sin…",
+      "excludeHint": "pescado, cerdo…",
+      "allow": "Salvo…",
+      "allowHint": "gambas…",
+      "addRestriction": "Añadir otra restricción",
+      "add": "Añadir comensal",
+      "categories": "Palabras que cubren grupos: {list}. La lista es de FightLab y no está completa: lo que no nombra no se marca."
     }
   }
 }

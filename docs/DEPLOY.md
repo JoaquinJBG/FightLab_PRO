@@ -401,7 +401,7 @@ queda apagada y la app lo dice; el resto de la lista funciona igual.
 - **Bucket privado**, sin acceso público ni dominio público. Las fotos se ven
   con **URLs firmadas** que caducan (10 min por defecto,
   `R2_SIGNED_URL_SECONDS`) y que solo pide el dueño del ticket a través del
-  backend (`GET /api/v1/tickets/<id>/url`).
+  backend (`GET /api/v1/coach/tickets/<id>/url`).
 - **Compresión y límite**: el móvil reduce y comprime la foto (unos 300 KB)
   antes de subirla; el backend rechaza lo que pase de 2 MB y la vuelve a
   guardar como JPEG sin EXIF ni GPS. Un contador de uso avisa a los

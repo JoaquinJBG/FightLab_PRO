@@ -1,24 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { NutritionIcon } from "@/components/icons";
 import { ReasonLine } from "@/components/plan/PlanView";
 import { MenuView } from "@/components/menu/MenuView";
 import { ProductsCard } from "@/components/menu/ProductsCard";
 import { TastesCard } from "@/components/menu/TastesCard";
+import { ImportMenuCard } from "@/components/menu/ImportMenuCard";
 import { MEALS, useGenerateMenu, useMenu, type MealKey } from "@/lib/menu";
 
 const DEFAULT_DAYS = 3;
 
 export default function MenuPage() {
+  return (
+    <Suspense fallback={null}>
+      <MenuScreen />
+    </Suspense>
+  );
+}
+
+function MenuScreen() {
   const t = useTranslations("menu");
-  const state = useMenu();
+  const router = useRouter();
+  const params = useSearchParams();
+  const raw = Number(params.get("id"));
+  const selected = Number.isInteger(raw) && raw > 0 ? raw : null;
+  const state = useMenu(selected);
   const generate = useGenerateMenu();
   const [days, setDays] = useState(DEFAULT_DAYS);
   const [meals, setMeals] = useState<MealKey[]>([...MEALS]);
   const [tupper, setTupper] = useState<MealKey[]>([]);
+  const [batch, setBatch] = useState(false);
+  const pick = (id: number | null) => router.replace(id ? `/nutrition/menu?id=${id}` : "/nutrition/menu");
 
   const header = (
     <>
@@ -33,7 +49,19 @@ export default function MenuPage() {
   if (state.isLoading) return <div className="pt-4">{header}<p className="t-body mt-4 text-muted">{t("loading")}</p></div>;
   if (state.isError || !state.data) return <div className="pt-4">{header}<p className="t-body mt-4 text-bad">{t("error")}</p></div>;
 
-  const { blocked, missing, menu, tastes, max_days: maxDays } = state.data;
+  const { blocked, missing, menu, menus, tastes, max_days: maxDays } = state.data;
+  const picker = menus.length > 1 && menu && (
+    <label className="glass mt-4 flex items-center justify-between gap-3 p-4">
+      <span className="t-label text-ink">{t("header.others")}</span>
+      <select data-testid="menu-picker" value={menu.id} onChange={(e) => pick(Number(e.target.value))} className="field max-w-[60%] px-3 py-2 text-sm">
+        {menus.map((m) => (
+          <option key={m.id} value={m.id}>{m.title || t("header.option", { start: m.start_date })}</option>
+        ))}
+      </select>
+    </label>
+  );
+  // Un menú importado se ve y se usa aunque falten los objetivos para generar uno nuevo.
+  const imported = menu && menu.source !== "generated" ? <>{picker}<MenuView menu={menu} /></> : null;
   if (blocked) {
     return (
       <div className="pt-4">
@@ -45,6 +73,8 @@ export default function MenuPage() {
             {blocked.reasons.map((r, i) => <ReasonLine key={`${r.code}-${i}`} reason={r} />)}
           </ul>
         </section>
+        <ImportMenuCard onImported={pick} />
+        {imported}
       </div>
     );
   }
@@ -58,6 +88,8 @@ export default function MenuPage() {
             {missing === "weight_kg" ? t("missing.weight") : t("missing.cta")}
           </Link>
         </section>
+        <ImportMenuCard onImported={pick} />
+        {imported}
       </div>
     );
   }
@@ -75,7 +107,11 @@ export default function MenuPage() {
         className="glass mt-4 p-4"
         onSubmit={(e) => {
           e.preventDefault();
-          generate.mutate({ start_date: state.data.today, days, meals, tupper_meals: tupper.filter((m) => meals.includes(m)) });
+          const tupperMeals = tupper.filter((m) => meals.includes(m));
+          generate.mutate(
+            { start_date: state.data.today, days, meals, tupper_meals: tupperMeals, ...(batch && tupperMeals.length > 0 ? { batch: true } : {}) },
+            { onSuccess: () => pick(null) },
+          );
         }}
       >
         <label className="flex items-center justify-between gap-3">
@@ -106,6 +142,10 @@ export default function MenuPage() {
             ))}
           </div>
         </fieldset>
+        <label className="t-body mt-3 flex items-center gap-2 text-sm text-ink">
+          <input type="checkbox" data-testid="menu-batch" checked={batch} disabled={tupper.length === 0} onChange={(e) => setBatch(e.target.checked)} />
+          {t("form.batch")}
+        </label>
         <button type="submit" disabled={generate.isPending || meals.length === 0} className="btn btn-primary mt-4 w-full disabled:opacity-60">
           {generate.isPending ? t("form.generating") : menu ? t("form.regenerate") : t("form.generate")}
         </button>
@@ -116,7 +156,13 @@ export default function MenuPage() {
         )}
       </form>
 
+      <ImportMenuCard onImported={pick} />
+      {picker}
       {menu && <MenuView menu={menu} />}
+      <Link href="/profile/kitchen" data-testid="menu-kitchen-link" className="glass mt-4 block p-4">
+        <span className="t-label text-ink">{t("kitchenLink")}</span>
+        <span className="t-body mt-1 block text-xs text-muted">{t("kitchenLinkHint")}</span>
+      </Link>
       <TastesCard tastes={tastes} />
       <ProductsCard />
     </div>

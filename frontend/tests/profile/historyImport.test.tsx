@@ -64,7 +64,7 @@ const result = (over: Partial<HistoryResult> = {}): HistoryResult => historyResu
     { code: "future_date", field: "date", count: 2, examples: ["2026-11-15", "2026-11-16"] },
   ],
   weight_blocked: { active: false, count: 0, fields: [] },
-  notices: [{ code: "menus_later", count: 3 }, { code: "cardio_no_load", count: 12 }],
+  notices: [{ code: "tickets_not_in_backup", count: 3 }, { code: "cardio_no_load", count: 12 }],
   ...over,
 });
 
@@ -111,7 +111,7 @@ describe("Importar historial (en)", () => {
       "weight: 1 value out of range (e.g. 2026-10-01)",
       "date: 2 dates in the future (e.g. 2026-11-15, 2026-11-16)",
     ]);
-    expect(screen.getAllByTestId("history-notice").map((n) => n.dataset.code)).toEqual(["menus_later", "cardio_no_load"]);
+    expect(screen.getAllByTestId("history-notice").map((n) => n.dataset.code)).toEqual(["tickets_not_in_backup", "cardio_no_load"]);
     expect(screen.getByTestId("history-file-error").textContent).toBe("foto.jpg: Not a recognised format (upload .json, .csv or .md).");
 
     // Los días en conflicto, con sus datos, y la opción segura marcada.

@@ -39,4 +39,8 @@ export const READY_USERS = {
   historyScoff: "e2e-history-scoff@fightlab.test",
   // Fase 11 (Hoy): plan de la semana activo con gimnasio hoy y un menú con dos comidas para hoy.
   today: "e2e-today@fightlab.test",
+  // Fase 12: importar menús completos (JSON schema 1 y YAML del coach) y la sesión de batch con el
+  // menaje del usuario. Sin menús ni cocina al empezar.
+  menuImport: "e2e-menu-import@fightlab.test",
+  batch: "e2e-batch@fightlab.test",
 };

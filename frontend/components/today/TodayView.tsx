@@ -250,7 +250,8 @@ function MealRow({ meal }: { meal: TodayMeal }) {
         {meal.tupper && <span className="badge">{t("tupper")}</span>}
       </div>
       <p className="t-body text-sm text-muted">{meal.free ? t("free") : meal.dishes.join(", ")}</p>
-      {meal.eve && <p className="t-body text-[11px] text-neon">{t("eve", { task: meal.eve })}</p>}
+      {meal.eve.length > 0 && <p className="t-body text-[11px] text-neon">{t("eve", { task: meal.eve.join("; ") })}</p>}
+      {meal.prep.length > 0 && <p className="t-body text-[11px] text-ink">{t("prep", { list: meal.prep.join("; ") })}</p>}
       <div className="mt-2 flex gap-2" role="group" aria-label={mealName(tMenu, meal.meal)}>
         {MEAL_STATES.map((s) => (
           <button
@@ -472,6 +473,27 @@ function Cardio({ state }: { state: TodayState }) {
   );
 }
 
+/** Lo que hay que dejar hecho esta noche para mañana (fase 12). */
+function Tonight({ state }: { state: TodayState }) {
+  const t = useTranslations("today.tonight");
+  const tasks = state.tonight?.tasks ?? [];
+  if (tasks.length === 0) return null;
+  return (
+    <section data-testid="today-tonight" className="glass neon-edge mt-4 p-4">
+      <p className="t-eyebrow text-muted">{t("title")}</p>
+      <ul className="mt-2 flex flex-col gap-1.5">
+        {tasks.map((task, i) => (
+          <li key={i} data-testid="tonight-task" data-kind={task.kind} className="t-body flex flex-wrap items-center gap-2 text-sm text-ink">
+            <span>{task.kind === "defrost" ? t("defrost", { dish: task.dish ?? "" }) : task.text}</span>
+            {task.kind === "defrost" && <EvidenceChip ruleKey={task.rule_key ?? null} />}
+            {task.kind === "batch" && <span className="badge">{t("batch")}</span>}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 /* --------------------------------------- vista --------------------------------------- */
 
 export function TodayView({ state }: { state: TodayState }) {
@@ -497,6 +519,7 @@ export function TodayView({ state }: { state: TodayState }) {
       <DayStatus state={state} />
       <Weight state={state} />
       <Meals state={state} />
+      <Tonight state={state} />
       <Cardio state={state} />
       <Link href="/checkin" className="btn btn-tonal mt-4 w-full">
         {t("fullCheckin")}
