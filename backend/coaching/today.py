@@ -152,16 +152,23 @@ def planned_dish(meal: dict) -> str:
     return ", ".join(d.get("dish", "") for d in meal.get("dishes") or [])[:DISH_MAX]
 
 
-def mark_applies(mark: MealCheck, meal: dict) -> bool:
-    """F29: una marca solo vale para el plato que se marcó. Si después el menú de ese día cambia
-    (otro menú preparado o importado), la marca no pasa al plato nuevo, que nunca estuvo en el
-    día. Las marcas sin plato apuntado (historial de ParteDiario antiguo) siguen valiendo."""
-    return not mark.dish or fold(mark.dish) == fold(planned_dish(meal))
+def mark_applies(mark: MealCheck, meal: dict, day: date, today: date) -> bool:
+    """La marca vigente de una comida (F29). Una marca solo vale para el plato que se marcó: si
+    después el menú de ese día cambia (otro menú preparado o importado), la marca no pasa al plato
+    nuevo, que nunca estuvo en el día. La marca vieja no se borra ni se reescribe: queda como
+    historial de adherencia con su `dish`. Siguen valiendo las marcas de días pasados (no se
+    tocan) y las que no apuntan plato (historial antiguo de ParteDiario).
+
+    Es la regla que debe usar cualquier lectura de las marcas (Hoy y, si algún día las lee, la
+    revisión semanal; hoy la revisión no lee `MealCheck`)."""
+    if day < today or not mark.dish:
+        return True
+    return fold(mark.dish) == fold(planned_dish(meal))
 
 
-def _meal_out(meal: dict, mark: MealCheck | None) -> dict:
+def _meal_out(meal: dict, mark: MealCheck | None, day: date, today: date) -> dict:
     previous = None
-    if mark is not None and not mark_applies(mark, meal):
+    if mark is not None and not mark_applies(mark, meal, day, today):
         previous = {"state": STATE_KEYS[mark.state], "change": mark.change or None, "dish": mark.dish}
         mark = None
     return {
@@ -200,12 +207,13 @@ def tonight(user, day: date) -> dict:
     return {"date": tomorrow.isoformat(), "tasks": batch.eve_tasks(plan, tomorrow), "rule_key": batch.RULES["defrost"]}
 
 
-def meals_for(user, day: date) -> dict | None:
+def meals_for(user, day: date, today: date | None = None) -> dict | None:
     plan, menu = menu_day(user, day)
     if plan is None:
         return None
     marks = {m.meal: m for m in MealCheck.objects.filter(profile=user.profile, date=day)}
-    meals = [_meal_out(m, marks.get(MEALS.get(m.get("meal", "")))) for m in menu.get("meals") or []]
+    today = today or day
+    meals = [_meal_out(m, marks.get(MEALS.get(m.get("meal", ""))), day, today) for m in menu.get("meals") or []]
     return {"id": plan.id, "start_date": plan.start_date.isoformat(), "meals": meals}
 
 
@@ -413,7 +421,7 @@ def today_data(user, day: date, today: date) -> dict:
     row = user.profile.day_logs.filter(date=day).first()
     data = checkin.checkin_data(user, day, today)
     plan = plan_for(user, day)
-    menu = meals_for(user, day)
+    menu = meals_for(user, day, today)
     set_type = DAY_TYPE_KEYS.get(row.day_type) if row else None
     return {
         "date": day.isoformat(),

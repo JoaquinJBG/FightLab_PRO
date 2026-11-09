@@ -216,6 +216,7 @@ def test_f29_a_mark_does_not_move_to_a_new_dish_when_the_menu_changes():
     plan.days = days_
     plan.save()
     breakfast = client.get(URL).json()["menu"]["meals"][0]
+    assert MealCheck.objects.get(profile=user.profile, meal="desayuno").dish == "Avena con yogur"  # no se reescribe
     assert breakfast["dishes"] == ["Tostada con tomate"]
     assert breakfast["mark"] is None
     assert breakfast["previous_mark"] == {"state": "skipped", "change": None, "dish": "Avena con yogur"}
@@ -225,6 +226,22 @@ def test_f29_a_mark_does_not_move_to_a_new_dish_when_the_menu_changes():
     assert body["menu"]["meals"][0]["mark"] == {"state": "done", "change": None}
     assert body["menu"]["meals"][0]["previous_mark"] is None
     assert MealCheck.objects.get(profile=user.profile, meal="desayuno").dish == "Tostada con tomate"
+
+
+def test_f29_past_days_keep_their_marks_and_a_new_menu_does_not_rewrite_them():
+    user = athlete()
+    yesterday = TODAY - timedelta(days=1)
+    plan = menu(user, day=yesterday)
+    MealCheck.objects.create(profile=user.profile, date=yesterday, meal="desayuno", state="no_hecho", dish="Avena con yogur")
+    days_ = plan.days
+    days_[0]["meals"][0]["dishes"][0]["dish"] = "Tostada con tomate"
+    plan.days = days_
+    plan.save()
+    meal = client_for(user).get(URL, {"date": yesterday.isoformat()}).json()["menu"]["meals"][0]
+    assert meal["mark"] == {"state": "skipped", "change": None} and meal["previous_mark"] is None
+    # La marca guardada no se borra ni se reescribe.
+    row = MealCheck.objects.get(profile=user.profile, date=yesterday, meal="desayuno")
+    assert (row.state, row.dish) == ("no_hecho", "Avena con yogur")
 
 
 def test_a_mark_without_dish_from_the_old_history_still_counts():
