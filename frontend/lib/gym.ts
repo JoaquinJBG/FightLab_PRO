@@ -1,12 +1,38 @@
 import type { SyncSet } from "./activities";
+import { setIssue } from "./gym-log";
 
 // Tipos, biblioteca de ejercicios y persistencia local del gimnasio.
 // (localStorage por ahora; pasa al backend con Exercise/WorkoutSession en fase 3)
 
 import type { ServerActivity, SyncItem } from "./activities";
 
-export type SetEntry = { kg: string; reps: string; done: boolean };
-export type ExerciseEntry = { name: string; sets: SetEntry[] };
+/** Tipos de serie del contrato de F17. */
+export type SetType = "warmup" | "normal" | "drop" | "failure";
+
+/** Una serie mientras se registra (texto tal cual se escribe). `type`, `rpe` y `rir` son de F17:
+    las sesiones guardadas antes no los tienen. */
+export type SetEntry = { kg: string; reps: string; done: boolean; type?: SetType; rpe?: string; rir?: string };
+/** Un ejercicio del entreno. `key` es la clave del contrato (`cat:…` o `custom:…`); `restS`, el
+    descanso tras sus series; `superset`, el grupo de superserie (null: suelto). */
+export type ExerciseEntry = {
+  name: string;
+  sets: SetEntry[];
+  key?: string | null;
+  notes?: string;
+  restS?: number | null;
+  superset?: number | null;
+};
+
+/** Una serie guardada. */
+export type SavedSet = { kg: number; reps: number; type?: SetType; rpe?: number | null; rir?: number | null };
+export type SavedExercise = {
+  name: string;
+  sets: SavedSet[];
+  key?: string | null;
+  notes?: string;
+  restS?: number | null;
+  superset?: number | null;
+};
 
 export type GymSession = {
   id: string;
@@ -17,7 +43,9 @@ export type GymSession = {
   rpe: number | null;
   load: number | null; // sRPE: min × RPE (AU)
   volume: number; // kg totales levantados (Σ kg × reps)
-  exercises: { name: string; sets: { kg: number; reps: number }[] }[];
+  exercises: SavedExercise[];
+  /** Id de la sesión en el servidor (para abrir su detalle). */
+  serverId?: number;
 };
 
 export type LiveGym = {
@@ -26,6 +54,8 @@ export type LiveGym = {
   exercises: ExerciseEntry[];
   savedAt: number;
   plan?: string | null; // sesión del plan de la semana ("A", "B")
+  routine?: { id: number; title: string } | null; // rutina de la que salió (F17)
+  restUntil?: number | null; // fin del descanso en marcha (sigue en segundo plano)
 };
 
 export const GYM_SESS_KEY = "flp_gym_sessions";
@@ -233,16 +263,33 @@ export const MAX_DETAIL_CHARS = 8000; // margen bajo el tope del backend (8192, 
 export const DEFAULT_RPE = 7;
 
 const num = (v: string) => parseFloat(v.replace(",", "."));
+const optNum = (v: string | undefined) => (v !== undefined && v.trim() !== "" && Number.isFinite(num(v)) ? num(v) : null);
 
-/** Solo cuentan las series marcadas ✓ con reps > 0. kg en blanco = peso corporal (0). */
-export function savedExercises(exercises: ExerciseEntry[]): GymSession["exercises"] {
+/** Lo que se guarda (y lo que enseña el resumen, que sale de aquí mismo): las series marcadas ✓
+    con reps > 0 y sin valores imposibles (`setIssue`, fallo F2). kg en blanco = peso corporal (0). */
+export function savedExercises(exercises: ExerciseEntry[]): SavedExercise[] {
   return exercises
-    .map((x) => ({
-      name: x.name,
-      sets: x.sets
-        .filter((s) => s.done && Number.isFinite(parseInt(s.reps, 10)) && parseInt(s.reps, 10) > 0)
-        .map((s) => ({ kg: Number.isFinite(num(s.kg)) ? num(s.kg) : 0, reps: parseInt(s.reps, 10) })),
-    }))
+    .map((x) => {
+      const out: SavedExercise = {
+        name: x.name,
+        sets: x.sets
+          .filter((s) => s.done && Number.isFinite(parseInt(s.reps, 10)) && parseInt(s.reps, 10) > 0 && setIssue(s)?.level !== "error")
+          .map((s) => {
+            const set: SavedSet = { kg: Number.isFinite(num(s.kg)) ? num(s.kg) : 0, reps: parseInt(s.reps, 10) };
+            if (s.type && s.type !== "normal") set.type = s.type;
+            const rpe = optNum(s.rpe);
+            const rir = optNum(s.rir);
+            if (rpe !== null) set.rpe = rpe;
+            if (rir !== null) set.rir = rir;
+            return set;
+          }),
+      };
+      if (x.key) out.key = x.key;
+      if (x.notes?.trim()) out.notes = x.notes.trim();
+      if (x.restS != null) out.restS = x.restS;
+      if (x.superset != null) out.superset = x.superset;
+      return out;
+    })
     .filter((x) => x.sets.length > 0);
 }
 
@@ -263,19 +310,22 @@ export function restoreExercise(xs: ExerciseEntry[], ex: ExerciseEntry, index: n
   return xs.map((x, i) => (i === at ? { ...x, sets: merged } : x));
 }
 
-/** Series que el usuario podría creer guardadas y no lo serán. */
-export function incompleteSets(exercises: ExerciseEntry[]): { tickedEmpty: number; unticked: number } {
+/** Series que el usuario podría creer guardadas y no lo serán. `impossible`: marcadas ✓ con un
+    valor que el servidor no admite (fallo F2): se avisa, no se pierden en silencio. */
+export function incompleteSets(exercises: ExerciseEntry[]): { tickedEmpty: number; unticked: number; impossible: number } {
   let tickedEmpty = 0;
   let unticked = 0;
+  let impossible = 0;
   for (const x of exercises) {
     for (const s of x.sets) {
       const reps = parseInt(s.reps, 10);
       const hasReps = Number.isFinite(reps) && reps > 0;
       if (s.done && !hasReps) tickedEmpty++;
+      else if (s.done && setIssue(s)?.level === "error") impossible++;
       else if (!s.done && (s.kg.trim() !== "" || s.reps.trim() !== "")) unticked++;
     }
   }
-  return { tickedEmpty, unticked };
+  return { tickedEmpty, unticked, impossible };
 }
 
 /** `detail` para el backend. Si el desglose completo no cabe se compacta
@@ -307,13 +357,22 @@ export function gymSets(exercises: unknown[]): SyncSet[] {
     const name = ex?.name;
     const sets = ex?.sets;
     if (typeof name !== "string" || !name.trim() || !Array.isArray(sets)) return;
+    const meta = raw as { key?: unknown; notes?: unknown; restS?: unknown; superset?: unknown };
     sets.forEach((rawSet, si) => {
-      const s = rawSet as { kg?: unknown; reps?: unknown };
+      const s = rawSet as { kg?: unknown; reps?: unknown; type?: unknown; rpe?: unknown; rir?: unknown };
       const kg = typeof s?.kg === "number" ? s.kg : Number.NaN;
       const reps = typeof s?.reps === "number" ? s.reps : Number.NaN;
       if (!Number.isInteger(reps) || reps <= 0 || reps > 1000) return;
       if (!Number.isFinite(kg) || kg < 0 || kg > 1000) return;
-      out.push({ exercise: name.trim().slice(0, 120), exercise_index: ei, set_index: si, weight_kg: kg > 0 ? kg : null, reps });
+      const row: SyncSet = { exercise: name.trim().slice(0, 120), exercise_index: ei, set_index: si, weight_kg: kg > 0 ? kg : null, reps };
+      if (typeof meta.key === "string" && meta.key) row.exercise_key = meta.key;
+      if (typeof s.type === "string" && s.type !== "normal") row.set_type = s.type as SetType;
+      if (typeof s.rpe === "number") row.rpe = s.rpe;
+      if (typeof s.rir === "number") row.rir = s.rir;
+      if (typeof meta.superset === "number") row.superset = meta.superset;
+      if (typeof meta.notes === "string" && meta.notes) row.notes = meta.notes.slice(0, 1000);
+      if (typeof meta.restS === "number") row.rest_s = meta.restS;
+      out.push(row);
     });
   });
   return out.slice(0, MAX_SYNC_SETS);
