@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { DobInput, dobErrorCode, dobToIso, type Dob, type DobLabels } from "@/components/dob-input";
 import { SafetyPanel } from "@/components/safety/SafetyBanner";
@@ -28,7 +28,11 @@ function dobFromIso(iso: string | null): Dob {
 /** Paso 3 (setup/SKILL.md): datos básicos y, después, el peso. `equation_sex` solo si
  * `gender` es OTHER o nulo. El peso se pide según los flags del servidor: menor de 18, no;
  * tras un cribado positivo, un peso aproximado y opcional, sin pedir que se pese. */
-export function BasicsStep({ profile, onNext }: StepProps & { profile: Profile }) {
+export function BasicsStep({
+  profile,
+  onNext,
+  onPhase,
+}: StepProps & { profile: Profile; onPhase?: (phase: "form" | "weight") => void }) {
   const t = useTranslations("onboarding.basics");
   const tc = useTranslations("onboarding");
   const update = useUpdateProfile();
@@ -41,6 +45,8 @@ export function BasicsStep({ profile, onNext }: StepProps & { profile: Profile }
   const [weight, setWeight] = useState("");
   const [error, setError] = useState<string | null>(null);
   const safety = useSafety(phase === "weight");
+  // El peso es otra pantalla con su propio número en «Paso n de total» (F10).
+  useEffect(() => onPhase?.(phase), [phase, onPhase]);
 
   const needsEquationSex = gender !== "MALE" && gender !== "FEMALE";
   const labels: DobLabels = {

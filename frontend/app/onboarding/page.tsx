@@ -1,11 +1,11 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useProfile, useScreening } from "@/lib/hooks";
-import { ageOn, firstMissingStep, steps, type Step } from "@/lib/onboarding";
+import { ageOn, firstMissingStep, stepProgress, steps, type Step } from "@/lib/onboarding";
 import { GloveIcon, PulseIcon, NutritionIcon, ChevronRight } from "@/components/icons";
 import { LanguageStep } from "@/components/onboarding/LanguageStep";
 import { ScoffStep } from "@/components/onboarding/ScoffStep";
@@ -30,6 +30,8 @@ function Onboarding() {
   const { data: screening } = useScreening();
   const [knowBp, setKnowBp] = useState(false);
   const [step, setStep] = useState<Step | null>(null);
+  const [basicsWeight, setBasicsWeight] = useState(false);
+  const onBasicsPhase = useCallback((p: "form" | "weight") => setBasicsWeight(p === "weight"), []);
   const single = params.get("step") as Step | null;
   // Primer onboarding (no un paso suelto ni un cribado repetido): termina con una primera acción.
   const firstRun = !single && !params.get("redo");
@@ -66,8 +68,7 @@ function Onboarding() {
   const next = () => setStep(single ? "done" : (flow[index + 1] ?? "done"));
   const back = () => setStep(flow[Math.max(1, index - 1)]);
   const finish = () => router.replace("/today");
-  const numbered: Step[] = flow.filter((s) => s !== "welcome" && s !== "done");
-  const n = numbered.indexOf(step) + 1;
+  const { n, total } = stepProgress(flow, step, basicsWeight);
 
   if (step === "welcome") {
     return (
@@ -111,10 +112,10 @@ function Onboarding() {
         <div className="pt-6">
           <div className="flex items-center justify-between">
             <p className="t-label text-muted" data-testid="onboarding-progress">
-              {t("step", { n, total: numbered.length })}
+              {t("step", { n, total })}
             </p>
             {index > 1 && !single && (
-              <button onClick={back} className="t-label text-muted">
+              <button type="button" onClick={back} className="t-label text-muted">
                 {t("back")}
               </button>
             )}
@@ -122,7 +123,7 @@ function Onboarding() {
           <div className="mt-2 h-1.5 rounded-full bg-[rgba(150,190,255,0.12)]">
             <div
               className="h-1.5 rounded-full transition-all duration-300"
-              style={{ width: `${(n / numbered.length) * 100}%`, background: "linear-gradient(90deg,#45e9ff,#3b74ff)" }}
+              style={{ width: `${(n / total) * 100}%`, background: "linear-gradient(90deg,#45e9ff,#3b74ff)" }}
             />
           </div>
         </div>
@@ -131,7 +132,7 @@ function Onboarding() {
       <div className="flex flex-1 flex-col justify-center py-6" data-testid={`onboarding-step-${step}`}>
         {step === "language" && <LanguageStep profile={profile} onNext={next} />}
         {step === "scoff" && <ScoffStep onNext={next} />}
-        {step === "basics" && <BasicsStep profile={profile} onNext={next} />}
+        {step === "basics" && <BasicsStep profile={profile} onNext={next} onPhase={onBasicsPhase} />}
         {step === "parq" && (
           <ParqStep screening={screening} age={ageOn(profile.date_of_birth, new Date())} onNext={next} />
         )}
