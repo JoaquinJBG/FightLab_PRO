@@ -7,6 +7,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
+import { hydrateUserStatePrefix } from "./user-state";
 import { DAYS } from "./plan";
 
 export const DAY_TYPES = ["gym", "cardio", "rest"] as const;
@@ -22,6 +23,10 @@ const planEntry = z.object({
   session: z.string().nullable().optional(),
   exercises: z.array(z.string()).optional(),
   minutes: z.number().nullable().optional(),
+  // F26: los bloqueos de hoy sobre el plan ya hecho (ejercicios en pausa por una lesión y el
+  // contacto bloqueado por un golpe en la cabeza)
+  paused: z.array(z.string()).optional(),
+  contact_blocked: z.boolean().optional(),
 });
 export type PlanEntry = z.infer<typeof planEntry>;
 
@@ -37,6 +42,11 @@ const meal = z.object({
   mark: z.object({ state: z.enum(MEAL_STATES), change: z.string().nullable() }).nullable(),
   // F29: la marca de un plato que ya no está en el menú de ese día (no pasa al plato nuevo).
   previous_mark: z.object({ state: z.enum(MEAL_STATES), change: z.string().nullable(), dish: z.string() }).nullable().optional(),
+  // F6: kcal y macros previstos del plato (los totales del motor); con «Hecha» se suman a Nutrición
+  totals: z
+    .object({ kcal: z.number(), p: z.number(), c: z.number(), f: z.number(), partial: z.boolean() })
+    .nullable()
+    .optional(),
 });
 export type TodayMeal = z.infer<typeof meal>;
 
@@ -56,7 +66,10 @@ export const todayState = z.object({
   today: z.string(),
   weekday: z.enum(DAYS),
   plan: z
-    .object({ id: z.number(), week_start: z.string(), entries: z.array(planEntry), type: z.enum(DAY_TYPES) })
+    .object({
+      id: z.number(), week_start: z.string(), entries: z.array(planEntry), type: z.enum(DAY_TYPES),
+      no_contact: z.boolean().optional(),
+    })
     .nullable(),
   day_type: z.enum(DAY_TYPES).nullable(),
   day_type_set: z.boolean(),
@@ -64,6 +77,8 @@ export const todayState = z.object({
   mobility: z.boolean().nullable(),
   weight_kg: z.number().nullable(),
   weight_blocked: z.boolean(),
+  // F28: el peso que cuenta ese día (la media de sus pesajes) y cuántos hubo
+  day_weight: z.object({ kg: z.number(), count: z.number() }).nullable().optional(),
   menu: z.object({ id: z.number(), start_date: z.string(), meals: z.array(meal) }).nullable(),
   next_meal: z
     .union([
@@ -157,7 +172,13 @@ export function useSaveDay() {
 }
 
 export function useMarkMeal() {
-  return useTodayMutation((v: { meal: string; state: MealState | null; change?: string }) => send(`${BASE}/meal`, "PUT", v));
+  // F6: la marca suma o quita la entrada del menú en el diario de Nutrición en el servidor; se trae
+  // ese día al móvil para que Nutrición la enseñe sin esperar.
+  return useTodayMutation(async (v: { meal: string; state: MealState | null; change?: string }) => {
+    const data = await send(`${BASE}/meal`, "PUT", v);
+    await hydrateUserStatePrefix("nutri_", data.date, data.date).catch(() => undefined);
+    return data;
+  });
 }
 
 export function useAddCardio() {

@@ -19,6 +19,8 @@ FILE = "combat-sports.md"
 NO_CONTACT_RULE = rule_key(FILE, "A head blow with symptoms sets no-contact and refers")
 RED_FLAGS_RULE = rule_key(FILE, "Red flags after a head blow mean emergency care")
 CLEARANCE_RULE = rule_key(FILE, "No sparring until symptom-free with exertion and cleared")
+# La vuelta al contacto por fases, supervisada por un clínico: la que enseña la tarjeta del golpe.
+RETURN_STEPS_RULE = rule_key(FILE, "Return to contact follows a graded clinician-supervised plan")
 MINORS_CUT_RULE = rule_key(FILE, "No weight-cut content for minors, and refer repeated cutters")
 
 ADULT_AGE = 18

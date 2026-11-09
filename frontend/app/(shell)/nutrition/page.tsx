@@ -16,6 +16,8 @@ import {
   loadWater,
   saveWater,
   hydrateRecentNutritionDays,
+  itemSource,
+  roundGrams,
   type Goal,
   type Item,
 } from "@/lib/nutrition";
@@ -244,13 +246,13 @@ export default function NutritionPage() {
           <p data-testid="no-targets-note" className="t-body mt-3 text-xs text-muted">{t("noTargetsNote")}</p>
         )}
         <div className="mt-4 grid grid-cols-3 gap-3" data-testid="macros">
-          <Bar label={t("protein")} val={sum.p} target={macros ? Math.round(macros.protein_g) : null} color="#45e9ff" rule={rules.protein_g?.[0]} />
-          <Bar label={t("carbs")} val={sum.c} target={macros ? Math.round(macros.carbs_g) : null} color="#7b5cff" />
-          <Bar label={t("fat")} val={sum.f} target={macros ? Math.round(macros.fat_g) : null} color="#ffd25a" rule={rules.fat_g?.[0]} />
+          <Bar label={t("protein")} val={sum.p} target={macros ? roundGrams(macros.protein_g) : null} color="#45e9ff" rule={rules.protein_g?.[0]} />
+          <Bar label={t("carbs")} val={sum.c} target={macros ? roundGrams(macros.carbs_g) : null} color="#7b5cff" />
+          <Bar label={t("fat")} val={sum.f} target={macros ? roundGrams(macros.fat_g) : null} color="#ffd25a" rule={rules.fat_g?.[0]} />
         </div>
         {macros && (
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="t-body text-[11px] text-muted">{t("fibreLine", { grams: Math.round(macros.fibre_g) })}</span>
+            <span className="t-body text-[11px] text-muted">{t("fibreLine", { grams: roundGrams(macros.fibre_g) })}</span>
             {rules.fibre_g?.[0] && <EvidenceChip ruleKey={rules.fibre_g[0].key} grade={rules.fibre_g[0].grade} />}
           </div>
         )}
@@ -321,9 +323,18 @@ export default function NutritionPage() {
                 <ul className="mt-3 flex flex-col gap-1.5 border-t border-[rgba(150,190,255,0.1)] pt-3">
                   {its.map((i) => (
                     <li key={i.id} className="flex items-center justify-between gap-2 text-sm">
-                      <span className="t-body min-w-0 flex-1 text-muted">{i.name}{i.grams ? ` · ${i.grams} g` : ""}</span>
+                      <span className="t-body min-w-0 flex-1 text-muted">
+                        {i.name}{i.grams ? ` · ${i.grams} g` : ""}
+                        <span data-testid="diary-source" data-source={itemSource(i)} className="block text-[10px] text-muted/80">
+                          {t(`source.${itemSource(i)}`)}
+                        </span>
+                      </span>
                       <span className="shrink-0 text-ink">{i.kcal} kcal</span>
-                      {confirmItem === i.id ? (
+                      {itemSource(i) === "menu" ? (
+                        // La entrada del menú va ligada a la marca de Hoy: se quita desmarcando la comida allí
+                        <Link href="/today" aria-label={t("menuUnmark", { name: i.name })}
+                          className="t-label shrink-0 px-1 text-[11px] text-neon">{t("menuUnmarkShort")}</Link>
+                      ) : confirmItem === i.id ? (
                         <button onClick={() => onDeleteItem(i.id)}
                           className="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium text-[#03101c]"
                           style={{ background: "#ff5d80" }}>

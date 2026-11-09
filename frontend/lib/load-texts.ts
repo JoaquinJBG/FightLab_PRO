@@ -5,6 +5,7 @@
 import type { useTranslations } from "next-intl";
 import type { LoadMetrics } from "./load";
 import { COMBAT_RULES, type RuleRef } from "./combat-rules";
+import { SAFETY_RULES } from "./safety-rules";
 
 type Tr = ReturnType<typeof useTranslations>;
 
@@ -82,8 +83,9 @@ export function loadBadge(m: LoadMetrics | null, tl: Tr): string {
 /** Cita `[[regla:clave]]` para las respuestas por reglas del chat. */
 export const cite = (r: RuleRef) => ` [[regla:${r.key}]]`;
 
-/** Las citas de un texto con `[[regla:…]]` de las reglas de combate, con su grado. */
-export function combatCitations(text: string): { key: string; grade: string; title: string }[] {
-  const all = Object.values(COMBAT_RULES) as RuleRef[];
+/** Las citas de un texto con `[[regla:…]]` de las reglas que cita el chat por reglas (combate y
+ * seguridad), con su grado. */
+export function ruleCitations(text: string): { key: string; grade: string; title: string }[] {
+  const all = [...Object.values(COMBAT_RULES), ...Object.values(SAFETY_RULES)] as RuleRef[];
   return all.filter((r) => text.includes(`[[regla:${r.key}]]`)).map((r) => ({ key: r.key, grade: r.grade, title: "" }));
 }

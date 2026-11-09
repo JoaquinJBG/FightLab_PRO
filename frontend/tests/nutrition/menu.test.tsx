@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import MenuPage from "@/app/(shell)/nutrition/menu/page";
 import AddFoodPage from "@/app/(shell)/nutrition/add/page";
-import { CATALOGS, mockApi, renderApp } from "../support/app";
+import { CATALOGS, TARGETS, mockApi, renderApp } from "../support/app";
 import { splitWords, type Menu, type MenuState } from "@/lib/menu";
 
 // Fase 8: pantalla "Menú y compra". El servidor propone y el motor comprueba; aquí se pinta con
@@ -90,6 +90,30 @@ describe.each(["es", "en"] as const)("Menú y compra (%s)", (locale) => {
     expect(within(shopping).getAllByTestId("shopping-item")).toHaveLength(2);
     expect(shopping.textContent).toContain(cat.shopping.any);
     expect(shopping.textContent).toContain("olive oil");
+  });
+
+  it("F24: la proteína sale con el mismo redondeo que Nutrición y avisa si los objetivos de hoy cambiaron", async () => {
+    const menu = { ...MENU, targets: { ...MENU.targets, protein_g: 160.5 } }; // Nutrición: Math.round → 161
+    mockApi({
+      "/api/proxy/coach/menu": { body: state({ menu }) },
+      "/api/proxy/coach/products": { body: { products: [] } },
+      "/api/proxy/coach/targets": { body: { ...TARGETS, macros: { ...TARGETS.macros, protein_g: 160.2 } } },
+    });
+    renderApp(<MenuPage />, locale);
+    const protein = (await screen.findAllByTestId("menu-target")).find((x) => x.dataset.key === "protein_g")!;
+    expect(protein.textContent).toContain("161");
+    expect((await screen.findByTestId("menu-targets-changed")).textContent).toContain("160");
+  });
+
+  it("sin cambios en los objetivos no hay aviso", async () => {
+    mockApi({
+      "/api/proxy/coach/menu": { body: state() },
+      "/api/proxy/coach/products": { body: { products: [] } },
+      "/api/proxy/coach/targets": { body: { ...TARGETS, macros: { ...TARGETS.macros, protein_g: 114.6 } } },
+    });
+    renderApp(<MenuPage />, locale);
+    await screen.findByTestId("menu-day");
+    await waitFor(() => expect(screen.queryByTestId("menu-targets-changed")).toBeNull());
   });
 
   it("genera el menú con los días y las comidas elegidas", async () => {

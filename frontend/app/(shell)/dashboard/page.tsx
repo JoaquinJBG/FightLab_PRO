@@ -10,6 +10,7 @@ import { LoadSummary } from "@/components/load/LoadSummary";
 import { ZonesCard } from "@/components/zones/ZonesCard";
 import type { Biometrics } from "@/lib/schemas";
 import { computeRecovery } from "@/lib/recovery";
+import { dailyWeights, latestWeightKg } from "@/lib/body-inputs";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
 import { fetchServerMetrics, fetchServerActivities, serverActivityTs, mergeByClientId, type ActivityKind } from "@/lib/activities";
 import {
@@ -262,15 +263,11 @@ export default function DashboardPage() {
   // El peso y su frescura se calculan sobre el último registro CON peso
   // (el registro más reciente puede ser solo de FC/HRV).
   const lastWeightLog = logs.find((l) => num(l.weight_kg ?? null) !== null);
-  const weight = lastWeightLog ? num(lastWeightLog.weight_kg ?? null) : null;
+  // F28: con dos pesajes el mismo día cuenta la media del día (el mismo criterio en toda la app)
+  const weight = lastWeightLog ? latestWeightKg(logs) : null;
   const lastWeightDays = lastWeightLog ? daysSince(lastWeightLog.timestamp) : null;
 
-  const spark = logs
-    .slice(0, 14)
-    .reverse()
-    .map((l) => num(l.weight_kg))
-    .filter((n): n is number => n !== null)
-    .slice(-7);
+  const spark = dailyWeights(logs.slice(0, 14)).map((d) => d.kg).slice(-7);
 
   const rhrs = logs.map((l) => l.resting_heart_rate).filter((v): v is number => v != null);
   const hrvs = logs.map((l) => l.hrv_ms).filter((v): v is number => v != null);

@@ -210,3 +210,29 @@ describe("suelo calórico", () => {
     expect(within(reason).getByTestId("evidence-chip").getAttribute("data-grade")).toBe("strong");
   });
 });
+
+describe("F6: el diario dice de dónde sale cada entrada", () => {
+  it("la comida del menú marcada en Hoy suma, lleva su origen y se quita desde Hoy", async () => {
+    const d = new Date();
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    localStorage.setItem(`flp_nutri_${iso}`, JSON.stringify([
+      { id: `menu-${iso}-breakfast`, meal: "Desayuno", name: "Avena con yogur", grams: null, kcal: 410, p: 18, c: 60, f: 9,
+        source: "menu", link: `menu:${iso}:breakfast` },
+      { id: "a1", meal: "Desayuno", name: "Plátano", grams: 120, kcal: 107, p: 1, c: 27, f: 0 }, // antigua, sin origen
+      { id: "a2", meal: "Desayuno", name: "Pan", grams: 60, kcal: 150, p: 5, c: 28, f: 1, source: "photo" },
+    ]));
+    mockApi(base());
+    renderApp(<NutritionPage />);
+    await screen.findByText(/\/ 2600 kcal/);
+    expect(screen.getAllByText("667 kcal").length).toBeGreaterThan(0); // el menú suma con lo demás
+    const sources = screen.getAllByTestId("diary-source");
+    expect(sources.map((s) => s.dataset.source)).toEqual(["menu", "manual", "photo"]);
+    expect(sources[0].textContent).toContain("Del menú: marcada «Hecha» en Hoy");
+    expect(sources[1].textContent).toBe("Apuntado a mano");
+    expect(sources[2].textContent).toBe("Foto del plato");
+    // La del menú no se borra aquí: lleva a Hoy, donde se desmarca
+    expect(screen.getByRole("link", { name: /Avena con yogur: se quita desmarcando la comida en Hoy/ }).getAttribute("href")).toBe("/today");
+    expect(screen.queryByRole("button", { name: /Avena con yogur/ })).toBeNull();
+    expect(screen.getByRole("button", { name: /Plátano/ })).toBeTruthy();
+  });
+});

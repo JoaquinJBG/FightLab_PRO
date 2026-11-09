@@ -65,6 +65,7 @@ Strict rules:
 - Use ONLY the data in the "Athlete context" and what the tools return. If a piece of data is missing, say so and suggest logging it in the app. NEVER invent numbers or trends, and never do your own arithmetic: quote numbers only from the context or from a tool result.
 - Every claim or recommendation about training, nutrition, recovery or health must rest on a rule of the evidence base. Look for it with search_rules, read it with get_rule, and cite it in the text as [[regla:key]], using exactly the key a tool returned this turn. Never cite a key the tools did not return, and never write a threshold, dose or "safe range" from memory. If no rule covers the question, say so plainly instead of improvising.
 - The training-load figures in the context (weekly load, the week against the 4-week average, ACWR, monotony...) are descriptive FightLab data. Report the week as a percentage above or below the athlete's own 4-week average, next to how they feel. Do not call a value safe or risky, do not give thresholds and do not claim they predict injury: load-ratio research comes from team sports and has barely been tested in combat sports. With under 28 days of history there is no ratio yet: say how many days are missing.
+- Safety comes first, before any load, intensity or readiness advice. If the athlete mentions pain, an injury, a knock to the head, dizziness, fainting, chest pain, breathlessness, palpitations or a fever, never tell them to train hard, push through or that they have room, whatever the load and recovery data say. Apply the same rule as the app's check-in and screening: after a possible head knock, no training today and no contact until a clinician has assessed them; with chest symptoms, dizziness or fainting, stop and see a doctor; with a fever, no training; with new pain or an injury, do not load that area, and stop and see a doctor if it is sharp, getting worse or comes with numbness or weakness. Find that rule with the tools and cite it.
 - You are not a doctor and you give no medical advice: with pain or symptoms, recommend a health professional. For weight cuts before a weigh-in give only general information, never a prescription, and point to a professional team.
 - No markdown and no lists: plain prose, one to three sentences per idea."""
 
@@ -117,8 +118,31 @@ NO_CONTACT_NOTE = (
     "clearance (no_contact). Do not suggest sparring, clinch, partner drills, live grappling or any "
     "contact work; say that a clinician decides the return to contact; never state a diagnosis, a "
     "number of days or that they are probably fine. For the warning signs, point to the official "
-    "Concussion Recognition Tool 6. Cite combat-sports/a-head-blow-with-symptoms-sets-no-contact-and-refers."
+    "Concussion Recognition Tool 6. This comes before any load, intensity or readiness advice and "
+    "before anything else they ask: the day of the blow, no training at all; until a clinician "
+    "clears them, no contact and no hard training, only light activity that does not clearly "
+    "worsen the symptoms. The return to contact goes step by step and a clinician authorises the "
+    "contact steps. Cite [[regla:combat-sports/a-head-blow-with-symptoms-sets-no-contact-and-refers]] and "
+    "[[regla:combat-sports/return-to-contact-follows-a-graded-clinician-supervised-plan]]."
 )
+NO_CONTACT_RULES = (
+    "combat-sports/a-head-blow-with-symptoms-sets-no-contact-and-refers",
+    "combat-sports/return-to-contact-follows-a-graded-clinician-supervised-plan",
+)
+INJURY_RULE = "recovery-habits/some-pain-during-exercise-is-acceptable-in-chronic-assessed-pain"
+
+
+def injury_note(areas: list[str]) -> str:
+    """Nota de seguridad con las lesiones activas (las del perfil y la de la memoria del coach)."""
+    return (
+        "The athlete has an active injury, saved in the app: "
+        + json.dumps(areas, ensure_ascii=False)
+        + ". Whenever the question touches training, mention it before load advice. Limit only what "
+        "loads that area: no progression there; if no professional has assessed it, no load on it "
+        "until a GP or physiotherapist does; stop and see a doctor with sharp or worsening pain, "
+        "numbness or weakness. Do not stop the rest of the training because of it. "
+        f"Cite [[regla:{INJURY_RULE}]]."
+    )
 NO_CUT_NOTE = (
     "The athlete is under 18. Give no weight-cut or rapid weight-loss information; say that "
     "sports-medicine consensus discourages weight making in young athletes and suggest a doctor or "
@@ -135,6 +159,7 @@ def coach_chat(
     safety_notes: tuple[str, ...] = (),
     memory: dict | None = None,
     on_usage: UsageSink | None = None,
+    safety_rules: tuple[str, ...] = (),
 ) -> CoachReply:
     """Chat del coach con el contexto real del atleta y herramientas de evidencia.
 
@@ -148,6 +173,8 @@ def coach_chat(
     de peso y preferencias de tono/frecuencia. Se lee en el servidor a partir
     de `UserState` (clave `coach_memory`), no del cuerpo que manda el cliente.
     `on_usage` recibe los tokens de cada llamada al modelo (una por vuelta de herramientas).
+    `safety_rules`: las reglas que pide una nota de seguridad del mensaje (F3, `chat_safety`); se dan
+    por recuperadas en el turno para que el modelo las pueda citar sin buscarlas.
     """
     client = _client(timeout=settings.AI_CHAT_TIMEOUT_S)
 
@@ -181,7 +208,7 @@ def coach_chat(
             system += "\n" + freq_note
     if safety_notes:
         system += "\n\nSafety (set by the server, always applies):\n" + "\n".join(f"- {n}" for n in safety_notes)
-    retrieved: set[str] = set()
+    retrieved: set[str] = set(safety_rules)
     convo = list(cleaned)
     for round_ in range(MAX_TOOL_ROUNDS + 1):
         resp = client.messages.create(
