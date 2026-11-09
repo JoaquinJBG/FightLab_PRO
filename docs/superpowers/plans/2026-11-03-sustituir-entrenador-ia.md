@@ -100,7 +100,8 @@
 - Motor en `backend/coaching/product_rating.py`; reglas y fuentes en
   `backend/knowledge_fightlab/food-products.md` (F145 a F148: guía FSA 2016, informe Nutri-Score
   2022, documentación de OFF y anexo XIV del Reglamento 1169/2011), con traducción.
-- Uso: `coaching.chain_catalogue.product_for` / `shopping_for` (y `POST /coach/chain-products/shopping`)
+- Uso: enganche `settings.SHOPPING_CHAIN_PROVIDER` = `coaching.chain_catalogue.chain_product` (acordado con F12),
+  además de `product_for` / `shopping_for` (y `POST /coach/chain-products/shopping`)
   para la lista de la compra de F12; `GET /coach/substitutes` para los sustitutos isocalóricos.
 - Los CSV de cadena están en `.gitignore`; las pruebas usan productos inventados.
 

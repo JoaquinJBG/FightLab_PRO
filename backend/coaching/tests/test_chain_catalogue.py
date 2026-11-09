@@ -3,7 +3,9 @@
 Todos los productos son INVENTADOS (nombres, ids, EAN, valores y precios): nunca se copian filas de
 los archivos reales del usuario, que no tienen licencia para estar en un repositorio público.
 """
+from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils.module_loading import import_string
 import pytest
 
 from coaching import chain_catalogue, chain_import, product_rating
@@ -186,9 +188,12 @@ def test_shopping_list_gives_product_pack_and_cost(client, user):
     first, second = r.data["items"]
     assert first["product"]["name"] == "Pechuga inventada de ave"
     assert first["product"]["pack"] == "Bandeja 500 g"
-    assert first["cost_eur"] == 6.0  # 0,75 kg × 8 €/kg
+    # 750 g piden 2 bandejas de 500 g: se paga 1 kg a 8 €/kg.
+    assert (first["product"]["pack_grams"], first["product"]["packs"]) == (500, 2)
+    assert first["product"]["section"] == "Aves"
+    assert first["cost_eur"] == 8.0
     assert second["product"] is None and second["cost_eur"] is None
-    assert (r.data["total_eur"], r.data["priced"], r.data["unpriced"]) == (6.0, 1, 1)
+    assert (r.data["total_eur"], r.data["priced"], r.data["unpriced"]) == (8.0, 1, 1)
 
 
 def test_shopping_list_of_another_user_is_empty(client, user):
@@ -196,6 +201,69 @@ def test_shopping_list_of_another_user_is_empty(client, user):
     upload(client, TABLE)
     r = chain_catalogue.shopping_for(make_user(), [{"name": "pechuga de pollo, cruda", "grams": 100}])
     assert r["items"][0]["product"] is None and r["total_eur"] is None
+
+
+@pytest.mark.parametrize("pack, grams", [
+    ("Bandeja 500 g", 500), ("Pack 6 x 80 g", 480), ("Brik 1 l", 1000), ("Lata 33 cl", 330),
+    ("Paquete 1,5 kg", 1500), ("Botella 300 ml", 300), ("Caja 6 uds", None), ("", None),
+])
+def test_pack_grams_from_the_pack_text(pack, grams):
+    assert chain_catalogue.pack_grams(pack) == grams
+
+
+def test_hook_for_the_f12_shopping_list_via_settings(client, user):
+    """F12 llama a la función de `settings.SHOPPING_CHAIN_PROVIDER` con la clave del alimento."""
+    upload(client, SCORED)
+    upload(client, TABLE)
+    hook = import_string(settings.SHOPPING_CHAIN_PROVIDER)
+    assert hook is chain_catalogue.chain_product
+    got = hook(user, "pechuga de pollo, cruda", 750)
+    assert got == {
+        "chain": "Mercadona", "product": "Pechuga inventada de ave", "pack": "Bandeja 500 g", "pack_grams": 500,
+        "packs": 2, "section": "Aves", "rating": "bueno", "review": False, "price": 8.0, "price_per_kg": 8.0,
+    }
+    # La clave también vale en inglés o como slug del nombre del motor.
+    assert hook(user, "chicken breast, raw", 100)["packs"] == 1
+    assert hook(user, "pechuga-de-pollo-cruda", 100)["product"] == "Pechuga inventada de ave"
+    # Sin producto para ese alimento, o una clave que no es de ningún alimento: None.
+    assert hook(user, "tofu firme", 100) is None
+    assert hook(user, "no-existe-inventado", 100) is None
+    assert hook(make_user(), "pechuga de pollo, cruda", 100) is None
+
+
+def test_hook_prefers_rating_then_price_and_flags_review(client, user):
+    text = SCORED_HEADER + (
+        # Regular y barata contra buena y cara: gana la buena.
+        "90050,,Arroz caro inventado,,Arroz,Paquete 1 kg,3.00,350,7,77,1,0.2,0.3,0,1,A,1,,,,,,,,,,\n"
+        "90051,,Arroz barato inventado,,Arroz,Paquete 1 kg,1.00,350,7,77,1,0.2,0.3,0,1,C,1,,,,,,,,,,\n"
+        # Sin datos y sin precio: la de no aplica cuenta como sin datos.
+        "90052,,Sal inventada,,Sazonadores,Paquete 1 kg,,0,0,0,0,,,99,,,,,,,,,,,,,\n"
+        # Kcal que no cuadran: review.
+        "90053,,Lenteja inventada,,Legumbres,Paquete 500 g,2.00,200,24,49,1,0.2,1,0,10,A,1,,,,,,,,,,\n"
+    )
+    upload(client, text)
+    table = (
+        "name_es,nombre_mercadona,equivale_a,ean,mercadona_id,kcal,protein_g,carbs_g,fat_g,fibre_g,fuente,valoracion\n"
+        "a,Arroz caro inventado,\"arroz blanco, crudo\",,90050,,,,,,,\n"
+        "b,Arroz barato inventado,\"arroz blanco, crudo\",,90051,,,,,,,\n"
+        "c,Lenteja inventada,\"lentejas, crudas\",,90053,,,,,,,\n"
+    )
+    upload(client, table)
+    rice = chain_catalogue.chain_product(user, "arroz blanco, crudo", 1500)
+    assert (rice["product"], rice["packs"], rice["price"]) == ("Arroz caro inventado", 2, 6.0)
+    lentils = chain_catalogue.chain_product(user, "lentejas, crudas", 400)
+    assert lentils["review"] is True and lentils["packs"] == 1 and lentils["price"] == 1.0
+    # Si el arroz bueno pasa a evitar (Nutri-Score E), gana el regular.
+    ChainProduct.objects.filter(chain_ref="90050").update(nutriscore="E", rating_version=0)
+    assert chain_catalogue.chain_product(user, "arroz blanco, crudo", 100)["product"] == "Arroz barato inventado"
+
+
+def test_shopping_total_matches_the_hook(client, user):
+    upload(client, SCORED)
+    upload(client, TABLE)
+    items = [{"name": "pechuga de pollo, cruda", "grams": 1200}]
+    total = chain_catalogue.shopping_for(user, items)["total_eur"]
+    assert total == chain_catalogue.chain_product(user, "pechuga de pollo, cruda", 1200)["price"] == 12.0
 
 
 # ---------------------------------------------------------------- sustitutos

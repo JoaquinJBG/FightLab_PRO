@@ -2,9 +2,13 @@
 
 - `product_for(user, generic)`: el producto de la cadena que equivale a un alimento genérico del
   motor (`equivale_a`). Si hay varios, el mejor valorado y, a igualdad, el más barato por kilo.
-- `shopping_for(user, items)`: para cada alimento de una lista, su producto, el formato de venta y el
-  coste estimado (`gramos / 1000 × precio_kilo`), y el total de lo que tiene precio. Es lo que
-  llama la lista de la compra de la fase 12 (función o `POST /coach/chain-products/shopping`).
+- `chain_product(user, food_key, grams)`: el enganche de la lista de la compra de la fase 12
+  (`settings.SHOPPING_CHAIN_PROVIDER` apunta aquí; el lado de F12 está en `coaching/shopping.py`):
+  producto, formato, envases que hacen falta, sección, valoración y precio de esos envases.
+- `shopping_for(user, items)`: lo mismo para una lista entera, con el total de lo que tiene
+  precio (también por `POST /coach/chain-products/shopping`).
+- Coste, igual en los dos: con el peso del envase (`pack_grams`, leído del formato), envases ×
+  peso del envase / 1000 × `precio_kilo`, que es lo que se paga; sin él, gramos / 1000 × `precio_kilo`.
 - `substitutes(user, name, grams)`: sustitutos isocalóricos de un alimento, como hacía ParteDiario:
   la misma energía con un reparto de macros parecido. Los `evitar` se penalizan y van al final.
 
@@ -12,11 +16,15 @@ Lo que se guarda es del usuario y no sale de su cuenta.
 """
 from __future__ import annotations
 
+import math
+import re
+
 from coach import foods
 from coach.text import fold
 
 from . import product_rating
 from .chain_import import apply_rating
+from .keys import slugify
 from .models import ChainProduct
 
 SHOPPING_MAX_ITEMS = 300
@@ -115,17 +123,70 @@ def delete_all(user, chain: str | None = None) -> int:
 # ---------------------------------------------------------------- lista de la compra
 
 
+# Orden para elegir producto: bueno > regular > sin datos (y no aplica) > evitar; luego los que no
+# hay que revisar y luego el más barato por kilo.
+CHOICE_ORDER = {product_rating.GOOD: 0, product_rating.FAIR: 1, product_rating.NO_DATA: 2,
+                product_rating.NOT_FOOD: 2, product_rating.AVOID: 3}
+# Los valores de `rating` del enganche de F12 (sin espacios).
+HOOK_RATING = {product_rating.GOOD: "bueno", product_rating.FAIR: "regular", product_rating.AVOID: "evitar",
+               product_rating.NO_DATA: "sin_datos", product_rating.NOT_FOOD: "no_aplica"}
+UNIT_GRAMS = {"kg": 1000, "g": 1, "l": 1000, "cl": 10, "ml": 1}  # ml ≈ g, como en el resto del motor
+_NUM = r"(\d+(?:[.,]\d+)?)"
+PACK_MULTI = re.compile(rf"{_NUM}\s*[x×]\s*{_NUM}\s*(kg|g|l|cl|ml)\b", re.IGNORECASE)
+PACK_SINGLE = re.compile(rf"{_NUM}\s*(kg|g|l|cl|ml)\b", re.IGNORECASE)
+
+
 def _rank(p: ChainProduct) -> tuple:
     price = p.price_per_kg if p.price_per_kg is not None else float("inf")
-    return (product_rating.RATING_ORDER.get(p.rating, 9), p.label_check == product_rating.REVIEW, price, p.name)
+    return (CHOICE_ORDER.get(p.rating, 9), p.label_check == product_rating.REVIEW, price, p.name)
+
+
+def pack_grams(pack: str) -> float | None:
+    """El peso (o volumen) de un envase según su formato: "Bandeja 500 g" → 500, "Pack 6 x 80 g"
+    → 480, "Brik 1 l" → 1000. `None` si el formato no dice cuánto lleva ("Caja 6 uds")."""
+    text = (pack or "").replace(" ", " ")
+    if m := PACK_MULTI.search(text):
+        count, size, unit = m.groups()
+        return float(count.replace(",", ".")) * float(size.replace(",", ".")) * UNIT_GRAMS[unit.lower()]
+    if m := PACK_SINGLE.search(text):
+        size, unit = m.groups()
+        return float(size.replace(",", ".")) * UNIT_GRAMS[unit.lower()]
+    return None
+
+
+def packs_for(grams: float, p: ChainProduct) -> int:
+    """Envases para cubrir `grams`, redondeando hacia arriba (1 si no se sabe lo que lleva uno)."""
+    if grams <= 0:
+        return 0
+    size = pack_grams(p.pack)
+    return math.ceil(grams / size - 1e-9) if size else 1
+
+
+def _cost(grams: float | None, p: ChainProduct | None) -> float | None:
+    """Lo que cuesta comprar `grams`: los envases enteros si se sabe su peso; si no, los gramos."""
+    if p is None or p.price_per_kg is None or grams is None:
+        return None
+    size = pack_grams(p.pack)
+    bought = packs_for(grams, p) * size if size else grams
+    return round(bought / 1000 * p.price_per_kg, 2)
+
+
+def _engine_food(key: str) -> foods.Food | None:
+    """El alimento del motor por su nombre (es o en, sin tildes) o por el slug de su nombre."""
+    from .menus import _engine_table  # import tardío: `menus` carga el motor entero
+
+    table = list(_engine_table(None))
+    food = foods.find(key, table)
+    if food is None:
+        slug = slugify(key)
+        food = next((f for f in table if slug and slug in (slugify(f.name_en), slugify(f.name_es))), None)
+    return food
 
 
 def _generic_keys(name: str) -> set[str]:
     """El nombre tal cual y, si es un alimento del motor, su nombre en el otro idioma."""
     keys = {fold(name)}
-    from .menus import _engine_table  # import tardío: `menus` carga el motor entero
-
-    food = foods.find(name, list(_engine_table(None)))
+    food = _engine_food(name)
     if food is not None:
         keys |= {fold(food.name_es), fold(food.name_en)}
     return keys - {""}
@@ -135,14 +196,33 @@ def product_for(user, generic: str, chain: str | None = None) -> ChainProduct | 
     rows = ChainProduct.objects.filter(profile=user.profile, equivalent_key__in=_generic_keys(generic))
     if chain:
         rows = rows.filter(chain=chain)
-    rows = [p for p in refresh(rows) if p.rating != product_rating.NOT_FOOD]
-    return min(rows, key=_rank, default=None)
+    return min(refresh(rows), key=_rank, default=None)
 
 
-def _cost(grams: float | None, p: ChainProduct | None) -> float | None:
-    if p is None or p.price_per_kg is None or grams is None:
+def chain_product(user, food_key: str, grams: float) -> dict | None:
+    """El enganche de la lista de la compra de F12 (`settings.SHOPPING_CHAIN_PROVIDER`).
+
+    `food_key` es la clave del alimento del motor; se traduce a sus nombres es/en. `None` si la
+    clave no es de ningún alimento o el usuario no tiene producto para él."""
+    food = _engine_food(str(food_key or "").strip())
+    if food is None:
         return None
-    return round(grams / 1000 * p.price_per_kg, 2)
+    product = product_for(user, food.name_es)
+    if product is None:
+        return None
+    grams = max(float(grams or 0), 0.0)
+    return {
+        "chain": product.chain,
+        "product": product.name,
+        "pack": product.pack or None,
+        "pack_grams": pack_grams(product.pack),
+        "packs": packs_for(grams, product),
+        "section": product.category or None,
+        "rating": HOOK_RATING.get(product.rating),
+        "review": product.label_check == product_rating.REVIEW,
+        "price": _cost(grams, product),
+        "price_per_kg": product.price_per_kg,
+    }
 
 
 def shopping_for(user, items: list[dict], chain: str | None = None) -> dict:
@@ -153,8 +233,7 @@ def shopping_for(user, items: list[dict], chain: str | None = None) -> dict:
     refresh(rows)
     by_key: dict[str, list[ChainProduct]] = {}
     for p in rows:
-        if p.rating != product_rating.NOT_FOOD:
-            by_key.setdefault(p.equivalent_key, []).append(p)
+        by_key.setdefault(p.equivalent_key, []).append(p)
     out, total, priced = [], 0.0, 0
     for item in items[:SHOPPING_MAX_ITEMS]:
         name = str(item.get("name") or "").strip()
@@ -171,6 +250,9 @@ def shopping_for(user, items: list[dict], chain: str | None = None) -> dict:
             "grams": grams,
             "product": None if product is None else {
                 "id": product.pk, "chain": product.chain, "name": product.name, "pack": product.pack,
+                "pack_grams": pack_grams(product.pack),
+                "packs": packs_for(grams, product) if grams is not None else None,
+                "section": product.category or None,
                 "price_per_kg": product.price_per_kg, "rating": product.rating, "check": product.label_check or None,
             },
             "cost_eur": cost,
