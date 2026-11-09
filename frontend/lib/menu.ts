@@ -309,6 +309,9 @@ export function useMenu(id?: number | null) {
   return useQuery<MenuState>({
     queryKey: id ? ["menu", id] : ["menu"],
     queryFn: async () => menuState.parse(await send(`${BASE}/menu${id ? `?id=${id}` : ""}`, "GET")),
+    // Al cambiar de menú se sigue viendo el anterior hasta que llega el nuevo (no se desmonta la
+    // pantalla, p. ej. el aviso de "importado").
+    placeholderData: (previous) => previous,
   });
 }
 
