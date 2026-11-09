@@ -22,6 +22,7 @@ const djangoFetch = vi.fn();
 vi.mock("@/lib/api", () => ({ djangoRequest, djangoFetch }));
 
 const { POST } = await import("./route");
+const { resetRefreshFlights } = await import("@/lib/refresh-flight");
 
 function fakeJwt(payload: Record<string, unknown>): string {
   const b64url = (obj: unknown) => Buffer.from(JSON.stringify(obj)).toString("base64url");
@@ -48,6 +49,7 @@ function ctx(path: string[]) {
 }
 
 beforeEach(() => {
+  resetRefreshFlights();
   cookieStore.clear();
   djangoRequest.mockReset();
   djangoFetch.mockReset();
@@ -388,5 +390,56 @@ describe("POST /api/proxy/[...path] — contrato de fallo del refresh", () => {
 
     expect(res.status).toBe(200);
     expect(cookieStore.get("fl_access")).toBe("nueva");
+  });
+});
+
+describe("POST /api/proxy/[...path] — un solo refresh a la vez (F30)", () => {
+  test("4 peticiones simultáneas con el access caducado hacen un único POST /auth/refresh", async () => {
+    cookieStore.set("fl_access", "caducada");
+    cookieStore.set("fl_refresh", fakeJwt({ exp: Math.floor(Date.now() / 1000) + 3600, jti: "f30" }));
+    djangoRequest.mockImplementation(async (_path: string, opts: { access: string | null }) =>
+      opts.access === "access-nueva" ? jsonResponse({ ok: true }) : jsonResponse({ detail: "expired" }, 401),
+    );
+    let release!: () => void;
+    const gate = new Promise<void>((r) => { release = r; });
+    djangoFetch.mockImplementation(async () => {
+      await gate; // el refresh tarda: las cuatro llegan mientras está en curso
+      return { status: 200, data: { access: "access-nueva", refresh: "refresh-nueva" } };
+    });
+
+    const all = Promise.all([1, 2, 3, 4].map(() => POST(makeReq(), ctx(["me", "state", "foo"]))));
+    await new Promise((r) => setTimeout(r, 10));
+    release();
+    const res = await all;
+
+    expect(res.map((r) => r.status)).toEqual([200, 200, 200, 200]);
+    expect(djangoFetch.mock.calls.filter(([p]) => p === "/auth/refresh")).toHaveLength(1);
+    expect(cookieStore.get("fl_access")).toBe("access-nueva");
+  });
+
+  test("una que llega justo después, aún con la cookie vieja, reutiliza el refresh bueno", async () => {
+    const old = fakeJwt({ exp: Math.floor(Date.now() / 1000) + 3600, jti: "f30b" });
+    djangoRequest.mockImplementation(async (_path: string, opts: { access: string | null }) =>
+      opts.access === "access-nueva" ? jsonResponse({ ok: true }) : jsonResponse({ detail: "expired" }, 401),
+    );
+    djangoFetch.mockResolvedValue({ status: 200, data: { access: "access-nueva", refresh: "refresh-nueva" } });
+    for (let i = 0; i < 2; i++) {
+      cookieStore.set("fl_access", "caducada");
+      cookieStore.set("fl_refresh", old);
+      expect((await POST(makeReq(), ctx(["me", "state", "foo"]))).status).toBe(200);
+    }
+    expect(djangoFetch).toHaveBeenCalledTimes(1);
+  });
+
+  test("un refresh que falla no se reutiliza: el siguiente lo vuelve a intentar", async () => {
+    const valid = fakeJwt({ exp: Math.floor(Date.now() / 1000) + 3600, jti: "f30c" });
+    djangoRequest.mockResolvedValue(jsonResponse({ detail: "expired" }, 401));
+    djangoFetch.mockResolvedValue({ status: 500, data: {} });
+    for (let i = 0; i < 2; i++) {
+      cookieStore.set("fl_access", "caducada");
+      cookieStore.set("fl_refresh", valid);
+      expect((await POST(makeReq(), ctx(["me", "state", "foo"]))).status).toBe(503);
+    }
+    expect(djangoFetch).toHaveBeenCalledTimes(2);
   });
 });
