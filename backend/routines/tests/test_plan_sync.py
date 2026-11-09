@@ -75,7 +75,7 @@ def test_sync_creates_one_routine_per_session(today_fixed):
 
     start = client.get(f"{ROUTINES}/{routines[0].id}/start").data
     squat, bench, row = start["exercises"]
-    assert squat["exercise_key"] == "cat:barbell-squat" and squat["name"] == "Sentadilla"
+    assert squat["exercise_key"] == "cat:barbell-back-squat" and squat["name"] == "Sentadilla"
     assert len(squat["sets"]) == 3
     assert squat["sets"][0] == {"set_type": "normal", "reps": 8, "reps_max": 12, "weight_kg": 80.0, "rpe": None, "rir": 3.0}
     assert bench["sets"][0]["reps"] == 6 and bench["sets"][0]["weight_kg"] == 60.0
@@ -179,7 +179,7 @@ def test_start_warns_about_paused_lift(today_fixed):
     user = make_user(injuries=[{"area": "rodilla", "status": "active", "exercises": ["Sentadilla"]}])
     client = client_for(user)
     body = {"title": "Pierna", "exercises": [
-        {"exercise_key": "cat:barbell-squat", "name": "Sentadilla", "sets": [{"reps": 5}]},
+        {"exercise_key": "cat:barbell-back-squat", "name": "Sentadilla", "sets": [{"reps": 5}]},
         {"exercise_key": "cat:leg-curl", "name": "Curl femoral", "sets": [{"reps": 10}]},
     ]}
     rid = client.post(ROUTINES, body, format="json").data["id"]

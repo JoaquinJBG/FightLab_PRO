@@ -7,7 +7,8 @@ import pytest
 
 from coaching.keys import rule_key
 from routines import programs
-from routines.catalog import LIBRARY_KEYS
+from exercises.catalog import catalog_by_key
+from routines.catalog import resolve_key
 from routines.models import Routine, RoutineFolder
 from routines.serializers import EXERCISE_KEY_RE
 
@@ -48,7 +49,7 @@ def test_program_data_is_sound(program):
         groups = [ex["superset"] for ex in day["exercises"] if ex["superset"] is not None]
         assert all(groups.count(g) >= 2 for g in groups)  # una superserie son 2 o más
         for ex in day["exercises"]:
-            assert ex["exercise"] in LIBRARY_KEYS, ex["exercise"]
+            assert resolve_key(ex["exercise"]) in catalog_by_key(), ex["exercise"]
             low, high = ex["reps"]
             assert 1 <= low <= high <= 30
             assert 1 <= ex["sets"] <= 5 and 0 <= ex["warmup"] <= 3
@@ -56,16 +57,16 @@ def test_program_data_is_sound(program):
             assert ex["rir"] is None or 0 <= ex["rir"] <= 4
 
 
-def test_library_keys_follow_the_contract_and_cover_gym_ts():
-    for key, _ in LIBRARY_KEYS.values():
-        assert EXERCISE_KEY_RE.match(key) and key.startswith("cat:")
-    assert len({k for k, _ in LIBRARY_KEYS.values()}) == len(LIBRARY_KEYS)
-    # Los 30 nombres de LIBRARY del frontend, ni uno más ni uno menos.
+def test_every_library_name_has_a_catalog_key():
+    """Los 30 nombres de LIBRARY del frontend (los del plan por reglas) tienen clave `cat:`."""
     source = GYM_LIBRARY.read_text(encoding="utf-8")
     block = source.split("export const LIBRARY", 1)[1].split("];", 1)[0]
-    names = set(re.findall(r'"([^"]+)"', block)) - {"group", "items"}
     groups = set(re.findall(r'group: "([^"]+)"', block))
-    assert names - groups == set(LIBRARY_KEYS)
+    names = set(re.findall(r'"([^"]+)"', block)) - groups
+    assert len(names) == 30
+    for name in names:
+        key = resolve_key(name)
+        assert key and EXERCISE_KEY_RE.match(key) and key in catalog_by_key(), name
 
 
 @pytest.mark.django_db
@@ -119,4 +120,4 @@ def test_english_names_when_loading_in_english():
     _, client = make_client()
     data = client.post(f"{PROGRAMS}/ppl-3/load", HTTP_ACCEPT_LANGUAGE="en").data
     assert data["folder"]["name"] == "Push/pull/legs, 3 days"
-    assert data["routines"][0]["exercises"][0]["name"] == "Barbell bench press"
+    assert data["routines"][0]["exercises"][0]["name"] == "Bench press (barbell)"

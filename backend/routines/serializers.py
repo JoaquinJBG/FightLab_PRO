@@ -146,6 +146,7 @@ def routine_summary(routine: Routine) -> dict:
         "folder": routine.folder_id,
         "order": routine.order,
         "source": routine.source,
+        "source_ref": routine.source_ref,
         "exercise_count": len(exercises),
         "set_count": sum(len(e.sets) for e in exercises),
         "exercise_names": [e.name for e in exercises],
