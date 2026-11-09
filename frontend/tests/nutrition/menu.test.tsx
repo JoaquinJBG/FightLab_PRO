@@ -39,7 +39,7 @@ const MENU: Menu = {
     },
     eve: [],
   }],
-  rejected: [{ date: "2026-10-30", check: { kcal: "under", protein_g: "ok", fat_g: "ok", fibre_g: "ok" }, unknown: [], repeats: false, blocking: [{ kind: "allergy", entry: "peanut" }], empty: false }],
+  rejected: [{ date: "2026-10-30", check: { kcal: "under", protein_g: "ok", fat_g: "ok", fibre_g: "ok" }, unknown: [], repeats: false, blocking: [{ kind: "allergy", entry: "peanut" }], empty: false, missing: [] }],
   taste_flags: [{ date: "2026-10-29", dish: "Lentil stew with chicken and vegetables", kind: "disliked", where: "item", entry: "onion", text: "onion", blocking: false }],
   targets: { kcal: 2650, protein_g: 115, fat_min_g: 59, fibre_g: 25, in_deficit: false },
   rules: { kcal: [RULE], protein_g: [RULE], fat_g: [RULE], fibre_g: [RULE] },

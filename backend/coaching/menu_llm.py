@@ -12,7 +12,7 @@ No hay proveedor real: nunca se llama a la API de Anthropic, aunque haya `ANTHRO
 """
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 
 from coach import foods, mealplan
 from coach.tastes import matches
@@ -28,6 +28,10 @@ from .menu_dishes import DISHES
 KCAL_AIM = 1.025
 # Listas de gustos que el simulado evita al elegir (el motor las vuelve a mirar después).
 AVOIDED = ("allergies", "intolerances", "disliked_foods", "untried")
+# convention (FightLab), R3-1: si para una comida ya no queda ningún plato que valga (comensales,
+# gustos, tupper y sin repetir en 7 días), se busca entre los platos de esta otra comida antes de
+# dejarla vacía; un día sin una comida pedida no se da por comprobado.
+FALLBACK_MEALS = {"dinner": ("lunch",), "lunch": ("dinner",), "breakfast": ("snack",), "snack": ("breakfast",)}
 
 
 def _names(item: str, ctx) -> tuple[str, ...]:
@@ -39,7 +43,7 @@ def _names(item: str, ctx) -> tuple[str, ...]:
 def _clashes(dish: dict, ctx, meal: str = "") -> bool:
     """¿Choca el plato con algo que el atleta evita, o con un comensal de esa comida (fase 12)?
     Por nombre, como `mealplan.taste_flags` y `kitchen.diner_flags`."""
-    texts = [(dish["dish"],), *((s,) for s in dish["seasoning"]), *(_names(i, ctx) for i in dish["items"])]
+    texts = [(dish["dish"],), *((s,) for s in dish.get("seasoning") or []), *(_names(i, ctx) for i in dish["items"])]
     if kitchen.dish_clash(getattr(ctx, "diners", []) or [], meal, texts):
         return True
     for attribute in AVOIDED:
@@ -108,11 +112,22 @@ class FakeMenuProposer:
         meals = []
         for offset, meal in enumerate(ctx.meals):
             tupper = meal in ctx.tupper_meals
-            options = [
-                d for d in self._candidates(ctx, meal)
-                if fold(d["dish"]) not in taken and (d["tupper_ok"] or not tupper) and not _clashes(d, ctx, meal)
-            ]
-            if not options:  # nada que proponer: el motor rechazará el día
+            def fits(d, meal=meal, tupper=tupper):
+                return fold(d["dish"]) not in taken and (d["tupper_ok"] or not tupper) and not _clashes(d, ctx, meal)
+
+            options = [d for d in self._candidates(ctx, meal) if fits(d)]
+            if not options:  # otro plato que valga, de la comida más parecida
+                options = [d for other in FALLBACK_MEALS.get(meal, ()) for d in self._candidates(ctx, other) if fits(d)]
+            if not options and getattr(ctx, "batch", False):
+                # Con batch: el plato del día anterior en esta comida, como tanda de 2 raciones (mismo
+                # plato y mismas cantidades, que es lo que pide `mealplan.batches`).
+                pair = self._batch_pair(ctx, when, meal, tupper)
+                if pair is not None:
+                    taken.add(fold(pair["dish"]))
+                    meals.append({"meal": meal, **({"tupper": True} if tupper else {}), "dishes": [pair]})
+                    ctx.picked[(when.isoformat(), meal)] = pair
+                    continue
+            if not options:  # nada que proponer: el día no sale comprobado (`menus.missing_meals`)
                 continue
             # El recetario del atleta va antes que los platos nuevos (paso 4 de `/menu`); en el
             # último intento se prueba con todo.
@@ -122,25 +137,51 @@ class FakeMenuProposer:
             taken.add(fold(pick["dish"]))
             dish = {k: v for k, v in pick.items() if k not in ("tupper_ok", "own") and (v or k == "items")}
             meals.append({"meal": meal, **({"tupper": True} if tupper else {}), "dishes": [dish]})
+            ctx.picked[(when.isoformat(), meal)] = dish
         if meals:
             self._fit(ctx, meals)
         ctx.chosen[when.isoformat()] = [d["dish"] for m in meals for d in m["dishes"]]
         return {"date": when.isoformat(), "meals": meals}
 
+    def _batch_pair(self, ctx, when: date, meal: str, tupper: bool) -> dict | None:
+        """La segunda ración de una tanda: el plato de ayer en esta comida (o en la de reserva), si
+        aún no es tanda y lo puede comer la mesa en esta comida. Las dos apariciones llevan
+        `servings: 2` y las mismas cantidades."""
+        yesterday = (when - timedelta(days=1)).isoformat()
+        for other in (meal, *FALLBACK_MEALS.get(meal, ())):
+            prev = ctx.picked.get((yesterday, other))
+            if prev is None or prev.get("servings", 1) > 1 or not tupper:
+                continue
+            if _clashes(prev, ctx, meal):
+                continue
+            prev["servings"] = 2
+            return {**prev, "items": list(prev["items"]), "seasoning": list(prev.get("seasoning") or []), "_fixed": True}
+        return None
+
     def _fit(self, ctx, meals: list[dict]) -> None:
-        """Escala las raciones del día con los totales del motor (`ctx.totals`) hacia el objetivo."""
+        """Escala las raciones del día con los totales del motor (`ctx.totals`) hacia el objetivo.
+        La segunda ración de una tanda (`_fixed`) no se escala: tiene que ser igual que la primera."""
         target = ctx.targets["kcal"] * KCAL_AIM
         for _ in range(3):
             items = [i for m in meals for d in m["dishes"] for i in d["items"]]
             totals = ctx.totals(items)
             if totals.unknown or "kcal" in totals.missing or totals.kcal <= 0:
-                return
-            factor = target / totals.kcal
-            if abs(factor - 1) < 0.005:
-                return
+                break
+            fixed = [i for m in meals for d in m["dishes"] if d.get("_fixed") for i in d["items"]]
+            fixed_kcal = ctx.totals(fixed).kcal if fixed else 0.0
+            free = totals.kcal - fixed_kcal
+            if free <= 0:
+                break
+            factor = (target - fixed_kcal) / free
+            if abs(factor - 1) < 0.005 or factor <= 0:
+                break
             for meal in meals:
                 for dish in meal["dishes"]:
-                    dish["items"] = _scaled(dish["items"], factor)
+                    if not dish.get("_fixed"):
+                        dish["items"] = _scaled(dish["items"], factor)
+        for meal in meals:
+            for dish in meal["dishes"]:
+                dish.pop("_fixed", None)
 
 
 PROVIDERS = {"fake": FakeMenuProposer}

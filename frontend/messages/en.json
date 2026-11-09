@@ -2305,7 +2305,8 @@
       "empty": "no dish fitted your tastes",
       "repeats": "it repeated a dish",
       "blocking": "{kind}: {entry}",
-      "unknown": "unknown foods: {list}"
+      "unknown": "unknown foods: {list}",
+      "missing": "{meal} missing: no dish left that every diner can eat, fits a lunchbox if you asked for one and does not repeat within 7 days"
     },
     "flags": {
       "title": "Notes from your tastes",

@@ -2305,7 +2305,8 @@
       "empty": "no había platos que encajen con tus gustos",
       "repeats": "repetía un plato",
       "blocking": "{kind}: {entry}",
-      "unknown": "alimentos desconocidos: {list}"
+      "unknown": "alimentos desconocidos: {list}",
+      "missing": "falta {meal}: no queda ningún plato que puedan comer todos los comensales, que vaya en tupper si lo pediste y que no se repita en 7 días"
     },
     "flags": {
       "title": "Avisos por tus gustos",

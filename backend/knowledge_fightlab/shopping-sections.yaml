@@ -1,0 +1,77 @@
+# FightLab convention: default supermarket sections for the shopping list.
+#
+# Part of FightLab's evidence annex, but not evidence: a word list that puts a shopping-list line in
+# a supermarket section when neither the menu nor the user's chain catalogue gives one. The coach's
+# engine has no food categories. Matching is by whole words, case and accents ignored, singular or
+# plural (coach.tastes.matches), against the food's name in Spanish and English; the first section
+# that matches wins, so the order matters (for example "leche de coco" must reach Conservas before
+# Lácteos reads "leche"). It is not complete: a food it does not name goes to "Otros". Review or
+# extend it here; the logic in coaching/shopping.py does not change. This content belongs to
+# FightLab and is licensed CC BY 4.0. Checked on 2026-11-09.
+
+label: FightLab convention
+checked_on: 2026-11-09
+other: {es: Otros, en: Other}
+sections:
+  - key: drinks
+    es: Bebidas
+    en: Drinks
+    words: [cafe, te, infusion, bebida vegetal, bebida de avena, bebida de soja, zumo, coffee, tea, juice, plant milk]
+  - key: tins
+    es: Conservas
+    en: Tins and jars
+    words: [conserva, en conserva, leche de coco, tomate triturado, tomate frito, salsa de tomate, pimiento del piquillo,
+            canned, tinned, coconut milk, tomato sauce]
+  - key: fish
+    es: Pescadería
+    en: Fish and seafood
+    words: [merluza, lubina, dorada, bacalao, salmon, sardina, boqueron, caballa, trucha, rape, emperador, lenguado,
+            rodaballo, abadejo, pescadilla, atun fresco, gamba, langostino, mejillon, almeja, calamar, sepia, pulpo,
+            hake, sea bass, cod, salmon, sardine, mackerel, trout, prawn, shrimp, mussel, squid, octopus]
+  - key: meat
+    es: Carnicería
+    en: Meat
+    words: [pollo, pavo, ternera, cerdo, cordero, conejo, vacuno, carne picada, contramuslo, pechuga, solomillo, lomo,
+            hamburguesa, jamon, chorizo, salchicha, bacon, chicken, turkey, beef, pork, lamb, rabbit, mince, ham, sausage]
+  - key: eggs
+    es: Huevos
+    en: Eggs
+    words: [huevo, clara de huevo, egg, egg white]
+  - key: dairy
+    es: Lácteos
+    en: Dairy
+    words: [leche, yogur, queso, nata, mantequilla, kefir, requeson, cottage, milk, yoghurt, yogurt, cheese, cream, butter]
+  - key: legumes
+    es: Legumbres
+    en: Pulses
+    words: [lenteja, garbanzo, alubia, judia blanca, guisante seco, soja, edamame, tofu, lentil, chickpea, bean, pea, soy]
+  - key: bakery
+    es: Panadería y cereales
+    en: Bread and cereals
+    words: [pan, tostada, arroz, pasta, macarrones, espaguetis, fideo, cuscus, quinoa, avena, copos de avena, harina,
+            tortita, tortilla de trigo, cereal, galleta, bread, toast, rice, pasta, noodle, couscous, quinoa, oats,
+            flour, cracker, biscuit]
+  - key: nuts
+    es: Frutos secos y semillas
+    en: Nuts and seeds
+    words: [nuez, almendra, avellana, pistacho, anacardo, cacahuete, crema de cacahuete, semillas, chia, lino, sesamo,
+            walnut, almond, hazelnut, pistachio, cashew, peanut, peanut butter, seed, chia, flaxseed, sesame]
+  - key: oils
+    es: Aceites, especias y salsas
+    en: Oils, spices and sauces
+    words: [aceite, vinagre, sal, pimienta, especia, pimenton, comino, curry, oregano, canela, salsa de soja, mostaza,
+            oil, vinegar, salt, black pepper, spice, paprika, cumin, cinnamon, soy sauce, mustard]
+  - key: supplements
+    es: Suplementos
+    en: Supplements
+    words: [proteina de suero, proteina en polvo, whey, protein powder]
+  - key: produce
+    es: Frutas y verduras
+    en: Fruit and vegetables
+    words: [tomate, cebolla, ajo, pimiento, calabacin, berenjena, zanahoria, brocoli, coliflor, espinaca, lechuga,
+            pepino, judia verde, esparrago, champinon, seta, patata, boniato, puerro, apio, aguacate, platano, manzana,
+            pera, naranja, mandarina, kiwi, fresa, frambuesa, arandano, mango, uva, melon, sandia, limon, lima,
+            verdura, fruta, tomato, onion, garlic, pepper, courgette, zucchini, aubergine, carrot, broccoli,
+            cauliflower, spinach, lettuce, cucumber, green bean, asparagus, mushroom, potato, sweet potato, leek,
+            celery, avocado, banana, apple, pear, orange, kiwi, strawberry, raspberry, blueberry, mango, grape,
+            melon, lemon, lime]
