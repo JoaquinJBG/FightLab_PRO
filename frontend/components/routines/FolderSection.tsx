@@ -45,7 +45,7 @@ export function FolderSection({ folder, routines, folders, controls }: Props) {
           <span className={`text-muted transition-transform ${open ? "rotate-90" : ""}`} aria-hidden>
             ›
           </span>
-          <span className="t-eyebrow truncate text-ink">{title}</span>
+          <span className="t-eyebrow min-w-0 break-words text-ink">{title}</span>
           <span className="t-label text-muted">{routines.length}</span>
           {folder?.kind === "plan" && <span className="t-label rounded-full border border-white/20 px-2 text-neon">{t("folders.plan")}</span>}
           {folder?.kind === "program" && <span className="t-label rounded-full border border-white/20 px-2 text-muted">{t("folders.program")}</span>}

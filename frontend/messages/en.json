@@ -2861,6 +2861,7 @@
     "duplicate": "Duplicate",
     "edit": "Edit",
     "start": "Start workout",
+    "startShort": "Start",
     "loading": "Loading…",
     "loadError": "Couldn't load your routines. Check your connection and try again.",
     "saveError": "Couldn't save. Check the data and try again.",
@@ -2946,7 +2947,8 @@
         "normal": "N",
         "drop": "D",
         "failure": "F"
-      }
+      },
+      "effortUse": "Use {mode}"
     },
     "programs": {
       "title": "Classic programs",

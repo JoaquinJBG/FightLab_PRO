@@ -60,7 +60,7 @@ export function RoutineCard({ routine, folders, controls }: Props) {
 
       <div className="mt-3 flex gap-2">
         <Link href={START_PATH(routine.id)} data-testid="routine-start" className="btn btn-primary btn-sm flex-1">
-          {t("start")}
+          {t("startShort")}
         </Link>
         <Link href={`/training/routines/${routine.id}`} data-testid="routine-edit" className="btn btn-tonal btn-sm flex-1">
           {t("edit")}

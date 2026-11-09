@@ -103,14 +103,18 @@ export function SetRow({ set, index, normalIndex, effort, exerciseName, onChange
     set.set_type === "warmup" ? "text-warn" : set.set_type === "drop" ? "text-neon" : set.set_type === "failure" ? "text-[var(--color-bad)]" : "text-ink";
   return (
     <div data-testid="set-row" data-set-type={set.set_type} className="grid grid-cols-[2.6rem_1fr_1fr_1.2fr_1fr_1.6rem] items-center gap-1">
-      <label className="relative">
-        <span className={`t-label pointer-events-none absolute inset-0 flex items-center justify-center ${typeColor}`} aria-hidden>
+      {/* La insignia (C, 1, 2, D, F) es lo que se ve; encima, el select invisible que la cambia. */}
+      <label className="relative block h-9">
+        <span
+          className={`field t-title pointer-events-none absolute inset-0 flex items-center justify-center text-sm ${typeColor}`}
+          aria-hidden
+        >
           {setBadge(set.set_type, normalIndex, t)}
         </span>
         <select
           data-testid="set-type"
           aria-label={t("setTypeFor", { n, name: exerciseName })}
-          className="field w-full appearance-none !bg-none px-0 py-1.5 text-center text-sm text-transparent"
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
           value={set.set_type}
           onChange={(e) => onChange({ ...set, set_type: e.target.value as SetType })}
         >

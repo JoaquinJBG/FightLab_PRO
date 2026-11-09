@@ -2861,6 +2861,7 @@
     "duplicate": "Duplicar",
     "edit": "Editar",
     "start": "Empezar entreno",
+    "startShort": "Empezar",
     "loading": "Cargando…",
     "loadError": "No se han podido cargar las rutinas. Comprueba la conexión y vuelve a intentarlo.",
     "saveError": "No se ha podido guardar. Revisa los datos y vuelve a intentarlo.",
@@ -2946,7 +2947,8 @@
         "normal": "N",
         "drop": "D",
         "failure": "F"
-      }
+      },
+      "effortUse": "Usar {mode}"
     },
     "programs": {
       "title": "Programas clásicos",

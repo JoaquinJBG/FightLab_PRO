@@ -78,11 +78,11 @@ export function ExerciseBlock(props: Props) {
       />
 
       <div className="mt-2 flex items-center justify-between gap-2">
-        <label className="t-label flex items-center gap-2 text-muted">
+        <label className="t-label flex min-w-0 items-center gap-2 text-muted">
           {t("rest")}
           <select
             data-testid="exercise-rest"
-            className="field px-2 py-1.5 text-sm"
+            className="field w-24 min-w-0 px-2 py-1.5 text-sm"
             value={exercise.rest_s ?? 0}
             onChange={(e) => onChange({ ...exercise, rest_s: Number(e.target.value) || null })}
           >
@@ -96,7 +96,7 @@ export function ExerciseBlock(props: Props) {
         <button
           type="button"
           data-testid="effort-toggle"
-          className="btn btn-outline btn-sm !px-3"
+          className="btn btn-outline btn-sm shrink-0 whitespace-nowrap !px-3"
           aria-label={t("effortToggle", { mode: effort === "rir" ? "RPE" : "RIR" })}
           onClick={() => {
             const to = effort === "rir" ? "rpe" : "rir";
@@ -104,7 +104,7 @@ export function ExerciseBlock(props: Props) {
             setSets(exercise.sets.map((s) => convertEffort(s, to)));
           }}
         >
-          {effort === "rir" ? "RIR → RPE" : "RPE → RIR"}
+          {t("effortUse", { mode: effort === "rir" ? "RPE" : "RIR" })}
         </button>
       </div>
 

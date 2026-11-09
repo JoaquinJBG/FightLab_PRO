@@ -28,7 +28,7 @@ function RoutineEditInner({ id }: { id: string }) {
     return (
       <div className="pt-4">
         <Link href="/training/routines" className="t-label text-muted">
-          {t("back")}
+          {t("programs.back")}
         </Link>
         <p role="alert" className="t-body mt-6 text-sm text-warn">
           {t("notFound")}

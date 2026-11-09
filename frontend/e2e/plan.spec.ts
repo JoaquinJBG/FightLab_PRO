@@ -50,7 +50,8 @@ test("preparar el plan, cada línea con su regla, y aplicarlo a Mi rutina", asyn
   await page.goto("/training/my-routine");
   await expect(page.getByTestId("routine-active-plan")).toBeVisible();
   const start = page.getByRole("link", { name: es.weeklyPlan.startSession.replace("{key}", "A") });
-  await expect(start).toHaveAttribute("href", "/training/gym/session?plan=A");
+  // F17: la sesión A del plan es ya una rutina generada; empezarla lleva al registro con ella.
+  await expect(start).toHaveAttribute("href", /\/training\/gym\/session\?routine=\d+$/);
 });
 
 test("con un SÍ en el PAR-Q+ el plan no tiene trabajo vigoroso ni SIT/REHIT", async ({ page }) => {

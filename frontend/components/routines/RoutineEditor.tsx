@@ -120,9 +120,9 @@ export function RoutineEditor({ id, initial, folderId }: { id: number | null; in
   };
 
   return (
-    <div className="pt-4 pb-28">
+    <div className="pt-4 pb-40">
       <Link href="/training/routines" className="t-label text-muted">
-        {t("back")}
+        {t("programs.back")}
       </Link>
       <h1 className="t-display mt-2 text-2xl text-ink">{id === null ? te("newTitle") : te("editTitle")}</h1>
 
@@ -249,7 +249,7 @@ export function RoutineEditor({ id, initial, folderId }: { id: number | null; in
       )}
 
       {/* Barra fija: guardar y empezar. Va por encima de la barra de pestañas. */}
-      <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-20 px-4">
+      <div className="fixed inset-x-0 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-40 px-4">
         <div className="glass mx-auto flex max-w-lg gap-2 p-2">
           <button
             type="button"
