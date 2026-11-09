@@ -152,6 +152,9 @@ export const batchSession = z.object({
 });
 export type BatchSession = z.infer<typeof batchSession>;
 
+export const PRODUCT_RATINGS = ["bueno", "regular", "evitar", "sin_datos", "no_aplica"] as const;
+export type ProductRating = (typeof PRODUCT_RATINGS)[number];
+
 export const shoppingLine = z.object({
   key: z.string(),
   name: z.string(),
@@ -164,14 +167,18 @@ export const shoppingLine = z.object({
   when: z.array(z.number()),
   dishes: z.array(z.string()),
   batches: z.unknown().optional(),
+  // Producto de la cadena (lo elige la F13 en el servidor): formato, envases, valoración y precio.
   product: z.object({
-    chain: z.string().optional(),
-    product: z.string().optional(),
-    pack: z.string().optional(),
-    packs: z.number().optional(),
-    section: z.string().optional(),
-    rating: z.string().nullable().optional(),
+    chain: z.string().nullable().optional(),
+    product: z.string().nullable().optional(),
+    pack: z.string().nullable().optional(),
+    pack_grams: z.number().nullable().optional(),
+    packs: z.number().nullable().optional(),
+    section: z.string().nullable().optional(),
+    rating: z.enum(PRODUCT_RATINGS).nullable().optional(),
+    review: z.boolean().optional(),
     price: z.number().nullable().optional(),
+    price_per_kg: z.number().nullable().optional(),
   }).passthrough().nullable(),
   checked: z.boolean(),
 });

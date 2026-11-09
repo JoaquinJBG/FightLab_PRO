@@ -155,7 +155,7 @@ def test_generator_avoids_fish_at_dinner_for_a_diner_and_builds_a_batch_session(
                                               "tupper_meals": ["lunch"], "batch": True}, format="json")
     assert resp.status_code == 201, resp.json()
     menu = resp.json()
-    fish = kitchen.CATEGORIES["pescado"] + kitchen.CATEGORIES["marisco"]
+    fish = kitchen.categories()["pescado"] + kitchen.categories()["marisco"]
     for day in menu["days"]:
         dinner = next(m for m in day["meals"] if m["meal"] == "dinner")
         names = [i["name"] for d in dinner["dishes"] for i in d["items"]] + [d["dish"] for d in dinner["dishes"]]
@@ -166,3 +166,14 @@ def test_generator_avoids_fish_at_dinner_for_a_diner_and_builds_a_batch_session(
     assert {e["where"] for e in session["timeline"]} <= {"pot", "frying_pan", "oven", "hands"}
     plan = MealPlan.objects.get(pk=menu["id"])
     assert all(m.get("dish_id") for d in plan.days for m in d["meals"] if m["meal"] == "lunch")
+
+
+def test_diner_categories_are_annex_data_labelled_as_convention():
+    import yaml
+
+    data = yaml.safe_load(kitchen.CATEGORIES_FILE.read_text(encoding="utf-8"))
+    assert data["label"] == "FightLab convention"
+    assert set(kitchen.categories()) == {"pescado", "marisco", "carne", "cerdo", "lacteos"}
+    assert "hake" in kitchen.categories()["pescado"] and "merluza" in kitchen.categories()["pescado"]
+    assert kitchen.category_names()["seafood"] == "marisco"
+    assert kitchen.expand("fish")[0] == "fish" and "tuna" in kitchen.expand("fish")

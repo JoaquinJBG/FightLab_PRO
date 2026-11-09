@@ -6,6 +6,14 @@ import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { intlLocale } from "@/lib/locale";
 import { filterByWeek, useShoppingCheck, type ShoppingLine, type ShoppingList as List } from "@/lib/menu";
 
+const RATING_COLOR: Record<string, string> = {
+  bueno: "var(--color-good)",
+  regular: "var(--color-warn)",
+  evitar: "var(--color-bad)",
+  sin_datos: "var(--color-muted)",
+  no_aplica: "var(--color-muted)",
+};
+
 function weekTag(when: number[]): string {
   if (when.length > 1) return "both";
   return when.length === 1 ? String(when[0]) : "";
@@ -17,6 +25,7 @@ function Line({ line, menuId }: { line: ShoppingLine; menuId: number }) {
   const check = useShoppingCheck(menuId);
   const [checked, setChecked] = useState(line.checked);
   const n = (v: number) => v.toLocaleString(locale, { maximumFractionDigits: 0 });
+  const euros = (v: number) => v.toLocaleString(locale, { style: "currency", currency: "EUR" });
   const amount = line.amount != null ? t(line.unit, { n: n(line.amount) }) : "";
   const tag = weekTag(line.when);
   const product = line.product;
@@ -41,10 +50,21 @@ function Line({ line, menuId }: { line: ShoppingLine; menuId: number }) {
         </p>
         {line.pack && <p className="t-body text-[11px] text-muted">{line.name}</p>}
         {product?.product && (
-          <p data-testid="shopping-product" className="t-body text-[11px] text-muted">
-            {t("product", { chain: product.chain ?? "", product: product.product })}
-            {product.rating && t.has(`rating.${product.rating}`) && <> · {t(`rating.${product.rating}`)}</>}
-          </p>
+          <div data-testid="shopping-product" data-rating={product.rating ?? ""} className="t-body text-[11px] text-muted">
+            <p>
+              {t("product", { chain: product.chain ?? "", product: product.product })}
+              {product.packs ? <> · {t("packs", { n: product.packs, pack: product.pack ?? "" })}</> : null}
+              {product.price != null && <> · {t("price", { price: euros(product.price) })}</>}
+            </p>
+            {product.rating && (
+              <p className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                <span data-testid="shopping-rating" style={{ color: RATING_COLOR[product.rating] }}>{t(`rating.${product.rating}`)}</span>
+                {/* La valoración es de la F13 (Nutri-Score de OFF y semáforo FSA); sin regla en la respuesta, convención. */}
+                <EvidenceChip ruleKey={null} />
+              </p>
+            )}
+            {product.review && <p data-testid="shopping-review" className="text-warn">{t("review")}</p>}
+          </div>
         )}
       </div>
       <div className="text-right">

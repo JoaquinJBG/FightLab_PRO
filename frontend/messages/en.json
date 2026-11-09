@@ -2311,12 +2311,17 @@
       "rating": {
         "bueno": "good",
         "regular": "fair",
-        "evitar": "avoid"
+        "evitar": "avoid",
+        "sin_datos": "no data to rate it",
+        "no_aplica": "not rated (does not apply)"
       },
       "batches": "Batches to cook",
       "batchLine": "{dish}: {servings} servings ({left} spare)",
       "fromMenu": "List, sections and packs as they came in the menu.",
-      "fromEngine": "List worked out by the engine from the menu's dishes."
+      "fromEngine": "List worked out by the engine from the menu's dishes.",
+      "review": "Check: the label's kcal do not match its macros (more than 15 % apart).",
+      "packs": "{n, plural, one {# pack} other {# packs}} of {pack}",
+      "price": "about {price}"
     },
     "tastes": {
       "title": "Your tastes",

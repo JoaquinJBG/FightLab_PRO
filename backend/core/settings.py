@@ -400,6 +400,12 @@ if not 60 <= R2_SIGNED_URL_SECONDS <= 3600:
 # "r2" (por defecto) o "memory": almacenamiento falso en memoria, solo para pruebas.
 TICKETS_STORAGE = env("TICKETS_STORAGE", default="r2")
 
+# --- Lista de la compra: producto de la cadena (enganche F12 → F13) ---
+# Ruta con puntos de la función `chain_product(user, food_key, grams)` que elige el producto y el
+# formato de la cadena (ver coaching/shopping.py). Es la de la F13: lee el catálogo privado del
+# usuario; con None no hay producto.
+SHOPPING_CHAIN_PROVIDER = "coaching.chain_catalogue.chain_product"
+
 # --- IA (Anthropic) ---
 # Sin clave, los endpoints de IA responden 503 y el frontend degrada a reglas/simulado
 ANTHROPIC_API_KEY = env("ANTHROPIC_API_KEY", default="")
@@ -463,7 +469,3 @@ COACH_OFF_CONTACT = env("COACH_OFF_CONTACT", default="")
 # Quién propone los platos del menú. Solo existe el proveedor simulado y determinista: los menús
 # no llaman nunca a la API de Anthropic, aunque haya ANTHROPIC_API_KEY (decisión de la fase 8).
 MENU_LLM_PROVIDER = "fake"
-# --- Catálogo de cadena (fase 13) ---
-# La función que la lista de la compra de la fase 12 (`coaching/shopping.py`) llama para elegir,
-# de cada alimento genérico, el producto, el formato y el precio del catálogo privado del usuario.
-SHOPPING_CHAIN_PROVIDER = "coaching.chain_catalogue.chain_product"

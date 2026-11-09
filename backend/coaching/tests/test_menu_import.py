@@ -220,3 +220,28 @@ def test_pdf_of_an_imported_menu_has_batch_sessions_and_the_list_by_section():
     for piece in ("Sesiones de batch", "Olla expr", "Guisar las lentejas", "Legumbres", "bote de lentejas",
                   "semanas", "del congelador", "La v"):
         assert piece in text, piece
+
+
+def test_chain_product_comes_from_the_configured_provider_with_the_engine_food_key(settings):
+    from . import fake_chain
+
+    user = make_user()
+    plan = upload(user, schema1_bytes()).json()["menu"]
+    # Sin proveedor (por defecto): ninguna línea lleva producto.
+    assert all(i["product"] is None for s in plan["shopping_list"]["sections"] for i in s["items"])
+    settings.SHOPPING_CHAIN_PROVIDER = "coaching.tests.fake_chain.chain_product"
+    fake_chain.CALLS.clear()
+    menu = client_for(user).get(MENU).json()["menu"]
+    # La clave es la del motor (nombre en inglés de la tabla), no el texto que ve el usuario.
+    assert ("lentils, cooked", 1100.0) in fake_chain.CALLS and ("hake, raw", 1000.0) in fake_chain.CALLS
+    lines = {i["key"]: (s["section"], i) for s in menu["shopping_list"]["sections"] for i in s["items"]}
+    section, lentils = lines["lentejas, cocidas"]
+    assert section == "Conservas"  # la sección de la cadena sustituye a la del menú
+    assert lentils["product"] == {
+        "chain": "Súper", "product": "Lentejas cocidas Marca", "pack": "bote 400 g", "pack_grams": 400.0, "packs": 3,
+        "section": "Conservas", "rating": "bueno", "review": False, "price": 2.85, "price_per_kg": 2.37,
+    }
+    section, hake = lines["merluza, cruda"]
+    assert section == "Pescadería"  # sin sección de la cadena, la del menú
+    assert hake["product"]["rating"] is None and hake["product"]["review"] is True  # valor desconocido: nada
+    assert lines["pechuga de pollo, cruda"][1]["product"] is None

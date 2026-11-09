@@ -2311,12 +2311,17 @@
       "rating": {
         "bueno": "bueno",
         "regular": "regular",
-        "evitar": "evitar"
+        "evitar": "evitar",
+        "sin_datos": "sin datos para valorarlo",
+        "no_aplica": "no se valora (no aplica)"
       },
       "batches": "Tandas a cocinar",
       "batchLine": "{dish}: {servings} raciones ({left} de sobra)",
       "fromMenu": "Lista, secciones y formatos tal como venían en el menú.",
-      "fromEngine": "Lista calculada por el motor con los platos del menú."
+      "fromEngine": "Lista calculada por el motor con los platos del menú.",
+      "review": "Revisar: las kcal de la etiqueta no cuadran con sus macros (más de un 15 %).",
+      "packs": "{n, plural, one {# envase} other {# envases}} de {pack}",
+      "price": "unos {price}"
     },
     "tastes": {
       "title": "Tus gustos",

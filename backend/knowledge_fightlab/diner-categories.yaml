@@ -1,0 +1,45 @@
+# FightLab convention: diner restriction categories.
+#
+# Part of FightLab's evidence annex, but not evidence: a word list the app needs so that a diner's
+# restriction such as "dinner without fish, except prawns" also catches "hake" or "tuna", because the
+# coach's engine has no food categories. It is not a nutrition fact and it is not complete: a food it
+# does not name is not flagged. Matching is by whole words, case and accents ignored, singular or
+# plural (coach.tastes.matches). Review or extend it here; the logic in coaching/kitchen.py does not
+# change. This content belongs to FightLab and is licensed CC BY 4.0. Checked on 2026-11-09.
+#
+# names: the words a user may type for the category (es and en).
+# words: the foods it covers, in Spanish and English, without accents.
+
+label: FightLab convention
+checked_on: 2026-11-09
+categories:
+  pescado:
+    names: [pescado, pescados, fish]
+    words:
+      es: [merluza, lubina, dorada, bacalao, atun, bonito, salmon, sardina, boqueron, caballa, trucha, rape,
+           emperador, pez espada, lenguado, rodaballo, abadejo, panga, perca, palometa, jurel, mero, pescado,
+           pescadilla, anchoa]
+      en: [hake, sea bass, sea bream, cod, tuna, salmon, sardine, anchovy, mackerel, trout, monkfish, swordfish,
+           sole, haddock, pollock, fish]
+  marisco:
+    names: [marisco, mariscos, shellfish, seafood]
+    words:
+      es: [gamba, langostino, mejillon, almeja, calamar, sepia, choco, pulpo, cangrejo, berberecho, vieira,
+           chipiron, marisco, cigala, bogavante]
+      en: [prawn, shrimp, mussel, clam, squid, cuttlefish, octopus, crab, scallop, shellfish]
+  carne:
+    names: [carne, carnes, meat]
+    words:
+      es: [pollo, pavo, ternera, cerdo, cordero, conejo, vaca, buey, carne, jamon, lomo, chorizo, salchicha,
+           hamburguesa, contramuslo, bacon, beicon, panceta]
+      en: [chicken, turkey, beef, pork, lamb, rabbit, meat, ham, sausage, burger]
+  cerdo:
+    names: [cerdo, pork]
+    words:
+      es: [cerdo, jamon, lomo, chorizo, bacon, beicon, panceta, salchichon, morcilla, carrillera]
+      en: [pork, ham, bacon, chorizo]
+  lacteos:
+    names: [lacteos, lacteo, dairy]
+    words:
+      es: [leche, yogur, queso, nata, mantequilla, kefir, requeson, cottage]
+      en: [milk, yoghurt, yogurt, cheese, cream, butter, dairy]
