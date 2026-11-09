@@ -30,6 +30,8 @@ from coach.profile import ProfileIncomplete
 from coach.text import fold
 from django.db import transaction
 
+from . import batch as batch_rules
+from . import kitchen
 from .bridge.adapters import to_coach_profile
 from .bridge.reasons import Reason
 from .models import CatalogueProduct, MealPlan, Recipe, Tastes
@@ -250,6 +252,8 @@ def check_days(user, today: date, days: list[dict], targets: dict | None = None)
     else:
         before = []
     flags = mealplan.taste_flags(parsed, coach_tastes_for(user), table)
+    # Fase 12: los comensales y sus restricciones por comida bloquean como una alergia.
+    flags += kitchen.diner_flags(parsed, kitchen.diners_of(user.profile), table, foods.find)
     new_dates = {d.date for d in parsed}
     repeats = [
         {"dish": r["dish"], "dates": [d.isoformat() for d in r["dates"]]}
@@ -294,6 +298,8 @@ class MenuRequest:
     days: int = 3
     meals: list[str] = field(default_factory=lambda: list(DEFAULT_MEALS))
     tupper_meals: list[str] = field(default_factory=list)
+    # Fase 12: cocinar las comidas de tupper en una sesión de batch la víspera del primer día.
+    batch: bool = False
 
 
 @dataclass
@@ -310,6 +316,7 @@ class ProposalContext:
     avoid_dishes: set[str]
     favoured: list[dict]
     table: list[foods.Food]
+    diners: list[dict] = field(default_factory=list)  # fase 12: comensales con sus restricciones
     chosen: dict[str, list[str]] = field(default_factory=dict)  # platos propuestos por fecha
 
     def totals(self, items: list[str]) -> foods.MenuTotals:
@@ -373,6 +380,7 @@ def generate(user, today: date, request: MenuRequest, lang: str, proposer) -> tu
         | {fold(dish["dish"]) for day in earlier for meal in day["meals"] for dish in meal.get("dishes") or []},
         favoured=_favoured(user),
         table=table,
+        diners=kitchen.diners_of(user.profile),
     )
     drafts = {d.isoformat(): d_ for d, d_ in zip(dates, proposer.propose(ctx, dates, 0, None), strict=True)}
     for attempt in range(1, MAX_ROUNDS + 1):
@@ -394,10 +402,15 @@ def generate(user, today: date, request: MenuRequest, lang: str, proposer) -> tu
     MealPlan.objects.filter(
         profile=user.profile, start_date__gte=dates[0], start_date__lte=dates[-1]
     ).delete()
+    days_out = _iso_days(accepted)
+    dishes, sessions = (_batch_session(days_out, request, today, lang) if request.batch else ({}, []))
     plan = MealPlan.objects.create(
         profile=user.profile,
         start_date=date.fromisoformat(accepted[0]["date"]),
-        days=_iso_days(accepted),
+        end_date=date.fromisoformat(accepted[-1]["date"]),
+        dishes=dishes,
+        batch_sessions=sessions,
+        days=days_out,
         checks=[checks[d] for d in sorted(accepted_dates)],
         rejected=rejected,
         targets={k: v for k, v in targets.items()},
@@ -406,6 +419,37 @@ def generate(user, today: date, request: MenuRequest, lang: str, proposer) -> tu
         engine_sha=engine_info()["sha_full"],
     )
     return plan, rejected
+
+
+def _batch_session(days: list[dict], request: MenuRequest, today: date, lang: str) -> tuple[dict, list[dict]]:
+    """Las comidas de tupper de un menú generado, cocinadas en una sesión de batch.
+
+    La sesión va la víspera del primer día (o ese mismo día si la víspera ya ha pasado). Cada plato
+    lleva sus pasos de batch con su aparato (`menu_dishes.BATCH_STEPS`); el cronograma se hace al
+    leerlo, con el menaje del usuario, y la nevera o el congelador de cada día salen de las reglas
+    de `coaching.batch`. Marca cada comida con su `dish_id`."""
+    from .keys import slugify
+    from .menu_dishes import batch_steps_for
+
+    first = date.fromisoformat(days[0]["date"])
+    session_day = max(first - timedelta(days=1), today)
+    dishes: dict[str, dict] = {}
+    for day in days:
+        for meal in day["meals"]:
+            if meal.get("meal") not in request.tupper_meals or not meal.get("dishes"):
+                continue
+            dish = meal["dishes"][0]
+            dish_id = slugify(dish["dish"])[:60]
+            meal["dish_id"] = dish_id
+            dishes.setdefault(dish_id, {
+                "name": dish["dish"], "source": dish.get("source") or None, "batch_servings": None,
+                "steps": dish.get("steps") or [], "steps_batch": batch_steps_for(dish["dish"], lang),
+                "steps_day": [], "storage": None, "seasoning": dish.get("seasoning") or [],
+                "ingredients": [],
+            })
+    if not dishes:
+        return {}, []
+    return dishes, [{"date": session_day.isoformat(), "dishes": list(dishes), "eve": [], "timeline": []}]
 
 
 # ---------------------------------------------------------------- valorar
@@ -497,22 +541,33 @@ def plan_data(plan: MealPlan, user, lang: str) -> dict:
     pantry = tastes_get(user).pantry or []
     shopping = mealplan.shopping(days, table, lang, pantry)
     checks = {c["date"]: c for c in plan.checks}
+    catalogue = plan.dishes or {}
     out_days = []
     for day in plan.days:
+        when = date.fromisoformat(day["date"])
         out_days.append({
             "date": day["date"],
             "meals": [
                 {
                     "meal": meal.get("meal", ""),
+                    "label": meal.get("label") or None,
                     "tupper": bool(meal.get("tupper")),
                     "free": bool(meal.get("free")),
+                    "free_budget_kcal": meal.get("free_budget_kcal"),
+                    "dish_id": meal.get("dish_id"),
+                    "prep": meal.get("prep") or [],
+                    "eve": meal.get("eve") or [],
+                    "storage": batch_rules.meal_storage(plan, when, meal),
                     "dishes": [
                         {
+                            "id": d.get("id"),
                             "dish": d["dish"],
                             "source": d.get("source") or None,
                             "servings": d.get("servings", 1),
                             "seasoning": d.get("seasoning") or [],
                             "steps": d.get("steps") or [],
+                            "steps_batch": (catalogue.get(d.get("id") or "") or {}).get("steps_batch") or [],
+                            "storage": (catalogue.get(d.get("id") or "") or {}).get("storage"),
                             "items": [item_out(i, table, lang) for i in d["items"]],
                         }
                         for d in meal.get("dishes") or []
@@ -520,12 +575,28 @@ def plan_data(plan: MealPlan, user, lang: str) -> dict:
                 }
                 for meal in day["meals"]
             ],
+            "totals": day.get("totals"),
             "check": checks.get(day["date"]),
+            "eve": batch_rules.eve_tasks(plan, when),
         })
+    equipment = kitchen.equipment_of(user.profile)
+    sessions = [batch_rules.session_view(s, catalogue, equipment) for s in plan.batch_sessions or []]
+    from .shopping import shopping_data
+
     targets = plan.targets
     return {
         "id": plan.id,
+        "menu_id": plan.menu_id or None,
+        "title": plan.title,
+        "source": plan.source,
+        "notes": plan.notes or [],
         "start_date": plan.start_date.isoformat(),
+        "end_date": (plan.end_date or plan.start_date + timedelta(days=len(plan.days) - 1)).isoformat(),
+        "imported_at": plan.imported_at.isoformat() if plan.imported_at else None,
+        "batch_sessions": sessions,
+        "kitchen_filled": bool(equipment),
+        "batch_rules": rule_refs(list(batch_rules.RULES.values()), lang),
+        "shopping_list": shopping_data(plan, user, lang),
         "provider": plan.provider,
         "days": out_days,
         "rejected": plan.rejected,
@@ -547,11 +618,19 @@ def plan_data(plan: MealPlan, user, lang: str) -> dict:
     }
 
 
+MENUS_LISTED = 20
+
+
+def current_plan(user, today: date) -> MealPlan | None:
+    """El menú que se enseña: el que empieza más tarde (el último generado o importado)."""
+    return MealPlan.objects.filter(profile=user.profile).first()
+
+
 def blocked_data(exc: MenuBlocked, lang: str) -> dict:
     return {"code": "no_calorie_targets", "reasons": reasons_data([Reason(**r) for r in exc.reasons], lang)}
 
 
-def state(user, today: date, lang: str) -> dict:
+def state(user, today: date, lang: str, plan_id: int | None = None) -> dict:
     """`GET /coach/menu`: el último menú guardado, los gustos y si hay algo que lo impida."""
     blocked = missing = None
     try:
@@ -560,12 +639,20 @@ def state(user, today: date, lang: str) -> dict:
         blocked = blocked_data(exc, lang)
     except ProfileIncomplete as exc:
         missing = exc.field
-    latest = MealPlan.objects.filter(profile=user.profile).first()
+    latest = None
+    if plan_id is not None:
+        latest = MealPlan.objects.filter(profile=user.profile, pk=plan_id).first()
+    latest = latest or current_plan(user, today)
     return {
         "today": today.isoformat(),
         "blocked": blocked,
         "missing": missing,
         "menu": plan_data(latest, user, lang) if latest else None,
+        "menus": [
+            {"id": p.id, "title": p.title, "start_date": p.start_date.isoformat(),
+             "end_date": p.end_date.isoformat() if p.end_date else None, "source": p.source, "menu_id": p.menu_id or None}
+            for p in MealPlan.objects.filter(profile=user.profile)[:MENUS_LISTED]
+        ],
         "tastes": tastes_data(user),
         "max_days": MAX_DAYS,
         "meals": list(MEALS),

@@ -19,6 +19,9 @@ guardan:
   semana acabó hace 28 días o menos (`targets.IMPORTED_REVIEW_MAX_DAYS`). Una revisión hecha en
   la app esa semana no se toca nunca.
 - `sessions.csv` del coach y los CSV de Hevy o genéricos → `imports.import_sets` (F9).
+- Los menús de la copia de ParteDiario (JSON `schema: 1`) → `MealPlan` con `coaching.menu_import`
+  (fase 12), y lo tachado de su lista de la compra → `ShoppingCheck`. Un menú con el mismo `id`
+  que ya esté se queda como está con `keep` y se sustituye con `replace`.
 
 Lo que ya hay en FightLab no se pisa sin confirmar: con `on_conflict="keep"` (por defecto) un
 dato distinto del que ya está se queda como está y solo se rellena lo que falta; con
@@ -28,6 +31,7 @@ el resumen dice lo que se haría.
 """
 from __future__ import annotations
 
+import json
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
@@ -40,11 +44,11 @@ from activities.models import Activity
 from profiles import constants as limits
 from profiles.models import BiometricsLog
 
-from . import checkin, imports
+from . import checkin, imports, menu_import
 from .bridge.adapters import _tz
 from .bridge.history_files import DayRecord, ParsedFile
 from .bridge.importers import ImportFileError
-from .models import DailyCheckin, DayLog, MealCheck, WeeklyReview
+from .models import DailyCheckin, DayLog, MealCheck, MealPlan, WeeklyReview
 
 ON_CONFLICT = ("keep", "replace")
 FLOOR = date(2000, 1, 1)  # antes de esto es un error de formato (ParteDiario es de 2026)
@@ -532,6 +536,44 @@ def _reviews(profile, records, today, blocked, replace, dry_run, report) -> dict
 # ---------------------------------------------------------------- entrada
 
 
+def _menus(user, files, today: date, replace: bool, dry_run: bool, report: Report) -> dict:
+    """Los menús de la copia de ParteDiario (fase 12) y lo tachado de sus listas."""
+    out = Counter()
+    checks: dict[str, list[str]] = {}
+    for parsed in files:
+        for menu_id, item in parsed.shopping_checks:
+            checks.setdefault(menu_id, []).append(item)
+    for parsed in files:
+        for backup_id, title, raw in parsed.menus:
+            out["total"] += 1
+            try:
+                data = json.loads(raw) if isinstance(raw, str) else raw
+                menu = menu_import.parse_schema1(data, MealPlan.Source.PARTEDIARIO, fallback_id=backup_id)
+            except (ValueError, TypeError, menu_import.ImportInvalid):
+                out["invalid"] += 1
+                report.notices["menus_invalid"] += 1
+                continue
+            if not menu.title:
+                menu.title = title[:200]
+            exists = MealPlan.objects.filter(profile=user.profile, menu_id=menu.menu_id).exists()
+            if exists and not replace:
+                out["kept"] += 1
+                continue
+            if dry_run:
+                out["replaced" if exists else "new"] += 1
+                out["checks"] += len(set(checks.get(backup_id, [])))
+                continue
+            try:
+                result = menu_import.save(user, menu, today, replace_start=replace)
+            except menu_import.ImportInvalid as exc:
+                out["invalid"] += 1
+                report.notices[f"menus_{exc.code}"] += 1
+                continue
+            out["replaced" if result["replaced"] else "new"] += 1
+            out["checks"] += menu_import.apply_shopping_checks(result["plan"], checks.get(backup_id, []))
+    return {k: out[k] for k in ("total", "new", "replaced", "kept", "invalid", "checks")}
+
+
 def _discarded(report: Report) -> list[dict]:
     out = []
     for (code, column), whens in sorted(report.discarded.items()):
@@ -573,6 +615,8 @@ def import_history(user, files: list[ParsedFile], *, today: date, on_conflict: s
             profile, [r for f in files for r in f.reviews], today, blocked, replace, dry_run, report
         )
 
+    menus_out = _menus(user, files, today, replace, dry_run, report)
+
     sets = []
     for parsed in files:
         if parsed.sets is None:
@@ -607,6 +651,7 @@ def import_history(user, files: list[ParsedFile], *, today: date, on_conflict: s
         "range": {"first": min(days).isoformat(), "last": max(days).isoformat()} if days else None,
         "items": {k: items[k] for k in ("checkins", "weights", "waists", "resting_hr", "meals", "cardio", "day_logs", "heart")},
         "reviews": reviews,
+        "menus": menus_out,
         "sets": [{"name": name, "result": result, "error": error} for name, result, error in sets],
         "discarded": _discarded(report),
         "weight_blocked": {"active": blocked, "count": sum(report.blocked.values()), "fields": sorted(report.blocked)},

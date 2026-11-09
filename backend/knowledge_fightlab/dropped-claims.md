@@ -1,6 +1,6 @@
 # Dropped claims
 
-> Claims considered for FightLab's combat-sports evidence annex that did not make it into combat-sports.md as written, each with the reason. Kept for transparency and as a to-do list: if a source turns up that supports one of these, it can be re-researched. Evidence checked on 2026-10-29.
+> Claims considered for FightLab's evidence annex (combat-sports.md and batch-cooking.md) that did not make it into the annex as written, each with the reason. Kept for transparency and as a to-do list: if a source turns up that supports one of these, it can be re-researched. Evidence checked on 2026-10-29.
 
 Tags: `research` = discarded by the researcher (the source could not be opened, the numbers were not in the opened text, or the claim was contradicted, duplicated or out of scope). `verify` = rejected or cut by the independent checker, including parts removed from claims the checker revised and claims folded into another rule. Entries are numbered in order of appearance. Rule names in the reasons are headings in combat-sports.md; sources named here without an ID were not used in the annex.
 
@@ -95,3 +95,16 @@ Tags: `research` = discarded by the researcher (the source could not be opened, 
 - `FD072` **Total daily energy expenditure of taekwondo players from accelerometers (Cho 2013, Cho 2014).** (research): the abstracts give only group differences, not absolute totals.
 - `FD073` **The isotope-dilution systematic review of athlete total energy expenditure (Jesus 2025).** (research): no combat-sport breakdown or PAL, so not used.
 - `FD074` **The Kung Fu Compendium entry as a combat MET anchor.** (research): the 2024 table lists 15455 Kung Fu Gymnastics at 5.5, which is not a combat-training entry and is not needed for the annex, so it is not cited.
+
+## Batch cooking
+
+Claims considered for batch-cooking.md (researched on 2026-11-09 from FightLab's batch-cooking notes) that were dropped or narrowed because the opened source did not say them.
+
+- `FD075` **The pressure cooker goes first and packing is done during dead time, as a sourced order.** (research): neither opened guide says it (La Abuela Carmen gives the longest-first order; TuMenuSemanal adds the oven in parallel and washing up in waiting times). Kept only as the FightLab scheduling convention.
+- `FD076` **Rice must be refrigerated within 1 hour (AESAN).** (research): the AESAN factsheet opened has no 1-hour rule for rice; the 1 hour comes from the FSA home food fact checker.
+- `FD077` **FSAI's 75 °C (or 70 °C for 2 minutes) as a reheating temperature.** (research): in the opened factsheet it is a cooking core temperature; not used for reheating.
+- `FD078` **Reheat every leftover only once (FSA).** (research): the opened FSA pages say it for rice, for previously cooked and frozen meat and for refrozen cooked food, not for every leftover. FightLab's "reheat each batch portion once" is labelled a convention.
+- `FD079` **Preheat the air fryer and cook in a single layer.** (research): the Nebraska Extension page does not say it and Bosch says its air fryers need no preheating; the cooking-guide pages that recommend it were not opened. Only "do not overfill" (Nebraska) and "stir halfway" (Bosch) are kept.
+- `FD0710` **Eat from the microwave-thawed portion at once.** (research): AESAN and the FSA say to cook it immediately; reworded.
+- `FD0711` **Days in the fridge by food type from cooking blogs and from EROSKI Consumer's table (3-5 days, rice 4-6 days).** (research): no sources given and in conflict with the agencies; used only as a stated conflict.
+- `FD0712` **Specific air-fryer times by food (Directo al Paladar, Bosch, planoinformativo, Nestlé).** (research): only the Bosch page was opened, and it gives no internal temperatures; cooking times are left to each recipe and are not rules.

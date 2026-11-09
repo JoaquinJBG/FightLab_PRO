@@ -489,8 +489,28 @@ class MealPlan(models.Model):
     quien lo lee.
     """
 
+    class Source(models.TextChoices):
+        GENERATED = "generated", "generated"  # el generador de F8 (LLM simulado + motor)
+        JSON = "json", "json"  # JSON `schema: 1` de la app (fase 12)
+        YAML = "yaml", "yaml"  # `menus/<fecha>.yaml` del coach (fase 12)
+        PARTEDIARIO = "partediario", "partediario"  # los `menus` de la copia de ParteDiario
+
     profile = models.ForeignKey("profiles.UserProfile", on_delete=models.CASCADE, related_name="meal_plans")
     start_date = models.DateField()
+    # Fase 12: un menú importado lleva su `id` (si se reimporta el mismo, sustituye al anterior
+    # en la misma fila, así lo tachado de la lista de la compra se queda), su fin y su título.
+    menu_id = models.CharField(max_length=100, blank=True, default="")
+    end_date = models.DateField(null=True, blank=True)
+    title = models.CharField(max_length=200, blank=True, default="")
+    source = models.CharField(max_length=12, choices=Source.choices, default=Source.GENERATED)
+    notes = models.JSONField(default=list, blank=True)
+    # Los platos por su id (`steps_batch`, `steps_day`, `storage`, `batch_servings`, `source`...),
+    # las sesiones de batch con su cronograma y la lista de la compra tal como venía (sección,
+    # formato, semana). Ver `coaching.menu_import`.
+    dishes = models.JSONField(default=dict, blank=True)
+    batch_sessions = models.JSONField(default=list, blank=True)
+    shopping = models.JSONField(default=dict, blank=True)
+    imported_at = models.DateTimeField(null=True, blank=True)
     days = models.JSONField(default=list)
     checks = models.JSONField(default=list)
     rejected = models.JSONField(default=list)
@@ -502,10 +522,61 @@ class MealPlan(models.Model):
 
     class Meta:
         ordering = ["-start_date", "-created_at"]
-        constraints = [models.UniqueConstraint(fields=["profile", "start_date"], name="uniq_meal_plan_per_start")]
+        constraints = [
+            models.UniqueConstraint(fields=["profile", "start_date"], name="uniq_meal_plan_per_start"),
+            models.UniqueConstraint(
+                fields=["profile", "menu_id"], condition=~models.Q(menu_id=""), name="uniq_meal_plan_menu_id"
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"MealPlan<{self.profile_id} {self.start_date}>"
+
+
+class ShoppingCheck(models.Model):
+    """Una línea tachada de la lista de la compra de un menú (fase 12). `item_key` es el nombre del
+    alimento sin mayúsculas ni tildes (`coach.text.fold`): al reimportar el menú, lo tachado sigue
+    tachado aunque cambien las cantidades."""
+
+    plan = models.ForeignKey(MealPlan, on_delete=models.CASCADE, related_name="shopping_checks")
+    item_key = models.CharField(max_length=200)
+    checked_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["plan", "item_key"], name="uniq_shopping_check")]
+
+    def __str__(self) -> str:
+        return f"ShoppingCheck<{self.plan_id} {self.item_key}>"
+
+
+class KitchenProfile(models.Model):
+    """El menaje del usuario (fase 12): lo rellena él en un formulario y nada de esto va en el
+    código. `equipment` va con las claves de `coaching.kitchen.EQUIPMENT`. Vacío = sin rellenar:
+    el cronograma no se comprueba contra él y la app lo pide."""
+
+    profile = models.OneToOneField("profiles.UserProfile", on_delete=models.CASCADE, related_name="kitchen")
+    equipment = models.JSONField(default=dict, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"KitchenProfile<{self.profile_id}>"
+
+
+class Diner(models.Model):
+    """Un comensal de la casa con sus restricciones por comida (fase 12), p. ej. "cena sin pescado
+    salvo gambas": `restrictions` = `[{"meals": ["dinner"], "exclude": ["pescado"], "allow":
+    ["gambas"]}]` (`meals` vacío: todas las comidas). Ver `coaching.kitchen`."""
+
+    profile = models.ForeignKey("profiles.UserProfile", on_delete=models.CASCADE, related_name="diners")
+    name = models.CharField(max_length=60)
+    restrictions = models.JSONField(default=list, blank=True)
+    position = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position", "id"]
+
+    def __str__(self) -> str:
+        return f"Diner<{self.profile_id} {self.name}>"
 
 
 class OffLookup(models.Model):

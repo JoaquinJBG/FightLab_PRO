@@ -20,7 +20,7 @@ from django.utils import timezone
 from activities.constants import MAX_ACTIVITIES_PER_DAY
 from activities.models import Activity
 
-from . import checkin, rules
+from . import batch, checkin, rules
 from .bridge.adapters import _tz
 from .models import DayLog, KnowledgeRule, MealCheck, MealPlan, WeeklyPlan
 from .plan import CARDIO_MODERATE_MIN, DAYS
@@ -130,11 +130,15 @@ def plan_for(user, day: date) -> dict | None:
 # ---------------------------------------------------------------- menú
 
 
+# Un menú generado dura como mucho 7 días; uno importado (fase 12), hasta 35.
+MENU_MAX_DAYS = 35
+
+
 def menu_day(user, day: date) -> tuple[MealPlan, dict] | tuple[None, None]:
-    """El día `day` del menú más reciente que lo tenga (un menú dura como mucho 7 días)."""
+    """El día `day` del menú más reciente que lo tenga."""
     iso = day.isoformat()
     for plan in MealPlan.objects.filter(
-        profile=user.profile, start_date__lte=day, start_date__gt=day - timedelta(days=7)
+        profile=user.profile, start_date__lte=day, start_date__gt=day - timedelta(days=MENU_MAX_DAYS)
     ):
         for d in plan.days or []:
             if d.get("date") == iso:
@@ -148,9 +152,34 @@ def _meal_out(meal: dict, mark: MealCheck | None) -> dict:
         "free": bool(meal.get("free")),
         "tupper": bool(meal.get("tupper")),
         "dishes": [d.get("dish", "") for d in meal.get("dishes") or []],
-        "eve": meal.get("eve") or None,
+        "label": meal.get("label") or None,
+        "prep": meal.get("prep") or [],
+        "eve": eve_list(meal.get("eve")),
         "mark": {"state": STATE_KEYS[mark.state], "change": mark.change or None} if mark else None,
     }
+
+
+def eve_list(value) -> list[str]:
+    """`eve` de una comida: una lista de tareas (fase 12) o, en menús de antes, un texto."""
+    if isinstance(value, str):
+        value = [value]
+    return [str(v).strip() for v in value or [] if str(v).strip()]
+
+
+def tonight(user, day: date) -> dict:
+    """Lo que hay que dejar hecho esta noche para mañana (`day + 1`): las tareas `eve` del menú,
+    las de la sesión de batch de mañana y pasar a la nevera lo congelado que se come mañana."""
+    tomorrow = day + timedelta(days=1)
+    plan, _ = menu_day(user, tomorrow)
+    if plan is None:  # la sesión de batch suele ir la víspera del primer día del menú
+        iso = tomorrow.isoformat()
+        plan = next(
+            (p for p in MealPlan.objects.filter(
+                profile=user.profile, start_date__gt=tomorrow, start_date__lte=tomorrow + timedelta(days=7))
+             if any(s.get("date") == iso for s in p.batch_sessions or [])),
+            None,
+        )
+    return {"date": tomorrow.isoformat(), "tasks": batch.eve_tasks(plan, tomorrow), "rule_key": batch.RULES["defrost"]}
 
 
 def meals_for(user, day: date) -> dict | None:
@@ -382,4 +411,5 @@ def today_data(user, day: date, today: date) -> dict:
         "menu": menu,
         "next_meal": next_meal(menu),
         "cardio": cardio_for(user, day),
+        "tonight": tonight(user, day),
     }

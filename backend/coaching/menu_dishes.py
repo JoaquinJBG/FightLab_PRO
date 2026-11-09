@@ -162,3 +162,37 @@ DISHES = (
      "items": (("queso cottage", 200), ("fresas", 150), ("semillas de chía", 10)),
      "seasoning": {"es": (), "en": ()}},
 )
+
+
+# Pasos de batch de los platos de tupper (fase 12): (minutos, aparato, texto es, texto en). El
+# aparato es uno de `kitchen.APPLIANCES`; el cronograma los reparte con el menaje del usuario.
+# convention (FightLab): tiempos de cocina orientativos de estos platos de ejemplo, no evidencia.
+_CHOP = (10, "hands", "Picar la verdura", "Chop the vegetables")
+_RICE = (25, "pot", "Cocer el arroz, extenderlo y enfriarlo en menos de 1 h", "Cook the rice, spread it out and chill it within 1 h")
+_GRAIN = (15, "pot", "Cocer el cereal y enfriarlo", "Cook the grain and chill it")
+_PACK = (10, "hands", "Repartir en tuppers y etiquetar con plato y fecha", "Portion into boxes and label with dish and date")
+BATCH_STEPS = {
+    "lentils_chicken_veg": (_CHOP, (35, "pressure_cooker", "Guisar las lentejas con las verduras y el pollo", "Stew the lentils with the vegetables and chicken"), _PACK),
+    "rice_chicken_broccoli": (_RICE, (12, "frying_pan", "Dorar el pollo", "Brown the chicken"), (8, "microwave", "Brócoli al vapor", "Steam the broccoli"), _PACK),
+    "chickpeas_cod_spinach": (_CHOP, (20, "pot", "Sofrito con los garbanzos y las espinacas (el bacalao, el día de comer)", "Soffritto with the chickpeas and spinach (the cod on the day)"), _PACK),
+    "pasta_tuna_courgette": ((15, "frying_pan", "Salsa de tomate con calabacín (la pasta, el día de comer)", "Tomato and courgette sauce (cook the pasta on the day)"), _PACK),
+    "quinoa_salmon_asparagus": (_GRAIN, (15, "oven", "Salmón y espárragos al horno", "Bake the salmon and asparagus"), _PACK),
+    "beef_sweet_potato_beans": ((30, "oven", "Asar el boniato", "Roast the sweet potato"), (12, "frying_pan", "Saltear la ternera con las judías", "Stir-fry the beef with the green beans"), _PACK),
+    "beef_chilli_beans": (_CHOP, (40, "pot", "Guisar el chili con las alubias", "Simmer the chilli with the beans"), _PACK),
+    "couscous_chicken_veg": (_CHOP, (15, "air_fryer", "Pollo y verduras en la air fryer (74 °C dentro)", "Air-fry the chicken and vegetables (74 °C inside)"), (5, "pot", "Hidratar el cuscús", "Soak the couscous"), _PACK),
+    "tofu_stir_fry": (_CHOP, (12, "wok", "Saltear el tofu con las verduras", "Stir-fry the tofu with the vegetables"), _RICE, _PACK),
+    "turkey_quinoa_courgette": (_GRAIN, (12, "frying_pan", "Dorar el pavo con el calabacín", "Brown the turkey with the courgette"), _PACK),
+    "pork_artichoke_quinoa": (_GRAIN, (20, "oven", "Lomo y alcachofas al horno (63 °C dentro y 3 min de reposo)", "Roast the pork and artichokes (63 °C inside, 3 min rest)"), _PACK),
+    "salmon_broccoli_rice": (_RICE, (15, "oven", "Salmón al horno", "Bake the salmon"), (8, "microwave", "Brócoli al vapor", "Steam the broccoli"), _PACK),
+}
+DEFAULT_BATCH_STEPS = ((20, "pot", "Cocinar el plato", "Cook the dish"), _PACK)
+
+
+def batch_steps_for(name: str, lang: str) -> list[dict]:
+    """Los pasos de batch de un plato de ejemplo por su nombre (en es o en), como `steps_batch`."""
+    from coach.text import fold
+
+    key = next((d["key"] for d in DISHES if fold(name) in (fold(d["es"]), fold(d["en"]))), None)
+    steps = BATCH_STEPS.get(key, DEFAULT_BATCH_STEPS)
+    text = 3 if lang == "en" else 2
+    return [{"step": s[text], "min": s[0], "where": s[1]} for s in steps]

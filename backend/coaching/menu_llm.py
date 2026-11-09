@@ -20,6 +20,7 @@ from coach.text import fold
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
+from . import kitchen
 from .menu_dishes import DISHES
 
 # convention (FightLab): el simulado apunta al 102,5 % del objetivo de kcal, en mitad del margen
@@ -35,9 +36,12 @@ def _names(item: str, ctx) -> tuple[str, ...]:
     return (name, food.name_en, food.name_es) if food else (name,)
 
 
-def _clashes(dish: dict, ctx) -> bool:
-    """¿Choca el plato con algo que el atleta evita? Por nombre, como `mealplan.taste_flags`."""
+def _clashes(dish: dict, ctx, meal: str = "") -> bool:
+    """¿Choca el plato con algo que el atleta evita, o con un comensal de esa comida (fase 12)?
+    Por nombre, como `mealplan.taste_flags` y `kitchen.diner_flags`."""
     texts = [(dish["dish"],), *((s,) for s in dish["seasoning"]), *(_names(i, ctx) for i in dish["items"])]
+    if kitchen.dish_clash(getattr(ctx, "diners", []) or [], meal, texts):
+        return True
     for attribute in AVOIDED:
         for entry in getattr(ctx.tastes, attribute) or []:
             if any(matches(entry, *names) for names in texts):
@@ -106,7 +110,7 @@ class FakeMenuProposer:
             tupper = meal in ctx.tupper_meals
             options = [
                 d for d in self._candidates(ctx, meal)
-                if fold(d["dish"]) not in taken and (d["tupper_ok"] or not tupper) and not _clashes(d, ctx)
+                if fold(d["dish"]) not in taken and (d["tupper_ok"] or not tupper) and not _clashes(d, ctx, meal)
             ]
             if not options:  # nada que proponer: el motor rechazará el día
                 continue

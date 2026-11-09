@@ -4,7 +4,11 @@ from .checkin_views import CheckinView
 from .import_views import HistoryImportView, ImportView
 from .menu_views import (
     FoodsView,
+    KitchenView,
     MenuCheckView,
+    MenuDetailView,
+    MenuImportView,
+    MenuShoppingView,
     MenuPdfView,
     MenuRateView,
     MenuView,
@@ -55,6 +59,10 @@ urlpatterns = [
     path("coach/menu/check", MenuCheckView.as_view(), name="coach-menu-check"),
     path("coach/menu/rate", MenuRateView.as_view(), name="coach-menu-rate"),
     path("coach/menu/<int:pk>/pdf", MenuPdfView.as_view(), name="coach-menu-pdf"),
+    path("coach/menu/import", MenuImportView.as_view(), name="coach-menu-import"),
+    path("coach/menu/<int:pk>", MenuDetailView.as_view(), name="coach-menu-detail"),
+    path("coach/menu/<int:pk>/shopping", MenuShoppingView.as_view(), name="coach-menu-shopping"),
+    path("coach/kitchen", KitchenView.as_view(), name="coach-kitchen"),
     path("coach/tastes", TastesView.as_view(), name="coach-tastes"),
     path("coach/recipes", RecipesView.as_view(), name="coach-recipes"),
     path("coach/foods", FoodsView.as_view(), name="coach-foods"),
