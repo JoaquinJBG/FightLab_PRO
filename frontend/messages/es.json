@@ -1398,7 +1398,13 @@
       "summary": "Tu foto de hoy: {parts}. ¿Quieres el plan del día?",
       "summaryNone": "Aún no tengo datos tuyos. Empieza registrando un entreno o tu peso y hablamos.",
       "thanks": "A trabajar. Registra la sesión cuando acabes y la cuento en tu carga. 🥊",
-      "default": "Te leo. Pregúntame por el entreno de hoy, tu carga, tu peso o tu recuperación — te contesto con tus números reales."
+      "default": "Te leo. Pregúntame por el entreno de hoy, tu carga, tu peso o tu recuperación — te contesto con tus números reales.",
+      "safety": {
+        "headBlow": "Lo primero es tu cabeza: tras un posible golpe en la cabeza, hoy no entrenes, aunque te encuentres bien. Nada de sparring ni contacto hasta que te valore un médico. Si tienes dolor de cuello, vómitos repetidos, una convulsión, confusión o un dolor de cabeza que va a más, ve a urgencias ya y no te quedes solo. Avísalo en Entreno → MMA → «Avisar de un golpe en la cabeza».",
+        "cardiac": "Para y no entrenes hoy: el dolor u opresión en el pecho, el mareo, el desmayo, la falta de aire o las palpitaciones son señales de aviso. Ve a un médico antes de volver a entrenar. Si es dolor en el pecho en reposo, un desmayo o dolor en el pecho con falta de aire y sudor, llama ya a tu número de emergencias (112 en Europa).",
+        "illness": "Con fiebre, dolores por todo el cuerpo o malestar por debajo del cuello, hoy no se entrena: descansa hasta que estés mejor.",
+        "pain": "Con un dolor nuevo o una lesión, hoy no cargues esa zona ni entrenes a través del dolor. Si el dolor es agudo, va a peor o notas entumecimiento o debilidad, para y ve a un médico. Apúntalo en el check-in (Señales de alarma → «Dolor nuevo o una lesión») para que el plan le quite carga hasta que lo valore un médico o un fisioterapeuta."
+      }
     },
     "advanced": {
       "title": "Avanzado"

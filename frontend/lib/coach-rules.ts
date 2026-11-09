@@ -11,6 +11,8 @@ import type { LoadMetrics } from "@/lib/load";
 import type { Recovery } from "@/lib/recovery";
 import { COMBAT_RULES, type RuleRef } from "@/lib/combat-rules";
 import { cite, comparisonPhrase, comparisonRule, isBigJump } from "@/lib/load-texts";
+import { detectSafetyTopic, type SafetyTopic } from "@/lib/chat-safety";
+import { SAFETY_RULES } from "@/lib/safety-rules";
 
 export type Tr = ReturnType<typeof useTranslations>;
 
@@ -162,7 +164,25 @@ export function buildRecs(ctx: Ctx, { t, tl, tc }: CoachTr): Rec[] {
 
 /* ------------------------- chat sin IA (por reglas) ------------------------ */
 
+// Las reglas de cada tema de seguridad: las del check-in (señales de alarma) y las del anexo de
+// combate para el golpe en la cabeza (parar y, con señales de alarma, urgencias).
+const SAFETY_REPLY_RULES: Record<SafetyTopic, RuleRef[]> = {
+  headBlow: [COMBAT_RULES.stopAfterHeadBlow, COMBAT_RULES.redFlags],
+  cardiac: [SAFETY_RULES.cardiac],
+  illness: [SAFETY_RULES.illness],
+  pain: [SAFETY_RULES.newPain],
+};
+
+/** Respuesta de seguridad (F3): va antes que cualquier consejo de carga o de intensidad. */
+export function safetyReply(topic: SafetyTopic, t: Tr): string {
+  return t(`reply.safety.${topic}`) + SAFETY_REPLY_RULES[topic].map(cite).join("");
+}
+
 export function coachReply(text: string, ctx: Ctx, { t, tl, tc }: CoachTr, listFmt: Intl.ListFormat): string {
+  // Seguridad primero: con dolor, una lesión, un golpe en la cabeza, mareo o fiebre no hay
+  // consejo de carga, sino la misma regla que el check-in y el cribado.
+  const topic = detectSafetyTopic(text);
+  if (topic) return safetyReply(topic, t);
   const low = text.toLowerCase();
   const m = ctx.metrics;
   // La semana frente a la media (o cuántos días faltan), con su regla del anexo de combate
@@ -187,7 +207,7 @@ export function coachReply(text: string, ctx: Ctx, { t, tl, tc }: CoachTr, listF
     if (ctx.recovery?.state === "listo") return t("reply.hardReady", { acwr: acwrTxt });
     return t("reply.hardNormal", { acwr: acwrTxt });
   }
-  if (/fatiga|cansad|dolor|recuper|fatigue|tired|sore|pain|recover/.test(low)) {
+  if (/fatiga|cansad|agujetas|recuper|fatigue|tired|sore|recover/.test(low)) {
     return rec ? t("reply.fatigue", { chips: rec.chips.join(" · "), phrase: rec.phrase }) : t("reply.fatigueNone");
   }
   if (/carga|acwr|riesgo|load|risk/.test(low)) {

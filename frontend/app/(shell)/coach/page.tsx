@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useBiometrics, useSafety, useWeighIn } from "@/lib/hooks";
 import { CitedText, type Citation } from "@/components/evidence/CitedText";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
-import { combatCitations, comparisonRule, loadBadge } from "@/lib/load-texts";
+import { comparisonRule, loadBadge, ruleCitations } from "@/lib/load-texts";
 import { computeRecovery } from "@/lib/recovery";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
 import { buildBriefing, buildRecs, coachReply, num, recoveryText, type CoachTr, type Ctx } from "@/lib/coach-rules";
@@ -191,7 +191,7 @@ export default function CoachPage() {
       if (ctrl.signal.aborted) return; // se salió de la vista: no tocar el estado
       // IA no configurada o caída: respuesta por reglas con los datos locales
       const reply = coachReply(txt, ctx, tr, listFmt);
-      setChatMsgs((m) => [...m, { role: "coach", text: reply, citations: combatCitations(reply) }]);
+      setChatMsgs((m) => [...m, { role: "coach", text: reply, citations: ruleCitations(reply) }]);
       setAiMode("reglas");
     } finally {
       if (!ctrl.signal.aborted) setTyping(false);

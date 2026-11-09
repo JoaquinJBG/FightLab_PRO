@@ -1398,7 +1398,13 @@
       "summary": "Your snapshot today: {parts}. Want today's plan?",
       "summaryNone": "I don't have any data on you yet. Start by logging a workout or your weight and we'll talk.",
       "thanks": "Get to work. Log the session when you finish and I'll add it to your load. 🥊",
-      "default": "I'm listening. Ask me about today's training, your load, your weight or your recovery — I'll answer with your real numbers."
+      "default": "I'm listening. Ask me about today's training, your load, your weight or your recovery — I'll answer with your real numbers.",
+      "safety": {
+        "headBlow": "Your head comes first: after a possible blow to the head, do not train today, even if you feel fine. No sparring or contact until a doctor has assessed you. With neck pain, repeated vomiting, a seizure, confusion or a headache that gets worse, go to the emergency department now and do not stay alone. Report it under Training → MMA → “Report a blow to the head”.",
+        "cardiac": "Stop and do not train today: chest pain or pressure, dizziness, fainting, breathlessness or palpitations are warning signs. See a doctor before you train again. With chest pain at rest, fainting, or chest pain with breathlessness and sweating, call your emergency number now (112 in Europe).",
+        "illness": "With a fever, aches all over or feeling unwell below the neck, no training today: rest until you are better.",
+        "pain": "With new pain or an injury, do not load that area today and do not train through the pain. If the pain is sharp, getting worse, or you notice numbness or weakness, stop and see a doctor. Log it in the check-in (Warning signs → “New pain or an injury in some area”) so the plan takes load off it until a doctor or physiotherapist assesses it."
+      }
     },
     "advanced": {
       "title": "Advanced"

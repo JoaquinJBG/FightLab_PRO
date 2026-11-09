@@ -13,7 +13,7 @@ from core.messages import msg
 from profiles.image_processing import UnsupportedImageError, UnsupportedImageFormatError, load_bounded
 from userstate.selectors import state_get_many
 
-from . import quota, services
+from . import chat_safety, quota, services
 from .models import AIUsage
 
 logger = logging.getLogger(__name__)
@@ -175,6 +175,13 @@ class CoachChatView(APIView):
             return _budget_exceeded_response()
         memory = _coach_memory_for(user.profile)
         refer_gp, safety_notes = _safety(user)
+        # F3: dolor, lesión, golpe en la cabeza, mareo o fiebre en lo que escribe el atleta: la
+        # regla de seguridad va antes que cualquier consejo de carga.
+        topic = chat_safety.conversation_topic(messages)
+        safety_rules: tuple[str, ...] = ()
+        if topic:
+            safety_notes = (chat_safety.safety_note(topic), *safety_notes)
+            safety_rules = chat_safety.RULES[topic]
 
         reservation = quota.reserve(user=user, kind=AIUsage.Kind.CHAT)
         if reservation is None:
@@ -189,6 +196,7 @@ class CoachChatView(APIView):
                 safety_notes=safety_notes,
                 memory=memory,
                 on_usage=_token_recorder(reservation),
+                safety_rules=safety_rules,
             )
             succeeded = True
             return Response({"reply": reply.text, "citations": reply.citations})
