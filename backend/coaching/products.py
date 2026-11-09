@@ -15,7 +15,7 @@ from datetime import date
 from coach import catalogue, foods
 from coach.text import fold
 
-from . import off_proxy
+from . import off_proxy, product_rating
 from .menus import MenuInvalid, menu_table, product_food
 from .models import CatalogueProduct
 
@@ -62,6 +62,36 @@ def product_data(p: CatalogueProduct) -> dict:
         "missing": [n for n in foods.NUMBERS if getattr(p, n) is None],
         "allergens": p.allergens, "url": p.url, "fetched_on": p.fetched_on.isoformat(), "source": p.source,
         "unverified": p.unverified,
+        "rating": catalogue_rating(p).as_dict(),
+    }
+
+
+def catalogue_rating(p: CatalogueProduct) -> product_rating.Rating:
+    """La valoración de un producto de OFF guardado (fase 13), con el mismo motor que la cadena."""
+    return product_rating.rate(product_rating.Inputs(
+        name=p.product_name, **{n: getattr(p, n) for n in foods.NUMBERS},
+        saturates_g=p.saturates_g, sugars_g=p.sugars_g, salt_g=p.salt_g, nutriscore=p.nutriscore,
+        off_tags=tuple(p.off_tags or ()), drink=True if p.per == "100 ml" else None,
+    ))
+
+
+def found_rating(found: dict) -> dict:
+    """La valoración de un producto tal como lo devuelve el proxy (búsqueda o lectura)."""
+    extra = found.get("extra") or {}
+    values = found.get("values") or {}
+    return product_rating.rate(product_rating.Inputs(
+        name=found.get("name") or "", **{n: values.get(n) for n in foods.NUMBERS},
+        saturates_g=extra.get("saturates_g"), sugars_g=extra.get("sugars_g"), salt_g=extra.get("salt_g"),
+        nutriscore=extra.get("nutriscore") or "", off_tags=tuple(extra.get("off_tags") or ()),
+        drink=True if found.get("per") == "100 ml" else None,
+    )).as_dict()
+
+
+def _extra(found: dict) -> dict:
+    extra = found.get("extra") or {}
+    return {
+        "saturates_g": extra.get("saturates_g"), "sugars_g": extra.get("sugars_g"), "salt_g": extra.get("salt_g"),
+        "nutriscore": extra.get("nutriscore") or "", "off_tags": list(extra.get("off_tags") or []),
     }
 
 
@@ -91,6 +121,7 @@ def add_product(user, barcode: str, today: date, chain: str = "", name: str = ""
             "chain": " ".join(chain.split())[:80],
             "per": per,
             **found["values"],
+            **_extra(found),
             "allergens": found["allergens"],
             "url": found["url"],
             "fetched_on": today,

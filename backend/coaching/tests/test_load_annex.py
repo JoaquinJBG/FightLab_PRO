@@ -27,19 +27,19 @@ def annex(db):
     return load("--dir", str(ANNEX), "--origin", "fightlab")
 
 
-def test_loads_the_60_rules_and_144_sources(annex):
+def test_loads_the_63_rules_and_148_sources(annex):
     rules = KnowledgeRule.objects.filter(origin="fightlab")
-    assert rules.count() == 60
+    assert rules.count() == 63  # 60 de combate y 3 de productos (fase 13)
     assert not rules.filter(retired=True).exists()
-    assert KnowledgeSource.objects.filter(origin="fightlab").count() == 144
-    assert set(KnowledgeSource.objects.values_list("sid", flat=True)) == {f"F{n:03d}" for n in range(1, 145)}
-    assert "reglas: 60 altas" in annex and "fuentes: 144 altas" in annex
+    assert KnowledgeSource.objects.filter(origin="fightlab").count() == 148
+    assert set(KnowledgeSource.objects.values_list("sid", flat=True)) == {f"F{n:03d}" for n in range(1, 149)}
+    assert "reglas: 63 altas" in annex and "fuentes: 148 altas" in annex
     assert "fuentes citadas que no existen" not in annex
 
 
 def test_grades_match_the_annex(annex):
     grades = Counter(KnowledgeRule.objects.filter(origin="fightlab").values_list("grade", flat=True))
-    assert grades == {"strong": 7, "moderate": 14, "emerging": 39}
+    assert grades == {"strong": 7, "moderate": 17, "emerging": 39}
 
 
 def test_every_rule_has_its_fxxx_source_ids_and_they_resolve(annex):
@@ -50,7 +50,7 @@ def test_every_rule_has_its_fxxx_source_ids_and_they_resolve(annex):
         assert all(re.fullmatch(r"F\d{3}", s) for s in rule.source_ids), rule.key
         assert set(rule.source_ids) <= sids, rule.key
         cited |= set(rule.source_ids)
-    assert cited == {f"F{n:03d}" for n in range(1, 145)}  # cada fuente se cita
+    assert cited == {f"F{n:03d}" for n in range(1, 149)}  # cada fuente se cita
 
 
 def test_rule_fields_and_checked_date_are_parsed(annex):
@@ -72,6 +72,6 @@ def test_loading_the_annex_is_idempotent_and_leaves_upstream_alone(real_knowledg
     assert upstream > 400
     load("--dir", str(ANNEX), "--origin", "fightlab")
     out = load("--dir", str(ANNEX), "--origin", "fightlab")
-    assert "reglas: 0 altas, 0 cambios, 0 bajas (60 sin cambios)" in out
+    assert "reglas: 0 altas, 0 cambios, 0 bajas (63 sin cambios)" in out
     assert KnowledgeRule.objects.filter(origin="upstream").count() == upstream
     assert KnowledgeRule.objects.filter(origin="upstream", retired=True).count() == 0

@@ -156,7 +156,7 @@ def test_every_loaded_rule_has_an_up_to_date_spanish_translation(all_knowledge):
     assert "entradas sin regla" not in out
     assert "obsoletas" not in out
     rules = list(KnowledgeRule.objects.filter(retired=False))
-    assert len(rules) == 519
+    assert len(rules) == 522  # 459 del coach + 63 del anexo (3 de productos, fase 13)
     translations = {t.rule_id: t for t in RuleTranslation.objects.filter(lang="es")}
     pending = [r.key for r in rules if not up_to_date(translations.get(r.pk), r)]
     assert pending == []
@@ -166,7 +166,7 @@ def test_every_loaded_rule_has_an_up_to_date_spanish_translation(all_knowledge):
         assert tr.heading and tr.rule_text
         for f in ("applies_to", "conflicts"):
             assert bool(getattr(r, f)) == bool(getattr(tr, f)), f"{r.key}.{f}"
-    assert "0 altas, 0 cambios (519 sin cambios)" in run("--lang", "es")
+    assert "0 altas, 0 cambios (522 sin cambios)" in run("--lang", "es")
 
 
 # La hoja de evidencia del frontend se prueba con esta misma respuesta de la API

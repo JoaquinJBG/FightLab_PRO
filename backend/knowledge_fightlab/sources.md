@@ -1,6 +1,6 @@
 # Sources
 
-> Every source cited in combat-sports.md, by ID. Each one was opened (abstract or full text) during research and again by an independent checker on 2026-10-29, except where the entry says otherwise; `Opened` is the URL that returned the text. Unlike the coach's sources file, the `Supports` notes are written in FightLab's own words and contain no quotations, because publisher text is not CC BY. Sources that could not be opened were dropped together with their claims (see dropped-claims.md). Evidence checked on 2026-10-29.
+> Every source cited in combat-sports.md and food-products.md, by ID. Each combat-sports source was opened (abstract or full text) during research and again by an independent checker on 2026-10-29, except where the entry says otherwise; F145 to F148 (food-products.md) were opened during research on 2026-11-09 and have not had an independent re-check yet; `Opened` is the URL that returned the text. Unlike the coach's sources file, the `Supports` notes are written in FightLab's own words and contain no quotations, because publisher text is not CC BY. Sources that could not be opened were dropped together with their claims (see dropped-claims.md). Evidence checked on 2026-10-29.
 
 Fields: type, DOI, canonical URL, opened URL, which files cite it, and what in the opened text supports the rules that cite it (the rules are named at the end of each note). Many PubMed abstracts were fetched with one E-utilities request for several IDs; where that exact batched URL was not recorded, `Opened` shows the equivalent single-ID request and the note says the abstract was fetched in a batched request. IDs are numbered in order of first citation in combat-sports.md.
 
@@ -8,7 +8,7 @@ Fields: type, DOI, canonical URL, opened URL, which files cite it, and what in t
 
 | Type | Count |
 |---|---|
-| Other | 27 |
+| Other | 30 |
 | Cross-sectional | 24 |
 | Narrative review | 24 |
 | Cohort | 23 |
@@ -18,8 +18,8 @@ Fields: type, DOI, canonical URL, opened URL, which files cite it, and what in t
 | Position stand | 3 |
 | RCT | 2 |
 | Umbrella review | 1 |
-| Guideline | 1 |
-| **Total** | **144** |
+| Guideline | 2 |
+| **Total** | **148** |
 
 ## List
 
@@ -1030,3 +1030,31 @@ Type: Cross-sectional · DOI: none · Files: combat-sports
 URL: <https://pubmed.ncbi.nlm.nih.gov/26064838/>  
 Opened: <https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=30029584,37752011,40254934,26064838&rettype=abstract&retmode=text>  
 Supports: Abstract. 59 high-school and 58 college elite Korean male players; accelerometer and five-day dietary records; nutritional adequacy ratio for total energy of 0.82, below recommended. Only the 0.82 figure is used. Rules citing it: Inform and refer on low energy availability.
+
+### F145
+Department of Health, Food Standards Agency and devolved administrations, with the British Retail Consortium, 2016. Guide to creating a front of pack (FoP) nutrition label for pre-packed products sold through retail outlets (updated November 2016)  
+Type: Guideline · DOI: none · Files: food-products  
+URL: <https://www.gov.uk/government/publications/front-of-pack-nutrition-labelling-guidance>  
+Opened: <https://assets.publishing.service.gov.uk/media/5a80cd03ed915d74e33fc7c5/FoP_Nutrition_labelling_UK_guidance.pdf>  
+Supports: Full text (33 pages). Annex 3 gives per 100 g of food low at or below 3.0 fat, 1.5 saturates, 5.0 sugars and 0.3 salt and high above 17.5, 5.0, 22.5 and 1.5; per 100 ml of drink low at or below 1.5, 0.75, 2.5 and 0.3 and high above 8.75, 2.5, 11.25 and 0.75. Energy has no colour. Sugar colours use total sugars, with milk and raisins given as natural sources. A red per portion applies above 30% of the reference intake for foods in portions over 100 g and above 15% for drinks over 150 ml. Rules citing it: Rate packaged products with Nutri-Score and UK traffic lights.
+
+### F146
+Scientific Committee of the Nutri-Score, 2022. Update of the Nutri-Score algorithm. Update report from the Scientific Committee of the Nutri-Score (voted 29 June 2022). Santé publique France  
+Type: Other · DOI: none · Files: food-products  
+URL: <https://www.santepubliquefrance.fr/sites/default/files/rdd/document/2022-main%20algorithm%20report%20update_FINAL.pdf>  
+Opened: <https://www.santepubliquefrance.fr/sites/default/files/rdd/document/2022-main%20algorithm%20report%20update_FINAL.pdf>  
+Supports: Full text. Technical report of the scheme's scientific committee. Creates a separate category for fats, oils, nuts and seeds (chestnuts excluded), in which energy is scored as energy from saturates at 120 kJ per point up to 10 points, and saturates as a share of total fat, 0 points under 10% and 10 points at 64% or more. Rules citing it: Rate packaged products with Nutri-Score and UK traffic lights; Rate oils, nuts and seeds by Nutri-Score alone.
+
+### F147
+Open Food Facts, undated. ProductOpener::Nutriscore, developer documentation of the Open Food Facts server  
+Type: Other · DOI: none · Files: food-products  
+URL: <https://openfoodfacts.github.io/openfoodfacts-server/dev/ref-perl-pod/ProductOpener/Nutriscore.html>  
+Opened: <https://openfoodfacts.github.io/openfoodfacts-server/dev/ref-perl-pod/ProductOpener/Nutriscore.html>  
+Supports: Documentation page. Describes a function that computes the 2023 Nutri-Score score and grade, with a saturated fat ratio input (saturates over fat, in percent), and says the 2021 and 2023 algorithms are both kept during a transition. It documents the computation; it does not by itself say which grade each product page shows. Rules citing it: Rate packaged products with Nutri-Score and UK traffic lights; Rate oils, nuts and seeds by Nutri-Score alone.
+
+### F148
+European Parliament and Council, 2011. Regulation (EU) No 1169/2011 of 25 October 2011 on the provision of food information to consumers, Annex XIV: conversion factors  
+Type: Other · DOI: none · Files: food-products  
+URL: <https://eur-lex.europa.eu/eli/reg/2011/1169/oj>  
+Opened: <https://www.legislation.gov.uk/eur/2011/1169/annex/XIV/adopted>  
+Supports: Annex XIV as originally adopted (UK National Archives copy; the EUR-Lex page returned no text). Energy factors per gram: carbohydrate except polyols 17 kJ or 4 kcal, polyols 10 kJ or 2.4 kcal, protein 17 kJ or 4 kcal, fat 37 kJ or 9 kcal, fibre 8 kJ or 2 kcal, alcohol 29 kJ or 7 kcal, erythritol 0. Rules citing it: Flag labels whose energy does not match the macros.
