@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useBiometrics, useSafety, useWeighIn } from "@/lib/hooks";
-import { CitedText, type Citation } from "@/components/evidence/CitedText";
+import { type Citation } from "@/components/evidence/CitedText";
+import { ChatPanel, type ChatMsg } from "@/components/coach/ChatPanel";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { combatCitations, comparisonRule, loadBadge } from "@/lib/load-texts";
 import { computeRecovery } from "@/lib/recovery";
@@ -42,8 +43,7 @@ const dismissKey = () => `flp_${bareDismissKey()}`;
 
 /* --------------------------------- chat ----------------------------------- */
 
-type Msg = { role: "coach" | "user"; text: string; citations?: Citation[] };
-const QUICK_KEYS = ["how", "hard", "weight"] as const;
+type Msg = ChatMsg;
 
 /* --------------------------------- página --------------------------------- */
 
@@ -146,9 +146,7 @@ export default function CoachPage() {
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
   const [aiMode, setAiMode] = useState<"ia" | "reglas" | null>(null);
-  const endRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chatMsgs, typing]);
   useEffect(() => () => abortRef.current?.abort(), []); // corta la petición al salir de la vista
 
   async function send(text: string) {
@@ -383,34 +381,14 @@ export default function CoachPage() {
           <p className="t-eyebrow text-muted">{t("chat.heading")}</p>
           <span className="badge badge-neon">{aiMode === "ia" ? t("chat.modeAi") : aiMode === "reglas" ? t("chat.modeRules") : t("chat.modeDefault")}</span>
         </div>
-        <div className="glass mt-2 flex h-[42dvh] flex-col overflow-hidden p-3">
-          <div className="flex-1 space-y-3 overflow-y-auto pr-1">
-            {chatMsgs.map((m, i) => (
-              <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${m.role === "user" ? "text-[#03101c]" : "text-ink"}`}
-                  style={m.role === "user" ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)" } : { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(150,190,255,0.14)" }}>
-                  <CitedText text={m.text} citations={m.citations} />
-                </div>
-              </div>
-            ))}
-            {typing && (
-              <div className="flex justify-start">
-                <div className="rounded-2xl border border-[rgba(150,190,255,0.14)] bg-[rgba(255,255,255,0.06)] px-3.5 py-2.5">
-                  <span className="pulse text-sm text-muted">{t("chat.typing")}</span>
-                </div>
-              </div>
-            )}
-            <div ref={endRef} />
-          </div>
-
-          <div className="mt-2 flex flex-wrap gap-2">
-            {QUICK_KEYS.map((k) => <button key={k} onClick={() => send(t(`chat.quick.${k}`))} disabled={typing} className="badge disabled:opacity-50">{t(`chat.quick.${k}`)}</button>)}
-          </div>
-          <form className="mt-2 flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); send(input); }}>
-            <input value={input} onChange={(e) => setInput(e.target.value)} placeholder={t("chat.placeholder")} className="field flex-1 px-3.5 py-2.5 text-sm" />
-            <button type="submit" className="btn btn-primary btn-sm shrink-0">{t("chat.send")}</button>
-          </form>
-        </div>
+        <ChatPanel
+          msgs={chatMsgs}
+          typing={typing}
+          input={input}
+          onInput={setInput}
+          onSend={send}
+          modeLabel={aiMode === "ia" ? t("chat.modeAi") : aiMode === "reglas" ? t("chat.modeRules") : t("chat.modeDefault")}
+        />
         <p className="t-body mt-2 text-center text-[11px] text-muted">
           {aiMode === "reglas" ? `${t("chat.rulesNotice")} ` : ""}
           {recovery == null && metrics?.weekAU === 0 ? `${t("chat.moreData")} ` : ""}

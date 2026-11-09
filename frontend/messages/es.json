@@ -1371,6 +1371,8 @@
       "typing": "El coach está escribiendo…",
       "placeholder": "Pregunta a tu coach…",
       "send": "Enviar",
+      "expand": "Ampliar",
+      "collapse": "Cerrar chat",
       "quick": {
         "how": "¿Cómo voy?",
         "hard": "¿Entreno fuerte hoy?",

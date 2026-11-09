@@ -1,6 +1,7 @@
 import { defineConfig } from "@playwright/test";
 
-const PORT = 3100;
+// `E2E_PORT` para correr dos copias a la vez (por ejemplo, dos worktrees) sin chocar.
+const PORT = Number(process.env.E2E_PORT ?? 3100);
 const isCI = !!process.env.CI;
 
 // Un proyecto por ancho de móvil. El backend no hace falta: los specs mockean

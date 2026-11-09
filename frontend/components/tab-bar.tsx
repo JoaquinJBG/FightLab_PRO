@@ -10,6 +10,7 @@ import {
   CoachIcon,
   ProfileIcon,
 } from "./icons";
+import { useKeyboardOpen } from "@/lib/viewport";
 
 // "Hoy" es la primera pestaña y la pantalla de inicio (fase 11). El resumen de antes
 // (/dashboard) se abre desde Hoy y cuenta como la misma pestaña.
@@ -24,9 +25,15 @@ const tabs = [
 export function TabBar() {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  // Con el teclado abierto la barra no sube encima de él (F4): se esconde hasta que se cierra.
+  const keyboardOpen = useKeyboardOpen();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 flex justify-center">
+    <nav
+      data-testid="tab-bar"
+      hidden={keyboardOpen}
+      className={`fixed inset-x-0 bottom-0 z-40 justify-center ${keyboardOpen ? "hidden" : "flex"}`}
+    >
       <div className="glass safe-bottom mx-3 mb-3 flex w-full max-w-md items-stretch justify-between gap-1 rounded-2xl px-2 pt-2">
         {tabs.map(({ href, key, Icon, also }) => {
           const active = [href, ...(also ?? [])].some((p) => pathname === p || pathname.startsWith(p + "/"));

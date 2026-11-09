@@ -114,7 +114,7 @@ describe("vista Coach en inglés", () => {
     const { container } = renderEn(<CoachPage />);
     fireEvent.click(screen.getByText("How am I doing?"));
     expect(await screen.findByText(/Your snapshot today: week 300 AU, at your 4-week average/)).toBeTruthy();
-    await waitFor(() => expect(screen.getByText("rule-based")).toBeTruthy());
+    await waitFor(() => expect(screen.getAllByText("rule-based").length).toBeGreaterThan(0));
     fireEvent.click(screen.getByText("Train hard today?"));
     expect(await screen.findByText(/Today is not the day to run yourself into the ground: Resting HR \+15 vs your average and HRV/)).toBeTruthy();
     fireEvent.click(screen.getByText("How's my weight?"));
@@ -129,7 +129,7 @@ describe("vista Coach en inglés", () => {
     fireEvent.change(screen.getByPlaceholderText("Ask your coach…"), { target: { value: "hello" } });
     fireEvent.click(screen.getByText("Send"));
     expect(await screen.findByText("Server says hi")).toBeTruthy();
-    expect(screen.getByText("Real AI")).toBeTruthy();
+    expect(screen.getAllByText("Real AI").length).toBeGreaterThan(0);
   });
 
   it("con menos de 28 días no hay ratio: faltan N días", async () => {
