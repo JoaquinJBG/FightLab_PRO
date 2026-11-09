@@ -2841,8 +2841,8 @@
       "play": "Animar",
       "frame": "Fotograma {n} de {total}",
       "credits": "Créditos",
-      "imageCredit": "Imagen: {author} ({source}) · {license}",
-      "textCredit": "Texto: {author} ({source}) · {license}",
+      "imageCredit": "Imagen: {who}",
+      "textCredit": "Texto: {who}",
       "ownText": "Texto: FightLab · CC BY 4.0",
       "modified": "Cambios: {modified}",
       "custom": "Ejercicio propio",
@@ -2850,7 +2850,8 @@
       "delete": "Borrar",
       "deleteConfirm": "¿Borrar «{name}»? Las series que ya registraste se quedan con su nombre.",
       "deleteYes": "Sí, borrar",
-      "deleteError": "No se pudo borrar. Inténtalo de nuevo."
+      "deleteError": "No se pudo borrar. Inténtalo de nuevo.",
+      "via": "{author} vía {source}"
     },
     "library": {
       "title": "Ejercicios",

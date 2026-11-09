@@ -26,8 +26,8 @@ describe("ficha del ejercicio", () => {
     expect(hrefs).toContain("https://github.com/everkinetic/data");
     expect(hrefs).toContain("https://creativecommons.org/licenses/by-sa/4.0/");
     expect(hrefs).toContain("https://wger.de/en/exercise/73/view/");
-    expect(container.textContent).toContain("Imagen: Everkinetic (Everkinetic) · CC BY-SA 4.0");
-    expect(container.textContent).toContain("Texto: wger.de contributors (wger) · CC BY-SA 4.0");
+    expect(container.textContent).toContain("Imagen: Everkinetic · CC BY-SA 4.0");
+    expect(container.textContent).toContain("Texto: wger.de contributors vía wger · CC BY-SA 4.0");
   });
 
   it("los fotogramas se pueden parar", async () => {

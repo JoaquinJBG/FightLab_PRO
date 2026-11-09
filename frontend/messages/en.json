@@ -2841,8 +2841,8 @@
       "play": "Animate",
       "frame": "Frame {n} of {total}",
       "credits": "Credits",
-      "imageCredit": "Image: {author} ({source}) · {license}",
-      "textCredit": "Text: {author} ({source}) · {license}",
+      "imageCredit": "Image: {who}",
+      "textCredit": "Text: {who}",
       "ownText": "Text: FightLab · CC BY 4.0",
       "modified": "Changes: {modified}",
       "custom": "Custom exercise",
@@ -2850,7 +2850,8 @@
       "delete": "Delete",
       "deleteConfirm": "Delete “{name}”? Sets you already logged keep their name.",
       "deleteYes": "Yes, delete",
-      "deleteError": "Couldn't delete. Try again."
+      "deleteError": "Couldn't delete. Try again.",
+      "via": "{author} via {source}"
     },
     "library": {
       "title": "Exercises",
