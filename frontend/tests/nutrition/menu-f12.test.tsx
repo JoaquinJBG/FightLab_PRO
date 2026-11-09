@@ -169,3 +169,35 @@ describe.each(["es", "en"] as const)("menú importado (%s)", (locale) => {
     expect(screen.getAllByTestId("batch-step")[0].dataset.status).toBe("done");
   });
 });
+
+describe.each(["es", "en"] as const)("producto de la cadena en la lista (%s)", (locale) => {
+  const cat = CATALOGS[locale].menu.shopping;
+
+  it("pinta las 5 valoraciones con su texto y su chip, el aviso de revisar, envases y precio", async () => {
+    const ratings = ["bueno", "regular", "evitar", "sin_datos", "no_aplica"] as const;
+    const base = IMPORTED_MENU.shopping_list!.sections[1].items[0];
+    const items = ratings.map((rating, i) => ({
+      ...base, key: `x${i}`, name: `alimento ${i}`, pack: null, checked: false,
+      product: { chain: "Súper", product: `Producto ${i}`, pack: "bote 400 g", pack_grams: 400, packs: 2, section: null,
+        rating, review: i === 0, price: i === 0 ? 2.5 : null, price_per_kg: 3.1 },
+    }));
+    const list = { ...IMPORTED_MENU.shopping_list!, total: 5, checked: 0, sections: [{ section: "Despensa", items }] };
+    mockApi({
+      "/api/proxy/coach/menu": { body: importedState({ menu: { ...IMPORTED_MENU, shopping_list: list } }) },
+      "/api/proxy/coach/products": { body: { products: [] } },
+      "/api/proxy/coach/tickets": { body: { enabled: false, max_upload_mb: 2, tickets: [] } },
+    });
+    renderApp(<MenuPage />, locale);
+    await screen.findByTestId("shopping-list");
+    const products = screen.getAllByTestId("shopping-product");
+    expect(products.map((p) => p.dataset.rating)).toEqual([...ratings]);
+    ratings.forEach((r, i) => {
+      expect(within(products[i]).getByTestId("shopping-rating").textContent).toBe(cat.rating[r]);
+      expect(within(products[i]).getByTestId("evidence-chip")).toBeTruthy();
+    });
+    expect(within(products[0]).getByTestId("shopping-review").textContent).toBe(cat.review);
+    expect(within(products[1]).queryByTestId("shopping-review")).toBeNull();
+    expect(products[0].textContent).toContain(locale === "es" ? "2,50" : "2.50");
+    expect(products[0].textContent).toContain("bote 400 g");
+  });
+});

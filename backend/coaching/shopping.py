@@ -5,8 +5,9 @@
 - Un menú generado no la trae: sale de `coach.mealplan.shopping` (por cadena), como en la F8.
 
 En los dos casos cada línea puede llevar el producto y el formato de la cadena con su valoración
-(`chain_product`). Esa función es el enganche con la fase 13 (catálogo de Mercadona privado del
-usuario y su valoración): por defecto no hay catálogo y devuelve `None`.
+(`chain_product`). Es el enganche con la fase 13 (catálogo privado de la cadena y su valoración):
+llama a la función de `settings.SHOPPING_CHAIN_PROVIDER` (ruta con puntos; la pone la F13 en
+settings, p. ej. `coaching.chain_catalogue.chain_product`). Sin ella, no hay producto.
 
 Lo tachado se guarda en `ShoppingCheck` por el nombre del alimento sin mayúsculas ni tildes, así
 sobrevive a una reimportación del menú.
@@ -15,8 +16,10 @@ from __future__ import annotations
 
 from datetime import date
 
-from coach import mealplan
+from coach import foods, mealplan
 from coach.text import fold
+from django.conf import settings
+from django.utils.module_loading import import_string
 
 from .models import MealPlan, ShoppingCheck
 
@@ -24,13 +27,35 @@ OTHER_SECTION = ""  # sin sección: va al final
 KEY_MAX = ShoppingCheck._meta.get_field("item_key").max_length
 
 
-def chain_product(user, food_name: str, amount: float, unit: str) -> dict | None:
+RATINGS = ("bueno", "regular", "evitar", "sin_datos", "no_aplica")
+PRODUCT_FIELDS = ("chain", "product", "pack", "pack_grams", "packs", "section", "rating", "review", "price", "price_per_kg")
+
+
+def chain_product(user, food_key: str, grams: float) -> dict | None:
     """Producto de la cadena para un alimento genérico (enganche de la fase 13).
 
-    Devuelve `{"chain", "product", "pack", "packs", "section", "rating", "price"}` (los que se
-    sepan) o `None` si no hay producto. La fase 13 sustituye esta función por la suya
-    (`equivale_a` del catálogo del usuario y su valoración `bueno`/`regular`/`evitar`)."""
-    return None
+    `food_key` es la clave del alimento en el motor: su nombre en inglés de la tabla
+    (`foods.Food.name_en`), el mismo en cualquier idioma. Devuelve
+    `{"chain", "product", "pack", "pack_grams", "packs", "section", "rating", "review", "price",
+    "price_per_kg"}` o `None`. `price` es lo que cuestan los `packs` envases; `review` dice que las
+    kcal de la etiqueta no cuadran (más de un 15 %); `rating` es uno de `RATINGS` o `None`. La
+    implementación es de la F13 (`settings.SHOPPING_CHAIN_PROVIDER`); sin ella, `None`."""
+    path = getattr(settings, "SHOPPING_CHAIN_PROVIDER", None)
+    if not path or not food_key:
+        return None
+    found = import_string(path)(user, food_key, grams)
+    if not found:
+        return None
+    out = {name: found.get(name) for name in PRODUCT_FIELDS}
+    if out["rating"] not in RATINGS:
+        out["rating"] = None
+    out["review"] = bool(out["review"])
+    return out
+
+
+def _food_key(name: str, table) -> str | None:
+    food = foods.find(name, table)
+    return food.name_en if food else None
 
 
 def item_key(name: str) -> str:
@@ -46,24 +71,29 @@ def _weeks(plan: MealPlan) -> list[int]:
 
 
 def _imported_lines(plan: MealPlan, user) -> list[dict]:
+    from . import menus
+
+    table = menus.menu_table(user)
     lines = []
     for item in plan.shopping.get("items") or []:
         unit = "ml" if "ml" in item and "grams" not in item else "g"
         amount = item.get("grams") if unit == "g" else item.get("ml")
         two = item.get("grams_two") if unit == "g" else item.get("ml_two")
+        product = chain_product(user, _food_key(item["name"], table), amount or 0)
         lines.append({
             "key": item_key(item["name"]),
             "name": item["name"],
             "amount": amount,
             "amount_two": two,
             "unit": unit,
-            "section": item.get("section") or OTHER_SECTION,
+            # La sección de la cadena manda; si no la hay, la del menú.
+            "section": (product or {}).get("section") or item.get("section") or OTHER_SECTION,
             "pack": item.get("pack"),
             "chain": item.get("chain"),
             "when": item.get("when") or [],
             "dishes": item.get("dishes") or [],
             "batches": item.get("batches"),
-            "product": chain_product(user, item["name"], amount or 0, unit),
+            "product": product,
         })
     return lines
 
@@ -80,7 +110,7 @@ def _computed(plan: MealPlan, user, lang: str) -> tuple[list[dict], dict]:
         for item in items:
             unit = "ml" if "ml" in item else "g"
             amount = round(item.get("grams", item.get("ml", 0)), 2)
-            product = chain_product(user, item["name"], amount, unit)
+            product = chain_product(user, _food_key(item["name"], table), amount)
             lines.append({
                 "key": item_key(item["name"]),
                 "name": item["name"],

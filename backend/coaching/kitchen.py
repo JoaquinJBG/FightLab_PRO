@@ -11,14 +11,20 @@ los comensales con sus restricciones por comida (`Diner`) los guarda cada usuari
   platos que chocan y bloquean el día, como una alergia en `mealplan.taste_flags`.
 
 Las restricciones se comparan por nombre con `coach.tastes.matches` (palabras enteras, sin
-sinónimos). Como el motor no sabe qué alimentos son pescado o carne, `CATEGORIES` amplía unas pocas
-palabras de categoría a los alimentos que nombran. convention (FightLab): esa lista es una ayuda de
-la app, no un dato de nutrición, y no es completa: lo que no nombra no se marca.
+sinónimos). Como el motor no sabe qué alimentos son pescado o carne, unas pocas palabras de categoría
+se amplían a los alimentos que nombran (`categories()`, de `knowledge_fightlab/diner-categories.yaml`).
+convention (FightLab): esa lista es una ayuda de la app, no un dato de nutrición, y no es completa: lo
+que no nombra no se marca.
 """
 from __future__ import annotations
 
+from functools import lru_cache
+from pathlib import Path
+
+import yaml
 from coach.tastes import matches
 from coach.text import fold
+from django.conf import settings
 from django.db import transaction
 
 from .models import Diner, KitchenProfile
@@ -59,41 +65,29 @@ MAX_WORDS = 10
 WORD_MAX = 60
 NAME_MAX = Diner._meta.get_field("name").max_length
 
-# convention (FightLab): palabras de categoría y los alimentos que nombran, en es y en.
-CATEGORIES = {
-    "pescado": (
-        "merluza", "lubina", "dorada", "bacalao", "atun", "bonito", "salmon", "sardina", "boqueron",
-        "caballa", "trucha", "rape", "emperador", "pez espada", "lenguado", "rodaballo", "abadejo",
-        "panga", "perca", "palometa", "jurel", "mero", "pescado", "pescadilla", "anchoa",
-        "hake", "sea bass", "sea bream", "cod", "tuna", "salmon", "sardine", "anchovy", "mackerel",
-        "trout", "monkfish", "swordfish", "sole", "haddock", "pollock", "fish",
-    ),
-    "marisco": (
-        "gamba", "langostino", "mejillon", "almeja", "calamar", "sepia", "choco", "pulpo", "cangrejo",
-        "berberecho", "vieira", "chipiron", "marisco", "cigala", "bogavante",
-        "prawn", "shrimp", "mussel", "clam", "squid", "cuttlefish", "octopus", "crab", "scallop", "shellfish",
-    ),
-    "carne": (
-        "pollo", "pavo", "ternera", "cerdo", "cordero", "conejo", "vaca", "buey", "carne", "jamon",
-        "lomo", "chorizo", "salchicha", "hamburguesa", "contramuslo", "bacon", "beicon", "panceta",
-        "chicken", "turkey", "beef", "pork", "lamb", "rabbit", "meat", "ham", "sausage", "burger",
-    ),
-    "cerdo": (
-        "cerdo", "jamon", "lomo", "chorizo", "bacon", "beicon", "panceta", "salchichon", "morcilla",
-        "carrillera", "pork", "ham", "bacon", "chorizo",
-    ),
-    "lacteos": (
-        "leche", "yogur", "queso", "nata", "mantequilla", "kefir", "requeson", "cottage",
-        "milk", "yoghurt", "yogurt", "cheese", "cream", "butter", "dairy",
-    ),
-}
-CATEGORY_NAMES = {
-    "pescado": "pescado", "pescados": "pescado", "fish": "pescado",
-    "marisco": "marisco", "mariscos": "marisco", "shellfish": "marisco", "seafood": "marisco",
-    "carne": "carne", "carnes": "carne", "meat": "carne",
-    "cerdo": "cerdo", "pork": "cerdo",
-    "lacteos": "lacteos", "lacteo": "lacteos", "dairy": "lacteos",
-}
+# convention (FightLab): las palabras de categoría y los alimentos que nombran, en es y en, son datos
+# del anexo (`knowledge_fightlab/diner-categories.yaml`, etiquetados "FightLab convention"): se revisan
+# y amplían allí sin tocar esta lógica.
+CATEGORIES_FILE = Path(settings.BASE_DIR) / "knowledge_fightlab" / "diner-categories.yaml"
+
+
+@lru_cache(maxsize=1)
+def _categories() -> tuple[dict[str, tuple[str, ...]], dict[str, str], str]:
+    data = yaml.safe_load(CATEGORIES_FILE.read_text(encoding="utf-8"))
+    words, names = {}, {}
+    for key, entry in data["categories"].items():
+        words[key] = tuple(w for lang in ("es", "en") for w in entry["words"].get(lang) or [])
+        for name in entry["names"]:
+            names[fold(name).strip()] = key
+    return words, names, data.get("label", "FightLab convention")
+
+
+def categories() -> dict[str, tuple[str, ...]]:
+    return _categories()[0]
+
+
+def category_names() -> dict[str, str]:
+    return _categories()[1]
 
 
 class KitchenInvalid(ValueError):
@@ -229,7 +223,7 @@ def kitchen_data(profile) -> dict:
         "limits": {name: list(spec[1:]) for name, spec in EQUIPMENT.items() if spec[0] != "bool"},
         "diners": diners_of(profile),
         "meals": list(MEALS),
-        "categories": sorted(CATEGORIES),
+        "categories": sorted(categories()),
         "categories_convention": "fightlab",
     }
 
@@ -255,8 +249,8 @@ def save_kitchen(profile, data: dict) -> dict:
 
 def expand(word: str) -> tuple[str, ...]:
     """Una palabra de restricción y, si es una categoría, los alimentos que nombra."""
-    category = CATEGORY_NAMES.get(fold(word).strip())
-    return (word, *CATEGORIES[category]) if category else (word,)
+    category = category_names().get(fold(word).strip())
+    return (word, *categories()[category]) if category else (word,)
 
 
 def restriction_hit(rule: dict, names: tuple[str, ...]) -> str | None:
