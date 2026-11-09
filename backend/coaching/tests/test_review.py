@@ -231,6 +231,39 @@ def test_adherence_compares_the_plan_in_force_with_the_logs(today_fixed):
     assert adherence["sessions"]["mma"]["done"] == 1
 
 
+def test_adherence_counters_and_list_follow_the_same_criterion(today_fixed):
+    """F7 (prueba en móvil): «Gimnasio: 2 de 2» con los dos gimnasios «No registrada» porque se
+    hicieron en días de cardio, «MMA: 3 de 2» sin las sesiones en la lista, y la lista sin ordenar."""
+    user = athlete()
+    plan = plans.generate(user, TODAY, plans.PlanRequest(gym_days=["mon", "thu"], mma_days=[], cardio_days=["tue", "fri"]))
+    plans.apply(user, plan, TODAY)
+    # La semana revisada va del viernes 23 al jueves 29. Gimnasio el viernes y el martes (días de
+    # cardio) y dos MMA que el plan no tenía.
+    log_session(user, date(2026, 10, 23), [bench()])
+    log_session(user, date(2026, 10, 27), [bench()])
+    for day in (date(2026, 10, 24), date(2026, 10, 25)):
+        Activity.objects.create(profile=user.profile, kind="MMA", duration_sec=3600, rpe=7,
+                                started_at=datetime.combine(day, time(12), tzinfo=timezone.utc))
+    adherence = run(user).json()["adherence"]
+    entries = adherence["entries"]
+    assert [e["date"] for e in entries] == sorted(e["date"] for e in entries)  # en orden de fecha
+    gym = [e for e in entries if e["kind"] == "gym"]
+    assert [(e["date"], e["done"], e["done_date"]) for e in gym] == [
+        ("2026-10-26", True, "2026-10-23"), ("2026-10-29", True, "2026-10-27"),
+    ]
+    assert adherence["sessions"]["gym"] == {"planned": 2, "done": 2}
+    # Las MMA fuera del plan cuentan y se ven
+    mma = [e for e in entries if e["kind"] == "mma"]
+    assert [(e["date"], e["planned"], e["done"]) for e in mma] == [("2026-10-24", False, True), ("2026-10-25", False, True)]
+    assert adherence["sessions"]["mma"] == {"planned": 0, "done": 2}
+    # El cardio del plan no se hizo (el gimnasio de ese día no cuenta como cardio)
+    assert [e["done"] for e in entries if e["kind"] == "cardio"] == [False, False]
+    assert adherence["done_planned"] == 2 and adherence["planned_total"] == 4
+    # Cada contador cuadra con la lista
+    for kind, count in adherence["sessions"].items():
+        assert count["done"] == sum(1 for e in entries if e["kind"] == kind and e["done"]), kind
+
+
 def test_adherence_without_a_plan_counts_only_what_was_done(today_fixed):
     user = athlete()
     log_session(user, TODAY - timedelta(days=1), [bench()])

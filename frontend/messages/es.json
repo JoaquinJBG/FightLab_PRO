@@ -481,7 +481,17 @@
     "menuCard": {
       "title": "Menú y lista de la compra",
       "body": "Platos para varios días, comprobados por el coach contra tus objetivos."
-    }
+    },
+    "source": {
+      "menu": "Del menú: marcada «Hecha» en Hoy (kcal previstas)",
+      "food": "Buscado en la tabla de alimentos",
+      "manual": "Apuntado a mano",
+      "photo": "Foto del plato",
+      "recent": "De tus recientes",
+      "yesterday": "Copiado de ayer"
+    },
+    "menuUnmark": "{name}: se quita desmarcando la comida en Hoy",
+    "menuUnmarkShort": "En Hoy"
   },
   "dashboard": {
     "greeting": {
@@ -737,7 +747,8 @@
       "weight": "{n} kg",
       "recovery": "Recuperación",
       "unknownDate": "Fecha desconocida",
-      "deleteAria": "Borrar entrada"
+      "deleteAria": "Borrar entrada",
+      "dayMean": "Ese día hay {count} pesajes: cuenta la media del día."
     },
     "photos": {
       "title": "Fotos de progreso",
@@ -1328,7 +1339,10 @@
       "unknown": "Aún no te conozco del todo: registra tus entrenos (con RPE) y tus mediciones, y este briefing se volverá tuyo de verdad.",
       "weigh": "Pesaje en {days} días y vas {over} kg por encima: déficit suave, sin recortes agresivos todavía.",
       "train": "Ir a entrenar",
-      "nutrition": "Ver nutrición"
+      "nutrition": "Ver nutrición",
+      "headBlow": "Tienes el contacto bloqueado por un golpe en la cabeza con síntomas. El día del golpe no se entrena; después, nada de sparring, clinch, drills con compañero, grappling en vivo ni entrenos duros hasta que un clínico te dé el alta. La vuelta al contacto va por fases.",
+      "headBlowAction": "Ver el bloqueo",
+      "injury": "Lesión guardada ({areas}): lo que carga esa zona va sin progresión, y sin carga hasta que la valore un médico o un fisioterapeuta. El resto del entreno sigue."
     },
     "recs": {
       "heading": "Recomendaciones",
@@ -1360,6 +1374,16 @@
       "ok": {
         "title": "Sin avisos: todo en orden 👊",
         "whyNoData": "Sin avisos por ahora. Cuantos más entrenos y mediciones registres, más fino seré."
+      },
+      "headBlow": {
+        "title": "Contacto bloqueado tras un golpe en la cabeza",
+        "why": "Hasta que un clínico te dé el alta: ni contacto ni entrenos duros. La vuelta al contacto va por fases, de al menos 24 horas cada una.",
+        "action": "Ver la vuelta al contacto"
+      },
+      "injury": {
+        "title": "Lesión guardada: {areas}",
+        "why": "Sin progresión en lo que carga esa zona y sin carga hasta que la valore un profesional. Si el dolor es agudo, va a peor o notas entumecimiento o debilidad, para y ve a un médico.",
+        "action": "Apuntarla en el check-in"
       }
     },
     "chat": {
@@ -1398,7 +1422,16 @@
       "summary": "Tu foto de hoy: {parts}. ¿Quieres el plan del día?",
       "summaryNone": "Aún no tengo datos tuyos. Empieza registrando un entreno o tu peso y hablamos.",
       "thanks": "A trabajar. Registra la sesión cuando acabes y la cuento en tu carga. 🥊",
-      "default": "Te leo. Pregúntame por el entreno de hoy, tu carga, tu peso o tu recuperación — te contesto con tus números reales."
+      "default": "Te leo. Pregúntame por el entreno de hoy, tu carga, tu peso o tu recuperación — te contesto con tus números reales.",
+      "safety": {
+        "headBlow": "Lo primero es tu cabeza: tras un posible golpe en la cabeza, hoy no entrenes, aunque te encuentres bien. Nada de sparring ni contacto hasta que te valore un médico. Si tienes dolor de cuello, vómitos repetidos, una convulsión, confusión o un dolor de cabeza que va a más, ve a urgencias ya y no te quedes solo. Avísalo en Entreno → MMA → «Avisar de un golpe en la cabeza».",
+        "cardiac": "Para y no entrenes hoy: el dolor u opresión en el pecho, el mareo, el desmayo, la falta de aire o las palpitaciones son señales de aviso. Ve a un médico antes de volver a entrenar. Si es dolor en el pecho en reposo, un desmayo o dolor en el pecho con falta de aire y sudor, llama ya a tu número de emergencias (112 en Europa).",
+        "illness": "Con fiebre, dolores por todo el cuerpo o malestar por debajo del cuello, hoy no se entrena: descansa hasta que estés mejor.",
+        "pain": "Con un dolor nuevo o una lesión, hoy no cargues esa zona ni entrenes a través del dolor. Si el dolor es agudo, va a peor o notas entumecimiento o debilidad, para y ve a un médico. Apúntalo en el check-in (Señales de alarma → «Dolor nuevo o una lesión») para que el plan le quite carga hasta que lo valore un médico o un fisioterapeuta."
+      },
+      "headBlowActive": "Lo primero es el golpe en la cabeza que avisaste: hasta que un clínico te dé el alta, nada de sparring ni contacto y nada de entrenar duro; el día del golpe, no entrenes. Caminar y la actividad diaria están bien si no empeoran los síntomas. La vuelta al contacto va por fases y la autoriza un clínico. Si notas dolor de cuello, vómitos, confusión o un dolor de cabeza que va a más, ve a urgencias ya.",
+      "injuryKnown": "Tienes guardada una lesión: {areas}.",
+      "injuryLimit": "Ojo con tu lesión ({areas}): lo que carga esa zona, sin progresión y sin carga hasta que la valore un médico o un fisioterapeuta; el resto, normal."
     },
     "advanced": {
       "title": "Avanzado"
@@ -1974,7 +2007,8 @@
       "zone": "Esfuerzo RPE {low}-{high}",
       "zoneBpm": "{low}-{high} ppm",
       "options": "Opciones",
-      "excluded": "Fuera de tu plan"
+      "excluded": "Fuera de tu plan",
+      "minSession": "Cada sesión dura al menos {minutes} min: si falta poco, se junta en menos días."
     },
     "nutrition": {
       "kcal": "{kcal} kcal al día",
@@ -2016,6 +2050,11 @@
       "body": "La aceptaste en la revisión semanal: series recortadas un {low}-{high} %, las mismas cargas y cada serie a {rir} o más repeticiones del fallo.",
       "rest": "Añade {low}-{high} días de descanso esta semana.",
       "effort": "Termina cada serie a {rir} o más repeticiones del fallo"
+    },
+    "live": {
+      "title": "Ajustado a tu seguridad de hoy",
+      "body": "Desde que preparaste este plan ha cambiado algo de tu seguridad (un golpe en la cabeza o una lesión), y ya está aplicado aquí: lo que no puedes hacer sale tachado o en pausa. Si quieres repartir la semana de otra forma, vuelve a prepararlo.",
+      "noContact": "Sin contacto hasta que un clínico te dé el alta. La vuelta al contacto va por fases, de al menos 24 horas cada una, y la autoriza un clínico: se quita en Entreno → MMA."
     }
   },
   "weeklyReview": {
@@ -2084,7 +2123,9 @@
       "intake": "Comiste de media {mean} kcal en {days, plural, one {# día registrado} other {# días registrados}}; tu objetivo es {target} kcal ({diff} kcal).",
       "intakeNoTarget": "Comiste de media {mean} kcal en {days, plural, one {# día registrado} other {# días registrados}}.",
       "intakeNone": "Sin ingesta registrada esta semana: anótala en el check-in para comparar con tu objetivo.",
-      "intakeBlocked": "Por seguridad no comparamos lo que comes con un objetivo de calorías."
+      "intakeBlocked": "Por seguridad no comparamos lo que comes con un objetivo de calorías.",
+      "doneOn": "Hecha el {date}",
+      "extra": "Fuera del plan"
     },
     "weight": {
       "ok": "Tendencia: {kg} kg de media la última semana; {rate} kg por semana ({pct} % por semana) en {days} días.",
@@ -2221,7 +2262,8 @@
       "fat": "Grasa: al menos {g} g",
       "fibre": "Fibra: al menos {g} g",
       "margin": "Un día vale desde tu objetivo de kcal hasta un {pct} % más",
-      "noRepeat": "Ningún plato se repite en {days} días"
+      "noRepeat": "Ningún plato se repite en {days} días",
+      "changed": "Este menú se preparó con tus objetivos de ese día. Hoy tu proteína es de al menos {g} g: prepara otro menú para ajustarlo."
     },
     "day": {
       "ok": "Comprobado",
@@ -2743,7 +2785,10 @@
       "cardio": "Cardio, {minutes} min",
       "mma": "MMA",
       "at": "a las {time}",
-      "openSession": "Empezar la sesión {session}"
+      "openSession": "Empezar la sesión {session}",
+      "headBlow": "Golpe en la cabeza: el día del golpe no entrenes, y hasta que un clínico te dé el alta, nada de contacto ni entrenos duros.",
+      "paused": "En pausa por tu lesión (sin progresión, y sin carga si nadie la ha valorado): {exercises}",
+      "contactBlocked": "Sin contacto: sparring, clinch, drills con compañero y grappling en vivo, fuera hasta el alta de un clínico."
     },
     "dayType": {
       "title": "Qué toca hoy",
@@ -2769,7 +2814,8 @@
       "save": "Guardar",
       "saved": "Guardado: {kg} kg",
       "invalid": "Escribe un número, p. ej. 72,4",
-      "blocked": "El peso no se apunta por ahora: tus respuestas del cribado lo cierran. Lo demás sigue igual."
+      "blocked": "El peso no se apunta por ahora: tus respuestas del cribado lo cierran. Lo demás sigue igual.",
+      "dayMean": "Hoy hay {count} pesajes: cuenta la media del día, {kg} kg."
     },
     "meals": {
       "title": "Comidas del menú",
@@ -2788,7 +2834,9 @@
       "changedTo": "En su lugar: {what}",
       "clear": "Quitar la marca",
       "prep": "Ese día: {list}",
-      "previousMark": "Antes, con otro plato: {state} ({dish}). El menú de hoy ha cambiado; marca este plato."
+      "previousMark": "Antes, con otro plato: {state} ({dish}). El menú de hoy ha cambiado; marca este plato.",
+      "inDiary": "Sumada a Nutrición: {kcal} kcal previstas del plato.",
+      "logInstead": "Apunta en Nutrición lo que comiste: solo cuenta lo que apuntes."
     },
     "cardio": {
       "title": "Cardio",

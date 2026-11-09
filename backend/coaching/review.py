@@ -128,10 +128,38 @@ def _intakes(user, start: date, end: date) -> list[int]:
     )
 
 
+def _match(entries: list[dict], done: list[tuple[date, str]]) -> list[dict]:
+    """Junta lo planeado con lo registrado, con el mismo criterio que los contadores (F7).
+
+    Cada sesión registrada de un tipo cumple una del plan de ese tipo: primero la del mismo día y,
+    si no, la primera que quede sin hacer de la semana (una sesión de gimnasio hecha en un día de
+    cardio cuenta). Lo registrado que sobra sale como «fuera del plan». La lista va por fecha."""
+    left: dict[str, list[date]] = {}
+    for day, kind in sorted(done):
+        left.setdefault(kind, []).append(day)
+    for e in entries:  # el mismo día
+        days = left.get(DONE_KIND[e["kind"]], [])
+        planned_day = date.fromisoformat(e["date"])
+        if planned_day in days:
+            days.remove(planned_day)
+            e["done"], e["done_date"] = True, e["date"]
+    for e in entries:  # otro día de la semana
+        days = left.get(DONE_KIND[e["kind"]], [])
+        if not e["done"] and days:
+            e["done"], e["done_date"] = True, days.pop(0).isoformat()
+    kind_of = {v: k for k, v in DONE_KIND.items()}
+    extras = [
+        {"day": plans.DAYS[day.weekday()], "date": day.isoformat(), "kind": kind_of[kind], "session": None,
+         "done": True, "done_date": day.isoformat(), "planned": False}
+        for kind, days in left.items() if kind in kind_of for day in days
+    ]
+    order = tuple(DONE_KIND)
+    return sorted(entries + extras, key=lambda e: (e["date"], not e["planned"], order.index(e["kind"])))
+
+
 def adherence_data(user, start: date, end: date, plan: WeeklyPlan | None, target_kcal: int | None,
                    kcal_blocked: bool) -> dict:
     done = _activities(user, start, end)
-    done_days = {(day, kind) for day, kind in done}
     counts = Counter(kind for _, kind in done)
     entries = []
     if plan is not None:
@@ -143,9 +171,12 @@ def adherence_data(user, start: date, end: date, plan: WeeklyPlan | None, target
                 "date": day.isoformat(),
                 "kind": e["kind"],
                 "session": e.get("session"),
-                "done": (day, DONE_KIND[e["kind"]]) in done_days,
+                "done": False,
+                "done_date": None,
+                "planned": True,
             })
-    planned = Counter(e["kind"] for e in entries)
+        entries = _match(entries, done)
+    planned = Counter(e["kind"] for e in entries if e["planned"])
     sessions = {
         kind: {"planned": planned[kind] if plan is not None else None, "done": counts[DONE_KIND[kind]]}
         for kind in DONE_KIND
@@ -168,7 +199,7 @@ def adherence_data(user, start: date, end: date, plan: WeeklyPlan | None, target
         "plan_id": plan.id if plan else None,
         "plan_week_start": plan.week_start.isoformat() if plan else None,
         "planned_total": sum(planned.values()) if plan is not None else None,
-        "done_planned": sum(1 for e in entries if e["done"]) if plan is not None else None,
+        "done_planned": sum(1 for e in entries if e["planned"] and e["done"]) if plan is not None else None,
         "sessions": sessions,
         "entries": entries,
         "nutrition": nutrition,

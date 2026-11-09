@@ -5,6 +5,7 @@ de convertirse en `False`: para el coach, *sin contestar* no es *contestado con 
 """
 from dataclasses import dataclass
 from datetime import date
+from statistics import fmean
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from coach import profile as coach_profile
@@ -32,9 +33,23 @@ def weigh_ins(user) -> list[tuple[date, float]]:
     return [(log.timestamp.astimezone(tz).date(), float(log.weight_kg)) for log in logs]
 
 
+def daily_weights(user) -> list[tuple[date, float, int]]:
+    """El peso de cada día: la media de los pesajes de ese día, con cuántos hubo (F28).
+
+    Criterio de FightLab para dos pesajes el mismo día (el de Hoy por la mañana y otro de
+    Biometría, por ejemplo): cuenta la media del día, que es como la tendencia del motor lee la
+    báscula (`coach.trend`, medias diarias). Biometría, Hoy y la tendencia usan este mismo
+    criterio. Más antiguo primero."""
+    by_day: dict[date, list[float]] = {}
+    for day, kg in weigh_ins(user):
+        by_day.setdefault(day, []).append(kg)
+    return [(day, fmean(values), len(values)) for day, values in sorted(by_day.items())]
+
+
 def latest_weight(user, today: date | None = None) -> tuple[float, date] | None:
-    """El último peso registrado (hasta `today`) y su fecha, para avisar si es antiguo."""
-    points = [(d, kg) for d, kg in weigh_ins(user) if today is None or d <= today]
+    """El peso del último día con pesaje (hasta `today`), la media de ese día, y su fecha, para
+    avisar si es antiguo."""
+    points = [(d, kg) for d, kg, _ in daily_weights(user) if today is None or d <= today]
     if not points:
         return None
     day, kg = points[-1]

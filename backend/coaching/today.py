@@ -13,10 +13,14 @@ vigoroso cuenta como dos moderados ("1 vigorous minute counts as about 2 moderat
 """
 from datetime import date, datetime, time, timedelta
 
+from coach import foods
 from coach.text import fold
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
+
+from userstate.models import UserState
+from userstate.services import validate_value_size
 
 from activities.constants import MAX_ACTIVITIES_PER_DAY
 from activities.models import Activity
@@ -25,6 +29,7 @@ from . import batch, checkin, rules
 from .bridge.adapters import _tz
 from .models import DayLog, KnowledgeRule, MealCheck, MealPlan, WeeklyPlan
 from .plan import CARDIO_MODERATE_MIN, DAYS
+from .plan import live_safety as plan_live_safety
 from .session_check import EFFORT_SCALE, VIGOROUS_RPE
 from .targets import _key
 
@@ -108,24 +113,39 @@ def planned_type(entries: list[dict]) -> str:
 
 
 def plan_for(user, day: date) -> dict | None:
+    """El plan del día, con los bloqueos de seguridad de ese día ya aplicados (F26): sin contacto
+    tras un golpe en la cabeza con síntomas y sin carga en lo que afecta una lesión."""
     plan = _active_plan(user)
     if plan is None:
         return None
+    live = plan_live_safety(plan, day)
+    schedule = live["training_schedule"] if live else plan.training_schedule or []
     weekday = DAYS[day.weekday()]
-    sessions = {s.get("key"): s for s in plan.sessions or []}
+    sessions = {s.get("key"): s for s in (live["sessions"] if live else plan.sessions or [])}
     entries = []
-    for entry in plan.training_schedule or []:
+    for entry in schedule:
         if entry.get("day") != weekday:
             continue
         out = {"kind": entry.get("kind"), "time": entry.get("time")}
         if entry.get("kind") == "gym":
             session = sessions.get(entry.get("session")) or {}
+            items = session.get("items") or []
             out["session"] = entry.get("session")
-            out["exercises"] = [i.get("exercise") for i in session.get("items") or []]
+            out["exercises"] = [i.get("exercise") for i in items]
+            out["paused"] = [i.get("exercise") for i in items if i.get("action") == "paused"]
         elif entry.get("kind") == "cardio":
             out["minutes"] = entry.get("minutes")
+        elif entry.get("kind") == "mma":
+            out["contact_blocked"] = any("no_contact" in (w.get("blocked_by") or []) for w in entry.get("excluded") or [])
         entries.append(out)
-    return {"id": plan.id, "week_start": plan.week_start.isoformat(), "entries": entries, "type": planned_type(entries)}
+    status = live["status"] if live else {}
+    return {
+        "id": plan.id,
+        "week_start": plan.week_start.isoformat(),
+        "entries": entries,
+        "type": planned_type(entries),
+        "no_contact": bool(status.get("no_contact")),
+    }
 
 
 # ---------------------------------------------------------------- menú
@@ -166,7 +186,29 @@ def mark_applies(mark: MealCheck, meal: dict, day: date, today: date) -> bool:
     return fold(mark.dish) == fold(planned_dish(meal))
 
 
-def _meal_out(meal: dict, mark: MealCheck | None, day: date, today: date) -> dict:
+def meal_totals(meal: dict, table) -> dict | None:
+    """Las kcal y los macros previstos de una comida del menú, con los totales del motor
+    (`foods.menu_totals`), sin cuentas propias. `None` si la comida no trae ingredientes (comida
+    libre) o ninguno está en la tabla."""
+    items = [foods.parse_item(i) for d in meal.get("dishes") or [] for i in d.get("items") or []]
+    if not items:
+        return None
+    try:
+        totals = foods.menu_totals(items, table)
+    except ValueError:  # una unidad que no casa con la tabla: sin previsión, no se inventa
+        return None
+    if len(totals.unknown) == len(items):
+        return None
+    return {
+        "kcal": round(totals.kcal),
+        "p": round(totals.protein_g),
+        "c": round(totals.carbs_g),
+        "f": round(totals.fat_g),
+        "partial": bool(totals.unknown),
+    }
+
+
+def _meal_out(meal: dict, mark: MealCheck | None, table, day: date, today: date) -> dict:
     previous = None
     if mark is not None and not mark_applies(mark, meal, day, today):
         previous = {"state": STATE_KEYS[mark.state], "change": mark.change or None, "dish": mark.dish}
@@ -181,6 +223,7 @@ def _meal_out(meal: dict, mark: MealCheck | None, day: date, today: date) -> dic
         "eve": eve_list(meal.get("eve")),
         "mark": {"state": STATE_KEYS[mark.state], "change": mark.change or None} if mark else None,
         "previous_mark": previous,
+        "totals": meal_totals(meal, table),
     }
 
 
@@ -208,13 +251,74 @@ def tonight(user, day: date) -> dict:
 
 
 def meals_for(user, day: date, today: date | None = None) -> dict | None:
+    from .menus import menu_table
+
     plan, menu = menu_day(user, day)
     if plan is None:
         return None
     marks = {m.meal: m for m in MealCheck.objects.filter(profile=user.profile, date=day)}
     today = today or day
-    meals = [_meal_out(m, marks.get(MEALS.get(m.get("meal", ""))), day, today) for m in menu.get("meals") or []]
+    table = menu_table(user)
+    meals = [_meal_out(m, marks.get(MEALS.get(m.get("meal", ""))), table, day, today) for m in menu.get("meals") or []]
     return {"id": plan.id, "start_date": plan.start_date.isoformat(), "meals": meals}
+
+
+# ---------------------------------------------------------------- diario de Nutrición (F6)
+
+# Las comidas del diario de Nutrición (`frontend/lib/nutrition.ts`, `MEALS`).
+DIARY_MEALS = {"breakfast": "Desayuno", "lunch": "Comida", "snack": "Snack", "dinner": "Cena"}
+DIARY_SOURCE = "menu"
+
+
+def diary_link(day: date, meal: str) -> str:
+    return f"menu:{day.isoformat()}:{meal}"
+
+
+def sync_diary(user, day: date, meal: str, planned: dict, state: str | None) -> None:
+    """F6, como en ParteDiario: una comida del menú marcada «Hecha» suma al diario de Nutrición
+    sus kcal y macros previstos, como una entrada ligada a la marca (`link`). Si se desmarca, se
+    marca «No hecha» o «Cambiada», la entrada se quita: con «Cambiada» solo cuenta lo que la
+    persona apunte en Nutrición.
+
+    El diario vive en `UserState` (`nutri_<fecha>`, last-write-wins por `updated_at`); aquí solo
+    se quita o se pone la entrada ligada, sin tocar las demás, y se escribe con un `updated_at`
+    posterior al guardado para que los dispositivos adopten esta versión al hidratar."""
+    link = diary_link(day, meal)
+    key = f"nutri_{day.isoformat()}"
+    entry = UserState.objects.select_for_update().filter(profile=user.profile, key=key).first()
+    items = entry.value if entry is not None and isinstance(entry.value, list) else []
+    kept = [i for i in items if not (isinstance(i, dict) and i.get("link") == link)]
+    if state == "done":
+        from .menus import menu_table
+
+        totals = meal_totals(planned, menu_table(user))
+        if totals is not None:
+            name = ", ".join(d.get("dish", "") for d in planned.get("dishes") or [] if d.get("dish"))
+            kept.append({
+                "id": f"menu-{day.isoformat()}-{meal}",
+                "meal": DIARY_MEALS[meal],
+                "name": name[:DISH_MAX] or DIARY_MEALS[meal],
+                "grams": None,
+                "kcal": totals["kcal"],
+                "p": totals["p"],
+                "c": totals["c"],
+                "f": totals["f"],
+                "source": DIARY_SOURCE,
+                "link": link,
+            })
+    if kept == items and entry is not None:
+        return
+    if entry is None and not kept:
+        return
+    validate_value_size(kept)
+    now = timezone.now()
+    if entry is None:
+        entry = UserState(profile=user.profile, key=key)
+    elif entry.updated_at >= now:  # un reloj de cliente adelantado: esta escritura tiene que ganar
+        now = entry.updated_at + timedelta(milliseconds=1)
+    entry.value = kept
+    entry.updated_at = now
+    entry.save()
 
 
 def next_meal(menu: dict | None) -> dict | None:
@@ -390,6 +494,7 @@ def save_day(user, day: date, today: date, values: dict) -> None:
         row.save()
 
 
+@transaction.atomic
 def save_meal(user, day: date, today: date, meal: str, state: str | None, change: str = "") -> None:
     """Marca una comida del menú de `day`; `state: null` quita la marca."""
     check_day(day, today)
@@ -407,6 +512,7 @@ def save_meal(user, day: date, today: date, meal: str, state: str | None, change
     if errors:
         raise ValidationError(errors)
     key = MEALS[meal]
+    sync_diary(user, day, meal, planned[meal], state)
     if state is None:
         MealCheck.objects.filter(profile=user.profile, date=day, meal=key).delete()
         return
@@ -417,9 +523,20 @@ def save_meal(user, day: date, today: date, meal: str, state: str | None, change
     )
 
 
+def day_weight(user, day: date, blocked: bool) -> dict | None:
+    """El peso que cuenta ese día (F28): la media de sus pesajes, con cuántos hubo."""
+    if blocked:
+        return None
+    from .bridge.adapters import daily_weights
+
+    found = next(((kg, n) for d, kg, n in daily_weights(user) if d == day), None)
+    return {"kg": round(found[0], 2), "count": found[1]} if found else None
+
+
 def today_data(user, day: date, today: date) -> dict:
     row = user.profile.day_logs.filter(date=day).first()
     data = checkin.checkin_data(user, day, today)
+    weight_blocked = checkin.weight_tracking_blocked(user, today)
     plan = plan_for(user, day)
     menu = meals_for(user, day, today)
     set_type = DAY_TYPE_KEYS.get(row.day_type) if row else None
@@ -433,7 +550,8 @@ def today_data(user, day: date, today: date) -> dict:
         "trained": row.trained if row else None,
         "mobility": row.mobility if row else None,
         "weight_kg": data["weight_kg"] if data else None,
-        "weight_blocked": checkin.weight_tracking_blocked(user, today),
+        "weight_blocked": weight_blocked,
+        "day_weight": day_weight(user, day, weight_blocked),
         "menu": menu,
         "next_meal": next_meal(menu),
         "cardio": cardio_for(user, day),
