@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMe, useProfile, useLogout } from "@/lib/hooks";
 import { SafetyBanner } from "@/components/safety/SafetyBanner";
@@ -16,7 +15,6 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 export default function ProfilePage() {
-  const router = useRouter();
   const { data: me } = useMe();
   const { data: profile } = useProfile();
   const logout = useLogout();
@@ -28,9 +26,9 @@ export default function ProfilePage() {
   // Valor desconocido del servidor: se muestra tal cual en vez de romper la vista
   const opt = (group: string, v?: string | null) => (v ? (t.has(`options.${group}.${v}`) ? t(`options.${group}.${v}`) : v) : null);
 
+  // useLogout limpia el dispositivo y abre /login con una carga completa (F15).
   async function onLogout() {
     await logout.mutateAsync();
-    router.push("/login");
   }
 
   const dash = (x?: string | number | null) => (x === null || x === undefined || x === "" ? "—" : String(x));

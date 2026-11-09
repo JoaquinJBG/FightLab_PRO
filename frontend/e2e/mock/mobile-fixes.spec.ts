@@ -39,6 +39,28 @@ test("F4: el chat del coach ocupa la pantalla y con el teclado se ve la última 
   await expect(page.getByTestId("tab-bar")).toBeVisible();
 });
 
+test("F15: cerrar sesión lleva a /login sin «Sesión caducada» y sin peticiones que den 401", async ({ page, session }) => {
+  void session;
+  let loggedOut = false;
+  const after401: string[] = [];
+  await page.route("**/api/auth/logout", (route) => {
+    loggedOut = true;
+    return route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
+  });
+  // Tras el cierre, el proxy da 401 como el BFF sin cookies; se apunta cada petición que llegue.
+  await page.route("**/api/proxy/**", (route) => {
+    if (!loggedOut) return route.fallback();
+    after401.push(new URL(route.request().url()).pathname);
+    return route.fulfill({ status: 401, contentType: "application/json", body: "{}" });
+  });
+  await page.goto("/profile");
+  await page.getByRole("button", { name: "Cerrar sesión" }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByText("Sesión caducada")).toBeHidden();
+  await page.waitForTimeout(1_000);
+  expect(after401).toEqual([]);
+});
+
 test("F5: sin conexión, las pantallas ya abiertas cargan su armazón y las demás, la página propia", async ({ page, context, session }) => {
   void session;
   // Solo contra el build (`pnpm start`, como en la CI): con `next dev` los archivos de la app

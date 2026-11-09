@@ -3,7 +3,8 @@
 // en móvil (F5), no quedarse en la página genérica de Chrome sin conexión:
 // - las pantallas y los archivos de la app van primero a la red y se guarda una copia; sin red se
 //   abre la copia (el armazón de la app, sin datos: los datos siguen viniendo de /api) y, si no
-//   hay copia de esa pantalla, la página propia sin conexión (/offline.html, en es y en);
+//   hay copia de esa pantalla, la página propia sin conexión (/offline.html, en es y en). Al
+//   cerrar sesión, la app borra las copias de las pantallas (finishLogout en lib/hooks.ts);
 // - /api nunca pasa por la caché: los datos y la sesión siempre van a la red.
 const VERSION = "v1";
 const SHELL_CACHE = `flp-shell-${VERSION}`;
@@ -99,13 +100,6 @@ self.addEventListener("fetch", (event) => {
   }
   if (url.pathname.startsWith("/_next/static/") || SHELL_FILES.includes(url.pathname) || /\.(?:png|svg|ico|webmanifest|woff2?)$/.test(url.pathname)) {
     event.respondWith(asset(event));
-  }
-});
-
-// Al cerrar sesión la app pide borrar las copias de las pantallas (finishLogout en lib/hooks.ts).
-self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "flp-clear-pages") {
-    event.waitUntil(caches.delete(PAGES_CACHE));
   }
 });
 

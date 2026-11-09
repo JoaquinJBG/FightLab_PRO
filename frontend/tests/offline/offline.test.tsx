@@ -219,14 +219,6 @@ describe("service worker sin conexión", () => {
     expect(await sw.get("/api/proxy/coach/today")).toBeUndefined(); // sin respondWith: va a la red tal cual
     expect(await sw.navigate("/api/menu-pdf/1")).toBeUndefined();
   });
-
-  it("al cerrar sesión borra las copias de las pantallas", async () => {
-    const sw = loadSw(async () => page("p"));
-    await sw.navigate("/profile");
-    expect(sw.stores.has("flp-pages-v1")).toBe(true);
-    await sw.run("message", { data: { type: "flp-clear-pages" } });
-    expect(sw.stores.has("flp-pages-v1")).toBe(false);
-  });
 });
 
 describe("offline.html", () => {

@@ -305,22 +305,40 @@ export function resetSessionExpiredGuard(): void {
   sessionExpiredHandled = false;
 }
 
-/** Limpieza del dispositivo tras un logout con éxito. ANTES de
+/** Limpieza del dispositivo tras un logout con éxito, y a /login. ANTES de
  *  `clearDeviceState`: cancela timers/listeners de la cola de user-state para
  *  que un reintento ya agendado no se dispare con las cookies de la SIGUIENTE
- *  cuenta que entre en esta misma pestaña (sin recarga completa). */
-export function finishLogout(qc: { clear: () => void }, uid: string | null): void {
-  qc.clear();
+ *  cuenta. */
+export function finishLogout(
+  uid: string | null,
+  navigate: (url: string) => void = (url) => window.location.replace(url),
+): void {
+  // Cierre a propósito (F15): un 401 que llegue ahora es del propio cierre, no una sesión
+  // caducada, así que no se va a /login?reason=expired ni se avisa de «Sesión caducada».
+  sessionExpiredHandled = true;
   resetUserStateQueue();
   clearDeviceState(uid);
   resetActivityUid(); // que nada se encole a nombre del usuario saliente
+  void clearPageCopies();
+  // Carga completa de /login: la caché de React Query muere con la página. Antes se vaciaba
+  // aquí (`qc.clear()`) con las vistas aún montadas, y volvían a pedir /me, /me/profile y
+  // /coach/safety, que ya daban 401.
+  navigate("/login");
+}
+
+/** Borra las copias de las pantallas que guarda el service worker (F5): en un móvil compartido,
+ * el siguiente no abre sin red el armazón de la cuenta anterior. */
+async function clearPageCopies(): Promise<void> {
+  try {
+    if (typeof caches === "undefined") return;
+    for (const name of await caches.keys()) if (name.startsWith("flp-pages-")) await caches.delete(name);
+  } catch { /* sin Cache Storage: nada que borrar */ }
 }
 
 export function useLogout() {
-  const qc = useQueryClient();
   return useMutation({
     mutationFn: () => performLogout(),
-    onSuccess: (uid) => finishLogout(qc, uid),
+    onSuccess: (uid) => finishLogout(uid),
   });
 }
 

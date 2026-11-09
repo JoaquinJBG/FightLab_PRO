@@ -164,13 +164,37 @@ describe("performLogout / finishLogout (useLogout)", () => {
 
   test("finishLogout cancela la cola de user-state (resetUserStateQueue) ANTES de limpiar el dispositivo", () => {
     localStorage.setItem("flp_pending_state_42", "[1]"); // simula algo que no se pudo subir
-    const qc = { clear: () => calls.push("qc.clear") };
+    const nav = vi.fn((url: string) => calls.push(`nav ${url}`));
 
-    finishLogout(qc, "42");
+    finishLogout("42", nav);
 
-    expect(calls).toEqual(["qc.clear", "resetUserStateQueue", "resetActivityUid"]);
+    // Sin qc.clear(): vaciar la caché con las vistas montadas las hacía volver a pedir datos (401)
+    expect(calls).toEqual(["resetUserStateQueue", "resetActivityUid", "nav /login"]);
     // resetUserStateQueue no toca localStorage: clearDeviceState es quien lo hace
     expect(localStorage.getItem("flp_pending_state_42")).toBeNull();
+  });
+
+  test("F15: tras cerrar sesión a propósito, un 401 rezagado no lleva a /login?reason=expired", async () => {
+    resetSessionExpiredGuard();
+    const nav = vi.fn();
+    finishLogout("42", nav);
+    expect(nav).toHaveBeenCalledWith("/login"); // sin ?reason=expired: no ha caducado
+    const expiredNav = vi.fn();
+    handleQueryError({ clear: () => {} }, new ApiError("401", 401), expiredNav);
+    await Promise.resolve();
+    expect(expiredNav).not.toHaveBeenCalled();
+    expect(calls.filter((c) => c === "logout-fetch")).toHaveLength(0); // ni un segundo logout
+    resetSessionExpiredGuard();
+  });
+
+  test("F15: borra las copias de las pantallas del service worker", async () => {
+    const deleted: string[] = [];
+    vi.stubGlobal("caches", {
+      keys: async () => ["flp-pages-v1", "flp-static-v1", "flp-shell-v1"],
+      delete: async (n: string) => { deleted.push(n); return true; },
+    });
+    finishLogout("42", () => {});
+    await vi.waitFor(() => expect(deleted).toEqual(["flp-pages-v1"]));
   });
 });
 
