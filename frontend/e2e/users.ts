@@ -39,4 +39,6 @@ export const READY_USERS = {
   historyScoff: "e2e-history-scoff@fightlab.test",
   // Fase 11 (Hoy): plan de la semana activo con gimnasio hoy y un menú con dos comidas para hoy.
   today: "e2e-today@fightlab.test",
+  // Fase 13: catálogo de cadena privado (CSV inventado) y su valoración.
+  catalogue: "e2e-catalogue@fightlab.test",
 };

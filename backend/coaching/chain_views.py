@@ -67,6 +67,7 @@ class ChainImportView(APIView):
         except ImportFileError as exc:
             return _bad(exc.code, exc.params)
         result = chain_import.import_catalogue(request.user, parsed, chain=chain, dry_run=dry_run)
+        result["rule_grades"] = chain_catalogue.rule_grades()
         return Response(result, status=status.HTTP_200_OK if dry_run else status.HTTP_201_CREATED)
 
 

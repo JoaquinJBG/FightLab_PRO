@@ -243,6 +243,15 @@ export function useFoodSearch(query: string) {
   });
 }
 
+/** La valoración del motor de la fase 13 (Nutri-Score + semáforo FSA), la misma que en el catálogo
+ * de cadena. Opcional: las respuestas guardadas antes de la fase 13 no la traen. */
+export const productRating = z.object({
+  rating: z.string(),
+  check: z.string(),
+  nutriscore: z.string().nullable(),
+  rule_key: z.string(),
+}).passthrough();
+
 export const offProduct = z.object({
   barcode: z.string(),
   name: z.string().nullable(),
@@ -253,6 +262,7 @@ export const offProduct = z.object({
   missing: z.array(z.string()),
   allergens: z.array(z.string()),
   url: z.string(),
+  rating: productRating.optional(),
 });
 export type OffProduct = z.infer<typeof offProduct>;
 
@@ -267,6 +277,7 @@ export const catalogueProduct = z.object({
   allergens: z.array(z.string()),
   url: z.string(),
   unverified: z.boolean(),
+  rating: productRating.optional(),
 }).passthrough();
 export type CatalogueProduct = z.infer<typeof catalogueProduct>;
 

@@ -32,6 +32,14 @@ MAX_PORTION_G = 800
 ROUND_G = 5
 
 
+def rule_grades() -> dict[str, str]:
+    """El grado de evidencia de las reglas de la valoración (para el chip), si el anexo está cargado."""
+    from .models import KnowledgeRule
+
+    keys = [product_rating.RATING_RULE, product_rating.FATS_RULE, product_rating.ENERGY_RULE]
+    return dict(KnowledgeRule.objects.filter(key__in=keys, retired=False).values_list("key", "grade"))
+
+
 def refresh(rows) -> list[ChainProduct]:
     """Recalcula y guarda la valoración de los productos valorados con una versión vieja del motor."""
     rows = list(rows)
@@ -91,6 +99,8 @@ def catalogue_data(user, query: str = "", rating: str = "", limit: int = 200) ->
         "products": [product_out(p) for p in found[:limit]],
         "thresholds": product_rating.THRESHOLDS,
         "rule_key": product_rating.RATING_RULE,
+        "energy_rule_key": product_rating.ENERGY_RULE,
+        "rule_grades": rule_grades(),
     }
 
 
@@ -259,4 +269,5 @@ def substitutes(user, name: str, grams: float, lang: str = "es", limit: int = SU
         "food": {"name": base["name"], "grams": grams, "kcal": round(target_kcal), "rating": base["rating"]},
         "substitutes": [s[2] for s in scored[:limit]],
         "rule_key": product_rating.RATING_RULE,
+        "rule_grades": rule_grades(),
     }
