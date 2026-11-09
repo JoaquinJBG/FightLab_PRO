@@ -2544,7 +2544,12 @@
       "sessionsUpdated": "{n, plural, one {# session extended} other {# sessions extended}}",
       "range": "From {first} to {last}",
       "importer": "Read as {name}",
-      "nothingNew": "Nothing new: everything in the file was already there."
+      "nothingNew": "Nothing new: everything in the file was already there.",
+      "routines": "{n, plural, =0 {No new routines} one {# new routine, one per workout title} other {# new routines, one per workout title}}",
+      "routinesPreview": "{n, plural, =0 {No routines will be created} one {# routine will be created, one per workout title} other {# routines will be created, one per workout title}}",
+      "routinesExisting": "{n} already there",
+      "routinesUnavailable": "{n} couldn't be created: it will retry on the next import",
+      "routinesLink": "See routines"
     },
     "warnings": {
       "template_rows": "{n, plural, one {# empty template row} other {# empty template rows}} (sets never filled in): not imported.",

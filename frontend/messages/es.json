@@ -2544,7 +2544,12 @@
       "sessionsUpdated": "{n, plural, one {# sesión ampliada} other {# sesiones ampliadas}}",
       "range": "Del {first} al {last}",
       "importer": "Leído como {name}",
-      "nothingNew": "No hay nada nuevo: todo lo del archivo ya estaba."
+      "nothingNew": "No hay nada nuevo: todo lo del archivo ya estaba.",
+      "routines": "{n, plural, =0 {Ninguna rutina nueva} one {# rutina nueva, una por título de entreno} other {# rutinas nuevas, una por título de entreno}}",
+      "routinesPreview": "{n, plural, =0 {No se creará ninguna rutina} one {Se creará # rutina, una por título de entreno} other {Se crearán # rutinas, una por título de entreno}}",
+      "routinesExisting": "{n, plural, one {# ya estaba} other {# ya estaban}}",
+      "routinesUnavailable": "{n, plural, one {# no se pudo crear} other {# no se pudieron crear}}: se reintentará al importar de nuevo",
+      "routinesLink": "Ver rutinas"
     },
     "warnings": {
       "template_rows": "{n, plural, one {# fila vacía} other {# filas vacías}} de plantilla (series que nunca se rellenaron): no se importan.",
