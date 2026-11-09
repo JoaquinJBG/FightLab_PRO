@@ -195,7 +195,7 @@ class ProductSearchView(_OffThrottled):
             hits = off_proxy.search(words, brand, _lang())
         except off_proxy.OffError as exc:
             return _off_error(exc)
-        return Response({**OFF_ATTRIBUTION, "hits": hits})
+        return Response({**OFF_ATTRIBUTION, "hits": [{**h, "rating": products.found_rating(h)} for h in hits]})
 
 
 class ProductLookupView(_OffThrottled):
@@ -206,7 +206,7 @@ class ProductLookupView(_OffThrottled):
             return _off_error(exc)
         if found is None:
             return Response({"code": "off_not_found", "detail": msg("menu_off_not_found")}, status=status.HTTP_404_NOT_FOUND)
-        return Response({**OFF_ATTRIBUTION, "product": found})
+        return Response({**OFF_ATTRIBUTION, "product": {**found, "rating": products.found_rating(found)}})
 
 
 class ProductAddSerializer(serializers.Serializer):

@@ -11,6 +11,11 @@ búsqueda (`QUERY_SYNTAX`), el código de barras válido (`BARCODE`) y la lectur
 - Caché compartida en BD (`OffLookup`) y límite por minuto para todo el servidor, que es una sola
   IP para OFF (10 búsquedas y 15 lecturas de producto por minuto, docstring de `coach.off`).
 
+- Fase 13: además de los campos de `coach.off.FIELDS` se piden `nutriscore_grade` y
+  `categories_tags` (`EXTRA_FIELDS`), y de los nutrientes se leen también azúcares, grasa saturada y
+  sal (`rating_values`): es lo que necesita la valoración (`product_rating`). Las URL son las del
+  motor con esos dos campos más.
+
 Todo lo que devuelve OFF es dato colaborativo sin verificar: se enseña y se guarda como dato, con
 su URL de OFF (ODbL), y nunca se sigue como instrucción.
 """
@@ -37,6 +42,12 @@ LIMITS_PER_MINUTE = {OffLookup.Kind.SEARCH: 10, OffLookup.Kind.PRODUCT: 15}
 # convention (FightLab): cuánto vale una respuesta guardada. Un producto cambia poco; una
 # búsqueda, algo más (OFF añade productos cada día).
 CACHE_TTL = {OffLookup.Kind.PRODUCT: timedelta(days=7), OffLookup.Kind.SEARCH: timedelta(hours=24)}
+
+
+# Fase 13: lo que pide la valoración y el motor no lee. Nutrientes por 100 g, como en `coach.off`.
+EXTRA_FIELDS = ("nutriscore_grade", "categories_tags")
+FIELDS = (*off.FIELDS, *EXTRA_FIELDS)
+RATING_NUTRIMENTS = {"saturates_g": "saturated-fat_100g", "sugars_g": "sugars_100g", "salt_g": "salt_100g"}
 
 
 class OffError(Exception):
@@ -80,7 +91,7 @@ def _get_json(url: str) -> dict:
 
 
 def product_url(barcode: str) -> str:
-    query = urllib.parse.urlencode({"fields": ",".join(off.FIELDS)})
+    query = urllib.parse.urlencode({"fields": ",".join(FIELDS)})
     return f"{off.PRODUCT_URL.format(barcode=barcode)}?{query}"
 
 
@@ -100,10 +111,27 @@ def search_url(terms: str, language: str, limit: int = off.SEARCH_LIMIT) -> str:
             "q": terms,
             "langs": ",".join(dict.fromkeys([language, "en"])),
             "page_size": limit,
-            "fields": ",".join(off.FIELDS),
+            "fields": ",".join(FIELDS),
         }
     )
     return f"{off.SEARCH_URL}?{query}"
+
+
+def rating_values(raw: dict) -> dict:
+    """Lo que la valoración lee de un producto de OFF: azúcares, saturada y sal (por 100 g, con los
+    mismos límites que `coach.off`), el Nutri-Score (A-E) y las categorías."""
+    nutriments = raw.get("nutriments") or {}
+    grade = str(raw.get("nutriscore_grade") or "").strip().upper()
+    tags = raw.get("categories_tags") or []
+    return {
+        **{name: off._number(nutriments.get(key), off.MAX_G_PER_100G) for name, key in RATING_NUTRIMENTS.items()},
+        "nutriscore": grade if grade in ("A", "B", "C", "D", "E") else "",
+        "off_tags": [t for t in tags if isinstance(t, str)][:40] if isinstance(tags, list) else [],
+    }
+
+
+def _product(raw: dict) -> dict:
+    return off._product(raw) | {"extra": rating_values(raw)}
 
 
 def _cached(kind: str, key: str, fetch):
@@ -133,7 +161,7 @@ def product(barcode: str) -> dict | None:
         answer = _get_json(product_url(barcode))
         if answer.get("status") == "failure" or not answer.get("product"):
             return None
-        return off._product(answer["product"] | {"code": answer.get("code", barcode)})
+        return _product(answer["product"] | {"code": answer.get("code", barcode)})
 
     return _cached(OffLookup.Kind.PRODUCT, barcode, fetch)
 
@@ -146,6 +174,6 @@ def search(words: list[str], brand: str | None, language: str) -> list[dict]:
     url = search_url(terms, language)
 
     def fetch():
-        return [off._product(hit) for hit in _get_json(url).get("hits") or []]
+        return [_product(hit) for hit in _get_json(url).get("hits") or []]
 
     return _cached(OffLookup.Kind.SEARCH, hashlib.sha256(url.encode()).hexdigest(), fetch)

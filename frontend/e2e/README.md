@@ -6,7 +6,8 @@ de la fase 4 (`nutrition.spec.ts`), el check-in diario con la tendencia de la fa
 fase 7 (`review.spec.ts`), los menús de la fase 8 (`menu.spec.ts`) y los importadores de la fase 9 con
 el aviso de sesión vigorosa (`import.spec.ts`, con CSV inventados) y la importación del historial de
 ParteDiario y del coach de la fase 10 (`history.spec.ts`, con datos inventados) y la pantalla Hoy
-con los avisos apagados de la fase 11 (`today.spec.ts`) de punta a punta: Next (BFF) + Django + motor del coach.
+con los avisos apagados de la fase 11 (`today.spec.ts`) y el catálogo de cadena privado de la fase 13
+(`catalogue.spec.ts`, con un CSV inventado) de punta a punta: Next (BFF) + Django + motor del coach.
 Usan el Chrome instalado (`channel: "chrome"`), así que no hace falta `playwright install`.
 Tras el login la app va a `/today` (Hoy); el resumen de antes está en `/dashboard`.
 

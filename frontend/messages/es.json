@@ -2556,6 +2556,10 @@
       "target": "Objetivo: {kcal} kcal",
       "deficit": "en déficit",
       "noDeficit": "sin déficit"
+    },
+    "catalogue": {
+      "title": "Catálogo de la cadena",
+      "hint": "Tus productos del súper con su valoración, para la compra y los sustitutos."
     }
   },
   "today": {
@@ -2709,6 +2713,140 @@
     "hours": {
       "title": "A qué hora llegan",
       "body": "Las horas son las de tu zona horaria del perfil ({tz}), y cada aviso llega en algún momento de su hora (de 22:00 a 22:59, por ejemplo). El servidor gratuito solo se despierta a unas horas fijas, elegidas para España con y sin horario de verano: si vives en otra zona, el aviso llega a la hora más cercana a la suya en que se despierta, antes o después, pero no se pierde."
+    }
+  },
+  "chainCatalogue": {
+    "back": "← Importar",
+    "title": "Catálogo de la cadena",
+    "subtitle": "Sube la tabla de productos de tu súper (por ejemplo la del Entrenador IA). FightLab valora cada producto, elige el formato para la lista de la compra y calcula el coste.",
+    "help": {
+      "title": "Qué puedes subir",
+      "scored": "La tabla puntuada (.csv): id de la tienda, EAN, nombre, marca, categoría, formato, precio por kilo y valores por 100 g, con Nutri-Score y valoración.",
+      "table": "La tabla de la app (.csv): qué producto equivale a cada alimento genérico (equivale_a). Si la subes después de la puntuada, se junta con ella.",
+      "reimport": "Puedes volver a subirlas: los productos se reconocen por el id de la tienda o el EAN, se actualizan sin duplicarse y una celda vacía no borra lo que ya había.",
+      "private": "El catálogo se guarda solo en tu cuenta y nadie más lo ve. FightLab no descarga nada de la tienda ni de otras webs: solo lee el archivo que subes."
+    },
+    "chain": "Cadena",
+    "file": "Archivo CSV (hasta {mb} MB)",
+    "check": "Revisar archivo",
+    "reading": "Leyendo…",
+    "checkFirst": "Primero revisa el archivo: verás qué entra antes de guardar nada.",
+    "import": "Importar",
+    "importing": "Importando…",
+    "preview": "Esto es lo que se importaría",
+    "done": "Importado",
+    "loading": "Cargando…",
+    "formats": {
+      "scored": "Tabla puntuada",
+      "table": "Tabla de la app"
+    },
+    "rowsRead": "{n, plural, one {# fila leída} other {# filas leídas}} para {chain}",
+    "summary": {
+      "toAdd": "{n, plural, one {# producto nuevo} other {# productos nuevos}}",
+      "added": "{n, plural, one {# producto añadido} other {# productos añadidos}}",
+      "toUpdate": "{n, plural, one {# producto se actualiza} other {# productos se actualizan}}",
+      "updatedDone": "{n, plural, one {# producto actualizado} other {# productos actualizados}}",
+      "unchanged": "{n, plural, one {# producto ya estaba igual} other {# productos ya estaban igual}}",
+      "discarded": "{n, plural, =0 {Ninguna fila descartada} one {# fila descartada} other {# filas descartadas}}"
+    },
+    "discarded": {
+      "no_key": "{n, plural, one {# fila} other {# filas}} sin id de la tienda ni EAN",
+      "no_name": "{n, plural, one {# fila} other {# filas}} sin nombre",
+      "bad_number": "{n, plural, one {# fila} other {# filas}} con un número que no se entiende en {field}",
+      "out_of_range": "{n, plural, one {# fila} other {# filas}} con un valor imposible en {field}",
+      "duplicate_in_file": "{n, plural, one {# fila repetida} other {# filas repetidas}} en el archivo (se queda la primera)",
+      "generic": "{n, plural, one {# fila descartada} other {# filas descartadas}}",
+      "lines": "líneas {lines}"
+    },
+    "notices": {
+      "ean_invalid": "{n, plural, one {# EAN no válido se ha ignorado} other {# EAN no válidos se han ignorado}}; el producto entra por su id.",
+      "ref_invalid": "{n, plural, one {# id de tienda no válido se ha ignorado} other {# ids de tienda no válidos se han ignorado}}.",
+      "ean_taken": "{n, plural, one {# EAN ya era} other {# EAN ya eran}} de otro producto y no se ha usado.",
+      "saturates_dropped": "{n, plural, one {# producto traía} other {# productos traían}} más grasa saturada que grasa: ese dato no se usa."
+    },
+    "ratingsTitle": "Valoración de FightLab",
+    "counts": {
+      "good": "{n} bueno",
+      "fair": "{n} regular",
+      "avoid": "{n} evitar",
+      "noData": "{n} sin datos",
+      "notFood": "{n} no aplica"
+    },
+    "reviewCount": "{n, plural, one {# producto con kcal que no cuadran} other {# productos con kcal que no cuadran}} con los macros (más de un 15 %): marcados para revisar.",
+    "differences": {
+      "title": "{n, plural, one {# valoración distinta} other {# valoraciones distintas}} de la del archivo",
+      "intro": "FightLab vuelve a valorar cada producto con su motor; esto es lo que cambia.",
+      "line": "{name}: el archivo dice {file}, FightLab dice {engine}"
+    },
+    "rating": {
+      "good": "Bueno",
+      "fair": "Regular",
+      "avoid": "Evitar",
+      "noData": "Sin datos",
+      "notFood": "No aplica",
+      "review": "Revisar"
+    },
+    "rulesLink": "Las reglas y sus fuentes:",
+    "list": {
+      "title": "Tu catálogo",
+      "empty": "Aún no has importado ningún producto.",
+      "total": "{n, plural, one {# producto} other {# productos}} de {chains}",
+      "search": "Buscar en tu catálogo",
+      "filter": "Filtrar por valoración",
+      "all": "Todas",
+      "pricePerKg": "{price}/{unit}",
+      "kcal": "{kcal} kcal por {per}",
+      "equivalent": "Equivale a: {food}",
+      "more": "Y {n} más: busca para encontrarlos.",
+      "delete": "Borrar todo el catálogo",
+      "deleteConfirm": "¿Borrar {n, plural, one {el producto} other {los # productos}}? No se puede deshacer; podrás volver a importarlos.",
+      "deleteYes": "Sí, borrar",
+      "cancel": "Cancelar"
+    },
+    "how": {
+      "title": "Cómo se valora",
+      "food": "Alimentos, por 100 g: alto si pasa de {sugars} g de azúcar, {saturates} g de grasa saturada o {salt} g de sal.",
+      "drink": "Bebidas, por 100 ml: alto si pasa de {sugars} g de azúcar, {saturates} g de grasa saturada o {salt} g de sal.",
+      "items": {
+        "nutriscore_good": "Nutri-Score A o B y ningún rojo: bueno.",
+        "nutriscore_avoid": "Nutri-Score D o E: evitar.",
+        "fats_nutriscore_only": "Aceites, frutos secos y semillas: solo cuenta el Nutri-Score.",
+        "energy_factors": "Energía esperada: 4 kcal por gramo de proteína e hidratos, 9 de grasa y 2 de fibra.",
+        "energy_tolerance": "Se marca para revisar si las kcal se apartan más de un 15 %.",
+        "rating_combination": "Rojo en azúcar o en saturada, o dos rojos: evitar; el resto, regular.",
+        "fruit_sugar_ignored": "El azúcar de la fruta no cuenta, salvo que lleve azúcar, almíbar, chocolate o miel.",
+        "not_food_categories": "Alcohol, refrescos, café e infusiones, comida infantil, chuches y condimentos: no aplica."
+      },
+      "source": {
+        "fsa_2016": "Fuente: guía FSA del Reino Unido (2016)",
+        "nutriscore_2023": "Fuente: Nutri-Score (2023)",
+        "eu_1169_2011": "Fuente: Reglamento (UE) 1169/2011",
+        "convention": "Convención de FightLab"
+      }
+    },
+    "substitutes": {
+      "title": "Sustitutos con las mismas kcal",
+      "intro": "Escribe un alimento (el nombre del motor o un producto tuyo) y los gramos: te da otros con la misma energía y un reparto de macros parecido.",
+      "food": "Alimento",
+      "grams": "Gramos",
+      "go": "Buscar",
+      "for": "Para {grams} g de {name} ({kcal} kcal):",
+      "line": "{grams} g de {name} · {kcal} kcal · {protein} g proteína",
+      "none": "No hay sustitutos parecidos.",
+      "unknown": "No conozco ese alimento. Prueba con el nombre exacto del motor (p. ej. «pechuga de pollo, cruda») o de un producto de tu catálogo.",
+      "error": "No se han podido buscar sustitutos.",
+      "penaltyNote": "Los productos a evitar van al final. El orden por macros es una convención:"
+    },
+    "errors": {
+      "missing_file": "Elige un archivo.",
+      "too_large": "El archivo pesa más de {mb} MB.",
+      "not_csv": "Sube un archivo .csv.",
+      "unknown_columns": "No reconozco las columnas ({columns}). Sube la tabla puntuada o la tabla de la app.",
+      "empty_file": "El archivo está vacío.",
+      "bad_encoding": "No se puede leer el texto del archivo (guárdalo como UTF-8).",
+      "too_many_rows": "El archivo tiene más de {max} filas.",
+      "throttled": "Demasiados intentos seguidos. Espera un minuto.",
+      "server": "No se ha podido completar. Inténtalo de nuevo."
     }
   }
 }

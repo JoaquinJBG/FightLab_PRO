@@ -446,3 +446,7 @@ COACH_OFF_CONTACT = env("COACH_OFF_CONTACT", default="")
 # Quién propone los platos del menú. Solo existe el proveedor simulado y determinista: los menús
 # no llaman nunca a la API de Anthropic, aunque haya ANTHROPIC_API_KEY (decisión de la fase 8).
 MENU_LLM_PROVIDER = "fake"
+# --- Catálogo de cadena (fase 13) ---
+# La función que la lista de la compra de la fase 12 (`coaching/shopping.py`) llama para elegir,
+# de cada alimento genérico, el producto, el formato y el precio del catálogo privado del usuario.
+SHOPPING_CHAIN_PROVIDER = "coaching.chain_catalogue.chain_product"

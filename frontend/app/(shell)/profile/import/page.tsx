@@ -211,6 +211,14 @@ export default function HistoryImportPage() {
         </ul>
       </div>
 
+      <Link href="/profile/import/catalogue" data-testid="catalogue-import-link" className="glass mt-3 flex items-center justify-between gap-3 p-4">
+        <span className="min-w-0">
+          <span className="t-label block text-ink">{t("catalogue.title")}</span>
+          <span className="t-body block text-[11px] text-muted">{t("catalogue.hint")}</span>
+        </span>
+        <span aria-hidden className="text-neon">→</span>
+      </Link>
+
       <label className="glass mt-3 flex flex-col gap-2 p-4">
         <span className="t-label text-ink">{t("files", { max: MAX_HISTORY_FILES, mb: MAX_FILE_MB })}</span>
         <input data-testid="history-files" type="file" multiple accept={HISTORY_ACCEPT}
