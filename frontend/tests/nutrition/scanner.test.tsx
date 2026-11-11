@@ -30,6 +30,12 @@ vi.mock("@zxing/browser", () => {
   };
 });
 
+// Los números de `BarcodeFormat` de ZXing (los de la librería real), sin cargarla entera.
+vi.mock("@zxing/library", () => ({
+  BarcodeFormat: { EAN_8: 6, EAN_13: 7, UPC_A: 14, UPC_E: 15 },
+  DecodeHintType: { POSSIBLE_FORMATS: 2 },
+}));
+
 const OFF_EAN = "8400000000017";
 const es = CATALOGS.es.scanner;
 
@@ -131,7 +137,7 @@ describe("la cámara", () => {
     expect(scanner.engine).toBe("zxing");
     await waitFor(() => expect(onCode).toHaveBeenCalledWith("042100005264"));
     scanner.stop();
-  });
+  }, 20_000); // el import dinámico de ZXing tarda más con la suite entera en paralelo
 
   it("ignora un código con el dígito de control mal", async () => {
     fakeCamera();
