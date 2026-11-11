@@ -251,6 +251,7 @@ function Rejected({ menu }: { menu: Menu }) {
         if (r.repeats) why.push(t("repeats"));
         for (const b of r.blocking) why.push(t("blocking", { kind: tk.has(b.kind) ? tk(b.kind) : b.kind, entry: b.entry }));
         if (r.unknown.length) why.push(t("unknown", { list: r.unknown.join(", ") }));
+        for (const m of r.missing) why.push(t("missing", { meal: tm.has(`meals.${m}`) ? tm(`meals.${m}`) : m }));
         return (
           <p key={r.date} data-testid="menu-rejected-day" data-date={r.date} className="t-body text-sm text-ink">
             <span className="first-letter:uppercase">{f.date(r.date)}</span>: <span className="text-warn">{why.join(" · ")}</span>

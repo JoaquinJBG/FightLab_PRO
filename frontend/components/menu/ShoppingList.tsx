@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { intlLocale } from "@/lib/locale";
-import { filterByWeek, useShoppingCheck, type ShoppingLine, type ShoppingList as List } from "@/lib/menu";
+import { filterByWeek, hasWeeks, useShoppingCheck, type ShoppingLine, type ShoppingList as List } from "@/lib/menu";
 
 const RATING_COLOR: Record<string, string> = {
   bueno: "var(--color-good)",
@@ -19,14 +19,17 @@ function weekTag(when: number[]): string {
   return when.length === 1 ? String(when[0]) : "";
 }
 
-function Line({ line, menuId }: { line: ShoppingLine; menuId: number }) {
+function Line({ line, menuId, week }: { line: ShoppingLine; menuId: number; week: number }) {
   const t = useTranslations("menu.shopping");
   const locale = intlLocale(useLocale());
   const check = useShoppingCheck(menuId);
   const [checked, setChecked] = useState(line.checked);
   const n = (v: number) => v.toLocaleString(locale, { maximumFractionDigits: 0 });
   const euros = (v: number) => v.toLocaleString(locale, { style: "currency", currency: "EUR" });
-  const amount = line.amount != null ? t(line.unit, { n: n(line.amount) }) : "";
+  // Con una semana elegida, lo de esa semana (si el motor lo ha podido repartir).
+  const weekAmount = week && line.by_week ? line.by_week[String(week)] : null;
+  const shown = weekAmount ?? line.amount;
+  const amount = shown != null ? t(line.unit, { n: n(shown) }) : "";
   const tag = weekTag(line.when);
   const product = line.product;
   return (
@@ -69,7 +72,7 @@ function Line({ line, menuId }: { line: ShoppingLine; menuId: number }) {
       </div>
       <div className="text-right">
         <p className="t-body text-sm text-muted">{amount}</p>
-        {line.amount_two != null && (
+        {line.amount_two != null && weekAmount == null && (
           <p className="t-body text-[11px] text-muted">{t("forTwo", { amount: t(line.unit, { n: n(line.amount_two) }) })}</p>
         )}
       </div>
@@ -88,7 +91,7 @@ export function ShoppingList({ list, menuId }: { list: List; menuId: number }) {
         <p className="t-eyebrow text-muted">{t("title")}</p>
         <span data-testid="shopping-progress" className="t-label text-muted">{t("progress", { checked: list.checked, total: list.total })}</span>
       </div>
-      {list.weeks.length > 1 && (
+      {hasWeeks(list) && (
         <div role="tablist" className="mt-3 flex gap-1.5">
           {[0, ...list.weeks].map((w) => (
             <button key={w} type="button" role="tab" aria-selected={week === w} data-testid="shopping-week-tab"
@@ -103,7 +106,7 @@ export function ShoppingList({ list, menuId }: { list: List; menuId: number }) {
         <div key={s.section || "_"} data-testid="shopping-section" data-section={s.section} className="mt-3">
           <p className="t-label text-muted">{s.section || t("other")}</p>
           <ul className="mt-1 flex flex-col divide-y divide-[rgba(150,190,255,0.08)]">
-            {s.items.map((line) => <Line key={line.key} line={line} menuId={menuId} />)}
+            {s.items.map((line) => <Line key={line.key} line={line} menuId={menuId} week={week} />)}
           </ul>
         </div>
       ))}

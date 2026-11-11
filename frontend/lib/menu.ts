@@ -114,6 +114,8 @@ export const rejectedDay = z.object({
   repeats: z.boolean(),
   blocking: z.array(z.object({ kind: z.string(), entry: z.string() })),
   empty: z.boolean().optional(),
+  // R3-1: comidas pedidas para las que no quedó ningún plato que valiera.
+  missing: z.array(z.string()).optional().default([]),
 });
 export type RejectedDay = z.infer<typeof rejectedDay>;
 
@@ -165,6 +167,8 @@ export const shoppingLine = z.object({
   pack: z.string().nullable().optional(),
   chain: z.string().nullable().optional(),
   when: z.array(z.number()),
+  // R3-2: lo de cada semana en un menú de más de 7 días ("1", "2"), calculado con los platos.
+  by_week: z.record(z.string(), z.number()).nullable().optional(),
   dishes: z.array(z.string()),
   batches: z.unknown().optional(),
   // Producto de la cadena (lo elige la F13 en el servidor): formato, envases, valoración y precio.
@@ -387,6 +391,11 @@ export function useShoppingCheck(menuId: number) {
     mutationFn: async (body) => shoppingList.parse(await send(`${BASE}/menu/${menuId}/shopping`, "PUT", body)),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["menu"] }),
   });
+}
+
+/** Si la lista se puede repartir por semanas: el menú tiene dos y alguna línea dice cuándo. */
+export function hasWeeks(list: ShoppingList): boolean {
+  return list.weeks.length > 1 && list.sections.some((s) => s.items.some((i) => i.when.length > 0));
 }
 
 /** Una línea por semana elegida (`0` = todas): las que no dicen semana van siempre. */

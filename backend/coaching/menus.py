@@ -317,6 +317,8 @@ class ProposalContext:
     favoured: list[dict]
     table: list[foods.Food]
     diners: list[dict] = field(default_factory=list)  # fase 12: comensales con sus restricciones
+    batch: bool = False  # fase 12: se puede repetir un plato del día anterior como tanda de 2 raciones
+    picked: dict = field(default_factory=dict)  # (fecha ISO, comida) → plato elegido (el mismo dict)
     chosen: dict[str, list[str]] = field(default_factory=dict)  # platos propuestos por fecha
 
     def totals(self, items: list[str]) -> foods.MenuTotals:
@@ -348,14 +350,24 @@ def _validate_request(request: MenuRequest, today: date) -> None:
         raise MenuInvalid("start_invalid")
 
 
-def _rejected(iso: str, check: dict | None) -> dict:
-    """Por qué el motor rechazó un día, sin sus platos (no se guardan)."""
+def _rejected(iso: str, check: dict | None, missing: list[str] | None = None) -> dict:
+    """Por qué el motor rechazó un día, sin sus platos (no se guardan). `missing`: las comidas
+    pedidas para las que el proveedor no encontró ningún plato (R3-1)."""
     if check is None:
-        return {"date": iso, "check": None, "unknown": [], "repeats": False, "blocking": [], "empty": True}
+        return {"date": iso, "check": None, "unknown": [], "repeats": False, "blocking": [], "empty": True,
+                "missing": list(missing or [])}
     return {
         "date": iso, "check": check["check"], "unknown": check["totals"]["unknown"], "repeats": check["repeats"],
         "blocking": [{"kind": f["kind"], "entry": f["entry"]} for f in check["blocking"]], "empty": False,
+        "missing": list(missing or []),
     }
+
+
+def missing_meals(draft: dict, meals: list[str]) -> list[str]:
+    """Las comidas pedidas que un día del borrador no trae (R3-1: un día al que le falta la cena no
+    es un día comprobado, aunque las kcal cuadren con las comidas que quedan)."""
+    have = {m.get("meal") for m in draft.get("meals") or []}
+    return [m for m in meals if m not in have]
 
 
 @transaction.atomic
@@ -381,6 +393,7 @@ def generate(user, today: date, request: MenuRequest, lang: str, proposer) -> tu
         favoured=_favoured(user),
         table=table,
         diners=kitchen.diners_of(user.profile),
+        batch=request.batch,
     )
     drafts = {d.isoformat(): d_ for d, d_ in zip(dates, proposer.propose(ctx, dates, 0, None), strict=True)}
     for attempt in range(1, MAX_ROUNDS + 1):
@@ -388,13 +401,14 @@ def generate(user, today: date, request: MenuRequest, lang: str, proposer) -> tu
         filled = [drafts[d.isoformat()] for d in dates if drafts[d.isoformat()].get("meals")]
         result = check_days(user, today, filled, targets) if filled else {"days": [], "taste_flags": []}
         checks = {c["date"]: c for c in result["days"]}
-        failing = [d for d in dates if not checks.get(d.isoformat(), {}).get("ok")]
+        missing = {d.isoformat(): missing_meals(drafts[d.isoformat()], request.meals) for d in dates}
+        failing = [d for d in dates if not checks.get(d.isoformat(), {}).get("ok") or missing[d.isoformat()]]
         if not failing or attempt == MAX_ROUNDS:
             break
         for d, new in zip(failing, proposer.propose(ctx, failing, attempt, result), strict=True):
             drafts[d.isoformat()] = new
-    accepted = [drafts[d.isoformat()] for d in dates if checks.get(d.isoformat(), {}).get("ok")]
-    rejected = [_rejected(d.isoformat(), checks.get(d.isoformat())) for d in failing]
+    accepted = [drafts[d.isoformat()] for d in dates if d not in failing]
+    rejected = [_rejected(d.isoformat(), checks.get(d.isoformat()), missing[d.isoformat()]) for d in failing]
     if not accepted:
         raise MenuRejected(rejected)
     accepted_dates = {d["date"] for d in accepted}
@@ -442,7 +456,8 @@ def _batch_session(days: list[dict], request: MenuRequest, today: date, lang: st
             dish_id = slugify(dish["dish"])[:60]
             meal["dish_id"] = dish_id
             dishes.setdefault(dish_id, {
-                "name": dish["dish"], "source": dish.get("source") or None, "batch_servings": None,
+                "name": dish["dish"], "source": dish.get("source") or None,
+                "batch_servings": dish.get("servings") if (dish.get("servings") or 1) > 1 else None,
                 "steps": dish.get("steps") or [], "steps_batch": batch_steps_for(dish["dish"], lang),
                 "steps_day": [], "storage": None, "seasoning": dish.get("seasoning") or [],
                 "ingredients": [],

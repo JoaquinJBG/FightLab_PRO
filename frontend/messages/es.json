@@ -2483,7 +2483,8 @@
       "empty": "no había platos que encajen con tus gustos",
       "repeats": "repetía un plato",
       "blocking": "{kind}: {entry}",
-      "unknown": "alimentos desconocidos: {list}"
+      "unknown": "alimentos desconocidos: {list}",
+      "missing": "falta {meal}: no queda ningún plato que puedan comer todos los comensales, que vaya en tupper si lo pediste y que no se repita en 7 días"
     },
     "flags": {
       "title": "Avisos por tus gustos",
@@ -3241,6 +3242,27 @@
       "too_many_rows": "El archivo tiene más de {max} filas.",
       "throttled": "Demasiados intentos seguidos. Espera un minuto.",
       "server": "No se ha podido completar. Inténtalo de nuevo."
+    },
+    "why": {
+      "title": "Por qué esta valoración",
+      "high": "{nutrient} en rojo: {value} g por {per} (más de {limit} g, semáforo FSA)",
+      "nutrients": {
+        "sugars": "Azúcares",
+        "saturates": "Grasa saturada",
+        "salt": "Sal"
+      },
+      "reasons": {
+        "nutriscore": "Nutri-Score {grade}",
+        "fats_nutriscore_only": "Aceite o grasa: solo cuenta el Nutri-Score, no el semáforo de la saturada",
+        "fruit_sugar": "El azúcar es de la fruta: no cuenta como rojo",
+        "no_data": "Faltan datos de la etiqueta (azúcares, sal o saturada) para valorarlo",
+        "syrup": "En almíbar: regular",
+        "energy_mismatch": "Las kcal de la etiqueta no cuadran con sus macros (más de un 15 %)",
+        "alcohol": "Bebida alcohólica: no entra en el plan",
+        "baby_food": "Alimento infantil: no entra en el plan",
+        "not_for_plan": "No es un alimento para el plan"
+      },
+      "file": "El archivo lo valoraba «{file}»; FightLab lo vuelve a valorar con su motor: «{engine}»."
     }
   },
   "kitchen": {
