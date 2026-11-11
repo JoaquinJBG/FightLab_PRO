@@ -1,5 +1,6 @@
 from django.urls import path
 
+from .barcode_views import BarcodeView
 from .chain_views import ChainImportView, ChainProductsView, ChainShoppingView, SubstitutesView
 from .checkin_views import CheckinView
 from .import_views import HistoryImportView, ImportView
@@ -71,6 +72,7 @@ urlpatterns = [
     path("coach/products/search", ProductSearchView.as_view(), name="coach-products-search"),
     path("coach/products/lookup/<str:barcode>", ProductLookupView.as_view(), name="coach-products-lookup"),
     path("coach/products/<str:barcode>", ProductDetailView.as_view(), name="coach-product"),
+    path("coach/barcode/<str:code>", BarcodeView.as_view(), name="coach-barcode"),
     path("coach/chain-products", ChainProductsView.as_view(), name="coach-chain-products"),
     path("coach/chain-products/import", ChainImportView.as_view(), name="coach-chain-import"),
     path("coach/chain-products/shopping", ChainShoppingView.as_view(), name="coach-chain-shopping"),

@@ -45,7 +45,9 @@ CACHE_TTL = {OffLookup.Kind.PRODUCT: timedelta(days=7), OffLookup.Kind.SEARCH: t
 
 
 # Fase 13: lo que pide la valoración y el motor no lee. Nutrientes por 100 g, como en `coach.off`.
-EXTRA_FIELDS = ("nutriscore_grade", "categories_tags")
+# Escáner: `serving_quantity` (la ración de la etiqueta, en g o ml) para elegir la cantidad en raciones.
+EXTRA_FIELDS = ("nutriscore_grade", "categories_tags", "serving_quantity")
+MAX_SERVING = 2000  # convention (FightLab): una ración mayor es un error de la ficha ("sin ración")
 FIELDS = (*off.FIELDS, *EXTRA_FIELDS)
 RATING_NUTRIMENTS = {"saturates_g": "saturated-fat_100g", "sugars_g": "sugars_100g", "salt_g": "salt_100g"}
 
@@ -130,8 +132,13 @@ def rating_values(raw: dict) -> dict:
     }
 
 
+def serving(raw: dict) -> float | None:
+    """La ración de la etiqueta (`serving_quantity`), o `None` si falta o no es razonable."""
+    return off._number(raw.get("serving_quantity"), MAX_SERVING) or None
+
+
 def _product(raw: dict) -> dict:
-    return off._product(raw) | {"extra": rating_values(raw)}
+    return off._product(raw) | {"extra": rating_values(raw), "serving_g": serving(raw)}
 
 
 def _cached(kind: str, key: str, fetch):

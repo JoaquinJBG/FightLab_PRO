@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { RatingBadge } from "@/components/catalogue/RatingBadge";
+import { ScanFood } from "@/components/scanner/ScanFood";
 import { useAddProduct, useCatalogue, useProductSearch, useRemoveProduct } from "@/lib/menu";
 
 // Errores del proxy de Open Food Facts que se explican con su propio texto.
@@ -37,6 +38,7 @@ export function ProductsCard() {
           {search.isPending ? t("searching") : t("search")}
         </button>
       </form>
+      <ScanFood mode="catalogue" />
 
       {notConfigured && (
         <p data-testid="off-not-configured" role="status" className="t-body mt-3 text-sm text-warn">{t("notConfigured")}</p>
@@ -73,7 +75,11 @@ export function ProductsCard() {
             <span className="min-w-0">
               <span className="t-body block text-sm text-ink">{p.product_name}</span>
               {p.rating && <span className="mt-0.5 block"><RatingBadge rating={p.rating.rating} check={p.rating.check} ruleKey={p.rating.rule_key} /></span>}
-              <a href={p.url} target="_blank" rel="noopener noreferrer" className="t-label text-neon underline">{t("unverified")}</a>
+              {p.url ? (
+                <a href={p.url} target="_blank" rel="noopener noreferrer" className="t-label text-neon underline">{t("unverified")}</a>
+              ) : (
+                <span className="t-label text-muted">{t("manual")}</span>
+              )}
             </span>
             <button type="button" onClick={() => remove.mutate(p.barcode)} aria-label={t("remove", { name: p.product_name })} className="t-label px-1 text-muted hover:text-bad">✕</button>
           </li>

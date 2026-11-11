@@ -51,4 +51,6 @@ export const READY_USERS = {
   batch: "e2e-batch@fightlab.test",
   // F17 (biblioteca de ejercicios): crea, edita y borra sus propios ejercicios.
   exercises: "e2e-exercises@fightlab.test",
+  // Escáner de código de barras: un producto de cadena con EAN (inventado) y OFF sin configurar.
+  scanner: "e2e-scanner@fightlab.test",
 };

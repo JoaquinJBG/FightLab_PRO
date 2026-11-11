@@ -57,6 +57,7 @@ SETUPS = {
     "menuImport": ({"timezone": "Europe/Madrid"}, {}),
     "batch": ({"timezone": "Europe/Madrid"}, {}),
     "exercises": ({}, {}),
+    "scanner": ({}, {}),
 }
 for key, email in READY.items():
     u, p = fresh(email)
@@ -117,6 +118,15 @@ MealPlan.objects.create(profile=p, start_date=today, days=[{"date": today.isofor
 # F17 R (rutinas): una lesión de rodilla sin evaluar que pausa la sentadilla.
 from coaching.services import injury_add
 injury_add(UserProfile.objects.get(user__email=READY["routines"]), area="rodilla", status="active", exercises=["Sentadilla"])
+
+# Escáner: un producto INVENTADO del catálogo de cadena con EAN (la valoración la pone el motor al leerlo).
+from coaching.models import ChainProduct
+ChainProduct.objects.create(
+    profile=UserProfile.objects.get(user__email=READY["scanner"]), chain="Mercadona", chain_ref="93001",
+    ean="2000000000053", name="Pechuga escaneada inventada", brand="Marca Prueba", category="Aves",
+    pack="Bandeja 400 g", per="100 g", kcal=110, protein_g=23, carbs_g=0, fat_g=1.5, fibre_g=0,
+    saturates_g=0.4, sugars_g=0, salt_g=0.2, nutriscore="A",
+)
 `;
   execFileSync(python, ["manage.py", "shell", "-c", code], { cwd: backend, stdio: "inherit" });
 }

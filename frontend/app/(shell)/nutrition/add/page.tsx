@@ -15,6 +15,8 @@ import {
   type Item,
 } from "@/lib/nutrition";
 import { compressImage } from "@/lib/compress-image";
+import { ScanFood } from "@/components/scanner/ScanFood";
+import type { ScannedEntry } from "@/components/scanner/ScanResult";
 
 /* Foto → lista de alimentos detectados por la IA (visión de Claude).
    Cada componente lleva su base para reescalar al editar los gramos.
@@ -73,6 +75,15 @@ function AddInner() {
     if (!sel || !scaled || saving) return;
     setSaving(true);
     addItem({ meal, name: sel.name, grams, kcal: scaled.kcal, p: scaled.p, c: scaled.c, f: scaled.f, source: "food" });
+    router.push("/nutrition");
+  }
+
+  /* ---- escáner de código de barras ---- */
+  function addScanned(e: ScannedEntry) {
+    if (saving) return;
+    setSaving(true);
+    // Origen "food": es un producto de la tabla (catálogo propio u OFF), como el de la búsqueda.
+    addItem({ meal, name: e.name, grams: e.grams, kcal: e.kcal, p: e.p, c: e.c, f: e.f, source: "food" });
     router.push("/nutrition");
   }
 
@@ -261,6 +272,9 @@ function AddInner() {
           </div>
         )}
       </div>
+
+      {/* código de barras: catálogo propio y luego Open Food Facts */}
+      <ScanFood mode="diary" addLabel={t("addTo", { meal: tm(meal) })} onAdd={addScanned} />
 
       {/* copiar de ayer */}
       {yesterday.length > 0 && (
