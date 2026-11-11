@@ -18,6 +18,12 @@ ENV/
 .env
 .env.*
 !.env.example
+# Token personal de la skill de menús (F14) y los archivos de trabajo con datos del usuario:
+# van en ~/.config/fightlab/ o en una carpeta temporal, nunca en el repositorio.
+.fightlab/
+fightlab-token*
+fightlab-context*.json
+fightlab-menu*.json
 
 # ---- Node / Next.js (frontend) ----
 node_modules/

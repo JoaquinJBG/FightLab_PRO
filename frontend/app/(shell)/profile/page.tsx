@@ -26,6 +26,7 @@ export default function ProfilePage() {
   const th = useTranslations("historyImport");
   const tr = useTranslations("reminders");
   const tk = useTranslations("kitchen");
+  const tai = useTranslations("myAi");
   // Valor desconocido del servidor: se muestra tal cual en vez de romper la vista
   const opt = (group: string, v?: string | null) => (v ? (t.has(`options.${group}.${v}`) ? t(`options.${group}.${v}`) : v) : null);
 
@@ -72,6 +73,9 @@ export default function ProfilePage() {
       </Link>
       <Link href="/profile/kitchen" data-testid="kitchen-link" className="btn btn-outline mt-3 w-full">
         {tk("link")}
+      </Link>
+      <Link href="/profile/my-ai" data-testid="my-ai-link" className="btn btn-outline mt-3 w-full">
+        {tai("link")}
       </Link>
       <Link href="/profile/reminders" data-testid="reminders-link" className="btn btn-outline mt-3 w-full">
         {tr("link")}

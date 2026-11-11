@@ -8,6 +8,7 @@ import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { intlLocale } from "@/lib/locale";
 import { BatchRuleChip, BatchSessions } from "./BatchSessions";
 import { ShoppingList } from "./ShoppingList";
+import { menuOrigin } from "@/lib/menu-ai";
 import { TicketsCard } from "./TicketsCard";
 import {
   BATCH_RULES,
@@ -336,11 +337,15 @@ function Header({ menu }: { menu: Menu }) {
   const t = useTranslations("menu.header");
   const f = useFormat();
   const last = menu.end_date ?? menu.days[menu.days.length - 1]?.date ?? menu.start_date;
+  const origin = menu.origin ?? menuOrigin(menu.source);
   return (
-    <section data-testid="menu-header" data-source={menu.source} className="glass mt-4 p-4">
+    <section data-testid="menu-header" data-source={menu.source} data-origin={origin} className="glass mt-4 p-4">
       {menu.title && <p className="t-title text-ink">{menu.title}</p>}
       <p className="t-body text-xs text-muted first-letter:uppercase">{t("range", { start: f.date(menu.start_date), end: f.date(last) })}</p>
-      <p className="t-label mt-1 text-muted">{t(`source.${menu.source}`)}</p>
+      <p className="mt-1 flex flex-wrap items-center gap-2">
+        <span data-testid="menu-origin" data-origin={origin} className="badge badge-neon">{t(`origin.${origin}`)}</span>
+        <span className="t-label text-muted">{t(`source.${menu.source}`)}</span>
+      </p>
       {menu.notes.length > 0 && (
         <ul className="mt-2 flex list-disc flex-col gap-0.5 pl-4">
           {menu.notes.map((n, i) => <li key={i} className="t-body text-xs text-ink">{n}</li>)}

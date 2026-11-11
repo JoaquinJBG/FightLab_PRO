@@ -201,13 +201,16 @@ export const shoppingList = z.object({
 });
 export type ShoppingList = z.infer<typeof shoppingList>;
 
-export const MENU_SOURCES = ["generated", "json", "yaml", "partediario"] as const;
+// Fase 14: `user_ai` es el JSON que prepara la IA del propio usuario (skill de Claude Code o pegado).
+export const MENU_SOURCES = ["generated", "json", "yaml", "partediario", "user_ai"] as const;
+export const MENU_ORIGINS = ["user_ai", "auto", "import"] as const;
 
 export const menu = z.object({
   id: z.number(),
   menu_id: z.string().nullable().optional(),
   title: z.string().optional().default(""),
   source: z.enum(MENU_SOURCES).optional().default("generated"),
+  origin: z.enum(MENU_ORIGINS).optional(),
   notes: z.array(z.string()).optional().default([]),
   start_date: z.string(),
   end_date: z.string().optional(),
@@ -278,6 +281,7 @@ export const menuState = z.object({
     start_date: z.string(),
     end_date: z.string().nullable(),
     source: z.string(),
+    origin: z.string().optional(),
     menu_id: z.string().nullable(),
   })).optional().default([]),
   tastes,

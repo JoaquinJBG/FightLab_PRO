@@ -2396,7 +2396,7 @@
     "intro": "El coach propone los platos y su motor comprueba cada día contra tus objetivos de kcal, proteína, grasa y fibra. Los días que no pasan no se guardan.",
     "loading": "Cargando…",
     "error": "No se pudo cargar el menú.",
-    "simulated": "Platos de ejemplo de FightLab elegidos por un proponedor simulado (sin IA). Los números son del motor del coach.",
+    "simulated": "Automático, sin IA: platos de FightLab y de tus menús anteriores, con tus gustos, tus comensales y Mi cocina. Los números son del motor del coach.",
     "engine": "Motor del coach {sha}",
     "rateHint": "Toca un plato para valorarlo: los que te gustan vuelven en próximos menús y los que no repetirías no salen más.",
     "blocked": {
@@ -2596,11 +2596,17 @@
         "generated": "Preparado por FightLab (LLM simulado y motor)",
         "json": "Importado (JSON de la app)",
         "yaml": "Importado (YAML del coach)",
-        "partediario": "Importado de la copia de ParteDiario"
+        "partediario": "Importado de la copia de ParteDiario",
+        "user_ai": "Preparado con tu IA y comprobado por el motor"
       },
       "others": "Menús guardados",
       "option": "Menú del {start}",
-      "kitchenHint": "Rellena tu menaje en Perfil → Mi cocina para que el cronograma use solo tus aparatos."
+      "kitchenHint": "Rellena tu menaje en Perfil → Mi cocina para que el cronograma use solo tus aparatos.",
+      "origin": {
+        "user_ai": "IA del usuario",
+        "auto": "Automático",
+        "import": "Importado"
+      }
     },
     "batch": {
       "title": "Sesiones de batch",
@@ -2696,7 +2702,40 @@
       }
     },
     "kitchenLink": "Mi cocina: menaje y comensales",
-    "kitchenLinkHint": "El cronograma de batch usa tus aparatos y los menús respetan a cada comensal."
+    "kitchenLinkHint": "El cronograma de batch usa tus aparatos y los menús respetan a cada comensal.",
+    "ai": {
+      "title": "Con tu IA (gratis)",
+      "intro": "Copia tus objetivos, gustos, Mi cocina y las instrucciones, pégalo en claude.ai (u otra IA) y pega aquí el JSON que te devuelva. Usa los días y comidas de arriba. El motor lo comprueba igual que un menú de FightLab.",
+      "copy": "Prepararlo con mi IA",
+      "copying": "Preparando…",
+      "copied": "Copiado: {days, plural, one {# día} other {# días}} desde el {start}. Pégalo en tu IA y copia su respuesta entera.",
+      "copyManual": "No se ha podido copiar solo: toca el cuadro, selecciónalo todo y cópialo a mano.",
+      "dataTitle": "Datos (JSON):",
+      "pasteLabel": "Pega aquí la respuesta de tu IA",
+      "pastePlaceholder": "{\"schema\": 1, \"days\": […], \"dishes\": {…}}",
+      "save": "Comprobar y guardar",
+      "saving": "Comprobando…",
+      "saved": "Guardado: {title}, {days, plural, one {# día} other {# días}}.",
+      "replaced": "Sustituido: {title}, {days, plural, one {# día} other {# días}}.",
+      "allOk": "Los {days} días cuadran con tus objetivos.",
+      "failing": "{ok} de {days} días cuadran. No cuadran: {dates}. Pídele a tu IA que los ajuste y vuelve a pegarlo: sustituye a este.",
+      "startTaken": "Ya hay otro menú que empieza ese día. ¿Lo sustituyes?",
+      "replace": "Sustituir",
+      "where": "Dónde: {info}",
+      "askAgain": "Pídele a tu IA que lo corrija siguiendo el formato del texto que copiaste, y vuelve a pegarlo.",
+      "skillLink": "¿Tienes Claude Code en el PC? Prepáralo con la skill (Perfil → Mi IA)",
+      "errors": {
+        "paste_empty": "Pega aquí el JSON que te ha devuelto tu IA.",
+        "paste_not_json": "Eso no es un JSON válido (línea {line}, columna {column}). Copia la respuesta entera de tu IA, desde la primera llave hasta la última.",
+        "paste_no_schema": "El JSON no es un menú de FightLab: le falta \"schema\": 1.",
+        "import_invalid": "El JSON no sigue el formato del menú.",
+        "import_too_long": "Un menú es de 1 a {max} días.",
+        "free_meal_refused": "Sin comida libre tras un cribado de TCA positivo: este menú no se guarda.",
+        "no_calorie_targets": "Sin objetivos de kcal no hay menú que preparar.",
+        "profile_incomplete": "Completa tu perfil para preparar un menú.",
+        "generic": "No se ha podido. Inténtalo de nuevo."
+      }
+    }
   },
   "sessionCheck": {
     "title": "Sesión vigorosa: mejor con revisión",
@@ -3655,6 +3694,45 @@
         "invalid": "Revisa los datos: falta el nombre o algún número no vale.",
         "generic": "No se ha podido guardar. Inténtalo de nuevo."
       }
+    }
+  },
+  "myAi": {
+    "link": "Mi IA (menús)",
+    "back": "← Perfil",
+    "title": "Mi IA",
+    "intro": "Prepara tus menús con tu propia IA (tu suscripción de Claude u otra). FightLab no usa ninguna IA de pago: solo le pasa tus datos y comprueba el menú con su motor.",
+    "loading": "Cargando…",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "pc": {
+      "title": "Desde el PC, con Claude Code",
+      "step1": "Instala la skill fightlab-menu.",
+      "docs": "Cómo instalarla",
+      "step2": "Crea aquí un token y guárdalo en tu PC (variable FIGHTLAB_TOKEN o el archivo de la guía). Nunca lo subas a un repositorio.",
+      "step3": "Pon la dirección de abajo en FIGHTLAB_URL.",
+      "step4": "En Claude Code, pide «menú de la semana»: descarga tus datos, prepara el menú, lo comprueba con el motor y lo sube.",
+      "url": "Dirección para la skill (FIGHTLAB_URL)"
+    },
+    "tokens": {
+      "title": "Tokens personales",
+      "scope": "Un token solo sirve para leer los datos del menú y subir menús. No da acceso a nada más de tu cuenta.",
+      "name": "Nombre del token",
+      "namePlaceholder": "PC de casa",
+      "create": "Crear token",
+      "once": "Cópialo ahora: solo se ve esta vez. Si lo pierdes, revócalo y crea otro.",
+      "none": "Aún no tienes ningún token.",
+      "created": "creado el {date}",
+      "used": "usado el {date}",
+      "unused": "sin usar",
+      "revoke": "Revocar",
+      "revokeConfirm": "¿Revocar? Deja de funcionar ya",
+      "full": "Tienes {max} tokens activos: revoca uno para crear otro.",
+      "error": "No se ha podido crear el token."
+    },
+    "phone": {
+      "title": "Desde el móvil",
+      "body": "En Menú, «Prepararlo con mi IA» copia tus datos y las instrucciones para pegarlos en claude.ai u otra IA. Luego pegas su respuesta en la misma pantalla.",
+      "cta": "Ir a Menú"
     }
   }
 }

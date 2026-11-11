@@ -563,6 +563,9 @@ class MealPlan(models.Model):
         JSON = "json", "json"  # JSON `schema: 1` de la app (fase 12)
         YAML = "yaml", "yaml"  # `menus/<fecha>.yaml` del coach (fase 12)
         PARTEDIARIO = "partediario", "partediario"  # los `menus` de la copia de ParteDiario
+        # Fase 14: el JSON `schema: 1` que prepara la IA del propio usuario (la skill de Claude Code
+        # con su token personal, o copiar y pegar desde claude.ai u otra IA).
+        USER_AI = "user_ai", "user_ai"
 
     profile = models.ForeignKey("profiles.UserProfile", on_delete=models.CASCADE, related_name="meal_plans")
     start_date = models.DateField()
@@ -600,6 +603,30 @@ class MealPlan(models.Model):
 
     def __str__(self) -> str:
         return f"MealPlan<{self.profile_id} {self.start_date}>"
+
+
+class MenuApiToken(models.Model):
+    """Un token personal de API para los menús con la IA del usuario (fase 14).
+
+    Solo sirve para leer el contexto del menú (`GET /menu/context`) y subir un menú
+    (`POST /menu/import`): ninguna otra vista lo acepta (`coaching.menu_tokens`). El token se
+    enseña una sola vez al crearlo; aquí solo queda su SHA-256 (`token_hash`) y el principio
+    (`prefix`) para reconocerlo en la lista. Revocar lo deja inservible al momento (`revoked_at`).
+    """
+
+    profile = models.ForeignKey("profiles.UserProfile", on_delete=models.CASCADE, related_name="menu_tokens")
+    name = models.CharField(max_length=60)
+    prefix = models.CharField(max_length=16)
+    token_hash = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"MenuApiToken<{self.profile_id} {self.prefix}>"
 
 
 class ShoppingCheck(models.Model):

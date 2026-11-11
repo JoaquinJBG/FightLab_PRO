@@ -21,7 +21,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
 from . import kitchen
-from .menu_dishes import DISHES
+from .menu_dishes import BATCH_STEPS, DISHES
 
 # convention (FightLab): el simulado apunta al 102,5 % del objetivo de kcal, en mitad del margen
 # que acepta el motor (del objetivo al 105 %, `cli.MENU_KCAL_MARGIN`).
@@ -53,6 +53,29 @@ def _clashes(dish: dict, ctx, meal: str = "") -> bool:
     return False
 
 
+# convention (FightLab): con qué otro aparato de casa se hace el mismo paso de un plato de la tabla
+# (el wok en una sartén, la olla exprés en una olla normal, la air fryer en el horno y al revés).
+STAND_INS = {
+    "wok": ("frying_pan",),
+    "pressure_cooker": ("pot",),
+    "air_fryer": ("oven",),
+    "oven": ("air_fryer",),
+    "microwave": ("pot",),
+}
+
+
+def _cookable(entry: dict, owned: set[str] | None) -> bool:
+    """Fase 14: ¿se puede cocinar el plato de la tabla con el menaje de Mi cocina (o un aparato que
+    lo sustituye, `STAND_INS`)? Con el menaje sin rellenar (`None`) no se filtra; un plato sin
+    pasos de aparato (desayunos, meriendas) vale."""
+    if owned is None:
+        return True
+    return all(
+        step[1] in owned or any(s in owned for s in STAND_INS.get(step[1], ()))
+        for step in BATCH_STEPS.get(entry["key"], ())
+    )
+
+
 def _template(entry: dict, lang: str) -> dict:
     lang = lang if lang in ("es", "en") else "es"
     return {
@@ -75,8 +98,10 @@ def _scaled(items: list[str], factor: float) -> list[str]:
 
 
 class FakeMenuProposer:
-    """Proveedor simulado y determinista. Elige platos del recetario del atleta (valorados `loved`
-    o `liked`) y de `menu_dishes.DISHES`, sin platos vetados ni repetidos en la ventana de
+    """Proveedor simulado y determinista: el respaldo automático, sin IA (la app lo llama
+    «automático»). Elige platos del recetario del atleta (valorados `loved` o `liked`), de
+    `menu_dishes.DISHES` (los que se pueden cocinar con Mi cocina) y de sus menús anteriores (fase
+    14), con los comensales de cada comida, sin platos vetados ni repetidos en la ventana de
     `mealplan.NO_REPEAT_DAYS`, sin lo que choca con sus gustos, y escala las raciones del día con
     los totales del motor hasta el objetivo de kcal. Cada intento (`attempt`) cambia la elección."""
 
@@ -91,12 +116,19 @@ class FakeMenuProposer:
              "steps": list(r["steps"]), "tupper_ok": True, "own": True}
             for r in ctx.favoured if r["meal"] == meal
         ]
+        owned = getattr(ctx, "owned", None)
+        table = [_template(d, ctx.lang) for d in DISHES if meal in d["meals"] and _cookable(d, owned)]
+        # Fase 14 (respaldo automático): también los platos de sus menús anteriores (de la app, de
+        # su IA o importados), después de la tabla para no cambiar el orden de siempre.
+        seen = {fold(d["dish"]) for d in own + table}
+        previous = []
+        for d in getattr(ctx, "previous", None) or []:
+            if d["meal"] == meal and fold(d["dish"]) not in seen:
+                seen.add(fold(d["dish"]))
+                previous.append({k: v for k, v in d.items() if k != "meal"})
         # Solo platos cuyos ingredientes conoce la tabla del usuario (sin región, p. ej., no hay la
         # capa de España).
-        return [
-            d for d in own + [_template(d, ctx.lang) for d in DISHES if meal in d["meals"]]
-            if all(ctx.find(foods.parse_item(i)[0]) for i in d["items"])
-        ]
+        return [d for d in own + table + previous if all(ctx.find(foods.parse_item(i)[0]) for i in d["items"])]
 
     def _taken(self, ctx, when: date) -> set[str]:
         """Platos ya elegidos en otros días a menos de `NO_REPEAT_DAYS`."""

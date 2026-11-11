@@ -53,4 +53,6 @@ export const READY_USERS = {
   exercises: "e2e-exercises@fightlab.test",
   // Escáner de código de barras: un producto de cadena con EAN (inventado) y OFF sin configurar.
   scanner: "e2e-scanner@fightlab.test",
+  // Fase 14 (menús con la IA del usuario): crea un token, pega un JSON roto y uno bueno y lo revoca.
+  menuAi: "e2e-menu-ai@fightlab.test",
 };

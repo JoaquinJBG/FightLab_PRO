@@ -317,6 +317,10 @@ class ProposalContext:
     favoured: list[dict]
     table: list[foods.Food]
     diners: list[dict] = field(default_factory=list)  # fase 12: comensales con sus restricciones
+    # Fase 14 (respaldo automático): platos de los menús anteriores del usuario y los aparatos de Mi
+    # cocina (`None`: menaje sin rellenar, no se filtra por aparato).
+    previous: list[dict] = field(default_factory=list)
+    owned: set[str] | None = None
     batch: bool = False  # fase 12: se puede repetir un plato del día anterior como tanda de 2 raciones
     picked: dict = field(default_factory=dict)  # (fecha ISO, comida) → plato elegido (el mismo dict)
     chosen: dict[str, list[str]] = field(default_factory=dict)  # platos propuestos por fecha
@@ -337,6 +341,32 @@ def _favoured(user) -> list[dict]:
         for r in Recipe.objects.filter(profile=user.profile, rating__in=SAVED_RATINGS).exclude(items=[])
         .order_by("rating", "dish")
     ]
+
+
+# convention (FightLab): cuántos menús anteriores mira el respaldo automático para reutilizar platos.
+PREVIOUS_MENUS = 8
+
+
+def _previous_dishes(user) -> list[dict]:
+    """Los platos de los últimos menús del usuario (de cualquier origen), una vez cada uno, con la
+    comida en la que salieron: el respaldo automático los reutiliza además de la tabla de platos.
+    Las cantidades se vuelven a escalar y el motor vuelve a comprobar cada día."""
+    out: dict[str, dict] = {}
+    for plan in MealPlan.objects.filter(profile=user.profile)[:PREVIOUS_MENUS]:
+        for day in plan.days:
+            for meal in day.get("meals") or []:
+                key = meal.get("meal", "")
+                if key not in MEALS or meal.get("free"):
+                    continue
+                for d in meal.get("dishes") or []:
+                    if not d.get("items") or (d.get("servings") or 1) > 1:
+                        continue
+                    out.setdefault(fold(d["dish"]), {
+                        "dish": d["dish"], "source": d.get("source") or "", "meal": key,
+                        "items": list(d["items"]), "seasoning": list(d.get("seasoning") or []),
+                        "steps": list(d.get("steps") or []), "tupper_ok": bool(meal.get("tupper")),
+                    })
+    return list(out.values())
 
 
 def _validate_request(request: MenuRequest, today: date) -> None:
@@ -394,6 +424,8 @@ def generate(user, today: date, request: MenuRequest, lang: str, proposer) -> tu
         table=table,
         diners=kitchen.diners_of(user.profile),
         batch=request.batch,
+        previous=_previous_dishes(user),
+        owned=kitchen.owned(equipment) if (equipment := kitchen.equipment_of(user.profile)) else None,
     )
     drafts = {d.isoformat(): d_ for d, d_ in zip(dates, proposer.propose(ctx, dates, 0, None), strict=True)}
     for attempt in range(1, MAX_ROUNDS + 1):
@@ -604,6 +636,7 @@ def plan_data(plan: MealPlan, user, lang: str) -> dict:
         "menu_id": plan.menu_id or None,
         "title": plan.title,
         "source": plan.source,
+        "origin": origin_of(plan.source),
         "notes": plan.notes or [],
         "start_date": plan.start_date.isoformat(),
         "end_date": (plan.end_date or plan.start_date + timedelta(days=len(plan.days) - 1)).isoformat(),
@@ -636,6 +669,14 @@ def plan_data(plan: MealPlan, user, lang: str) -> dict:
 MENUS_LISTED = 20
 
 
+def origin_of(source: str) -> str:
+    """Fase 14: el origen que enseña la app. `user_ai` (la IA del usuario), `auto` (el generador de
+    la F8, sin IA) o `import` (un archivo importado: JSON, YAML o ParteDiario)."""
+    if source == MealPlan.Source.USER_AI:
+        return "user_ai"
+    return "auto" if source == MealPlan.Source.GENERATED else "import"
+
+
 def current_plan(user, today: date) -> MealPlan | None:
     """El menú que se enseña: el que empieza más tarde (el último generado o importado)."""
     return MealPlan.objects.filter(profile=user.profile).first()
@@ -665,7 +706,8 @@ def state(user, today: date, lang: str, plan_id: int | None = None) -> dict:
         "menu": plan_data(latest, user, lang) if latest else None,
         "menus": [
             {"id": p.id, "title": p.title, "start_date": p.start_date.isoformat(),
-             "end_date": p.end_date.isoformat() if p.end_date else None, "source": p.source, "menu_id": p.menu_id or None}
+             "end_date": p.end_date.isoformat() if p.end_date else None, "source": p.source, "origin": origin_of(p.source),
+             "menu_id": p.menu_id or None}
             for p in MealPlan.objects.filter(profile=user.profile)[:MENUS_LISTED]
         ],
         "tastes": tastes_data(user),
