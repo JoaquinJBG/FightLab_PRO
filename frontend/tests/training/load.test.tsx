@@ -61,6 +61,21 @@ describe("Carga y estado (en)", () => {
     expectClean(container);
   });
 
+  it("el gráfico de carga semanal dibuja las barras con alto en píxeles, proporcional al día", () => {
+    // Fallo C: el alto era un % de una columna sin alto fijo, que el navegador resuelve a 0: sin barras.
+    state.metrics = m({ weekAU: 500, daily7: [100, 0, 50, 200, 0, 100, 50], historyDays: 28, ratioDaysLeft: 0 });
+    renderEn(<LoadPage />);
+    const bars = screen.getAllByTestId("load-bar");
+    expect(bars).toHaveLength(7);
+    const heights = bars.map((b) => b.style.height);
+    expect(heights.every((h) => /^\d+px$/.test(h))).toBe(true);
+    const px = heights.map((h) => parseInt(h, 10));
+    expect(px[3]).toBeGreaterThanOrEqual(60); // el día más cargado llena el gráfico
+    expect(px[0]).toBe(Math.round(px[3] / 2)); // 100 es la mitad de 200
+    expect(px[1]).toBeGreaterThan(0); // un día sin carga deja una marca, no desaparece
+    expect(px[1]).toBeLessThan(px[2]);
+  });
+
   it("con huecos en el historial avisa de que el número puede engañar", () => {
     state.metrics = m({ weekAU: 300, daily7: [0, 0, 0, 300, 0, 0, 0], acwr: 1.2, weekVsAvgPct: 20, ratioDaysLeft: 0, gaps: true, historyDays: 28 });
     renderEn(<LoadPage />);

@@ -12,6 +12,9 @@ import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { LoadComparisonCard, LoadIndices } from "@/components/load/LoadComparisonCard";
 import { COMBAT_RULES } from "@/lib/combat-rules";
 
+const BAR_AREA_PX = 80; // alto del día más cargado
+const BAR_MIN_PX = 4; // un día sin carga deja una marca
+
 /** Iniciales de los últimos 7 días, como índices 0-6 de `Date.getDay()` (0 = domingo). */
 function dayIndexes(): number[] {
   const out: number[] = [];
@@ -166,10 +169,11 @@ export default function LoadPage() {
           <span className="t-label text-muted">{t("au", { n: m?.weekAU ?? 0 })}</span>
         </div>
         {m && m.weekAU > 0 ? (
-          <div className="mt-4 flex h-24 items-end justify-between gap-2">
+          <div className="mt-4 flex items-end justify-between gap-2">
             {m.daily7.map((v, i) => (
-              <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
-                <div className="w-full rounded-md" style={{ height: `${Math.max((v / max) * 100, 4)}%`, opacity: v === 0 ? 0.25 : 1, background: "linear-gradient(to top,#2b6bff,#45e9ff)" }} />
+              <div key={i} className="flex flex-1 flex-col items-center justify-end gap-1.5">
+                {/* Alto en píxeles: un % de una columna sin alto fijo se resuelve a 0 y no salían barras */}
+                <div data-testid="load-bar" className="w-full rounded-md" style={{ height: `${Math.max(Math.round((v / max) * BAR_AREA_PX), BAR_MIN_PX)}px`, opacity: v === 0 ? 0.25 : 1, background: "linear-gradient(to top,#2b6bff,#45e9ff)" }} />
                 <span className="text-[10px] text-muted">{labels[i]}</span>
               </div>
             ))}

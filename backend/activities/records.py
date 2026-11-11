@@ -139,6 +139,11 @@ def records_data(user, wanted: list[str] | None = None) -> dict:
     if wanted:
         ids = list(dict.fromkeys(wanted_id(w) for w in wanted if w.strip()))
         records = {i: (_records(by_id[i]) if by_id.get(i) else None) for i in ids}
+        # Los ejercicios sin clave (foco semanal, plan) se piden por su nombre («Sentadilla») y el
+        # cliente los busca por ese mismo texto, no por la clave a la que se traduce: también
+        # salen bajo lo que se pidió.
+        for w in dict.fromkeys(w.strip() for w in wanted if w.strip()):
+            records.setdefault(w, records[wanted_id(w)])
     else:
         records = {i: _records(sets) for i, sets in sorted(by_id.items(), key=lambda kv: kv[1][-1].name.lower())}
     return {"records": records, "convention": CONVENTION}
