@@ -15,7 +15,7 @@ const state = vi.hoisted(() => ({ metrics: null as unknown }));
 vi.mock("next/link", () => ({
   default: ({ href, children, ...r }: { href: string; children: React.ReactNode }) => <a href={href} {...r}>{children}</a>,
 }));
-vi.mock("@/lib/hooks", () => ({ useBiometrics: () => ({ data: [] }) }));
+vi.mock("@/lib/hooks", () => ({ useBiometrics: () => ({ data: [] }), useSafety: () => ({ data: undefined }) }));
 vi.mock("@/lib/activities", () => ({ fetchServerMetrics: vi.fn(async () => null) }));
 vi.mock("@/lib/load", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/load")>()),

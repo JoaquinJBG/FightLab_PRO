@@ -131,33 +131,28 @@ def _safety(user, memory: dict | None = None) -> tuple[bool, tuple[str, ...], tu
 
     Las notas (F26): un golpe en la cabeza activo manda sobre todo lo demás, y una lesión activa
     (del perfil o la que el atleta contó en «Contarle a mi coach») limita lo que afecta a esa zona."""
-    from coach.profile import ProfileIncomplete
-
-    from coaching.combat import combat_flags
-    from coaching.models import Injury
+    from coaching import safety_state
     from coaching.safety_views import _today
-    from coaching.services import safety_for
 
-    today = _today(user.profile)
-    try:
-        refer_gp = safety_for(user, today).refer_gp
-    except (ProfileIncomplete, ValueError):
-        refer_gp = False
-    fight = combat_flags(user.profile, today)
+    # R4-13: el mismo estado de seguridad que leen todas las pantallas (`coaching.safety_state`)
+    state = safety_state.for_user(user, _today(user.profile))
+    refer_gp = state.engine_ok and state.flags.refer_gp
     notes: list[str] = []
     rules: list[str] = []
-    if fight.no_contact:
+    if state.no_contact:
         notes.append(services.NO_CONTACT_NOTE)
         rules.extend(services.NO_CONTACT_RULES)
-    areas = list(user.profile.injuries.filter(status=Injury.Status.ACTIVE).values_list("area", flat=True))
+    areas = [i.area for i in state.injuries]
     if memory and memory.get("lesion"):
         areas.append(memory["lesion"])
     if areas:
         notes.append(services.injury_note(areas))
         rules.append(services.INJURY_RULE)
-    if fight.no_cut_content:
+    if state.level != "ok":
+        notes.append(services.readiness_note(state.level, state.vigorous_blocked_by))
+    if state.fight.no_cut_content:
         notes.append(services.NO_CUT_NOTE)
-    return refer_gp or fight.no_contact, tuple(notes), tuple(rules)
+    return refer_gp or state.no_contact, tuple(notes), tuple(rules)
 
 
 class CoachChatView(APIView):

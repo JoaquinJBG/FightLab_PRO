@@ -16,7 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from . import combat, services
+from . import safety_state, services
 from .bridge import reason_texts
 from .bridge.adapters import latest_weight
 from .bridge.reasons import parse_reason
@@ -68,7 +68,8 @@ class SafetyView(APIView):
         profile = request.user.profile
         today = _today(profile)
         flags = services.safety_for(request.user, today)
-        fight = combat.combat_flags(profile, today)
+        state = safety_state.of(profile, today, flags)
+        fight = state.fight
         lang = _lang()
         reasons = fight.reasons + [parse_reason(text) for text in flags.reasons]
         paused = {
@@ -103,6 +104,8 @@ class SafetyView(APIView):
                 # El CRT6 oficial, enlazado y nunca copiado (combat-sports "Red flags after a head
                 # blow mean emergency care").
                 "crt6_url": settings.CRT6_URL,
+                # R4-10/R4-13: el estado de hoy, una sola fuente para todas las pantallas
+                "state": state.data(lang),
             }
         )
 

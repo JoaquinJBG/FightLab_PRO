@@ -6,6 +6,8 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { capitalizeFirst, formatDate } from "@/lib/locale";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { SafetyBanner } from "@/components/safety/SafetyBanner";
+import { useBlockedWhy } from "@/components/safety/SafetyStateCard";
+import { useTodaySafety } from "@/lib/safety-state";
 import { ChevronRight } from "@/components/icons";
 import { HEAD_BLOW_RULES } from "@/lib/coach-rules";
 import { SAFETY_RULES } from "@/lib/safety-rules";
@@ -36,7 +38,7 @@ function SectionTitle({ children, aside }: { children: React.ReactNode; aside?: 
   );
 }
 
-function Toggle({ id, label, value, onChange }: { id: string; label: string; value: boolean | null; onChange: (v: boolean) => void }) {
+function Toggle({ id, label, value, onChange, pending = false }: { id: string; label: string; value: boolean | null; onChange: (v: boolean) => void; pending?: boolean }) {
   const t = useTranslations("today.done");
   const on = value === true;
   return (
@@ -51,6 +53,7 @@ function Toggle({ id, label, value, onChange }: { id: string; label: string; val
     >
       <span className="t-label text-ink">{label}</span>
       <span className={`t-body text-xs ${on ? "text-neon" : "text-muted"}`}>{on ? `✓ ${t("yes")}` : t("notYet")}</span>
+      {pending && <span data-testid={`${id}-pending`} className="t-body text-[10px] text-warn">{t("pending")}</span>}
     </button>
   );
 }
@@ -144,6 +147,8 @@ function DayPlan({ state }: { state: TodayState }) {
 function DayStatus({ state }: { state: TodayState }) {
   const t = useTranslations("today");
   const save = useSaveDay();
+  // R4-6: lo marcado sin red se ve al momento, con «pendiente de enviar» hasta que sale
+  const pending = save.isPaused && save.variables ? Object.keys(save.variables) : [];
   return (
     <section className={section}>
       <SectionTitle>{t("dayType.title")}</SectionTitle>
@@ -173,8 +178,8 @@ function DayStatus({ state }: { state: TodayState }) {
 
       <h2 className="t-label mt-4 text-ink">{t("done.title")}</h2>
       <div className="mt-2 flex gap-2">
-        <Toggle id="toggle-trained" label={t("done.trained")} value={state.trained} onChange={(v) => save.mutate({ trained: v })} />
-        <Toggle id="toggle-mobility" label={t("done.mobility")} value={state.mobility} onChange={(v) => save.mutate({ mobility: v })} />
+        <Toggle id="toggle-trained" label={t("done.trained")} value={state.trained} onChange={(v) => save.mutate({ trained: v })} pending={pending.includes("trained")} />
+        <Toggle id="toggle-mobility" label={t("done.mobility")} value={state.mobility} onChange={(v) => save.mutate({ mobility: v })} pending={pending.includes("mobility")} />
       </div>
       {save.isError && <p role="alert" className="t-body mt-2 text-xs text-warn">{t("saveError")}</p>}
     </section>
@@ -366,8 +371,15 @@ function Cardio({ state }: { state: TodayState }) {
   const { sessions, week, types } = state.cardio;
   const [type, setType] = useState(types[0]?.key ?? "walk");
   const [minutes, setMinutes] = useState("");
-  const [intensity, setIntensity] = useState<Intensity>(types[0]?.vigorous ? "vigorous" : "moderate");
+  const [picked, setIntensity] = useState<Intensity>(types[0]?.vigorous ? "vigorous" : "moderate");
   const [invalid, setInvalid] = useState(false);
+  // R4-10/R4-13: con lo vigoroso bloqueado hoy no se ofrece «Vigorosa» (la misma regla del plan,
+  // `lib/safety-state`); va desactivada con el motivo.
+  const safeToday = useTodaySafety();
+  const vigorousOff = !!safeToday && !safeToday.vigorousAllowed;
+  const blockedWhy = useBlockedWhy();
+  const tState = useTranslations("safetyState");
+  const intensity: Intensity = vigorousOff && picked === "vigorous" ? "moderate" : picked;
   const typeName = (key: string) => (t.has(`types.${key}`) ? t(`types.${key}`) : key);
   const pct = weekProgress(week.equivalent, week.goal);
 
@@ -485,14 +497,20 @@ function Cardio({ state }: { state: TodayState }) {
                 role="radio"
                 data-testid={`cardio-intensity-${i}`}
                 aria-checked={intensity === i}
+                disabled={vigorousOff && i === "vigorous"}
                 onClick={() => setIntensity(i)}
-                className={`btn btn-sm flex-1 ${intensity === i ? "btn-primary" : "btn-outline"}`}
+                className={`btn btn-sm flex-1 disabled:opacity-40 ${intensity === i ? "btn-primary" : "btn-outline"}`}
               >
                 {t(i)}
               </button>
             ))}
           </div>
         </div>
+        {vigorousOff && safeToday && (
+          <p data-testid="cardio-vigorous-off" role="note" className="t-body mt-1 text-[11px]" style={{ color: "#ffd25a" }}>
+            {tState("vigorousOff", { why: blockedWhy(safeToday.vigorousBlockedBy) })}
+          </p>
+        )}
         <p className={`t-body mt-1 flex flex-wrap items-center gap-2 text-[11px] ${invalid ? "text-warn" : "text-muted"}`}>
           {invalid ? (
             <span role="alert">{t("invalidMinutes")}</span>

@@ -6,6 +6,8 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useBiometrics, useCheckin, useMe, useSafety, useTrend, useWeighIn } from "@/lib/hooks";
 import { TrendLine } from "@/components/trend/TrendLine";
 import { SafetyBanner } from "@/components/safety/SafetyBanner";
+import { SafetyStateCard } from "@/components/safety/SafetyStateCard";
+import { todaySafety } from "@/lib/safety-state";
 import { LoadSummary } from "@/components/load/LoadSummary";
 import { ZonesCard } from "@/components/zones/ZonesCard";
 import type { Biometrics } from "@/lib/schemas";
@@ -251,7 +253,9 @@ export default function DashboardPage() {
 
   /* ---------- bloqueos del servidor (spec §8.3) ---------- */
   // `no_training`: sin plan ni sugerencias de carga, pero se puede seguir registrando.
-  const noTraining = !!safety?.flags.no_training;
+  // R4-13: el estado de seguridad de hoy (`/coach/safety` → `state`) manda sobre la recuperación
+  const safetyToday = todaySafety(safety);
+  const noTraining = !!safetyToday?.noTraining;
   // `no_weight_targets`: ni pesaje, ni tendencia de peso, ni recordatorios de pesarse. Si aún no
   // se sabe (carga), se oculta: es lo seguro.
   const weightHidden = !weighIn || weighIn.blocked;
@@ -316,6 +320,8 @@ export default function DashboardPage() {
           <p className="t-display mt-2 text-2xl" style={{ color: "#ff5a6e" }}>{t("state.noTraining")}</p>
           <p className="t-body mt-2 text-sm text-muted">{t("state.noTrainingBody")}</p>
         </section>
+      ) : safetyToday && safetyToday.level !== "ok" ? (
+        <SafetyStateCard state={safetyToday} className="rise mt-5" />
       ) : recovery ? (
         <section className="glass neon-edge rise mt-5 p-5" style={{ animationDelay: "40ms" }}>
           <p className="t-eyebrow text-muted">{t("state.eyebrowRecovery")}</p>

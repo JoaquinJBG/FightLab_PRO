@@ -23,8 +23,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from . import rules, services
-from .bridge.reasons import parse_reason
+from . import rules, safety_state
 from .models import KnowledgeRule
 from .safety_views import _lang, _today
 from .targets import _key, reasons_data
@@ -35,14 +34,14 @@ VIGOROUS_RPE = 7  # "vigorous begins at a level of 7 or 8" (EFFORT_SCALE)
 GRAPPLING_ARTS = ("BJJ", "Lucha")
 SPORT_FORMATS = ("continuous", "hiit", "sprints")
 GYM_INCLUDES = ("one_rm_test", "plyometrics")
-# Los flags que dan el aviso; `no_contact` ya tiene el suyo en la pantalla de MMA.
-WARN_FLAGS = ("no_training", "review_before_vigorous", "cap_moderate", "no_all_out_sprints")
-# Motivos del coach que ponen cada flag (`bridge/reasons.py`).
+# Los flags que dan el aviso; `no_contact` ya tiene el suyo en la pantalla de MMA. El golpe en la
+# cabeza y la lesión sin valorar también quitan lo vigoroso (R4-10, `safety_state`).
+WARN_FLAGS = ("no_training", "review_before_vigorous", "cap_moderate", "no_all_out_sprints", "head_blow_return", "injury_unassessed")
+# Motivos que ponen cada flag (`bridge/reasons.py` y `combat.py`).
 FLAG_REASONS = {
-    "no_training": ("bp_no_exercise", "bp_no_training", "cardiac_symptoms", "no_training_desk_pal"),
-    "review_before_vigorous": ("parq_unanswered_light", "parq_review_vigorous"),
-    "cap_moderate": ("bp_unknown_hypertension", "bp_gp_review", "bp_moderate"),
-    "no_all_out_sprints": ("parq_no_sprints",),
+    **safety_state.FLAG_REASONS,
+    "head_blow_return": ("head_blow_red_flags", "head_blow_no_contact"),
+    "injury_unassessed": ("injury_unassessed",),
 }
 
 
@@ -81,12 +80,12 @@ def modalities_for(kind: str, *, work_type="", art="", sport_key="", fmt="", rpe
 
 def check(user, today, lang: str, **session) -> dict:
     keys, by_rpe = modalities_for(**session)
-    flags = services.safety_for(user, today)
+    state = safety_state.for_user(user, today)
     modalities = []
     warn_flags: list[str] = []
     for key in keys:
         m = rules.MODALITY_INTENSITY[key]
-        blocked = [f for f in rules.blocked_by(key, flags) if f in WARN_FLAGS]
+        blocked = [f for f in state.blocked_by(key) if f in WARN_FLAGS]
         if m.intensity in (rules.VIGOROUS, rules.MAXIMAL) and blocked:
             warn_flags += [f for f in blocked if f not in warn_flags]
         modalities.append({
@@ -102,7 +101,10 @@ def check(user, today, lang: str, **session) -> dict:
     for m in modalities:
         m["grade"] = grades.get(m["rule_key"])
     codes = {c for f in warn_flags for c in FLAG_REASONS[f]}
-    reasons = [r for r in (parse_reason(text) for text in dict.fromkeys(flags.reasons)) if r.code in codes]
+    reasons = []
+    for _, r, _, _ in state.reasons():
+        if r.code in codes and r not in reasons:
+            reasons.append(r)
     combat = session.get("kind") == "MMA"
     return {
         "modalities": modalities,
