@@ -75,13 +75,13 @@ def test_hevy_export_becomes_sessions_and_sets(today_fixed):
     assert push.detail == {"import": {"source": "hevy_csv"}, "duration_known": True}
     sets = list(push.sets.values_list("exercise", "exercise_index", "set_index", "set_type", "weight_kg", "reps", "rpe"))
     assert [(e, ei, si, t, float(w) if w is not None else None, r) for e, ei, si, t, w, r, _ in sets] == [
-        ("Bench Press (Barbell)", 0, 0, "warmup", 40.0, 10),
-        ("Bench Press (Barbell)", 0, 1, "normal", 80.0, 6),
-        ("Bench Press (Barbell)", 0, 2, "normal", 80.0, 5),
-        ("Pull Up", 1, 0, "normal", None, 9),
+        ("Press banca", 0, 0, "warmup", 40.0, 10),
+        ("Press banca", 0, 1, "normal", 80.0, 6),
+        ("Press banca", 0, 2, "normal", 80.0, 5),
+        ("Dominadas", 1, 0, "normal", None, 9),
     ]
     assert float(push.sets.get(set_index=1, exercise_index=0).rpe) == 8
-    plank = SetLog.objects.get(activity__title="Legs", exercise="Plank")
+    plank = SetLog.objects.get(activity__title="Legs", exercise="Plancha")
     assert plank.duration_s == 60 and plank.reps is None
 
 
@@ -105,7 +105,7 @@ def test_an_overlapping_export_only_adds_what_is_new(today_fixed):
     response = upload(client, HEVY_B)
     assert response.data["sessions"] == {"new": 1, "updated": 1, "total": 3}
     assert response.data["sets"] == {"imported": 2, "duplicates": 6, "in_file": 9}
-    assert SetLog.objects.filter(activity__title="Legs", exercise="Squat (Barbell)").count() == 2
+    assert SetLog.objects.filter(activity__title="Legs", exercise="Sentadilla").count() == 2
 
 
 def test_the_stored_set_wins_when_the_same_position_changed_exercise(today_fixed):
@@ -115,7 +115,7 @@ def test_the_stored_set_wins_when_the_same_position_changed_exercise(today_fixed
     edited = HEVY_A.replace("Squat (Barbell)", "Front Squat (Barbell)")
     response = upload(client, edited)
     assert response.data["sets"]["imported"] == 0
-    assert not SetLog.objects.filter(exercise="Front Squat (Barbell)").exists()
+    assert not SetLog.objects.filter(exercise="Sentadilla frontal").exists()
 
 
 def test_dry_run_reports_without_saving(today_fixed):
