@@ -4,6 +4,7 @@ import ProfilePage from "@/app/(shell)/profile/page";
 import ProfileEditPage from "@/app/(shell)/profile/edit/page";
 import { ProfileForm } from "@/components/profile-form";
 import { expectClean, renderEn } from "../coach/_helpers";
+import { renderApp } from "../support/app";
 
 const state = vi.hoisted(() => ({ profile: null as unknown, mutate: (() => Promise.resolve()) as (p: unknown) => Promise<unknown>, refresh: () => {} }));
 
@@ -34,6 +35,9 @@ describe("Perfil en inglés", () => {
     expect(screen.getByText("170 cm")).toBeTruthy();
     // F12: la fecha de nacimiento con el formato del idioma, no en ISO
     expect(screen.getByText("7 March 1995")).toBeTruthy();
+    // F13: el rol traducido, no «ATHLETE» tal cual
+    expect(screen.getByText("Athlete")).toBeTruthy();
+    expect(screen.queryByText("ATHLETE")).toBeNull();
     expect(container.textContent).not.toContain("1995-03-07");
     expect(screen.getByText("Sign out")).toBeTruthy();
     expectClean(container, [/@example\.com/]);
@@ -50,6 +54,14 @@ describe("Perfil en inglés", () => {
     state.profile = { ...full, gender: "XYZ" };
     renderEn(<ProfilePage />);
     expect(screen.getByText("XYZ")).toBeTruthy();
+  });
+});
+
+describe("Perfil en español (F12, F13)", () => {
+  it("rol traducido y fecha de nacimiento como en la app", () => {
+    renderApp(<ProfilePage />);
+    expect(screen.getByText("Deportista")).toBeTruthy();
+    expect(screen.getByText("7 de marzo de 1995")).toBeTruthy();
   });
 });
 

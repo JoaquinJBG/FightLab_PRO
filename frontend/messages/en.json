@@ -1501,6 +1501,11 @@
       "save": "Save changes"
     },
     "logout": "Sign out",
+    "roles": {
+      "ATHLETE": "Athlete",
+      "COACH": "Coach",
+      "ADMIN": "Admin"
+    },
     "heightValue": "{cm} cm",
     "options": {
       "gender": {

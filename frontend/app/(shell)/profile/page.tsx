@@ -47,7 +47,7 @@ export default function ProfilePage() {
           </div>
           <div>
             <p className="t-body text-ink">{me?.email ?? "—"}</p>
-            <span className="badge badge-neon mt-1">{me?.role ?? "—"}</span>
+            <span className="badge badge-neon mt-1">{me?.role ? (t.has(`roles.${me.role}`) ? t(`roles.${me.role}`) : me.role) : "—"}</span>
           </div>
         </div>
       </section>
