@@ -13,7 +13,7 @@ from core.messages import msg
 from profiles.image_processing import UnsupportedImageError, UnsupportedImageFormatError, load_bounded
 from userstate.selectors import state_get_many
 
-from . import quota, services
+from . import chat_safety, quota, services
 from .models import AIUsage
 
 logger = logging.getLogger(__name__)
@@ -124,13 +124,17 @@ class LiveScopedRateThrottle(ScopedRateThrottle):
         return rates.get(self.scope)
 
 
-def _safety(user) -> tuple[bool, tuple[str, ...]]:
-    """`refer_gp` de los flags del motor (o un `no_contact` de combate) y las notas de seguridad
-    de combate para el prompt. Si el motor no puede evaluar el perfil, no hay línea por su parte:
-    el chat no debe caerse por eso."""
+def _safety(user, memory: dict | None = None) -> tuple[bool, tuple[str, ...], tuple[str, ...]]:
+    """`refer_gp` de los flags del motor (o un `no_contact` de combate), las notas de seguridad
+    para el prompt y las reglas que esas notas piden citar. Si el motor no puede evaluar el perfil,
+    no hay línea por su parte: el chat no debe caerse por eso.
+
+    Las notas (F26): un golpe en la cabeza activo manda sobre todo lo demás, y una lesión activa
+    (del perfil o la que el atleta contó en «Contarle a mi coach») limita lo que afecta a esa zona."""
     from coach.profile import ProfileIncomplete
 
     from coaching.combat import combat_flags
+    from coaching.models import Injury
     from coaching.safety_views import _today
     from coaching.services import safety_for
 
@@ -140,10 +144,20 @@ def _safety(user) -> tuple[bool, tuple[str, ...]]:
     except (ProfileIncomplete, ValueError):
         refer_gp = False
     fight = combat_flags(user.profile, today)
-    notes = tuple(
-        note for on, note in ((fight.no_contact, services.NO_CONTACT_NOTE), (fight.no_cut_content, services.NO_CUT_NOTE)) if on
-    )
-    return refer_gp or fight.no_contact, notes
+    notes: list[str] = []
+    rules: list[str] = []
+    if fight.no_contact:
+        notes.append(services.NO_CONTACT_NOTE)
+        rules.extend(services.NO_CONTACT_RULES)
+    areas = list(user.profile.injuries.filter(status=Injury.Status.ACTIVE).values_list("area", flat=True))
+    if memory and memory.get("lesion"):
+        areas.append(memory["lesion"])
+    if areas:
+        notes.append(services.injury_note(areas))
+        rules.append(services.INJURY_RULE)
+    if fight.no_cut_content:
+        notes.append(services.NO_CUT_NOTE)
+    return refer_gp or fight.no_contact, tuple(notes), tuple(rules)
 
 
 class CoachChatView(APIView):
@@ -174,7 +188,13 @@ class CoachChatView(APIView):
         if quota.global_budget_exceeded():
             return _budget_exceeded_response()
         memory = _coach_memory_for(user.profile)
-        refer_gp, safety_notes = _safety(user)
+        refer_gp, safety_notes, safety_rules = _safety(user, memory)
+        # F3: dolor, lesión, golpe en la cabeza, mareo o fiebre en lo que escribe el atleta: la
+        # regla de seguridad va antes que cualquier consejo de carga.
+        topic = chat_safety.conversation_topic(messages)
+        if topic:
+            safety_notes = (chat_safety.safety_note(topic), *safety_notes)
+            safety_rules = (*chat_safety.RULES[topic], *safety_rules)
 
         reservation = quota.reserve(user=user, kind=AIUsage.Kind.CHAT)
         if reservation is None:
@@ -189,6 +209,7 @@ class CoachChatView(APIView):
                 safety_notes=safety_notes,
                 memory=memory,
                 on_usage=_token_recorder(reservation),
+                safety_rules=safety_rules,
             )
             succeeded = True
             return Response({"reply": reply.text, "citations": reply.citations})

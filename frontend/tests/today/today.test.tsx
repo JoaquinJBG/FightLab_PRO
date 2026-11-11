@@ -39,8 +39,8 @@ function day(over: Partial<TodayState> = {}): TodayState {
     menu: {
       id: 7, start_date: "2026-10-26",
       meals: [
-        { meal: "breakfast", free: false, tupper: false, dishes: ["Avena con yogur"], eve: null, mark: null },
-        { meal: "lunch", free: false, tupper: true, dishes: ["Arroz con pollo"], eve: "Sacar el pollo", mark: null },
+        { meal: "breakfast", free: false, tupper: false, dishes: ["Avena con yogur"], prep: [], eve: [], mark: null },
+        { meal: "lunch", free: false, tupper: true, dishes: ["Arroz con pollo"], prep: [], eve: ["Sacar el pollo"], mark: null },
       ],
     },
     next_meal: { all_done: false, meal: "breakfast", free: false, dishes: ["Avena con yogur"] },
@@ -94,6 +94,39 @@ describe("Hoy", () => {
     expect(sessions[0].textContent).toContain("Paseo");
     expect(sessions[1].textContent).toContain("Desde Deportes");
     expect(screen.getByRole("link", { name: /resumen/i }).getAttribute("href")).toBe("/dashboard");
+  });
+
+  it("para esta noche: tareas de la víspera, la sesión de batch de mañana y descongelar con su regla (F12)", async () => {
+    api(day({ tonight: { date: "2026-10-30", rule_key: "batch-cooking/defrost-in-the-fridge-the-night-before", tasks: [
+      { kind: "batch", text: "Comprar lo de la lista" },
+      { kind: "meal", meal: "lunch", text: "Remojar las lentejas" },
+      { kind: "defrost", meal: "lunch", dish: "Lentejas con pollo", rule_key: "batch-cooking/defrost-in-the-fridge-the-night-before" },
+    ] } }));
+    renderApp(<TodayPage />);
+    const tonight = await screen.findByTestId("today-tonight");
+    const tasks = within(tonight).getAllByTestId("tonight-task");
+    expect(tasks.map((t) => t.dataset.kind)).toEqual(["batch", "meal", "defrost"]);
+    expect(tasks[2].textContent).toContain("Pasa Lentejas con pollo del congelador a la nevera");
+    expect(within(tasks[2]).getByTestId("evidence-chip").dataset.variant).toBe("evidence");
+  });
+
+  it("F29: la marca de un plato que ya no está en el menú no pasa al plato nuevo", async () => {
+    const base = day();
+    const meals = base.menu!.meals.map((m, i) => (i === 0
+      ? { ...m, dishes: ["Tostada con tomate"], mark: null, previous_mark: { state: "skipped" as const, change: null, dish: "Avena con yogur" } }
+      : m));
+    api(day({ menu: { ...base.menu!, meals } }));
+    renderApp(<TodayPage />);
+    const previous = await screen.findByTestId("meal-breakfast-previous");
+    expect(previous.textContent).toContain("No hecha (Avena con yogur)");
+    expect(screen.getByTestId("meal-breakfast-skipped").getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("sin tareas para esta noche no sale la tarjeta", async () => {
+    api(day({ tonight: { date: "2026-10-30", rule_key: "x", tasks: [] } }));
+    renderApp(<TodayPage />);
+    await screen.findByTestId("next-meal");
+    expect(screen.queryByTestId("today-tonight")).toBeNull();
   });
 
   it("los botones de entreno, movilidad y tipo de día guardan en el parte", async () => {
@@ -175,6 +208,51 @@ describe("Hoy", () => {
     fireEvent.submit(input.closest("form")!);
     await waitFor(() => expect(writes()[0]?.body).toEqual({ weight_kg: 72.4 }));
     expect((await screen.findByTestId("weight-saved")).textContent).toBe("Guardado: 72,4 kg");
+  });
+
+  it("F28: con dos pesajes hoy dice que cuenta la media del día", async () => {
+    api(day({ weight_kg: 80.1, day_weight: { kg: 80.3, count: 2 } }));
+    renderApp(<TodayPage />);
+    expect((await screen.findByTestId("weight-day-mean")).textContent).toBe("Hoy hay 2 pesajes: cuenta la media del día, 80,3 kg.");
+  });
+
+  it("F6: «Hecha» dice que se ha sumado a Nutrición y «Cambiada» lleva a apuntar lo que se comió", async () => {
+    const meals = day().menu!.meals;
+    api(day({
+      menu: {
+        id: 7, start_date: "2026-10-26",
+        meals: [
+          { ...meals[0], mark: { state: "done", change: null }, totals: { kcal: 410, p: 18, c: 60, f: 9, partial: false } },
+          { ...meals[1], mark: { state: "changed", change: "pizza" }, totals: { kcal: 650, p: 40, c: 80, f: 15, partial: false } },
+        ],
+      },
+    }));
+    renderApp(<TodayPage />);
+    expect((await screen.findByTestId("meal-breakfast-diary")).textContent).toBe("Sumada a Nutrición: 410 kcal previstas del plato.");
+    expect(screen.queryByTestId("meal-lunch-diary")).toBeNull();
+    expect(screen.getByTestId("meal-lunch-log").getAttribute("href")).toBe("/nutrition");
+  });
+
+  it("F26: con un golpe en la cabeza y una lesión, el plan del día lo dice al momento con su evidencia", async () => {
+    api(day({
+      plan: {
+        id: 3, week_start: "2026-10-26", type: "gym", no_contact: true,
+        entries: [
+          { kind: "gym", time: "18:00", session: "A", exercises: ["Sentadilla", "Press banca"], paused: ["Sentadilla"] },
+          { kind: "mma", time: "20:00", contact_blocked: true },
+        ],
+      },
+    }));
+    renderApp(<TodayPage />);
+    const plan = await screen.findByTestId("day-plan");
+    const head = within(plan).getByTestId("plan-head-blow");
+    expect(head.textContent).toContain("el día del golpe no entrenes");
+    expect(within(head).getAllByTestId("evidence-chip")).toHaveLength(2); // el bloqueo y la vuelta por fases
+    const paused = within(plan).getByTestId("plan-paused");
+    expect(paused.textContent).toContain("En pausa por tu lesión");
+    expect(paused.textContent).toContain("Sentadilla");
+    expect(within(paused).getByTestId("evidence-chip")).toBeTruthy();
+    expect(within(plan).getByTestId("plan-contact-blocked").textContent).toContain("Sin contacto");
   });
 
   it("con no_weight_targets no pide el peso y lo explica", async () => {

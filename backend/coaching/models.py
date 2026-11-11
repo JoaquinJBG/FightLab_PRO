@@ -470,6 +470,12 @@ class CatalogueProduct(models.Model):
     fetched_on = models.DateField()
     source = models.CharField(max_length=60, default="Open Food Facts (unverified)")
     unverified = models.BooleanField(default=True)
+    # Fase 13: lo que pide la valoración (`product_rating`). Vacío en los guardados antes de F13.
+    saturates_g = models.FloatField(null=True, blank=True)
+    sugars_g = models.FloatField(null=True, blank=True)
+    salt_g = models.FloatField(null=True, blank=True)
+    nutriscore = models.CharField(max_length=1, blank=True, default="")
+    off_tags = models.JSONField(default=list, blank=True)  # `categories_tags` de OFF
 
     class Meta:
         ordering = ["product_name"]
@@ -477,6 +483,69 @@ class CatalogueProduct(models.Model):
 
     def __str__(self) -> str:
         return f"CatalogueProduct<{self.profile_id} {self.barcode}>"
+
+
+class ChainProduct(models.Model):
+    """Un producto de una cadena de súper que el usuario importa de su propio archivo (fase 13).
+
+    Es privado: cada fila es de un perfil y no se enseña a nadie más. Los datos salen del archivo
+    del usuario (por ejemplo la tabla puntuada del Entrenador IA, hecha con fuentes sin licencia
+    para redistribuirlas), así que FightLab no los descarga, no los publica y no los trae en el
+    repositorio: solo guarda lo que sube cada uno. Va aparte de `CatalogueProduct` (Open Food
+    Facts, ODbL, uno por código de barras) porque la clave es el id de la tienda, muchos no tienen
+    EAN, trae precio y formato, y "borrar el catálogo" no debe tocar lo guardado de OFF.
+
+    Por 100 g, o por 100 ml en bebidas (`per`). Un valor vacío es "sin dato", nunca cero.
+    `rating`, `label_check` ("revisar" si las kcal no cuadran) y `reasons` los pone el motor (`product_rating`, versión `rating_version`);
+    `file_rating` es lo que traía el archivo, para enseñar la diferencia.
+    """
+
+    profile = models.ForeignKey("profiles.UserProfile", on_delete=models.CASCADE, related_name="chain_products")
+    chain = models.CharField(max_length=80)
+    chain_ref = models.CharField(max_length=40, blank=True, default="")  # id del producto en la tienda
+    ean = models.CharField(max_length=14, blank=True, default="")
+    name = models.CharField(max_length=200)
+    alias = models.CharField(max_length=200, blank=True, default="")  # `name_es` de la tabla corta
+    brand = models.CharField(max_length=120, blank=True, default="")
+    category = models.CharField(max_length=120, blank=True, default="")
+    pack = models.CharField(max_length=120, blank=True, default="")  # el formato de venta
+    price_per_kg = models.FloatField(null=True, blank=True)  # €/kg, o €/l en bebidas
+    equivalent_of = models.CharField(max_length=200, blank=True, default="")  # alimento genérico
+    equivalent_key = models.CharField(max_length=200, blank=True, default="", db_index=True)
+    per = models.CharField(max_length=6, default="100 g")
+    drink = models.BooleanField(null=True, blank=True)  # None: lo deduce el motor
+    kcal = models.FloatField(null=True, blank=True)
+    protein_g = models.FloatField(null=True, blank=True)
+    carbs_g = models.FloatField(null=True, blank=True)
+    fat_g = models.FloatField(null=True, blank=True)
+    fibre_g = models.FloatField(null=True, blank=True)
+    saturates_g = models.FloatField(null=True, blank=True)
+    sugars_g = models.FloatField(null=True, blank=True)
+    salt_g = models.FloatField(null=True, blank=True)
+    nutriscore = models.CharField(max_length=1, blank=True, default="")
+    nova = models.PositiveSmallIntegerField(null=True, blank=True)
+    source = models.CharField(max_length=500, blank=True, default="")  # la columna `fuente`
+    file_rating = models.CharField(max_length=12, blank=True, default="")
+    rating = models.CharField(max_length=12, blank=True, default="")
+    label_check = models.CharField(max_length=8, blank=True, default="")
+    reasons = models.JSONField(default=list, blank=True)
+    rating_version = models.PositiveSmallIntegerField(default=0)
+    imported_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["profile", "chain", "chain_ref"], condition=~models.Q(chain_ref=""), name="uniq_chain_product_ref"
+            ),
+            models.UniqueConstraint(
+                fields=["profile", "chain", "ean"], condition=~models.Q(ean=""), name="uniq_chain_product_ean"
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"ChainProduct<{self.profile_id} {self.chain} {self.chain_ref or self.ean}>"
 
 
 class MealPlan(models.Model):
@@ -489,8 +558,28 @@ class MealPlan(models.Model):
     quien lo lee.
     """
 
+    class Source(models.TextChoices):
+        GENERATED = "generated", "generated"  # el generador de F8 (LLM simulado + motor)
+        JSON = "json", "json"  # JSON `schema: 1` de la app (fase 12)
+        YAML = "yaml", "yaml"  # `menus/<fecha>.yaml` del coach (fase 12)
+        PARTEDIARIO = "partediario", "partediario"  # los `menus` de la copia de ParteDiario
+
     profile = models.ForeignKey("profiles.UserProfile", on_delete=models.CASCADE, related_name="meal_plans")
     start_date = models.DateField()
+    # Fase 12: un menú importado lleva su `id` (si se reimporta el mismo, sustituye al anterior
+    # en la misma fila, así lo tachado de la lista de la compra se queda), su fin y su título.
+    menu_id = models.CharField(max_length=100, blank=True, default="")
+    end_date = models.DateField(null=True, blank=True)
+    title = models.CharField(max_length=200, blank=True, default="")
+    source = models.CharField(max_length=12, choices=Source.choices, default=Source.GENERATED)
+    notes = models.JSONField(default=list, blank=True)
+    # Los platos por su id (`steps_batch`, `steps_day`, `storage`, `batch_servings`, `source`...),
+    # las sesiones de batch con su cronograma y la lista de la compra tal como venía (sección,
+    # formato, semana). Ver `coaching.menu_import`.
+    dishes = models.JSONField(default=dict, blank=True)
+    batch_sessions = models.JSONField(default=list, blank=True)
+    shopping = models.JSONField(default=dict, blank=True)
+    imported_at = models.DateTimeField(null=True, blank=True)
     days = models.JSONField(default=list)
     checks = models.JSONField(default=list)
     rejected = models.JSONField(default=list)
@@ -502,10 +591,61 @@ class MealPlan(models.Model):
 
     class Meta:
         ordering = ["-start_date", "-created_at"]
-        constraints = [models.UniqueConstraint(fields=["profile", "start_date"], name="uniq_meal_plan_per_start")]
+        constraints = [
+            models.UniqueConstraint(fields=["profile", "start_date"], name="uniq_meal_plan_per_start"),
+            models.UniqueConstraint(
+                fields=["profile", "menu_id"], condition=~models.Q(menu_id=""), name="uniq_meal_plan_menu_id"
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"MealPlan<{self.profile_id} {self.start_date}>"
+
+
+class ShoppingCheck(models.Model):
+    """Una línea tachada de la lista de la compra de un menú (fase 12). `item_key` es el nombre del
+    alimento sin mayúsculas ni tildes (`coach.text.fold`): al reimportar el menú, lo tachado sigue
+    tachado aunque cambien las cantidades."""
+
+    plan = models.ForeignKey(MealPlan, on_delete=models.CASCADE, related_name="shopping_checks")
+    item_key = models.CharField(max_length=200)
+    checked_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["plan", "item_key"], name="uniq_shopping_check")]
+
+    def __str__(self) -> str:
+        return f"ShoppingCheck<{self.plan_id} {self.item_key}>"
+
+
+class KitchenProfile(models.Model):
+    """El menaje del usuario (fase 12): lo rellena él en un formulario y nada de esto va en el
+    código. `equipment` va con las claves de `coaching.kitchen.EQUIPMENT`. Vacío = sin rellenar:
+    el cronograma no se comprueba contra él y la app lo pide."""
+
+    profile = models.OneToOneField("profiles.UserProfile", on_delete=models.CASCADE, related_name="kitchen")
+    equipment = models.JSONField(default=dict, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"KitchenProfile<{self.profile_id}>"
+
+
+class Diner(models.Model):
+    """Un comensal de la casa con sus restricciones por comida (fase 12), p. ej. "cena sin pescado
+    salvo gambas": `restrictions` = `[{"meals": ["dinner"], "exclude": ["pescado"], "allow":
+    ["gambas"]}]` (`meals` vacío: todas las comidas). Ver `coaching.kitchen`."""
+
+    profile = models.ForeignKey("profiles.UserProfile", on_delete=models.CASCADE, related_name="diners")
+    name = models.CharField(max_length=60)
+    restrictions = models.JSONField(default=list, blank=True)
+    position = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position", "id"]
+
+    def __str__(self) -> str:
+        return f"Diner<{self.profile_id} {self.name}>"
 
 
 class OffLookup(models.Model):

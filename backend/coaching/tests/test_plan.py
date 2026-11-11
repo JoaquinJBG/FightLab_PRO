@@ -209,6 +209,40 @@ def test_mma_sessions_keep_their_days(today_fixed):
     assert plan["cardio"]["mma_convention"] == "fightlab"
 
 
+@pytest.mark.parametrize(
+    "needed,days,expected",
+    [
+        (10, ["mon", "wed", "sat"], (["mon"], 20)),  # la demo: 140 min de MMA, faltaban 10 → 3 × 5 min
+        (20, ["mon", "wed", "sat"], (["mon"], 20)),
+        (45, ["mon", "wed", "sat"], (["mon", "wed"], 25)),
+        (120, ["mon", "wed", "sat"], (["mon", "wed", "sat"], 40)),
+        (150, ["tue", "fri"], (["tue", "fri"], 75)),
+        (26, ["mon", "tue", "wed", "thu", "fri"], (["mon"], 30)),
+        (0, ["mon", "wed"], ([], 0)),
+        (30, [], ([], 0)),
+    ],
+)
+def test_cardio_split_never_proposes_sessions_under_the_minimum(needed, days, expected):
+    """F9: «Cardio moderado · 5 min» salía del generador, que repartía lo que faltaba hasta 150
+    entre todos los días de cardio. Ahora ninguna sesión baja de 20 min y lo que falta se junta."""
+    chosen, per_day = plans.cardio_split(needed, days)
+    assert (chosen, per_day) == expected
+    if chosen:
+        assert per_day >= plans.CARDIO_MIN_SESSION and per_day * len(chosen) >= needed
+
+
+def test_mma_almost_covering_the_minimum_gives_one_short_session_not_three(today_fixed):
+    user = make_user()
+    for weeks in range(4):  # 2 sesiones de 70 min por semana = 140 min: faltan 10
+        for offset in (1, 3):
+            mma(user, TODAY - timedelta(days=offset + 7 * weeks), minutes=70)
+    plan = generate(user, gym_days=["mon", "thu"], mma_days=["tue"], cardio_days=["wed", "fri", "sat"]).json()
+    cardio = [e for e in plan["training_schedule"] if e["kind"] == "cardio"]
+    assert plan["cardio"]["minutes_needed"] == 10
+    assert [(e["day"], e["minutes"]) for e in cardio] == [("wed", 20)]
+    assert plan["cardio"]["min_session"] == 20 and plan["cardio"]["min_session_convention"] == "fightlab"
+
+
 def test_no_contact_takes_contact_work_out_of_mma_days(today_fixed):
     user = make_user()
     HeadImpact.objects.create(profile=user.profile, occurred_on=TODAY - timedelta(days=1), symptoms=True)

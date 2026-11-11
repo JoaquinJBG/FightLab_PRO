@@ -1,5 +1,6 @@
 "use client";
 
+import { roundGrams } from "@/lib/nutrition";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
@@ -204,6 +205,19 @@ export function PlanView({ plan, sessionAction }: { plan: WeeklyPlan; sessionAct
         </Section>
       )}
 
+      {plan.live && (plan.live.changed || plan.live.no_contact) && (
+        <section data-testid="plan-live" className="glass mt-4 p-4" style={{ borderColor: "#ff5a6e" }}>
+          <p className="t-title text-ink">{t("live.title")}</p>
+          <p className="t-body mt-1 text-sm text-ink">{t("live.body")}</p>
+          {plan.live.no_contact && (
+            <p data-testid="plan-live-no-contact" className="t-body mt-2 flex flex-wrap items-center gap-2 text-sm text-ink">
+              {t("live.noContact")}
+              <LineChip ruleKey={plan.live.return_rule_key} grades={grades} />
+            </p>
+          )}
+        </section>
+      )}
+
       {plan.deload && (
         <section data-testid="plan-deload" className="glass mt-4 p-4" style={{ borderColor: "#ffd25a" }}>
           <p className="t-title flex flex-wrap items-center gap-2 text-ink">
@@ -254,6 +268,12 @@ export function PlanView({ plan, sessionAction }: { plan: WeeklyPlan; sessionAct
             ? t("cardio.remaining", { minutes: cardio.minutes_needed, perDay: cardio.minutes_per_day, days: cardio.days.length })
             : t("cardio.covered")}
         </p>
+        {cardio.minutes_needed > 0 && cardio.min_session != null && (
+          <p data-testid="cardio-min-session" className="t-body mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
+            {t("cardio.minSession", { minutes: cardio.min_session })}
+            <LineChip ruleKey={null} grades={grades} convention={cardio.min_session_convention ?? "fightlab"} />
+          </p>
+        )}
         {cardio.zone && (
           <p className="t-body mt-1 text-xs text-muted">
             {t("cardio.zone", { low: cardio.zone.rpe[0], high: cardio.zone.rpe[1] })}
@@ -285,7 +305,7 @@ export function PlanView({ plan, sessionAction }: { plan: WeeklyPlan; sessionAct
               ["fibre", nutrition.macros.fibre_g, "fibre_g"],
             ] as const).map(([key, g, ruleName]) => (
               <p key={key} className="t-body flex flex-wrap items-center gap-2 text-xs text-ink">
-                {t(`nutrition.${key}`, { g: n(Math.round(g)) })}
+                {t(`nutrition.${key}`, { g: n(roundGrams(g)) })}
                 {ruleName && (nutrition.rules?.[ruleName] ?? []).slice(0, 1).map((k) => <LineChip key={k} ruleKey={k} grades={grades} />)}
               </p>
             ))}

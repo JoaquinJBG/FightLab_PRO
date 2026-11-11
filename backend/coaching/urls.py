@@ -1,10 +1,15 @@
 from django.urls import path
 
+from .chain_views import ChainImportView, ChainProductsView, ChainShoppingView, SubstitutesView
 from .checkin_views import CheckinView
 from .import_views import HistoryImportView, ImportView
 from .menu_views import (
     FoodsView,
+    KitchenView,
     MenuCheckView,
+    MenuDetailView,
+    MenuImportView,
+    MenuShoppingView,
     MenuPdfView,
     MenuRateView,
     MenuView,
@@ -55,6 +60,10 @@ urlpatterns = [
     path("coach/menu/check", MenuCheckView.as_view(), name="coach-menu-check"),
     path("coach/menu/rate", MenuRateView.as_view(), name="coach-menu-rate"),
     path("coach/menu/<int:pk>/pdf", MenuPdfView.as_view(), name="coach-menu-pdf"),
+    path("coach/menu/import", MenuImportView.as_view(), name="coach-menu-import"),
+    path("coach/menu/<int:pk>", MenuDetailView.as_view(), name="coach-menu-detail"),
+    path("coach/menu/<int:pk>/shopping", MenuShoppingView.as_view(), name="coach-menu-shopping"),
+    path("coach/kitchen", KitchenView.as_view(), name="coach-kitchen"),
     path("coach/tastes", TastesView.as_view(), name="coach-tastes"),
     path("coach/recipes", RecipesView.as_view(), name="coach-recipes"),
     path("coach/foods", FoodsView.as_view(), name="coach-foods"),
@@ -62,6 +71,10 @@ urlpatterns = [
     path("coach/products/search", ProductSearchView.as_view(), name="coach-products-search"),
     path("coach/products/lookup/<str:barcode>", ProductLookupView.as_view(), name="coach-products-lookup"),
     path("coach/products/<str:barcode>", ProductDetailView.as_view(), name="coach-product"),
+    path("coach/chain-products", ChainProductsView.as_view(), name="coach-chain-products"),
+    path("coach/chain-products/import", ChainImportView.as_view(), name="coach-chain-import"),
+    path("coach/chain-products/shopping", ChainShoppingView.as_view(), name="coach-chain-shopping"),
+    path("coach/substitutes", SubstitutesView.as_view(), name="coach-substitutes"),
     path("coach/strength/e1rm", StrengthE1rmView.as_view(), name="coach-strength-e1rm"),
     path("coach/strength/sets", StrengthSetsView.as_view(), name="coach-strength-sets"),
     path("coach/strength/progress", StrengthProgressView.as_view(), name="coach-strength-progress"),

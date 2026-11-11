@@ -41,7 +41,7 @@ from . import rules
 from .bridge.adapters import _tz, set_records, to_coach_profile
 from .bridge.muscle_map import muscle_map
 from .bridge.reasons import Reason, parse_reason
-from .combat import combat_flags
+from .combat import NO_CONTACT_RULE, RETURN_STEPS_RULE, combat_flags
 from .models import WeeklyPlan, WeeklyReview
 from .strength import WEEKLY_SETS_RULE, suggestion_for, suggestion_rule_key
 from .targets import _key, reasons_data, rule_refs, targets_data, zones_data
@@ -63,6 +63,10 @@ SETS_WITHOUT_LOG = 3
 MIN_SETS, MAX_SETS = 2, 5
 # convention (FightLab): los minutos de cardio por día se redondean hacia arriba de 5 en 5.
 CARDIO_STEP_MIN = 5
+# convention (FightLab, F9): una sesión de cardio del plan dura al menos 20 min. Lo que falta hasta
+# los 150 min se reparte en menos días si no llega a 20 por día, y si falta menos de 20 se propone
+# una sola sesión de 20 (150 es un mínimo, no un tope). Sin esto salían «Cardio moderado · 5 min».
+CARDIO_MIN_SESSION = 20
 # convention (FightLab): un día es de MMA si hubo sesión ese día de la semana en 2 o más de las
 # últimas 4 semanas, y los minutos de MMA cuentan como cardio moderado (el anexo E clasifica el
 # trabajo de combate como moderado o vigoroso; contarlo como moderado es lo prudente).
@@ -349,9 +353,20 @@ CARDIO_OFFERED = ("walking_brisk", "continuous_moderate", "jump_rope", "hiit")
 ALL_OUT = ("sprints", "sit", "rehit")
 
 
+def cardio_split(needed: int, days: list[str]) -> tuple[list[str], int]:
+    """Los días de cardio y los minutos de cada uno para cubrir `needed`, sin sesiones de menos de
+    `CARDIO_MIN_SESSION` (F9). Los días que se usan quedan repartidos por la semana."""
+    if needed <= 0 or not days:
+        return [], 0
+    count = max(1, min(len(days), needed // CARDIO_MIN_SESSION))
+    per_day = max(CARDIO_MIN_SESSION, math.ceil(needed / count / CARDIO_STEP_MIN) * CARDIO_STEP_MIN)
+    chosen = [days[(i * len(days)) // count] for i in range(count)]
+    return chosen, per_day
+
+
 def _cardio(user, flags, today: date, days: list[str], mma_minutes: int, lang: str) -> dict:
     needed = max(0, CARDIO_MODERATE_MIN - mma_minutes)
-    per_day = math.ceil(needed / len(days) / CARDIO_STEP_MIN) * CARDIO_STEP_MIN if needed and days else 0
+    days, per_day = cardio_split(needed, days)
     try:
         zone = next((z for z in zones_data(user, today, lang)["zones"] if z["name"] == "moderate"), None)
     except ProfileIncomplete:
@@ -368,8 +383,10 @@ def _cardio(user, flags, today: date, days: list[str], mma_minutes: int, lang: s
         "minutes_week": CARDIO_MODERATE_MIN,
         "mma_minutes": mma_minutes,
         "minutes_needed": needed,
-        "days": days if per_day else [],
+        "days": days,
         "minutes_per_day": per_day,
+        "min_session": CARDIO_MIN_SESSION,
+        "min_session_convention": "fightlab",
         "intensity": rules.MODERATE,
         "zone": {"rpe": zone["rpe"], "bpm": zone["bpm"]} if zone else None,
         "rule_key": _key(rules.WEEKLY_BASELINE),
@@ -655,6 +672,86 @@ def apply(user, plan: WeeklyPlan, today: date) -> WeeklyPlan:
     return plan
 
 
+# ---------------------------------------------------------------- seguridad de hoy (F26)
+
+
+def live_safety(plan: WeeklyPlan, today: date) -> dict | None:
+    """Los bloqueos de hoy aplicados a un plan ya hecho, sin rehacerlo (F26).
+
+    Un golpe en la cabeza con síntomas (`no_contact`) o una lesión registrada después de preparar el
+    plan cuentan al momento: el trabajo de combate de cada día de MMA se vuelve a calcular con los
+    flags de hoy (y vuelve cuando un clínico da el alta, que es lo único que quita `no_contact`), y
+    un ejercicio que ahora afecta una lesión pasa a «en pausa» con su motivo, sin carga si nadie la ha
+    valorado ("Some pain during exercise is acceptable in chronic, assessed pain"). Lo demás del plan
+    no se toca. Devuelve `None` si el motor no puede evaluar el perfil (se enseña el plan tal cual).
+    """
+    try:
+        profile = to_coach_profile(plan.profile.user, today)
+    except (ProfileIncomplete, ValueError):
+        return None
+    flags = safety.flags(profile, today)
+    fight = combat_flags(plan.profile, today)
+    changed = False
+
+    schedule = []
+    for entry in plan.training_schedule or []:
+        if entry.get("kind") == "mma":
+            fresh = _mma_entry(entry["day"], flags, fight.no_contact, entry.get("time"))
+            before = {w["key"]: w.get("blocked_by") for w in entry.get("excluded", [])}
+            if before != {w["key"]: w["blocked_by"] for w in fresh["excluded"]}:
+                changed = True
+            entry = {**entry, "allowed": fresh["allowed"], "excluded": fresh["excluded"]}
+        schedule.append(entry)
+
+    mapped = muscle_map()
+    sessions = []
+    for session in plan.sessions or []:
+        items = []
+        for item in session.get("items", []):
+            pause = coach_strength.find_pause(item["exercise"], flags.paused_exercises, mapped)
+            if pause and item.get("action") not in ("paused", "no_training"):
+                changed = True
+                reasons = [_reason_dict(parse_reason(t)) for t in dict.fromkeys(pause.reasons)]
+                item = {
+                    **item,
+                    "action": "paused",
+                    "load_kg": item.get("load_kg") if pause.assessed else None,
+                    "rule_key": reasons[0]["rule_key"] if reasons else item.get("rule_key"),
+                    "reasons": reasons + list(item.get("reasons", [])),
+                    "live": True,
+                }
+            items.append(item)
+        sessions.append({**session, "items": items})
+
+    saved = {(r["code"], r.get("rule_key")) for r in plan.safety_reasons or []}
+    now = [_reason_dict(r) for r in fight.reasons] + [
+        _reason_dict(parse_reason(t)) for t in dict.fromkeys(flags.reasons)
+    ]
+    new_reasons = [r for r in now if (r["code"], r["rule_key"]) not in saved]
+    if new_reasons:
+        changed = True
+    keys = {r["rule_key"] for r in new_reasons}
+    for session in sessions:
+        for item in session["items"]:
+            keys.update(r["rule_key"] for r in item.get("reasons") or [])
+    if fight.no_contact:
+        keys.update((NO_CONTACT_RULE, RETURN_STEPS_RULE))
+    return {
+        "training_schedule": schedule,
+        "sessions": sessions,
+        "safety_reasons": new_reasons + list(plan.safety_reasons or []),
+        "rules": sorted(k for k in keys if k),
+        "status": {
+            "changed": changed,
+            "no_contact": fight.no_contact,
+            "no_training": bool(flags.no_training),
+            # La vuelta al contacto: por fases, la supervisa y la autoriza un clínico (la regla de
+            # la tarjeta del golpe). Solo se enseña mientras dura el bloqueo.
+            "return_rule_key": RETURN_STEPS_RULE if fight.no_contact else None,
+        },
+    }
+
+
 # ---------------------------------------------------------------- lectura
 
 
@@ -662,11 +759,14 @@ def _reasons_out(raw: list[dict], lang: str) -> list[dict]:
     return reasons_data([Reason(**r) for r in raw], lang)
 
 
-def plan_data(plan: WeeklyPlan, lang: str) -> dict:
-    """El plan para la API, con los motivos y los títulos de las reglas en `lang`."""
+def plan_data(plan: WeeklyPlan, lang: str, today: date | None = None) -> dict:
+    """El plan para la API, con los motivos y los títulos de las reglas en `lang`. Con `today`, con
+    los bloqueos de seguridad de ese día ya aplicados (`live_safety`, F26)."""
+    live = live_safety(plan, today) if today is not None else None
+    raw_sessions = live["sessions"] if live else plan.sessions
     sessions = [
         {**s, "items": [{**i, "reasons": _reasons_out(i["reasons"], lang)} for i in s["items"]]}
-        for s in plan.sessions
+        for s in raw_sessions
     ]
     nutrition = dict(plan.nutrition or {})
     if "reasons" in nutrition:
@@ -677,12 +777,13 @@ def plan_data(plan: WeeklyPlan, lang: str) -> dict:
         "status": plan.status,
         "target_kcal": plan.target_kcal,
         "in_deficit": plan.in_deficit,
-        "training_schedule": plan.training_schedule,
+        "training_schedule": live["training_schedule"] if live else plan.training_schedule,
         "sessions": sessions,
         "cardio": plan.cardio,
         "nutrition": nutrition,
-        "safety_reasons": _reasons_out(plan.safety_reasons, lang),
-        "rules": rule_refs(plan.rules_used, lang),
+        "safety_reasons": _reasons_out(live["safety_reasons"] if live else plan.safety_reasons, lang),
+        "rules": rule_refs(sorted(set(plan.rules_used) | set(live["rules"] if live else [])), lang),
+        "live": live["status"] if live else None,
         "engine_sha": plan.engine_sha[:7],
         "narrative": plan.narrative,
         "deload": plan.deload,

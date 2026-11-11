@@ -1,6 +1,6 @@
 import { defineConfig } from "@playwright/test";
 
-// `E2E_PORT` para correr dos copias a la vez (por ejemplo, dos worktrees) sin chocar.
+// E2E_PORT por si el 3100 está ocupado en local (otro servidor de desarrollo).
 const PORT = Number(process.env.E2E_PORT ?? 3100);
 const isCI = !!process.env.CI;
 

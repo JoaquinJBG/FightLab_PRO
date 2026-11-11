@@ -1,5 +1,6 @@
 "use client";
 
+import { latestWeightKg } from "@/lib/body-inputs";
 import { useFormatter, useTranslations } from "next-intl";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { useBiometrics } from "@/lib/hooks";
@@ -15,11 +16,7 @@ export function CombatKcal({ art, workType, minutes }: { art: string; workType: 
   const format = useFormatter();
   const { data: logs = [] } = useBiometrics();
   const entry = metFor(art, workType);
-  let weight: number | null = null;
-  for (const l of logs) {
-    const w = l.weight_kg ? parseFloat(l.weight_kg) : NaN;
-    if (Number.isFinite(w)) { weight = w; break; }
-  }
+  const weight = latestWeightKg(logs); // F28: la media del último día con pesaje
 
   return (
     <section data-testid="combat-kcal" className="glass mt-3 p-3">

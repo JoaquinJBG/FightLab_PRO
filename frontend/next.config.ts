@@ -10,12 +10,13 @@ const isProd = process.env.NODE_ENV === "production";
 // generado, y no usamos nonces. Las fuentes de next/font se autohospedan en
 // el propio origen (se descargan en build), así que no hace falta abrir
 // font-src a dominios externos. img-src admite blob: y data: por las fotos
-// comprimidas en el cliente antes de subirlas.
+// comprimidas en el cliente antes de subirlas, y las URLs firmadas de Cloudflare R2 de las fotos de
+// los tickets (fase 12: bucket privado; la URL la pide el dueño al backend y caduca).
 const CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' blob: data:",
+  "img-src 'self' blob: data: https://*.r2.cloudflarestorage.com",
   "font-src 'self' data:",
   "connect-src 'self'",
   "frame-ancestors 'none'",

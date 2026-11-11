@@ -19,8 +19,11 @@ services:
 
   backend:
     build: ./backend
+    # createcachetable: los límites de uso y el throttle viven en la tabla de caché (DatabaseCache);
+    # sin ella el registro da 500 («No se pudo registrar»). Es idempotente, como migrate.
     command: >
       sh -c "python manage.py migrate &&
+             python manage.py createcachetable &&
              python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./backend:/app
