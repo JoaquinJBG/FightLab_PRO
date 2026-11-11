@@ -551,7 +551,7 @@ export function TodayView({ state }: { state: TodayState }) {
         </Link>
       </header>
       {/* Hoy es la pantalla de inicio: los avisos de seguridad del motor van arriba, como en el resumen. */}
-      <SafetyBanner />
+      <SafetyBanner foldDay={state.date} />
       <NextMeal state={state} />
       <DayPlan state={state} />
       <DayStatus state={state} />

@@ -63,7 +63,10 @@
     "redo": "Redo the screening",
     "loading": "Working out your safety notices…",
     "error": "Your safety notices could not be loaded.",
-    "none": "No safety notices from what you told us."
+    "none": "No safety notices from what you told us.",
+    "fold": "Collapse",
+    "unfold": "Show",
+    "folded": "{count, plural, one {# safety notice} other {# safety notices}}"
   },
   "onboarding": {
     "step": "Step {n} of {total}",

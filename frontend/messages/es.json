@@ -63,7 +63,10 @@
     "redo": "Repetir el cribado",
     "loading": "Calculando tus avisos…",
     "error": "No se pudieron cargar tus avisos de seguridad.",
-    "none": "Sin avisos de seguridad con lo que nos has contado."
+    "none": "Sin avisos de seguridad con lo que nos has contado.",
+    "fold": "Plegar",
+    "unfold": "Ver",
+    "folded": "{count, plural, one {# aviso de seguridad} other {# avisos de seguridad}}"
   },
   "onboarding": {
     "step": "Paso {n} de {total}",
