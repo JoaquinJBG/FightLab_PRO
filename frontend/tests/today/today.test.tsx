@@ -79,6 +79,8 @@ describe("Hoy", () => {
     renderApp(<TodayPage />);
     const next = await screen.findByTestId("next-meal");
     expect(next.textContent).toContain("Desayuno: Avena con yogur");
+    // F11: «Jueves, 29 de octubre», con la «de» en minúscula
+    expect(screen.getByTestId("today-date").textContent).toBe("Jueves, 29 de octubre");
     const plan = screen.getByTestId("day-plan");
     expect(plan.textContent).toContain("Gimnasio, sesión A");
     expect(plan.textContent).toContain("a las 18:00");

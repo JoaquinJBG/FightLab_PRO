@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { RatingBadge } from "@/components/catalogue/RatingBadge";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
-import { intlLocale } from "@/lib/locale";
+import { formatNumber, intlLocale } from "@/lib/locale";
 import {
   CATALOGUE_ACCEPT, CatalogueError, DEFAULT_CHAIN, MAX_FILE_MB, RATINGS, RATING_KEY,
   useChainCatalogue, useDeleteCatalogue, useImportCatalogue, useSubstitutes,
@@ -207,6 +207,9 @@ function CatalogueList() {
 
 function SubstitutesCard() {
   const t = useTranslations("chainCatalogue.substitutes");
+  const locale = useLocale();
+  // R3-10: con el formato del idioma («34,1 g proteína»); un número suelto en el mensaje sale con punto
+  const nf = (v: number, max = 1) => formatNumber(locale, v, { max });
   const [food, setFood] = useState("");
   const [grams, setGrams] = useState("100");
   const subs = useSubstitutes();
@@ -226,12 +229,12 @@ function SubstitutesCard() {
       {subs.isError && <p className="t-body mt-2 text-xs text-bad">{t("error")}</p>}
       {subs.data && (
         <div data-testid="substitutes-result" className="mt-3">
-          <p className="t-body text-xs text-muted">{t("for", { name: subs.data.food.name, grams: subs.data.food.grams, kcal: subs.data.food.kcal })}</p>
+          <p className="t-body text-xs text-muted">{t("for", { name: subs.data.food.name, grams: nf(subs.data.food.grams), kcal: nf(subs.data.food.kcal, 0) })}</p>
           {subs.data.substitutes.length === 0 && <p className="t-body mt-1 text-xs text-muted">{t("none")}</p>}
           <ul className="mt-1 flex flex-col gap-1.5">
             {subs.data.substitutes.map((s, i) => (
               <li key={`${s.name}-${i}`} data-testid="substitute" data-penalised={s.penalised} className="t-body text-sm text-ink">
-                {t("line", { grams: s.grams, name: s.name, kcal: s.kcal, protein: s.protein_g })}
+                {t("line", { grams: nf(s.grams), name: s.name, kcal: nf(s.kcal, 0), protein: nf(s.protein_g) })}
                 {s.chain && <span className="text-[11px] text-muted"> · {s.chain}{s.pack ? ` · ${s.pack}` : ""}</span>}
                 {s.rating && <span className="ml-1.5"><RatingBadge rating={s.rating} check={s.check} bare /></span>}
               </li>

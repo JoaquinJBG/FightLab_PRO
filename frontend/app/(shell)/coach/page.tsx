@@ -15,6 +15,7 @@ import { buildBriefing, buildRecs, coachReply, injuryAreas, num, recoveryText, t
 import { fetchServerMetrics } from "@/lib/activities";
 import { useUserState } from "@/lib/user-state";
 import { useSessionState } from "@/lib/session-state";
+import { formatDate, formatNumber } from "@/lib/locale";
 import {
   type CoachMemory,
   type CoachMemoryDraft,
@@ -62,7 +63,7 @@ export default function CoachPage() {
   const { value: dismissed, setValue: setDismissed } = useUserState<string[]>(bareDismissKey(), []);
   const { value: fb, setValue: setFb } = useUserState<FbEntry[]>("coach_fb", []);
   const [feedback, setFeedback] = useState<Record<string, boolean>>({});
-  const tr: CoachTr = { t, tl, tc };
+  const tr: CoachTr = { t, tl, tc, locale };
 
   /* Memoria persistente del coach (P0.3): lo que el atleta cuenta de sí mismo */
   const { value: memory, setValue: setMemory, hydrated: memoryHydrated } = useUserState<CoachMemory>("coach_memory", {});
@@ -215,7 +216,7 @@ export default function CoachPage() {
         <span className="badge" data-testid="coach-load-badge">{loadBadge(metrics, tl)}</span>
         {comparisonRule(metrics) && <EvidenceChip ruleKey={comparisonRule(metrics)!.key} grade={comparisonRule(metrics)!.grade} />}
         <span className="badge">{t("badges.week", { au: metrics?.weekAU ?? 0 })}</span>
-        {weight != null && <span className="badge">{weight.toFixed(1)} kg</span>}
+        {weight != null && <span className="badge">{formatNumber(locale, weight, { digits: 1 })} kg</span>}
         {weighDays != null && <span className="badge">{t("badges.weighIn", { days: weighDays })}</span>}
         {recovery && <span className="badge" style={{ color: recovery.color }}>{recoveryText(recovery, t).label}</span>}
       </div>
@@ -374,9 +375,9 @@ export default function CoachPage() {
           <div className="mt-2 flex flex-wrap gap-2">
             {memory.lesion && <span className="badge">{t("memory.chips.injury", { value: memory.lesion })}</span>}
             {memory.fase && <span className="badge">{t("memory.chips.phase", { value: memory.fase })}</span>}
-            {memory.fecha_pelea && <span className="badge">{t("memory.chips.fight", { value: memory.fecha_pelea })}</span>}
+            {memory.fecha_pelea && <span className="badge">{t("memory.chips.fight", { value: formatDate(locale, memory.fecha_pelea, "longYear") })}</span>}
             {memory.objetivo_peso_kg != null && !memoryWeightHidden && (
-              <span className="badge">{t("memory.chips.weightGoal", { kg: memory.objetivo_peso_kg })}</span>
+              <span className="badge">{t("memory.chips.weightGoal", { kg: formatNumber(locale, memory.objetivo_peso_kg, { max: 1 }) })}</span>
             )}
             {memory.tono && <span className="badge">{t("memory.chips.tone", { value: t(`memory.tones.${memory.tono}`) })}</span>}
             {memory.frecuencia_avisos && (
@@ -411,8 +412,8 @@ export default function CoachPage() {
             <summary className="t-label cursor-pointer text-muted">{t("advanced.title")}</summary>
             <p className="t-body mt-1 text-[11px] text-muted">
               {[
-                metrics.acwr != null ? tl("ratio", { value: metrics.acwr.toFixed(2) }) : null,
-                metrics.monotonia != null ? `${tl("monotony")} ${metrics.monotonia.toFixed(1)}` : null,
+                metrics.acwr != null ? tl("ratio", { value: formatNumber(locale, metrics.acwr, { digits: 2 }) }) : null,
+                metrics.monotonia != null ? `${tl("monotony")} ${formatNumber(locale, metrics.monotonia, { digits: 1 })}` : null,
               ].filter(Boolean).join(" · ")}
             </p>
           </details>

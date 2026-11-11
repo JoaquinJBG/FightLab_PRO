@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { formatDate } from "@/lib/locale";
 import { useMe, useProfile, useLogout } from "@/lib/hooks";
 import { SafetyBanner } from "@/components/safety/SafetyBanner";
 
@@ -21,6 +22,7 @@ export default function ProfilePage() {
   const tc = useTranslations("common");
   const ts = useTranslations("safety");
   const t = useTranslations("profile");
+  const locale = useLocale();
   const th = useTranslations("historyImport");
   const tr = useTranslations("reminders");
   const tk = useTranslations("kitchen");
@@ -51,7 +53,7 @@ export default function ProfilePage() {
       </section>
 
       <section className="glass rise mt-4 px-5 py-2" style={{ animationDelay: "100ms" }}>
-        <Row label={t("dob")} value={dash(profile?.date_of_birth)} />
+        <Row label={t("dob")} value={profile?.date_of_birth ? formatDate(locale, profile.date_of_birth, "longYear") : "—"} />
         <Row label={t("gender")} value={dash(opt("gender", profile?.gender))} />
         <Row label={t("height")} value={profile?.height_cm != null ? t("heightValue", { cm: profile.height_cm }) : "—"} />
         <Row label={t("stance")} value={dash(opt("stance", profile?.dominant_stance))} />

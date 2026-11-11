@@ -4,7 +4,7 @@ import { dailyWeights, localDay } from "@/lib/body-inputs";
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { intlLocale } from "@/lib/locale";
+import { formatNumber, intlLocale } from "@/lib/locale";
 import {
   useBiometrics,
   useDeleteBiometrics,
@@ -61,6 +61,9 @@ const RANGES: [string, number | null][] = [
   ["all", null],
 ];
 
+/** Un decimal con el formato del idioma (F12, R3-10: «80,4» y no «80.4» en español). */
+const fx = (locale: string, v: number) => formatNumber(locale, v, { digits: 1 });
+
 function fmtDay(ts: number, locale: string) {
   return new Date(ts).toLocaleDateString(locale, { day: "2-digit", month: "short" });
 }
@@ -112,7 +115,7 @@ function TrendChart({ pts, trend }: { pts: Pt[]; trend: number[] }) {
       </svg>
       <div className="flex justify-between px-1">
         <span className="text-[10px] text-muted">{fmtDay(t0, locale)}</span>
-        <span className="text-[10px] text-muted">{t("chart.range", { max: max.toFixed(1), min: min.toFixed(1) })}</span>
+        <span className="text-[10px] text-muted">{t("chart.range", { max: fx(locale, max), min: fx(locale, min) })}</span>
         <span className="text-[10px] text-muted">{fmtDay(t1, locale)}</span>
       </div>
     </div>
@@ -251,7 +254,7 @@ export default function BiometricsPage() {
             )}
             {trendNow !== null && (
               <div className="mt-2 flex items-end gap-1">
-                <span className="stat text-4xl text-ink">{trendNow.toFixed(1)}</span>
+                <span className="stat text-4xl text-ink">{fx(locale, trendNow)}</span>
                 <span className="mb-1 text-xs text-muted">kg</span>
               </div>
             )}
@@ -262,12 +265,12 @@ export default function BiometricsPage() {
               <p className="t-body mt-1.5 text-xs text-muted">
                 {trendNow - weighTarget > 0 ? (
                   t.rich("trend.toGoal", {
-                    n: (trendNow - weighTarget).toFixed(1),
-                    goal: weighTarget,
+                    n: fx(locale, trendNow - weighTarget),
+                    goal: fx(locale, weighTarget),
                     hl: (chunks) => <span className="text-neon">{chunks}</span>,
                   })
                 ) : (
-                  <span className="text-good">{t("trend.atGoal", { goal: weighTarget })}</span>
+                  <span className="text-good">{t("trend.atGoal", { goal: fx(locale, weighTarget) })}</span>
                 )}
               </p>
             )}
@@ -275,7 +278,7 @@ export default function BiometricsPage() {
               <div className="mt-2 flex items-center gap-1.5 border-t border-[rgba(150,190,255,0.1)] pt-2">
                 <p className="t-body text-xs text-muted">
                   {t.rich("bmi.label", {
-                    n: imc.toFixed(1),
+                    n: fx(locale, imc),
                     hl: (chunks) => <span className="text-ink">{chunks}</span>,
                   })}
                 </p>
@@ -335,9 +338,9 @@ export default function BiometricsPage() {
               if (l.resting_heart_rate != null) extras.push(t("history.rhr", { n: l.resting_heart_rate }));
               if (l.hrv_ms != null) extras.push(t("history.hrv", { n: l.hrv_ms }));
               const fat = num(l.body_fat_pct ?? null);
-              if (fat !== null) extras.push(t("history.fat", { n: fat.toFixed(1) }));
+              if (fat !== null) extras.push(t("history.fat", { n: fx(locale, fat) }));
               const waist = num(l.waist_cm ?? null);
-              if (waist !== null) extras.push(t("history.waist", { n: waist }));
+              if (waist !== null) extras.push(t("history.waist", { n: formatNumber(locale, waist, { max: 1 }) }));
               return (
                 <div key={l.id} className="glass flex items-center gap-3 p-3.5">
                   <span className="text-neon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(69,233,255,0.07)]">
@@ -345,7 +348,7 @@ export default function BiometricsPage() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="t-label text-ink">
-                      {w !== null ? t("history.weight", { n: w.toFixed(1) }) : t("history.recovery")}
+                      {w !== null ? t("history.weight", { n: fx(locale, w) }) : t("history.recovery")}
                     </p>
                     <p className="t-body text-[11px] text-muted">
                       {fmtEntry(new Date(l.timestamp).getTime(), locale, t("history.unknownDate"))}{extras.length > 0 ? ` · ${extras.join(" · ")}` : ""}

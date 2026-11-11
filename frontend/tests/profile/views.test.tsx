@@ -32,6 +32,9 @@ describe("Perfil en inglés", () => {
     // Sin unidades imperiales (la beta las retiró): la fila de unidades ya no se muestra.
     expect(screen.queryByText("Imperial")).toBeNull();
     expect(screen.getByText("170 cm")).toBeTruthy();
+    // F12: la fecha de nacimiento con el formato del idioma, no en ISO
+    expect(screen.getByText("7 March 1995")).toBeTruthy();
+    expect(container.textContent).not.toContain("1995-03-07");
     expect(screen.getByText("Sign out")).toBeTruthy();
     expectClean(container, [/@example\.com/]);
   });

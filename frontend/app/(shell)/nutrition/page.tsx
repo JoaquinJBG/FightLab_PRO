@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { formatNumber } from "@/lib/locale";
 import { useProfile, useSafety, useTargets, useUpdateProfile, useWeighIn } from "@/lib/hooks";
 import { coachToLegacyGoal, legacyToCoachGoal } from "@/lib/goal";
 import { SafetyPanel } from "@/components/safety/SafetyBanner";
@@ -45,11 +46,13 @@ function missingKind(field: string): "equation_sex" | "weight" | "profile" {
 function Bar({ label, val, target, color, rule }: { label: string; val: number; target: number | null; color: string; rule?: RuleRef }) {
   const pct = target && target > 0 ? Math.min(100, (val / target) * 100) : 0;
   const t = useTranslations("nutrition");
+  const locale = useLocale();
+  const g = (v: number) => formatNumber(locale, v, { max: 1 });
   return (
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-x-1">
         <span className="t-label text-muted">{label}</span>
-        <span className="t-body whitespace-nowrap text-xs text-ink">{target == null ? t("gramsOnly", { value: val }) : t("gramsOf", { value: val, target })}</span>
+        <span className="t-body whitespace-nowrap text-xs text-ink">{target == null ? t("gramsOnly", { value: g(val) }) : t("gramsOf", { value: g(val), target: g(target) })}</span>
       </div>
       <div className="mt-1 h-2 rounded-full bg-[rgba(150,190,255,0.12)]">
         <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
