@@ -437,3 +437,23 @@ inventada. Las capturas de la cámara no se guardan: saldría la casa del usuari
 - Copiar al portapapeles del móvil: la app dice «Copiado», pero no se ha leído el portapapeles. La
   respuesta de IA se pegó con Playwright.
 - Rotación real, push e IA real: lo mismo que en rondas anteriores.
+
+### Ronda 4, fix C: `feat/beta-coach` 79e8793
+
+79e8793 es 9348003 más el fix C. Lo pidieron el Centro y el jefe. Mismo montaje y misma base de datos
+(`fightlab4`, sin migraciones nuevas), con el frontend recompilado. Lo de arriba sigue valiendo para
+79e8793.
+
+| Qué | Resultado |
+|---|---|
+| **Gráfica «Carga semanal»** (`/training/load`) | Pinta 7 barras con alto en píxeles (de 4 a 80 px): J, V, S, D, L, M, X; 1626 AU. Antes medían 0 ✅ Captura [`56-r4c-carga-semanal-barras.jpg`](capturas/56-r4c-carga-semanal-barras.jpg). |
+| **Récords desde el foco semanal** | «Tu semana» con el miércoles en «Pierna» → «▶ Empezar entreno · Pierna» (`?focus=Pierna`). La sesión trae «Sentadilla · Última vez: 4×6 · 92.5 kg · PR 92.5 kg · e1RM ≈ 111 kg» y lo mismo en el peso muerto rumano. Con 95 × 6 salen «RÉCORD DE PESO · E1RM · VOLUMEN» y «1 récord batido». Récords pasa a «Sentadilla · Peso 95 kg · e1RM 114 kg · 3 sesiones» ✅ Captura [`58-r4c-record-desde-foco.jpg`](capturas/58-r4c-record-desde-foco.jpg). |
+
+**Fallo nuevo, R4-13 (molesta, seguridad leve):** con el golpe en la cabeza de esa mañana, `/training/load`
+sigue diciendo «ESTADO DE HOY: **Listo para entrenar**» en verde (por la FC y la HRV). El Coach, el
+plan y Hoy ya dicen que no hay contacto ni entreno duro. Captura
+[`57-r4c-carga-listo-tras-golpe.jpg`](capturas/57-r4c-carga-listo-tras-golpe.jpg).
+
+**Nota:** al abrir `/training/gym/session` volvió un borrador de «Torso prueba» de la ronda 4, que
+llevaba 6 min abierto (salía de visitar `?routine=1`). Se descartó con «Terminar → Descartar entreno».
+Abrir una rutina para mirarla deja un entreno en marcha sin avisar: menor (R4-14).
