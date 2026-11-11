@@ -14,6 +14,7 @@ import { loadMetrics, type LoadMetrics } from "@/lib/load";
 import { buildBriefing, buildRecs, coachReply, injuryAreas, num, recoveryText, type CoachTr, type Ctx } from "@/lib/coach-rules";
 import { fetchServerMetrics } from "@/lib/activities";
 import { useUserState } from "@/lib/user-state";
+import { useSessionState } from "@/lib/session-state";
 import {
   type CoachMemory,
   type CoachMemoryDraft,
@@ -45,6 +46,7 @@ const dismissKey = () => `flp_${bareDismissKey()}`;
 /* --------------------------------- chat ----------------------------------- */
 
 type Msg = ChatMsg;
+const keepLastMsgs = (m: Msg[]) => m.slice(-40);
 
 /* --------------------------------- página --------------------------------- */
 
@@ -146,9 +148,8 @@ export default function CoachPage() {
   }
 
   /* chat */
-  const [chatMsgs, setChatMsgs] = useState<Msg[]>([
-    { role: "coach", text: t("chat.greeting") },
-  ]);
+  // En sessionStorage: guardar la memoria o salir de la vista y volver no vacía la conversación (R3-9)
+  const [chatMsgs, setChatMsgs] = useSessionState<Msg[]>("flp_coach_chat", [{ role: "coach", text: t("chat.greeting") }], keepLastMsgs);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
   const [aiMode, setAiMode] = useState<"ia" | "reglas" | null>(null);

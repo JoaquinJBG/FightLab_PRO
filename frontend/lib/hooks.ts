@@ -36,6 +36,7 @@ import {
 } from "./schemas";
 import { resetActivityUid, cachedActivityUid, flushActivities } from "./activities";
 import { flushUserState, resetUserStateQueue } from "./user-state";
+import { clearSessionState } from "./session-state";
 import { PHOTO_TOO_LARGE } from "./compress-image";
 
 // Claves flp_* que son preferencias del DISPOSITIVO (no del usuario): sobreviven
@@ -319,6 +320,7 @@ export function finishLogout(
   resetUserStateQueue();
   clearDeviceState(uid);
   resetActivityUid(); // que nada se encole a nombre del usuario saliente
+  clearSessionState(); // la conversación del coach de esta pestaña, entre otros
   void clearPageCopies();
   // Carga completa de /login: la caché de React Query muere con la página. Antes se vaciaba
   // aquí (`qc.clear()`) con las vistas aún montadas, y volvían a pedir /me, /me/profile y

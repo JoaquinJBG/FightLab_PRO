@@ -165,9 +165,12 @@ describe("performLogout / finishLogout (useLogout)", () => {
   test("finishLogout cancela la cola de user-state (resetUserStateQueue) ANTES de limpiar el dispositivo", () => {
     localStorage.setItem("flp_pending_state_42", "[1]"); // simula algo que no se pudo subir
     const nav = vi.fn((url: string) => calls.push(`nav ${url}`));
+    sessionStorage.setItem("flp_coach_chat", "[]");
 
     finishLogout("42", nav);
 
+    // R3-9: la conversación del coach de esta pestaña no pasa a la cuenta siguiente
+    expect(sessionStorage.getItem("flp_coach_chat")).toBeNull();
     // Sin qc.clear(): vaciar la caché con las vistas montadas las hacía volver a pedir datos (401)
     expect(calls).toEqual(["resetUserStateQueue", "resetActivityUid", "nav /login"]);
     // resetUserStateQueue no toca localStorage: clearDeviceState es quien lo hace
