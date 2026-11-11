@@ -10,11 +10,15 @@ const VERSION = "v1";
 const SHELL_CACHE = `flp-shell-${VERSION}`;
 const PAGES_CACHE = `flp-pages-${VERSION}`;
 const STATIC_CACHE = `flp-static-${VERSION}`;
-const CACHES = [SHELL_CACHE, PAGES_CACHE, STATIC_CACHE];
+// Imágenes de los ejercicios (F17): no cambian, así que van primero a la caché y se pueden ver
+// en un gimnasio sin cobertura.
+const MEDIA_CACHE = `flp-media-${VERSION}`;
+const MEDIA_PREFIX = "/exercise-media/";
+const CACHES = [SHELL_CACHE, PAGES_CACHE, STATIC_CACHE, MEDIA_CACHE];
 const OFFLINE_URL = "/offline.html";
 const SHELL_FILES = [OFFLINE_URL, "/icon.svg", "/icon-192.png"];
 // Tope de archivos guardados por caché: cada build trae archivos nuevos con otro nombre.
-const MAX_ENTRIES = { [PAGES_CACHE]: 40, [STATIC_CACHE]: 300 };
+const MAX_ENTRIES = { [PAGES_CACHE]: 40, [STATIC_CACHE]: 300, [MEDIA_CACHE]: 600 };
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -88,12 +92,24 @@ async function asset(event) {
   }
 }
 
+async function media(event) {
+  const cached = await caches.match(event.request, { cacheName: MEDIA_CACHE });
+  if (cached) return cached;
+  const response = await fetch(event.request);
+  if (cacheable(response)) event.waitUntil(remember(MEDIA_CACHE, event.request, response.clone()));
+  return response;
+}
+
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith("/api/")) return; // datos y sesión: siempre a la red
+  if (url.pathname.startsWith(MEDIA_PREFIX)) {
+    event.respondWith(media(event));
+    return;
+  }
   if (request.mode === "navigate") {
     event.respondWith(navigate(event, url));
     return;

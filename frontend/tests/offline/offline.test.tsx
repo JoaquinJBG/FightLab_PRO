@@ -213,6 +213,21 @@ describe("service worker sin conexión", () => {
     expect(await (await sw.navigate("/training/plan"))!.text()).toBe("cached /offline.html");
   });
 
+  it("las imágenes de ejercicios (/exercise-media/) se guardan y se ven sin conexión", async () => {
+    let online = true;
+    const network = vi.fn(async () => {
+      if (!online) throw new TypeError("Failed to fetch");
+      return page("png");
+    });
+    const sw = loadSw(network);
+    expect(await (await sw.get("/exercise-media/sentadilla/0.jpg"))!.text()).toBe("png");
+    online = false;
+    expect(await (await sw.get("/exercise-media/sentadilla/0.jpg"))!.text()).toBe("png");
+    online = true;
+    await sw.get("/exercise-media/sentadilla/0.jpg");
+    expect(network).toHaveBeenCalledTimes(1); // primero la caché: no se vuelve a pedir
+  });
+
   it("/api nunca pasa por la caché", async () => {
     const network = vi.fn(async () => page("api"));
     const sw = loadSw(network);
