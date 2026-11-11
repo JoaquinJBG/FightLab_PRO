@@ -360,3 +360,80 @@ no datos del usuario) y dos CSV de catálogo **inventados** de 5 filas (ids `PRB
 - **Tickets de la compra:** «La subida de fotos de tickets no está configurada en este servidor» (sin
   R2, como se esperaba en local).
 - La IA real (sin clave) y los avisos push (Chrome sigue con las notificaciones desactivadas en Android).
+
+---
+
+## Ronda 4 (11-nov-2026): `feat/beta-coach` 9348003, F17, escáner, F14, arreglos B y R3-3
+
+La pidió el Centro de Control. El montaje es el mismo (local, el móvil por adb, Chrome 156), con una
+base de datos nueva (`fightlab4`, con las migraciones de `exercises`, `routines`, activities 0005 y
+coaching 0012) y `seed_demo`. Antes de empezar no había ningún lock. La depuración inalámbrica no se
+anunciaba por mDNS; tras buscar los puertos del móvil, apareció sola. En `origin` ya hay un commit
+más nuevo (79e8793, «récords de entrenos sin clave y barras del gráfico de carga semanal») que esta
+ronda **no** prueba.
+
+Datos de prueba, todos inventados: una rutina «Torso prueba», un CSV de Hevy («Empuje inventado» y
+«Tirón inventado», septiembre de 2026), el catálogo de 5 productos de la ronda 3 y una respuesta de IA
+inventada. Las capturas de la cámara no se guardan: saldría la casa del usuario.
+
+### Comprobado: funciona
+
+| Qué | Resultado |
+|---|---|
+| **F17** rutina | Nueva rutina con 4 ejercicios de la biblioteca (buscador, filtros de músculo y material). Serie de calentamiento, rango 8-10 reps, RIR 2, kg con coma, «Usar RPE» por ejercicio y superserie («Superserie A»). Se guarda y «Guardar y empezar» abre la sesión con todo cargado ✅ |
+| **F17** sesión | Tipos de serie al tocar (Normal → Calentamiento → Drop set → Al fallo), RPE por serie, nota por ejercicio («Agarre medio, banco 2»), descanso por ejercicio y temporizador (119 s), «Siguiente de la superserie: Elevaciones laterales →», «toca para copiar» la serie anterior ✅ |
+| **F17** discos | Calculadora: 72,5 kg → «25 + 1,25» por lado. 73 kg → «Faltan 0,25 kg por lado con estos discos: carga 72,5 kg» ✅ |
+| **F17** récord | 75 × 8 → «RÉCORD DE PESO» en la serie y «2 récords batidos» al terminar ✅ |
+| **F17** terminar | Avisa de que «2 serie(s) marcadas ✓ sin reps no se guardarán» y deja «Seguir editando» o «Terminar igualmente» (arregla F2). Resumen con volumen (2553 kg), RPE de sesión, carga y «Actualizar la rutina con lo hecho hoy» ✅ |
+| **F17** historial, calendario y progreso | «Últimos entrenos» ya trae las sesiones del servidor (arregla F1). El calendario marca gimnasio, MMA y deporte por día. El detalle de la sesión enseña tipos, RPE, nota y superserie. Récords por ejercicio y progreso con gráfica de e1RM (89 → 92 → 100 kg) y «Más reps a cada peso» ✅ |
+| **F17** Hevy | El CSV inventado da «12 series nuevas · 3 sesiones nuevas · Se crearán 2 rutinas, una por título de entreno». Importa y crea «Empuje inventado» y «Tirón inventado». Los récords juntan «Bench Press (Barbell)» con «Press banca» (5 sesiones) ✅ |
+| **Escáner** cámara real | Permiso de cámara («Allow this time») → vídeo de 720×1280 en marcha, «Apunta al código de barras del envase». `BarcodeDetector` disponible ✅ |
+| **Escáner** linterna | «Encender linterna» enciende el flash (`torch: true`) y «Apagar linterna» lo apaga ✅ |
+| **Escáner** código a mano | Valida el dígito de control («el último dígito no cuadra»). Un código válido desconocido → «No está en tu catálogo y la búsqueda en Open Food Facts no está configurada en este servidor» + «Crear el alimento con este código». Un código del catálogo → ficha con valoración, envase, cantidad y macros. Al encontrarlo apaga la cámara. «Añadir a Desayuno» con 150 g → 165 kcal en Nutrición ✅ |
+| **F14** con tu IA | «Prepararlo con mi IA» copia el contexto («Copiado: 2 días desde el 2026-11-18»). Pegar la respuesta, también envuelta en ```json, → «Guardado: Menú inventado por mi IA (prueba), 2 días. Los 2 días cuadran con tus objetivos». Un texto que no es JSON → «Eso no es un JSON válido (línea 1, columna 1)…». Un menú que ya existe → «¿Lo sustituyes?» ✅ |
+| **F14** automático | «Preparar otro menú» sin IA: 3 días, los 3 comprobados, «Automático, sin IA: platos de FightLab y de tus menús anteriores…» ✅ (ver R4-2) |
+| **B** chat con teclado | Al escribir, el chat pasa a pantalla completa con «Cerrar chat», sin barra de navegación, y la respuesta queda a la vista (arregla F4) ✅ |
+| **B** sin conexión | Aviso «Sin conexión» y «1 cambio pendiente de enviar: se envía solo al volver la red». Al volver la red, Movilidad sale «✓ Sí». Una pantalla no guardada enseña una página propia de la app (FL, «Try again», «Go to Today»), no la de Chrome (arregla F5) ✅ (ver R4-3) |
+| **B** coma, fechas e icono | Coma decimal en Coach, Biometría, Perfil, Resumen, Nutrición y Carga. «Miércoles, 11 de noviembre» con la «de» en minúscula. Icono de la PWA con «FL». `orientation: any` ✅ (ver R4-4) |
+| **R3-3** | Tras un golpe con síntomas, el plan y Mi rutina solo dejan «Técnica y drilling» y «Saco a ritmo lento» (moderada). La cabecera del Coach dice «GOLPE EN LA CABEZA: SIN CONTACTO NI ENTRENO DURO» ✅ |
+
+### Fallos de la ronda 4, por gravedad
+
+#### R4-1 (molesta). Un menú de «tu IA» sin ningún día válido sustituye al bueno
+- **Pasos:** con un menú de IA bueno guardado (18-19 nov), pegar otra respuesta con un alimento que no
+  está en la tabla («chuletón de buey a la brasa») y poca quinoa → «¿Lo sustituyes?» → Sustituir.
+- **Resultado:** «Guardado: Menú malo inventado, 2 días. 0 de 2 días cuadran». Se guarda y **borra el
+  bueno**, aunque la pantalla dice «Los días que no pasan no se guardan». En el día, el chuletón sale
+  como un ingrediente más (247 g), sin aviso de que no está en la tabla ni cuenta. Solo pone «kcal: por
+  debajo».
+- **Esperado:** no sustituir un menú que pasa por otro que no pasa (o avisar antes), y señalar los
+  alimentos desconocidos.
+- Capturas: [`50-r4-menu-ia-malo-sustituye.jpg`](capturas/50-r4-menu-ia-malo-sustituye.jpg),
+  [`51-r4-menu-ia-alimento-desconocido.jpg`](capturas/51-r4-menu-ia-alimento-desconocido.jpg).
+
+#### R4-2 (molesta). «Preparar otro menú» no enseña el menú que acaba de hacer
+- **Pasos:** con el menú de IA a la vista → 3 días → «Preparar otro menú».
+- **Resultado:** el backend lo crea (`POST /coach/menu` 201, 11-13 nov, 3 días comprobados), pero la
+  pantalla sigue con el menú de IA del 18-19. Parece que no ha pasado nada. El nuevo solo se ve
+  eligiéndolo en «Menús guardados».
+
+#### Menores
+| # | Qué pasa |
+|---|---|
+| R4-3 | La pantalla sin conexión sale **en inglés** («You're offline», «Try again», «Go to Today») con la cuenta en español. Parece que sigue el idioma del navegador y no el de la app. Captura 52. |
+| R4-4 | La cabecera de la sesión de gimnasio sigue con punto decimal: «Última vez: 4×8 · 72.5 kg · PR 72.5 kg», «e1RM ≈ 91.83 kg». En el resto de la app ya hay coma. Captura 53. |
+| R4-5 | Hevy: las rutinas y la sesión se quedan con los nombres en inglés («Bench Press (Barbell)», «Overhead Press (Barbell)»), y «Pull Up» no se junta con «Dominadas». En Récords sale «Pull Up · Peso — kg · e1RM — kg» sin reps. La rutina se hace con la **última** sesión de cada título, así que se pierde un ejercicio que solo estaba en la primera (Elevaciones laterales). Captura 54. |
+| R4-6 | Sin conexión, «Movilidad» sigue diciendo «Aún no» tras tocarla, aunque el cambio queda pendiente y se envía después. Captura 55. |
+| R4-7 | Editor de rutinas: el descanso sale «Sin temporizador», pero se guarda con 120 s o 90 s según el ejercicio. El RIR planificado (2) no se ve en la sesión, que abre en modo RPE. |
+| R4-8 | Calculadora de discos: «Usar 72,5 kg en la serie» lo pone en la serie 1 (el calentamiento) y no en la siguiente por hacer. |
+| R4-9 | El producto escaneado sale en Nutrición como «Buscado en la tabla de alimentos», no como escaneado o de tu catálogo. |
+| R4-10 | Tras el golpe en la cabeza, Deportes sigue ofreciendo «Intenso» sin ningún aviso. |
+| R4-11 | Durante la sesión se ven 5 insignias de récord (peso, e1RM, volumen ×2 y reps a ese peso), pero el resumen dice «2 récords batidos». |
+| R4-12 | Accesibilidad del editor de rutinas: todos los campos se llaman «Repeticiones de la serie 1», «Kilos de la serie 1»…, sin el nombre del ejercicio. |
+
+### Sin probar en esta ronda
+- **Que el escáner lea un código con la cámara:** la cámara funciona, pero delante no había ningún
+  envase y nadie podía mover el móvil. Se probó con el código escrito a mano.
+- Copiar al portapapeles del móvil: la app dice «Copiado», pero no se ha leído el portapapeles. La
+  respuesta de IA se pegó con Playwright.
+- Rotación real, push e IA real: lo mismo que en rondas anteriores.
