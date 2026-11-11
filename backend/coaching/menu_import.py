@@ -492,6 +492,19 @@ def _checks(user, today: date, days: list[dict]) -> tuple[list[dict], dict]:
     return result["days"], {**result, "targets": targets}
 
 
+def _refuse_free_meal(user, parsed: ParsedMenu, today: date) -> None:
+    if any(m["free"] for d in parsed.days for m in d["meals"]) and safety.eating_disorder_positive(to_coach_profile(user, today)):
+        raise ImportInvalid("free_meal_refused", mealplan.FREE_MEAL_RULE)
+
+
+def preflight(user, parsed: ParsedMenu, today: date) -> tuple[list[dict], dict]:
+    """Lo que `save` comprueba antes de guardar, sin guardar nada (fase 14, `dry_run`): que el motor
+    lea el borrador, la comida libre tras un cribado positivo y la comprobación de cada día."""
+    _validate_draft(parsed)
+    _refuse_free_meal(user, parsed, today)
+    return _checks(user, today, parsed.days)
+
+
 def save(user, parsed: ParsedMenu, today: date, *, replace_start: bool = False, keep_existing: bool = False) -> dict:
     """Guarda un menú importado. Devuelve `{plan, replaced, kept, ...}`.
 
@@ -501,8 +514,7 @@ def save(user, parsed: ParsedMenu, today: date, *, replace_start: bool = False, 
     """
     _validate_draft(parsed)
     profile = user.profile
-    if any(m["free"] for d in parsed.days for m in d["meals"]) and safety.eating_disorder_positive(to_coach_profile(user, today)):
-        raise ImportInvalid("free_meal_refused", mealplan.FREE_MEAL_RULE)
+    _refuse_free_meal(user, parsed, today)
     with transaction.atomic():
         existing = MealPlan.objects.select_for_update().filter(profile=profile, menu_id=parsed.menu_id).first()
         if existing and keep_existing:
@@ -529,7 +541,8 @@ def save(user, parsed: ParsedMenu, today: date, *, replace_start: bool = False, 
             "rejected": [],
             "targets": result.get("targets", {}),
             "taste_flags": result.get("taste_flags", []),
-            "provider": "import",
+            # Fase 14: un menú de la IA del usuario dice que lo es (`user_ai`); el resto, `import`.
+            "provider": "user_ai" if parsed.source == MealPlan.Source.USER_AI else "import",
             "engine_sha": menus.engine_info()["sha_full"] if checks else "",
             "imported_at": timezone.now(),
         }

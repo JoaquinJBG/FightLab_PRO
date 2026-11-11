@@ -200,6 +200,9 @@ REST_FRAMEWORK = {
         # Proxy de Open Food Facts (fase 8): por usuario, además del límite de OFF para todo el servidor.
         "coach-off": "10/min",
         "coach-import": "20/min",
+        # Menús con la IA del usuario (F14): la skill descarga el contexto y comprueba el menú unas
+        # pocas veces por menú; el token es por usuario.
+        "menu-ai": "60/hour",
         # Aviso de prueba (F11): cada uno sale a todos los navegadores de la persona.
         "push-test": "6/hour",
         # Fotos de tickets (F12): cada subida pasa por Pillow y va a R2.

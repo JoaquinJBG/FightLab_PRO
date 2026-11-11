@@ -3,6 +3,8 @@ from django.urls import path
 from .chain_views import ChainImportView, ChainProductsView, ChainShoppingView, SubstitutesView
 from .checkin_views import CheckinView
 from .import_views import HistoryImportView, ImportView
+from .menu_ai_views import AppMenuContextView, AppMenuPasteView, MenuAiImportView, MenuContextView
+from .menu_tokens import MenuTokenDetailView, MenuTokensView
 from .menu_views import (
     FoodsView,
     KitchenView,
@@ -61,6 +63,13 @@ urlpatterns = [
     path("coach/menu/rate", MenuRateView.as_view(), name="coach-menu-rate"),
     path("coach/menu/<int:pk>/pdf", MenuPdfView.as_view(), name="coach-menu-pdf"),
     path("coach/menu/import", MenuImportView.as_view(), name="coach-menu-import"),
+    # Fase 14: menús con la IA del usuario. `menu/*` acepta el token personal; `coach/*`, la sesión.
+    path("menu/context", MenuContextView.as_view(), name="menu-context"),
+    path("menu/import", MenuAiImportView.as_view(), name="menu-import"),
+    path("coach/menu/context", AppMenuContextView.as_view(), name="coach-menu-context"),
+    path("coach/menu/paste", AppMenuPasteView.as_view(), name="coach-menu-paste"),
+    path("coach/menu-tokens", MenuTokensView.as_view(), name="coach-menu-tokens"),
+    path("coach/menu-tokens/<int:pk>", MenuTokenDetailView.as_view(), name="coach-menu-token"),
     path("coach/menu/<int:pk>", MenuDetailView.as_view(), name="coach-menu-detail"),
     path("coach/menu/<int:pk>/shopping", MenuShoppingView.as_view(), name="coach-menu-shopping"),
     path("coach/kitchen", KitchenView.as_view(), name="coach-kitchen"),
