@@ -43,6 +43,22 @@ def _exercises(detail: dict):
     return out
 
 
+def dropped_from_detail(detail) -> int:
+    """Cuántas series de `detail.exercises` no se pueden guardar (peso o repeticiones imposibles).
+
+    F17 (fallo F2): el guardado de una sesión las rechaza con el motivo en lugar de perderlas."""
+    if not isinstance(detail, dict):
+        return 0
+    exercises = _exercises(detail)
+    if not isinstance(exercises, list):
+        return 0
+    written = sum(
+        len(e["sets"]) for e in exercises
+        if isinstance(e, dict) and isinstance(e.get("name"), str) and e["name"].strip() and isinstance(e.get("sets"), list)
+    )
+    return max(0, written - len(sets_from_detail(detail)[0]))
+
+
 def sets_from_detail(detail) -> tuple[list[dict], bool]:
     """`detail.exercises` (`[{name, sets: [{kg, reps}]}]`, o el compacto `ex`) → filas de `SetLog` y si faltan.
 

@@ -7,6 +7,10 @@
 - `GET /coach/menu/<id>/pdf`: el menú y la lista de la compra en PDF (Task 8.5), hecho en memoria.
   Solo el dueño del menú; con los mismos bloqueos que preparar un menú (409).
 - `GET/PUT /coach/tastes`, `GET /coach/recipes`.
+- Fase 12: `GET /coach/menu?id=` (otro menú guardado), `POST /coach/menu/import` (JSON `schema: 1` o
+  YAML del coach; si el mismo `id` ya está, lo sustituye y conserva lo tachado), `DELETE
+  /coach/menu/<id>`, `PUT /coach/menu/<id>/shopping` (tachar una línea) y `GET/PUT /coach/kitchen`
+  (menaje y comensales).
 - `GET /coach/foods?q=`: alimentos del motor y productos, con el nombre en el idioma del usuario.
 - `GET /coach/products/search?q=&brand=` y `GET /coach/products/lookup/<barcode>`: el proxy de
   Open Food Facts. Sin contacto configurado, `503 {"code": "off_not_configured"}` sin llamar a OFF.
@@ -16,6 +20,7 @@ from coach import catalogue, foods
 from coach import tastes as coach_tastes
 from django.http import Http404, HttpResponse
 from rest_framework import serializers, status
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
@@ -23,7 +28,7 @@ from rest_framework.views import APIView
 
 from core.messages import msg
 
-from . import menu_pdf, menus, off_proxy, products
+from . import kitchen, menu_import, menu_pdf, menus, off_proxy, products, shopping
 from .menu_llm import get_proposer
 from .models import CatalogueProduct, MealPlan
 from .safety_views import _lang, _today
@@ -57,13 +62,16 @@ class MenuRequestSerializer(serializers.Serializer):
     days = serializers.IntegerField(min_value=1, max_value=menus.MAX_DAYS, default=3)
     meals = serializers.ListField(child=serializers.ChoiceField(menus.MEALS), required=False, max_length=4)
     tupper_meals = serializers.ListField(child=serializers.ChoiceField(menus.MEALS), required=False, max_length=4)
+    batch = serializers.BooleanField(required=False, default=False)
 
 
 class MenuView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        return Response(menus.state(request.user, _today(request.user.profile), _lang()))
+        raw = request.query_params.get("id", "")
+        plan_id = int(raw) if raw.isdigit() else None
+        return Response(menus.state(request.user, _today(request.user.profile), _lang(), plan_id))
 
     def post(self, request):
         serializer = MenuRequestSerializer(data=request.data)
@@ -76,6 +84,7 @@ class MenuView(APIView):
             days=data["days"],
             meals=data.get("meals") or list(menus.DEFAULT_MEALS),
             tupper_meals=data.get("tupper_meals") or [],
+            batch=data["batch"],
         )
         try:
             plan, rejected = menus.generate(user, today, req, lang, get_proposer())
@@ -127,6 +136,103 @@ class MenuPdfView(APIView):
         response["Content-Disposition"] = f'attachment; filename="{menu_pdf.filename(data)}"'
         response["Cache-Control"] = "private, no-store"
         return response
+
+
+IMPORT_STATUS = {
+    "start_taken": status.HTTP_409_CONFLICT,
+    "free_meal_refused": status.HTTP_409_CONFLICT,
+}
+IMPORT_MESSAGES = {
+    "import_invalid": "menu_import_invalid",
+    "import_too_long": "menu_import_too_long",
+    "start_taken": "menu_start_taken",
+    "free_meal_refused": "menu_free_meal_refused",
+}
+
+
+class MenuImportView(APIView):
+    """Importa un menú completo (multipart: `file`, `replace_start`)."""
+
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "coach-import"
+
+    def post(self, request):
+        upload = request.FILES.get("file")
+        if upload is None:
+            return Response({"code": "missing_file", "detail": msg("menu_import_invalid")}, status=status.HTTP_400_BAD_REQUEST)
+        user, lang = request.user, _lang()
+        replace_start = request.data.get("replace_start") in ("1", "true")
+        try:
+            if upload.size > menu_import.MAX_BYTES:
+                raise menu_import.ImportInvalid("import_invalid", "size")
+            parsed = menu_import.parse_file(upload.name or "", upload.read())
+            result = menu_import.save(user, parsed, _today(user.profile), replace_start=replace_start)
+        except menu_import.ImportInvalid as exc:
+            return Response(
+                {"code": exc.code, "detail": msg(IMPORT_MESSAGES[exc.code], **exc.params), "info": exc.detail, "params": exc.params},
+                status=IMPORT_STATUS.get(exc.code, status.HTTP_400_BAD_REQUEST),
+            )
+        return Response(
+            {
+                "summary": menu_import.summary(parsed),
+                "replaced": result["replaced"],
+                "kept_checks": result["kept_checks"],
+                "menu": menus.plan_data(result["plan"], user, lang),
+            },
+            status=status.HTTP_200_OK if result["replaced"] else status.HTTP_201_CREATED,
+        )
+
+
+def _own_plan(request, pk) -> MealPlan:
+    plan = MealPlan.objects.filter(pk=pk, profile=request.user.profile).first()
+    if plan is None:
+        raise Http404
+    return plan
+
+
+class MenuDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        _own_plan(request, pk).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ShoppingCheckSerializer(serializers.Serializer):
+    item = serializers.CharField(max_length=200)
+    checked = serializers.BooleanField()
+
+
+class MenuShoppingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, pk):
+        plan = _own_plan(request, pk)
+        serializer = ShoppingCheckSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        d = serializer.validated_data
+        try:
+            shopping.set_checked(plan, d["item"], d["checked"])
+        except ValueError:
+            return Response({"item": ["empty"]}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(shopping.shopping_data(plan, request.user, _lang()))
+
+
+class KitchenView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(kitchen.kitchen_data(request.user.profile))
+
+    def put(self, request):
+        try:
+            return Response(kitchen.save_kitchen(request.user.profile, request.data))
+        except kitchen.KitchenInvalid as exc:
+            return Response(
+                {"code": exc.code, "detail": msg(f"menu_{exc.code}"), "info": exc.detail}, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class RateSerializer(serializers.Serializer):

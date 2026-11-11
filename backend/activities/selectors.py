@@ -17,10 +17,10 @@ Invariantes del port (¡no romper la paridad con el motor local!):
   móviles de 7 días, mismo suelo de anchura (10% de mu) y mismos umbrales.
 """
 import math
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-from django.db.models import F
+from django.db.models import Count, DecimalField, F, Sum
 from django.utils import timezone
 
 from .models import Activity
@@ -42,11 +42,42 @@ def _js_round(x: float) -> int:
 _js_round_signed = _js_round
 
 
-def activity_list(*, user, kind: str | None = None, limit: int = 50):
+def activity_list(*, user, kind: str | None = None, limit: int = 50, offset: int = 0,
+                  since: date | None = None, until: date | None = None, tzname: str | None = None):
+    """Historial del servidor (F17, F1 de raíz): paginado con `offset` y, opcional, entre dos
+    días locales. Cada sesión de gimnasio lleva el resumen de sus series (`SetLog`)."""
     qs = Activity.objects.filter(profile=user.profile)
     if kind:
         qs = qs.filter(kind=kind)
-    return qs[:limit]
+    if since or until:
+        tz = _resolve_tz(user, tzname)
+        if since:
+            qs = qs.filter(started_at__gte=datetime.combine(since, time.min, tzinfo=tz))
+        if until:
+            qs = qs.filter(started_at__lt=datetime.combine(until + timedelta(days=1), time.min, tzinfo=tz))
+    qs = qs.annotate(
+        _sets=Count("sets"),
+        _exercises=Count("sets__exercise_index", distinct=True),
+        _volume=Sum(F("sets__weight_kg") * F("sets__reps"), output_field=DecimalField(max_digits=14, decimal_places=2)),
+    )
+    return qs[offset:offset + limit]
+
+
+def calendar_days(*, user, year: int, month: int, tzname: str | None = None) -> dict[str, dict[str, int]]:
+    """Días del mes (locales) con sesiones, y cuántas de cada tipo."""
+    tz = _resolve_tz(user, tzname)
+    first = date(year, month, 1)
+    nxt = date(year + (month == 12), month % 12 + 1, 1)
+    start = datetime.combine(first, time.min, tzinfo=tz)
+    end = datetime.combine(nxt, time.min, tzinfo=tz)
+    days: dict[str, dict[str, int]] = {}
+    for started, kind in Activity.objects.filter(
+        profile=user.profile, started_at__gte=start, started_at__lt=end
+    ).values_list("started_at", "kind"):
+        key = started.astimezone(tz).date().isoformat()
+        bucket = days.setdefault(key, {})
+        bucket[kind] = bucket.get(kind, 0) + 1
+    return dict(sorted(days.items()))
 
 
 def _resolve_tz(user, tzname: str | None) -> ZoneInfo:

@@ -152,15 +152,29 @@ export function ReviewView({ review, onAccept, accepting, acceptError }: {
         </ul>
         {adherence.entries.length > 0 && (
           <ul className="flex flex-col gap-1">
-            {adherence.entries.map((e) => (
-              <li key={`${e.date}-${e.kind}`} data-testid="adherence-entry" data-done={e.done} className="t-body flex justify-between text-xs">
+            {adherence.entries.map((e, i) => (
+              <li key={`${e.date}-${e.kind}-${i}`} data-testid="adherence-entry" data-done={e.done} data-planned={e.planned} className="t-body flex justify-between gap-2 text-xs">
                 <span className="text-ink">
                   {f.date(e.date)} · {t(`adherence.kinds.${e.kind}`)}{e.session ? ` ${e.session}` : ""}
                 </span>
-                <span className={e.done ? "text-good" : "text-muted"}>{e.done ? t("adherence.done") : t("adherence.missed")}</span>
+                <span className={e.done ? "text-good" : "text-muted"}>
+                  {!e.planned
+                    ? t("adherence.extra")
+                    : !e.done
+                      ? t("adherence.missed")
+                      : e.done_date && e.done_date !== e.date
+                        ? t(e.done_date < e.date ? "adherence.doneEarlier" : "adherence.doneLater", { date: f.date(e.done_date) })
+                        : t("adherence.done")}
+                </span>
               </li>
             ))}
           </ul>
+        )}
+        {adherence.entries.some((e) => e.planned && e.done && e.done_date && e.done_date !== e.date) && (
+          <p data-testid="adherence-moved-note" className="t-body flex flex-wrap items-center gap-2 text-[11px] text-muted">
+            {t("adherence.movedNote")}
+            <LineChip ruleKey={null} grades={grades} convention="fightlab" />
+          </p>
         )}
         {adherence.entries.some((e) => !e.done && e.kind === "gym") && (
           <p className="t-body flex flex-wrap items-center gap-2 text-[11px] text-muted">

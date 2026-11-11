@@ -6,8 +6,9 @@ de la fase 4 (`nutrition.spec.ts`), el check-in diario con la tendencia de la fa
 fase 7 (`review.spec.ts`), los menús de la fase 8 (`menu.spec.ts`) y los importadores de la fase 9 con
 el aviso de sesión vigorosa (`import.spec.ts`, con CSV inventados) y la importación del historial de
 ParteDiario y del coach de la fase 10 (`history.spec.ts`, con datos inventados) y la pantalla Hoy
-con los avisos apagados de la fase 11 (`today.spec.ts`) y el catálogo de cadena privado de la fase 13
-(`catalogue.spec.ts`, con un CSV inventado) de punta a punta: Next (BFF) + Django + motor del coach.
+con los avisos apagados de la fase 11 (`today.spec.ts`) y los menús completos de la fase 12 (`menu-import.spec.ts`:
+importar JSON schema 1 y YAML del coach, reimportar sin perder lo tachado y la víspera en Hoy; `batch.spec.ts`: el
+menaje manda en el cronograma y la sesión de batch a pantalla completa) y el catálogo de cadena privado de la fase 13 (`catalogue.spec.ts`, con un CSV inventado) y la biblioteca de ejercicios de la F17 con sus créditos (`exercises.spec.ts`, a 353×681) de punta a punta: Next (BFF) + Django + motor del coach.
 Usan el Chrome instalado (`channel: "chrome"`), así que no hace falta `playwright install`.
 Tras el login la app va a `/today` (Hoy); el resumen de antes está en `/dashboard`.
 
@@ -49,4 +50,8 @@ Facts dice que no está configurado y que no se llama a OFF). Los menús usan si
 simulado: no hace falta `ANTHROPIC_API_KEY` y, aunque la haya, no se llama a Anthropic.
 
 Variables: `E2E_BASE_URL` (por defecto `http://localhost:3000`) y `E2E_CHANNEL`
-(`chrome`; `msedge` también vale).
+(`chrome`; `msedge` también vale). Las pruebas con la API mockeada (`pnpm test:e2e`) usan el
+puerto 3100; si está ocupado, `E2E_PORT=3112 pnpm test:e2e`.
+
+Las de la fase 12 esperan el backend **sin** las variables `R2_*`: la tarjeta de tickets dice que
+la subida no está configurada y nunca se llama a Cloudflare R2.

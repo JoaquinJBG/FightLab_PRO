@@ -11,6 +11,7 @@ vi.mock("@/lib/hooks", () => ({
 }));
 vi.mock("@/lib/activities", () => ({
   enqueueActivity: vi.fn(), deleteServerActivities: vi.fn(),
+  rejectedActivities: () => [], dismissRejected: vi.fn(), firstReason: () => null,
   // historial del servidor (beta): sin respuesta, se queda el local
   fetchServerActivities: vi.fn(async () => null), pendingQueueItems: () => [], mergeByClientId: (...xs: unknown[][]) => xs.flat(),
 }));

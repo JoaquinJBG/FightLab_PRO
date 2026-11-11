@@ -30,3 +30,18 @@ def test_every_frontend_rule_exists_with_its_grade():
     for key, grade in frontend_rules():
         assert key in grades, key
         assert grades[key] == grade, key
+
+
+SAFETY_TS = ROOT / "frontend" / "lib" / "safety-rules.ts"
+SAFETY_RE = re.compile(r'key: "(?P<key>[a-z0-9/-]+)", grade: "(?P<grade>strong|moderate|emerging)"')
+
+
+@pytest.mark.django_db
+def test_every_frontend_safety_rule_exists_with_its_grade():
+    """F3: las reglas de seguridad que cita el chat por reglas (`frontend/lib/safety-rules.ts`)."""
+    call_command("load_knowledge", stdout=io.StringIO())
+    found = [(m["key"], m["grade"]) for m in SAFETY_RE.finditer(SAFETY_TS.read_text(encoding="utf-8"))]
+    assert len(found) == 3
+    grades = dict(KnowledgeRule.objects.values_list("key", "grade"))
+    for key, grade in found:
+        assert grades.get(key) == grade, key

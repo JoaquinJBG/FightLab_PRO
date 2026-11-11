@@ -144,6 +144,34 @@ describe("Revisión semanal (en)", () => {
     expectClean(container, ["Press banca"]);
   });
 
+  it("F7: la lista dice el día en que se hizo una sesión movida y enseña lo que no estaba en el plan", () => {
+    const base = makeReview().adherence;
+    state.data = makeState({
+      latest: makeReview({
+        adherence: {
+          ...base,
+          sessions: { gym: { planned: 2, done: 2 }, mma: { planned: 0, done: 1 }, cardio: { planned: 0, done: 0 } },
+          done_planned: 2,
+          entries: [
+            { day: "sat", date: "2026-10-24", kind: "mma", session: null, done: true, done_date: "2026-10-24", planned: false },
+            { day: "mon", date: "2026-10-26", kind: "gym", session: "A", done: true, done_date: "2026-10-26", planned: true },
+            { day: "thu", date: "2026-10-29", kind: "gym", session: "B", done: true, done_date: "2026-10-27", planned: true },
+          ],
+        },
+      }),
+    });
+    renderEn(<WeeklyReviewPage />);
+    const rows = screen.getAllByTestId("adherence-entry");
+    expect(rows.map((r) => r.textContent)).toEqual([
+      expect.stringMatching(/MMA.*Not in the plan/),
+      expect.stringMatching(/Gym A.*Done$/),
+      expect.stringMatching(/Gym B.*Moved earlier: done on/),
+    ]);
+    // R3-11: la lista dice que se adelantó y por qué cuenta
+    expect(screen.getByTestId("adherence-moved-note").textContent).toContain("weekly dose");
+    expect(rows.every((r) => r.dataset.done === "true")).toBe(true);
+  });
+
   it("aceptada: lleva al plan nuevo", () => {
     state.data = makeState({ latest: makeReview({ status: "accepted", accepted: ["deload"], plan_id: 9, plan_week_start: "2026-11-02" }) });
     const { container } = renderEn(<WeeklyReviewPage />);

@@ -80,7 +80,7 @@ test("kg en blanco con ✓ se guarda como 0 kg y las series sin ✓ no se guarda
   expect(help.height).toBeGreaterThanOrEqual(43.5);
   await expect(page.getByRole("button", { name: "7", exact: true })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Guardar" }).click();
-  await page.waitForURL("**/training/gym");
+  await page.waitForURL(/\/training\/gym(\?|$)/);
 
   const [s] = await savedSessions(page);
   expect(s.exercises).toEqual([{ name: "Fondos", sets: [{ kg: 0, reps: 12 }] }]);
@@ -124,28 +124,30 @@ test("30 ejercicios × 8 series: detalle completo en local y ≤ 8 KB al servido
     sets: Array.from({ length: 8 }, (_, j) => ({ kg: `${102 + j}.5`, reps: String(12 + j), done: true })),
   }));
   await loginAsTestUser(page, live(exercises));
-  await page.route("**/api/proxy/activities/sync", (route) => {
-    const body = route.request().postDataJSON() as { items: { client_id: string }[] };
+  // F17: la sesión se guarda al momento con `POST activities` (201 o 400 con el motivo)
+  await page.route("**/api/proxy/activities", (route) => {
+    if (route.request().method() !== "POST") return route.fallback();
+    const body = route.request().postDataJSON() as { client_id: string };
     return route.fulfill({
-      status: 200,
+      status: 201,
       contentType: "application/json",
-      body: JSON.stringify({ results: body.items.map((i) => ({ client_id: i.client_id, status: "created" })) }),
+      body: JSON.stringify({ client_id: body.client_id, status: "created", id: 1 }),
     });
   });
   await page.goto("/training/gym/session");
   await expect(page.getByLabel("Peso, serie 1").first()).toBeVisible();
 
-  const sync = page.waitForRequest("**/api/proxy/activities/sync");
+  const sync = page.waitForRequest((r) => r.url().endsWith("/api/proxy/activities") && r.method() === "POST");
   await page.getByRole("button", { name: "Terminar entreno" }).click();
   await expect(page.getByRole("button", { name: "Guardar" })).toBeVisible();
   await expect(page.getByRole("status").filter({ hasText: "Desglose solo en este dispositivo" })).toBeHidden();
   await page.getByRole("button", { name: "Guardar" }).click();
   const req = await sync;
-  const detail = (req.postDataJSON() as { items: { detail: Record<string, unknown> }[] }).items[0].detail;
+  const detail = (req.postDataJSON() as { detail: Record<string, unknown> }).detail;
   expect(JSON.stringify(detail).length).toBeLessThanOrEqual(8000);
   expect((detail.ex as unknown[]).length).toBe(30);
 
-  await page.waitForURL("**/training/gym");
+  await page.waitForURL(/\/training\/gym(\?|$)/);
   const [s] = await savedSessions(page);
   expect(s.exercises).toHaveLength(30);
   expect(s.exercises[0].sets).toHaveLength(8);
@@ -181,9 +183,17 @@ test("doble toque en la misma posición no pierde ejercicios", async ({ page }) 
 
 test("deshacer con el ejercicio ya re-añadido une las series", async ({ page }) => {
   await open(page, [{ name: "Press banca", sets: [{ kg: "80", reps: "8", done: true }, { kg: "85", reps: "6", done: true }] }]);
+  // F17: el selector es el de la biblioteca (rama E)
+  await page.route("**/api/proxy/gym/exercises*", (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify([{ key: "cat:barbell-bench-press", name: "Press banca", aliases: [], primary_muscles: ["chest"],
+      secondary_muscles: [], equipment: ["barbell"], category: "strength", images: [], instructions: [], instructions_lang: null,
+      text_credit: null, notes: "", source: "fightlab", attribution: null, custom: false }]),
+  }));
   await page.getByRole("button", { name: "Quitar Press banca" }).click();
   await page.getByRole("button", { name: "+ Añadir ejercicio" }).click();
-  await page.getByRole("button", { name: /^Press banca/ }).click();
+  await page.getByRole("button", { name: "Elegir Press banca" }).click();
+  await page.getByRole("button", { name: "Añadir (1)" }).click();
   await page.getByRole("button", { name: "Deshacer" }).click();
   await expect(page.getByLabel("Peso, serie 1")).toHaveValue("80");
   await expect(page.getByLabel("Peso, serie 2")).toHaveValue("85");

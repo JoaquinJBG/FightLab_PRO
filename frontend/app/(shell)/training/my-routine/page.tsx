@@ -4,18 +4,26 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { ChevronRight } from "@/components/icons";
 import { PlanView } from "@/components/plan/PlanView";
+import { PlanRoutines } from "@/components/routines/PlanRoutines";
 import { intlLocale } from "@/lib/locale";
 import { useWeeklyPlan } from "@/lib/plan";
+import { START_PATH, usePlanRoutines } from "@/lib/routines";
 
-/* Mi rutina: solo el plan del coach que se aplicó desde "Plan de la semana".
-   La rutina de ejemplo (con un entrenador inventado) se retiró por simulada;
-   sin plan aplicado, la página lleva a prepararlo. */
+/* Mi rutina (F17): la carpeta de rutinas que genera el plan del coach, editables como cualquier
+   rutina, y debajo el plan con sus reglas. Sin plan aplicado, la página lleva a prepararlo. */
 export default function MyRoutinePage() {
   const t = useTranslations("training.myRoutine");
   const tp = useTranslations("weeklyPlan");
   const locale = intlLocale(useLocale());
   const { data } = useWeeklyPlan();
   const plan = data?.active;
+  const { data: generated } = usePlanRoutines(!!plan);
+
+  // Sesión del plan → su rutina generada (`plan:<id>:<sesión>`), si ya está al día.
+  const routineFor = (key: string) =>
+    plan && generated?.in_sync
+      ? generated.routines.find((r) => r.source === "plan" && r.source_ref === `plan:${plan.id}:${key}`)
+      : undefined;
 
   return (
     <div className="pt-4 pb-4">
@@ -32,13 +40,20 @@ export default function MyRoutinePage() {
             </p>
             <Link href="/training/plan" className="t-label shrink-0 text-neon">{tp("routineEdit")}</Link>
           </div>
+          <PlanRoutines planId={plan.id} />
           <PlanView
             plan={plan}
-            sessionAction={(s) => (
-              <Link href={`/training/gym/session?plan=${s.key}`} className="btn btn-tonal btn-sm mt-3 w-full">
-                {tp("startSession", { key: s.key })}
-              </Link>
-            )}
+            sessionAction={(s) => {
+              const r = routineFor(s.key);
+              return (
+                <Link
+                  href={r ? START_PATH(r.id) : `/training/gym/session?plan=${s.key}`}
+                  className="btn btn-tonal btn-sm mt-3 w-full"
+                >
+                  {tp("startSession", { key: s.key })}
+                </Link>
+              );
+            }}
           />
         </div>
       ) : (

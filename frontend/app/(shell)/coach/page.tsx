@@ -6,10 +6,11 @@ import { useLocale, useTranslations } from "next-intl";
 import { useBiometrics, useSafety, useWeighIn } from "@/lib/hooks";
 import { CitedText, type Citation } from "@/components/evidence/CitedText";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
-import { combatCitations, comparisonRule, loadBadge } from "@/lib/load-texts";
+import { comparisonRule, loadBadge, ruleCitations } from "@/lib/load-texts";
 import { computeRecovery } from "@/lib/recovery";
+import { latestWeightKg } from "@/lib/body-inputs";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
-import { buildBriefing, buildRecs, coachReply, num, recoveryText, type CoachTr, type Ctx } from "@/lib/coach-rules";
+import { buildBriefing, buildRecs, coachReply, injuryAreas, num, recoveryText, type CoachTr, type Ctx } from "@/lib/coach-rules";
 import { fetchServerMetrics } from "@/lib/activities";
 import { useUserState } from "@/lib/user-state";
 import {
@@ -105,7 +106,8 @@ export default function CoachPage() {
 
   const recovery = computeRecovery(logs);
   const lastWeightLog = weightHidden ? undefined : logs.find((l) => num(l.weight_kg ?? null) !== null);
-  const weight = lastWeightLog ? num(lastWeightLog.weight_kg ?? null) : null;
+  // F28: con dos pesajes el mismo día cuenta la media del día, como en Biometría, Hoy y la tendencia
+  const weight = lastWeightLog ? latestWeightKg(logs) : null;
   const lastWeightDays = lastWeightLog
     ? Math.round((new Date().setHours(0, 0, 0, 0) - new Date(lastWeightLog.timestamp).setHours(0, 0, 0, 0)) / 86_400_000)
     : null;
@@ -124,12 +126,16 @@ export default function CoachPage() {
     weighDays,
     cutAllowed: !!safety && !["no_cut_content", "no_weight_targets", "no_deficit", "hold_deficit"].some((f) => safety.flags[f]),
     minor: !!safety?.flags.no_cut_content,
+    // F26: el golpe en la cabeza y las lesiones (del perfil y de la memoria del coach) cuentan al momento
+    noContact: !!safety?.flags.no_contact,
+    injuries: injuryAreas(safety?.reasons ?? [], memory.lesion),
   };
 
-  const recs = buildRecs(ctx, tr)
-    .filter((r) => !dismissed.includes(r.id))
+  const recs = buildRecs(ctx, tr, listFmt)
+    // El aviso del golpe en la cabeza no se descarta: se quita con el alta de un clínico
+    .filter((r) => r.id === "golpe" || !dismissed.includes(r.id))
     .filter((r) => shouldShowRecForFrequency(r.tone, memory.frecuencia_avisos));
-  const briefing = buildBriefing(ctx, tr);
+  const briefing = buildBriefing(ctx, tr, listFmt);
 
   function dismiss(id: string) {
     setDismissed([...dismissed, id]);
@@ -191,7 +197,7 @@ export default function CoachPage() {
       if (ctrl.signal.aborted) return; // se salió de la vista: no tocar el estado
       // IA no configurada o caída: respuesta por reglas con los datos locales
       const reply = coachReply(txt, ctx, tr, listFmt);
-      setChatMsgs((m) => [...m, { role: "coach", text: reply, citations: combatCitations(reply) }]);
+      setChatMsgs((m) => [...m, { role: "coach", text: reply, citations: ruleCitations(reply) }]);
       setAiMode("reglas");
     } finally {
       if (!ctrl.signal.aborted) setTyping(false);
@@ -212,7 +218,13 @@ export default function CoachPage() {
         <span className="badge">{t("badges.week", { au: metrics?.weekAU ?? 0 })}</span>
         {weight != null && <span className="badge">{weight.toFixed(1)} kg</span>}
         {weighDays != null && <span className="badge">{t("badges.weighIn", { days: weighDays })}</span>}
-        {recovery && <span className="badge" style={{ color: recovery.color }}>{recoveryText(recovery, t).label}</span>}
+        {/* R3-3: la cabecera sale del mismo estado de seguridad que el briefing: con un golpe en la
+            cabeza activo no dice «Listo para entrenar» */}
+        {ctx.noContact ? (
+          <span data-testid="coach-safety-badge" className="badge" style={{ color: "#ff5a6e" }}>{t("badges.headBlow")}</span>
+        ) : (
+          recovery && <span data-testid="coach-recovery-badge" className="badge" style={{ color: recovery.color }}>{recoveryText(recovery, t).label}</span>
+        )}
       </div>
 
       {/* Briefing por reglas con datos reales */}
@@ -226,7 +238,11 @@ export default function CoachPage() {
           {briefing.rules.map((r) => <span key={r.key}> <EvidenceChip ruleKey={r.key} grade={r.grade} /></span>)}
         </p>
         <div className="mt-3 flex gap-2">
-          <Link href="/training" className="btn btn-tonal btn-sm"><GloveIcon className="h-4 w-4" /> {t("briefing.train")}</Link>
+          {briefing.blocked ? (
+            <Link href="/training/mma" data-testid="briefing-head-blow" className="btn btn-tonal btn-sm">{t("briefing.headBlowAction")}</Link>
+          ) : (
+            <Link href="/training" className="btn btn-tonal btn-sm"><GloveIcon className="h-4 w-4" /> {t("briefing.train")}</Link>
+          )}
           <Link href="/nutrition" className="btn btn-outline btn-sm">{t("briefing.nutrition")}</Link>
         </div>
       </section>

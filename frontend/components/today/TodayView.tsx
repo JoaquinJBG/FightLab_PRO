@@ -6,6 +6,8 @@ import { useFormatter, useTranslations } from "next-intl";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { SafetyBanner } from "@/components/safety/SafetyBanner";
 import { ChevronRight } from "@/components/icons";
+import { HEAD_BLOW_RULES } from "@/lib/coach-rules";
+import { SAFETY_RULES } from "@/lib/safety-rules";
 import { parseNum } from "@/lib/checkin";
 import {
   DAY_TYPES,
@@ -98,6 +100,12 @@ function DayPlan({ state }: { state: TodayState }) {
   return (
     <section data-testid="day-plan" className={section}>
       <SectionTitle>{t("title")}</SectionTitle>
+      {plan.no_contact && (
+        <p data-testid="plan-head-blow" className="t-body mt-1 text-sm" style={{ color: "#ff5a6e" }}>
+          {t("headBlow")}
+          {HEAD_BLOW_RULES.map((r) => <span key={r.key}> <EvidenceChip ruleKey={r.key} grade={r.grade} /></span>)}
+        </p>
+      )}
       {plan.entries.length === 0 && <p className="t-body mt-1 text-sm text-muted">{t("rest")}</p>}
       <ul className="mt-1 space-y-2">
         {plan.entries.map((e, i) => (
@@ -108,6 +116,15 @@ function DayPlan({ state }: { state: TodayState }) {
             </span>
             {e.kind === "gym" && e.exercises && e.exercises.length > 0 && (
               <span className="block text-xs text-muted">{e.exercises.join(" · ")}</span>
+            )}
+            {e.kind === "gym" && e.paused && e.paused.length > 0 && (
+              <span data-testid="plan-paused" className="block text-xs text-ink">
+                {t("paused", { exercises: e.paused.join(" · ") })}{" "}
+                <EvidenceChip ruleKey={SAFETY_RULES.newPain.key} grade={SAFETY_RULES.newPain.grade} />
+              </span>
+            )}
+            {e.kind === "mma" && e.contact_blocked && (
+              <span data-testid="plan-contact-blocked" className="block text-xs text-ink">{t("contactBlocked")}</span>
             )}
             {e.kind === "gym" && e.session && (
               <Link href={`/training/gym?plan=${encodeURIComponent(e.session)}`} className="t-label mt-1 inline-flex items-center gap-1 text-neon">
@@ -200,6 +217,11 @@ function Weight({ state }: { state: TodayState }) {
           {t("saved", { kg: format.number(state.weight_kg, { maximumFractionDigits: 2 }) })}
         </p>
       )}
+      {state.day_weight && state.day_weight.count > 1 && (
+        <p data-testid="weight-day-mean" className="t-body mt-1 text-xs text-muted">
+          {t("dayMean", { count: state.day_weight.count, kg: format.number(state.day_weight.kg, { maximumFractionDigits: 2 }) })}
+        </p>
+      )}
       <form onSubmit={submit} className="mt-2 flex items-end gap-2">
         <label className="flex flex-1 flex-col gap-1">
           <span className="t-body text-xs text-muted">{t("label")}</span>
@@ -250,7 +272,13 @@ function MealRow({ meal }: { meal: TodayMeal }) {
         {meal.tupper && <span className="badge">{t("tupper")}</span>}
       </div>
       <p className="t-body text-sm text-muted">{meal.free ? t("free") : meal.dishes.join(", ")}</p>
-      {meal.eve && <p className="t-body text-[11px] text-neon">{t("eve", { task: meal.eve })}</p>}
+      {meal.previous_mark && (
+        <p data-testid={`meal-${meal.meal}-previous`} className="t-body text-[11px] text-muted">
+          {t("previousMark", { state: t(`states.${meal.previous_mark.state}`), dish: meal.previous_mark.dish })}
+        </p>
+      )}
+      {meal.eve.length > 0 && <p className="t-body text-[11px] text-neon">{t("eve", { task: meal.eve.join("; ") })}</p>}
+      {meal.prep.length > 0 && <p className="t-body text-[11px] text-ink">{t("prep", { list: meal.prep.join("; ") })}</p>}
       <div className="mt-2 flex gap-2" role="group" aria-label={mealName(tMenu, meal.meal)}>
         {MEAL_STATES.map((s) => (
           <button
@@ -267,6 +295,16 @@ function MealRow({ meal }: { meal: TodayMeal }) {
       </div>
       {state === "changed" && meal.mark?.change && !changing && (
         <p className="t-body mt-1 text-xs text-muted">{t("changedTo", { what: meal.mark.change })}</p>
+      )}
+      {state === "done" && meal.totals && (
+        <p data-testid={`meal-${meal.meal}-diary`} className="t-body mt-1 text-xs text-good">
+          {t("inDiary", { kcal: meal.totals.kcal })}
+        </p>
+      )}
+      {state === "changed" && !changing && (
+        <Link href="/nutrition" data-testid={`meal-${meal.meal}-log`} className="t-label mt-1 block text-xs text-neon underline">
+          {t("logInstead")}
+        </Link>
       )}
       {changing && (
         <form
@@ -472,6 +510,27 @@ function Cardio({ state }: { state: TodayState }) {
   );
 }
 
+/** Lo que hay que dejar hecho esta noche para mañana (fase 12). */
+function Tonight({ state }: { state: TodayState }) {
+  const t = useTranslations("today.tonight");
+  const tasks = state.tonight?.tasks ?? [];
+  if (tasks.length === 0) return null;
+  return (
+    <section data-testid="today-tonight" className="glass neon-edge mt-4 p-4">
+      <p className="t-eyebrow text-muted">{t("title")}</p>
+      <ul className="mt-2 flex flex-col gap-1.5">
+        {tasks.map((task, i) => (
+          <li key={i} data-testid="tonight-task" data-kind={task.kind} className="t-body flex flex-wrap items-center gap-2 text-sm text-ink">
+            <span>{task.kind === "defrost" ? t("defrost", { dish: task.dish ?? "" }) : task.text}</span>
+            {task.kind === "defrost" && <EvidenceChip ruleKey={task.rule_key ?? null} />}
+            {task.kind === "batch" && <span className="badge">{t("batch")}</span>}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 /* --------------------------------------- vista --------------------------------------- */
 
 export function TodayView({ state }: { state: TodayState }) {
@@ -497,6 +556,7 @@ export function TodayView({ state }: { state: TodayState }) {
       <DayStatus state={state} />
       <Weight state={state} />
       <Meals state={state} />
+      <Tonight state={state} />
       <Cardio state={state} />
       <Link href="/checkin" className="btn btn-tonal mt-4 w-full">
         {t("fullCheckin")}

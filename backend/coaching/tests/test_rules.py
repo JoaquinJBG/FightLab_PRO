@@ -66,7 +66,12 @@ def test_no_contact_takes_out_contact_work():
     flags = SafetyFlags()
     assert rules.blocked_by("sparring_light", flags, no_contact=True) == ["no_contact"]
     assert rules.blocked_by("rolling_flow", flags, no_contact=True) == ["no_contact"]
-    assert rules.allowed("pads_hard", flags, no_contact=True)
+    # R3-3: tras el golpe, la vuelta es por fases: nada vigoroso sin contacto hasta el alta
+    assert rules.blocked_by("pads_hard", flags, no_contact=True) == ["head_blow_return"]
+    assert rules.blocked_by("hiit", flags, no_contact=True) == ["head_blow_return"]
+    assert rules.allowed("technical_drilling", flags, no_contact=True)
+    assert rules.allowed("bag_slow", flags, no_contact=True)
+    assert rules.allowed("pads_hard", flags, no_contact=False)
 
 
 def test_no_training_takes_out_everything():

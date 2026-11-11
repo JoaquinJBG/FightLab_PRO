@@ -123,7 +123,7 @@ def test_backup_goes_to_checkin_biometrics_daylog_meals_and_cardio():
     assert cardio[2].detail["format"] == "hiit" and "sport_key" not in cardio[2].detail
     assert response.data["items"]["cardio"] == 3
     # Menús y lista de la compra: no se importan en esta fase, y se dice.
-    assert notices(response) == {"menus_later": 1, "shopping_later": 1, "cardio_no_load": 3, "quad_to_soreness": 1}
+    assert notices(response) == {"menus_invalid": 1, "cardio_no_load": 3, "quad_to_soreness": 1}
 
 
 def test_reimporting_the_same_backup_changes_nothing():

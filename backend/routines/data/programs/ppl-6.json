@@ -1,0 +1,460 @@
+{
+  "slug": "ppl-6",
+  "order": 3,
+  "title": {
+    "es": "Empuje-tirón-pierna, 6 días",
+    "en": "Push/pull/legs, 6 days"
+  },
+  "description": {
+    "es": "Empuje, tirón y pierna dos veces por semana. Mucho volumen: para quien ya entrena con constancia y se recupera bien. Deja al menos un día de descanso.",
+    "en": "Push, pull and legs twice a week. High volume: for people who already train consistently and recover well. Keep at least one rest day."
+  },
+  "days_per_week": 6,
+  "level": "advanced",
+  "source": "FightLab convention",
+  "source_note": {
+    "es": "Estructura habitual de gimnasio, sin un estudio que la prescriba tal cual. Los parámetros (series, rango de repeticiones, RIR y descansos) siguen las reglas del coach enlazadas.",
+    "en": "A common gym structure with no single study prescribing it as is. The parameters (sets, rep range, RIR and rest) follow the linked coach rules."
+  },
+  "rules": [
+    "strength-hypertrophy/full-body-versus-split",
+    "strength-hypertrophy/frequency-for-hypertrophy",
+    "strength-hypertrophy/weekly-sets-per-muscle-dose-response",
+    "strength-hypertrophy/load-range-for-hypertrophy",
+    "strength-hypertrophy/target-reps-in-reserve",
+    "strength-hypertrophy/rest-intervals-for-hypertrophy",
+    "strength-hypertrophy/double-progression"
+  ],
+  "routines": [
+    {
+      "key": "push-a",
+      "title": {
+        "es": "Empuje A",
+        "en": "Push A"
+      },
+      "exercises": [
+        {
+          "exercise": "Press banca",
+          "warmup": 2,
+          "sets": 4,
+          "reps": [
+            6,
+            8
+          ],
+          "rir": 2,
+          "rest_s": 180,
+          "superset": null
+        },
+        {
+          "exercise": "Press militar",
+          "warmup": 1,
+          "sets": 3,
+          "reps": [
+            8,
+            10
+          ],
+          "rir": 2,
+          "rest_s": 150,
+          "superset": null
+        },
+        {
+          "exercise": "Press inclinado",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            8,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 120,
+          "superset": null
+        },
+        {
+          "exercise": "Elevaciones laterales",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            12,
+            15
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": null
+        },
+        {
+          "exercise": "Extensión de tríceps",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            10,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": null
+        }
+      ]
+    },
+    {
+      "key": "pull-a",
+      "title": {
+        "es": "Tirón A",
+        "en": "Pull A"
+      },
+      "exercises": [
+        {
+          "exercise": "Peso muerto",
+          "warmup": 2,
+          "sets": 3,
+          "reps": [
+            5,
+            8
+          ],
+          "rir": 2,
+          "rest_s": 180,
+          "superset": null
+        },
+        {
+          "exercise": "Dominadas",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            6,
+            10
+          ],
+          "rir": 2,
+          "rest_s": 150,
+          "superset": null,
+          "notes": {
+            "es": "Con asistencia (banda o máquina) o con lastre según tu nivel.",
+            "en": "Assisted (band or machine) or weighted, depending on your level."
+          }
+        },
+        {
+          "exercise": "Remo con barra",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            8,
+            10
+          ],
+          "rir": 2,
+          "rest_s": 120,
+          "superset": null
+        },
+        {
+          "exercise": "Face pull",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            12,
+            15
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": null
+        },
+        {
+          "exercise": "Curl bíceps",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            10,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": null
+        }
+      ]
+    },
+    {
+      "key": "legs-a",
+      "title": {
+        "es": "Pierna A",
+        "en": "Legs A"
+      },
+      "exercises": [
+        {
+          "exercise": "Sentadilla",
+          "warmup": 2,
+          "sets": 4,
+          "reps": [
+            6,
+            8
+          ],
+          "rir": 2,
+          "rest_s": 180,
+          "superset": null
+        },
+        {
+          "exercise": "Peso muerto rumano",
+          "warmup": 1,
+          "sets": 3,
+          "reps": [
+            8,
+            10
+          ],
+          "rir": 2,
+          "rest_s": 150,
+          "superset": null
+        },
+        {
+          "exercise": "Prensa",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            10,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 120,
+          "superset": null
+        },
+        {
+          "exercise": "Curl femoral",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            10,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 90,
+          "superset": null
+        },
+        {
+          "exercise": "Gemelos",
+          "warmup": 0,
+          "sets": 4,
+          "reps": [
+            10,
+            15
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": null
+        }
+      ]
+    },
+    {
+      "key": "push-b",
+      "title": {
+        "es": "Empuje B",
+        "en": "Push B"
+      },
+      "exercises": [
+        {
+          "exercise": "Press con mancuernas",
+          "warmup": 1,
+          "sets": 4,
+          "reps": [
+            8,
+            10
+          ],
+          "rir": 2,
+          "rest_s": 150,
+          "superset": null
+        },
+        {
+          "exercise": "Press Arnold",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            8,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 120,
+          "superset": null
+        },
+        {
+          "exercise": "Fondos",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            8,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 120,
+          "superset": null
+        },
+        {
+          "exercise": "Aperturas",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            10,
+            15
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": null
+        },
+        {
+          "exercise": "Press francés",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            10,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": null
+        }
+      ]
+    },
+    {
+      "key": "pull-b",
+      "title": {
+        "es": "Tirón B",
+        "en": "Pull B"
+      },
+      "exercises": [
+        {
+          "exercise": "Jalón al pecho",
+          "warmup": 1,
+          "sets": 4,
+          "reps": [
+            8,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 120,
+          "superset": null
+        },
+        {
+          "exercise": "Remo en máquina",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            10,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 120,
+          "superset": null
+        },
+        {
+          "exercise": "Pájaros",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            12,
+            15
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": null
+        },
+        {
+          "exercise": "Curl martillo",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            10,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": null
+        },
+        {
+          "exercise": "Crunch en polea",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            10,
+            15
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": null
+        }
+      ]
+    },
+    {
+      "key": "legs-b",
+      "title": {
+        "es": "Pierna B",
+        "en": "Legs B"
+      },
+      "exercises": [
+        {
+          "exercise": "Prensa",
+          "warmup": 1,
+          "sets": 4,
+          "reps": [
+            8,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 150,
+          "superset": null
+        },
+        {
+          "exercise": "Zancadas",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            10,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 120,
+          "superset": null
+        },
+        {
+          "exercise": "Extensión de cuádriceps",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            12,
+            15
+          ],
+          "rir": 2,
+          "rest_s": 90,
+          "superset": null
+        },
+        {
+          "exercise": "Curl femoral",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            12,
+            15
+          ],
+          "rir": 2,
+          "rest_s": 90,
+          "superset": null
+        },
+        {
+          "exercise": "Gemelos",
+          "warmup": 0,
+          "sets": 4,
+          "reps": [
+            12,
+            15
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": null
+        },
+        {
+          "exercise": "Rueda abdominal",
+          "warmup": 0,
+          "sets": 3,
+          "reps": [
+            8,
+            12
+          ],
+          "rir": 2,
+          "rest_s": 60,
+          "superset": null
+        }
+      ]
+    }
+  ]
+}

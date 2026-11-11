@@ -69,6 +69,9 @@ INSTALLED_APPS = [
     "userstate",
     "coaching",
     "notifications",
+    "exercises",
+    "routines",
+    "tickets.apps.TicketsConfig",
 ]
 
 MIDDLEWARE = [
@@ -199,6 +202,8 @@ REST_FRAMEWORK = {
         "coach-import": "20/min",
         # Aviso de prueba (F11): cada uno sale a todos los navegadores de la persona.
         "push-test": "6/hour",
+        # Fotos de tickets (F12): cada subida pasa por Pillow y va a R2.
+        "tickets-upload": "30/hour",
     },
     # Nº de proxies de confianza delante de Django, para que el throttling
     # por IP (SimpleRateThrottle.get_ident) recorte la cabecera X-Forwarded-For
@@ -383,6 +388,26 @@ VAPID_SUBJECT = env("VAPID_SUBJECT", default="").strip()
 if VAPID_SUBJECT and not VAPID_SUBJECT.startswith(("mailto:", "https://")):
     raise ImproperlyConfigured("VAPID_SUBJECT debe empezar por mailto: o https://")
 
+# --- Fotos de tickets en Cloudflare R2 (F12) ---
+# Solo en el backend (Render), nunca en Vercel ni con NEXT_PUBLIC_. Sin las cuatro primeras la
+# subida queda apagada y la app lo explica. Bucket privado: las fotos se ven con URLs firmadas que
+# caducan a los R2_SIGNED_URL_SECONDS (por defecto 600). Pasos en docs/DEPLOY.md.
+R2_ACCOUNT_ID = env("R2_ACCOUNT_ID", default="").strip()
+R2_ACCESS_KEY_ID = env("R2_ACCESS_KEY_ID", default="").strip()
+R2_SECRET_ACCESS_KEY = env("R2_SECRET_ACCESS_KEY", default="").strip()
+R2_BUCKET = env("R2_BUCKET", default="").strip()
+R2_SIGNED_URL_SECONDS = env.int("R2_SIGNED_URL_SECONDS", default=600)
+if not 60 <= R2_SIGNED_URL_SECONDS <= 3600:
+    raise ImproperlyConfigured("R2_SIGNED_URL_SECONDS va de 60 a 3600 segundos")
+# "r2" (por defecto) o "memory": almacenamiento falso en memoria, solo para pruebas.
+TICKETS_STORAGE = env("TICKETS_STORAGE", default="r2")
+
+# --- Lista de la compra: producto de la cadena (enganche F12 → F13) ---
+# Ruta con puntos de la función `chain_product(user, food_key, grams)` que elige el producto y el
+# formato de la cadena (ver coaching/shopping.py). Es la de la F13: lee el catálogo privado del
+# usuario; con None no hay producto.
+SHOPPING_CHAIN_PROVIDER = "coaching.chain_catalogue.chain_product"
+
 # --- IA (Anthropic) ---
 # Sin clave, los endpoints de IA responden 503 y el frontend degrada a reglas/simulado
 ANTHROPIC_API_KEY = env("ANTHROPIC_API_KEY", default="")
@@ -446,7 +471,3 @@ COACH_OFF_CONTACT = env("COACH_OFF_CONTACT", default="")
 # Quién propone los platos del menú. Solo existe el proveedor simulado y determinista: los menús
 # no llaman nunca a la API de Anthropic, aunque haya ANTHROPIC_API_KEY (decisión de la fase 8).
 MENU_LLM_PROVIDER = "fake"
-# --- Catálogo de cadena (fase 13) ---
-# La función que la lista de la compra de la fase 12 (`coaching/shopping.py`) llama para elegir,
-# de cada alimento genérico, el producto, el formato y el precio del catálogo privado del usuario.
-SHOPPING_CHAIN_PROVIDER = "coaching.chain_catalogue.chain_product"

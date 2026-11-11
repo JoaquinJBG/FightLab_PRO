@@ -38,6 +38,14 @@ export type SyncSet = {
   set_index: number;
   weight_kg: number | null; // null: con el peso corporal
   reps: number;
+  // F17: clave del ejercicio, tipo de serie, RPE o RIR y lo del bloque (superserie, notas, descanso)
+  exercise_key?: string;
+  set_type?: "warmup" | "normal" | "drop" | "failure";
+  rpe?: number;
+  rir?: number;
+  superset?: number;
+  notes?: string;
+  rest_s?: number;
 };
 
 const UID_CACHE_KEY = "flp_uid";
@@ -149,7 +157,106 @@ export function enqueueActivity(item: SyncItem): void {
   void flushActivities();
 }
 
-type SyncResult = { client_id: string | null; status: "created" | "exists" | "invalid" };
+/* ------------------- sesiones que el servidor no aceptó (F2) ------------------- */
+
+/** Una sesión rechazada por el servidor (o guardada sin alguna serie), con el motivo: nunca se
+    pierde en silencio. La pantalla la enseña hasta que el usuario la cierra. */
+export type RejectedActivity = {
+  client_id: string;
+  kind: ActivityKind;
+  title: string;
+  started_at: string;
+  errors?: unknown;
+  dropped_sets?: number;
+};
+
+const rejectedKey = (uid: string) => `flp_rejected_acts_${uid}`;
+
+function readRejected(): RejectedActivity[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(rejectedKey(cachedUid() ?? "anon")) ?? "[]");
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+}
+
+function addRejected(items: RejectedActivity[]) {
+  if (items.length === 0) return;
+  const cur = readRejected().filter((r) => !items.some((i) => i.client_id === r.client_id));
+  try { localStorage.setItem(rejectedKey(cachedUid() ?? "anon"), JSON.stringify([...items, ...cur].slice(0, 50))); } catch { /* noop */ }
+}
+
+export function rejectedActivities(kind: ActivityKind): RejectedActivity[] {
+  if (typeof window === "undefined") return [];
+  return readRejected().filter((r) => r.kind === kind);
+}
+
+export function dismissRejected(clientId: string): void {
+  const rest = readRejected().filter((r) => r.client_id !== clientId);
+  try { localStorage.setItem(rejectedKey(cachedUid() ?? "anon"), JSON.stringify(rest)); } catch { /* noop */ }
+}
+
+/** El primer motivo legible de un error de DRF (`{campo: [texto]}` o `{sets: [{campo: [texto]}]}`). */
+export function firstReason(errors: unknown): string | null {
+  if (typeof errors === "string") return errors;
+  if (Array.isArray(errors)) {
+    for (const e of errors) {
+      const r = firstReason(e);
+      if (r) return r;
+    }
+    return null;
+  }
+  if (errors && typeof errors === "object") {
+    for (const v of Object.values(errors as Record<string, unknown>)) {
+      const r = firstReason(v);
+      if (r) return r;
+    }
+  }
+  return null;
+}
+
+export type SaveResult =
+  | { status: "created" | "exists"; id: number | null }
+  | { status: "invalid"; errors: unknown }
+  | { status: "queued" };
+
+/** Guarda UNA sesión al terminarla (F17, fallo F2). Se apunta en la cola antes de nada (si se
+    cierra la app, no se pierde) y se envía al momento con `POST activities`, que responde 400
+    con el motivo: entonces sale de la cola y la pantalla enseña el motivo, sin perder lo escrito.
+    Sin red, se queda en la cola y se sube después. */
+export async function saveActivityNow(item: SyncItem): Promise<SaveResult> {
+  if (typeof window === "undefined") return { status: "queued" };
+  const key = queueKey(cachedUid() ?? "anon");
+  appendToQueue(key, [item]);
+  try {
+    const res = await fetch("/api/proxy/activities", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(item),
+    });
+    if (res.status === 400) {
+      const data = (await res.json().catch(() => ({}))) as { errors?: unknown };
+      removeFromQueue(key, new Set([item.client_id]));
+      return { status: "invalid", errors: data.errors ?? data };
+    }
+    if (res.ok) {
+      const data = (await res.json().catch(() => ({}))) as { id?: number; status?: string };
+      removeFromQueue(key, new Set([item.client_id]));
+      void flushActivities();
+      return { status: data.status === "exists" ? "exists" : "created", id: data.id ?? null };
+    }
+  } catch { /* sin red: se queda en la cola */ }
+  void flushActivities();
+  return { status: "queued" };
+}
+
+type SyncResult = {
+  client_id: string | null;
+  status: "created" | "exists" | "invalid";
+  errors?: unknown;
+  warnings?: { dropped_sets?: number };
+};
 
 async function postBatch(items: SyncItem[]): Promise<Set<string> | null> {
   const body = JSON.stringify({ items });
@@ -162,6 +269,19 @@ async function postBatch(items: SyncItem[]): Promise<Set<string> | null> {
   });
   if (!res.ok) return null; // transitorio (red/5xx/throttle/sesión): se reintenta
   const data = (await res.json()) as { results?: SyncResult[] };
+  // Los rechazos (y las series que no se pudieron guardar) se apuntan con su motivo para
+  // enseñarlos: salen de la cola, pero no en silencio.
+  const byId = new Map(items.map((i) => [i.client_id, i]));
+  addRejected(
+    (data.results ?? []).flatMap((r) => {
+      const it = r.client_id ? byId.get(r.client_id) : undefined;
+      if (!it || !(r.status === "invalid" || r.warnings?.dropped_sets)) return [];
+      return [{
+        client_id: it.client_id, kind: it.kind, title: it.title ?? "", started_at: it.started_at,
+        ...(r.status === "invalid" ? { errors: r.errors ?? null } : { dropped_sets: r.warnings?.dropped_sets }),
+      }];
+    }),
+  );
   // created/exists confirmados e invalid terminal: todos salen de la cola
   return new Set((data.results ?? []).map((r) => r.client_id).filter((c): c is string => !!c));
 }
@@ -365,7 +485,30 @@ export type ServerActivity = {
   load_au: number | null;
   source: string;
   created_at: string;
+  /** Resumen de las series de gimnasio guardadas en el servidor (F17); null fuera del gimnasio. */
+  summary?: { exercises: number; sets: number; volume_kg: number } | null;
+  sets_truncated?: boolean;
 };
+
+/** Una serie de una sesión del servidor (`GET activities/<id>`). */
+export type ServerSet = {
+  exercise: string;
+  exercise_key: string | null;
+  exercise_index: number;
+  set_index: number;
+  set_type: string;
+  weight_kg: number | null;
+  reps: number | null;
+  rpe: number | null;
+  rir: number | null;
+  distance_km: number | null;
+  duration_s: number | null;
+  superset: number | null;
+  notes: string;
+  rest_s: number | null;
+};
+
+export type ServerActivityDetail = ServerActivity & { sets: ServerSet[] };
 
 /** Fin de sesión (lo que este proyecto usa como `ts`) a partir de una
     actividad del servidor: inicio + duración, igual que el guardado local. */
@@ -375,10 +518,10 @@ export function serverActivityTs(a: ServerActivity): number {
 
 /** Historial de un tipo desde el servidor (fuente de verdad para varios
     dispositivos). null si no responde: la vista debe caer al historial local. */
-export async function fetchServerActivities(kind: ActivityKind, limit = 100): Promise<ServerActivity[] | null> {
+export async function fetchServerActivities(kind: ActivityKind, limit = 100, offset = 0): Promise<ServerActivity[] | null> {
   if (typeof window === "undefined") return null;
   try {
-    const res = await fetch(`/api/proxy/activities?kind=${kind}&limit=${limit}`);
+    const res = await fetch(`/api/proxy/activities?kind=${kind}&limit=${limit}${offset ? `&offset=${offset}` : ""}`);
     if (!res.ok) return null;
     const data = await res.json();
     return Array.isArray(data) ? (data as ServerActivity[]) : null;

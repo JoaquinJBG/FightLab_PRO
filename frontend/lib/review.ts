@@ -20,6 +20,10 @@ const entry = z.object({
   kind: z.enum(["gym", "mma", "cardio"]),
   session: z.string().nullable().optional(),
   done: z.boolean(),
+  // F7: el día en que se hizo (puede ser otro de la semana) y si estaba en el plan. Las
+  // revisiones guardadas antes no los traen.
+  done_date: z.string().nullable().optional(),
+  planned: z.boolean().optional().default(true),
 });
 
 const count = z.object({ planned: z.number().nullable(), done: z.number() });

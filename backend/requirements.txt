@@ -16,3 +16,8 @@ reportlab==5.1.0
 # manylinux para todo salvo http-ece, que es Python puro: python:3.12-slim lo instala sin
 # paquetes del sistema.
 pywebpush==2.5.0
+# Fotos de tickets en Cloudflare R2 (fase 12), por su API de S3. Licencia Apache-2.0 (boto3,
+# botocore y s3transfer; jmespath y urllib3 son MIT). Todo son ruedas Python puras
+# (py3-none-any): python:3.12-slim lo instala sin paquetes del sistema.
+boto3==1.40.61
+botocore==1.40.61

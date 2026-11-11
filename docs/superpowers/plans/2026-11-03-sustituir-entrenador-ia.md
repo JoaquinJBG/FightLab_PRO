@@ -130,6 +130,26 @@ Opciones:
 3. **F14**.
 4. **F15** (estudio) y después **F16** (app Android), cuando el usuario lo diga.
 
+**Cambio de prioridad (2026-11-09).** El usuario necesita sustituir **Hevy** (con lo que Hevy tiene
+de pago) y **Entrenador IA** para poder usar FightLab a diario. Pasan por delante:
+- **F17 «Gimnasio de verdad»**, la máxima prioridad, en paralelo con los arreglos A y B, F12 y F13.
+  Se divide en tres ramas que no tocan los mismos archivos:
+  - **F17-E, ejercicios y biblioteca:** ejercicios propios sin límite, con músculo principal y
+    secundario y material; biblioteca wger + everkinetic con imágenes y créditos (estudio
+    `docs/estudios/2026-11-09-biblioteca-ejercicios.md`); búsqueda y filtros en es/en.
+  - **F17-R, rutinas y programas:** rutinas y plantillas sin límite (crear, editar, duplicar,
+    reordenar y carpetas), programas clásicos (full body de 3 días, torso-pierna y
+    empuje-tirón-pierna), y el plan por reglas genera rutinas del mismo modelo.
+  - **F17-H, registro, historial y récords:** empezar el entreno desde una rutina; tipos de serie;
+    RPE o RIR por serie; superseries; notas y descanso por ejercicio; calculadora de discos;
+    historial y calendario desde el servidor (arregla F1 de raíz, junto con F2 y F18); gráfica por
+    ejercicio; récords con aviso; e importar de Hevy con sus rutinas.
+- **Nutrición, para igualar a Entrenador IA:** F6 (arreglos A), F12 y F13 juntas, el **escáner de
+  código de barras** con la cámara y **F14** justo después de F12.
+- **F18, rutinas generadas con IA:** un formulario y la clave gratuita de Gemini del propio usuario;
+  el motor valida los números. Va después de F17.
+- **Producción:** cuando esté todo esto y el usuario lo haya probado en el móvil, siempre con su OK.
+
 Cada fase: rama propia desde `feat/beta-coach`, push normal, sin PR, pruebas (pytest, vitest, E2E,
 tsc, build y la CI de la beta) y textos en es/en. Al terminar, se juntan en `feat/beta-coach`.
 

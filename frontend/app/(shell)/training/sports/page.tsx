@@ -6,9 +6,11 @@ import { useLocale, useTranslations } from "next-intl";
 import { intlLocale } from "@/lib/locale";
 import { useBiometrics, useSafety } from "@/lib/hooks";
 import {
-  deleteServerActivities, enqueueActivity, fetchServerActivities, pendingQueueItems, mergeByClientId,
+  deleteServerActivities, enqueueActivity,
   type ServerActivity, type SyncItem,
 } from "@/lib/activities";
+import { useActivityHistory } from "@/lib/activity-history";
+import { RejectedNotice } from "@/components/gym/RejectedNotice";
 import { SPORT_FORMATS, type SportFormat } from "@/lib/session-check";
 import { VigorousWarning } from "@/components/safety/VigorousWarning";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
@@ -119,6 +121,9 @@ function activityFromPending(item: SyncItem): Activity {
     ts: new Date(item.started_at).getTime() + item.duration_sec * 1000,
   };
 }
+// Historial del servidor (F17, F1): la caché local solo si el servidor no responde.
+const SPORT_SOURCE = { fromServer: activityFromServer, fromPending: activityFromPending, local: loadActivities };
+
 function fmtDate(ts: number, locale: string, t: (k: string, v?: Record<string, string>) => string) {
   const d = new Date(ts);
   const today = new Date();
@@ -150,24 +155,11 @@ export default function SportsPage() {
   // Inicialización perezosa: se lee localStorage una sola vez, en el primer
   // render del cliente, en vez de en un efecto que llamaría a setState justo
   // después de montar (evita el re-render en cascada).
-  const [activities, setActivities] = useState<Activity[]>(() => loadActivities());
+  const history = useActivityHistory("SPORT", SPORT_SOURCE);
+  const activities = history.items;
   const [resume, setResume] = useState<LiveSession | null>(() => readLiveSession(SPORTS.map((s) => s.key)));
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  // Historial: local (inmediato, ya cargado arriba) y luego fusionado con el
-  // servidor, para que se vea igual en otro dispositivo. Si el servidor no
-  // responde, se queda con el local (fallback).
-  useEffect(() => {
-    let alive = true;
-    fetchServerActivities("SPORT").then((server) => {
-      if (!alive || !server) return;
-      const pending = pendingQueueItems("SPORT").map(activityFromPending);
-      const merged = mergeByClientId(loadActivities(), pending, server.map(activityFromServer));
-      merged.sort((a, b) => b.ts - a.ts);
-      setActivities(merged.slice(0, 100));
-    });
-    return () => { alive = false; };
-  }, []);
 
   /* ---------------- estado del tracker ---------------- */
   const [sel, setSel] = useState<Sport | null>(null);
@@ -299,7 +291,7 @@ export default function SportsPage() {
       },
     });
     localStorage.removeItem(LIVE_KEY);
-    setActivities(loadActivities());
+    history.add(a); // se AÑADE a lo que hay: el historial no «desaparece» (F1)
     setSel(null);
     setPhase("idle");
     setView("actividad"); // ver la sesión recién guardada en el registro
@@ -568,7 +560,7 @@ export default function SportsPage() {
             {activities.length > 0 && (
               confirmDelete ? (
                 <button
-                  onClick={() => { localStorage.removeItem(KEY); setActivities([]); void deleteServerActivities("SPORT"); setConfirmDelete(false); }}
+                  onClick={() => { localStorage.removeItem(KEY); history.clear(); void deleteServerActivities("SPORT"); setConfirmDelete(false); }}
                   className="t-label text-bad"
                 >
                   {t("activity.deleteConfirm")}
@@ -604,6 +596,11 @@ export default function SportsPage() {
               })}
             </div>
           )}
+          {history.hasMore && (
+            <button type="button" onClick={history.loadMore} disabled={history.loading} className="btn btn-tonal btn-sm mt-3 min-h-11 w-full">{t("activity.more")}</button>
+          )}
+          {history.offline && <p className="t-body mt-3 text-[11px] text-muted">{t("activity.offline")}</p>}
+          <RejectedNotice kind="SPORT" />
         </div>
       )}
     </div>

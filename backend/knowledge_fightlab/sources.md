@@ -1,6 +1,6 @@
 # Sources
 
-> Every source cited in combat-sports.md and food-products.md, by ID. Each combat-sports source was opened (abstract or full text) during research and again by an independent checker on 2026-10-29, except where the entry says otherwise; F145 to F148 (food-products.md) were opened during research on 2026-11-09 and have not had an independent re-check yet; `Opened` is the URL that returned the text. Unlike the coach's sources file, the `Supports` notes are written in FightLab's own words and contain no quotations, because publisher text is not CC BY. Sources that could not be opened were dropped together with their claims (see dropped-claims.md). Evidence checked on 2026-10-29.
+> Every source cited in combat-sports.md, food-products.md and batch-cooking.md, by ID. Each one was opened (abstract or full text) during research and again by an independent checker on 2026-10-29, except where the entry says otherwise; `Opened` is the URL that returned the text. Unlike the coach's sources file, the `Supports` notes are written in FightLab's own words and contain no quotations, because publisher text is not CC BY. Sources that could not be opened were dropped together with their claims (see dropped-claims.md). Evidence checked on 2026-10-29 (F001-F144, combat-sports.md) and on 2026-11-09 (F145-F148, food-products.md, and F149-F161, batch-cooking.md, opened by the researcher without an independent re-check yet; the PDFs' text was extracted from the downloaded files).
 
 Fields: type, DOI, canonical URL, opened URL, which files cite it, and what in the opened text supports the rules that cite it (the rules are named at the end of each note). Many PubMed abstracts were fetched with one E-utilities request for several IDs; where that exact batched URL was not recorded, `Opened` shows the equivalent single-ID request and the note says the abstract was fetched in a batched request. IDs are numbered in order of first citation in combat-sports.md.
 
@@ -8,7 +8,7 @@ Fields: type, DOI, canonical URL, opened URL, which files cite it, and what in t
 
 | Type | Count |
 |---|---|
-| Other | 30 |
+| Other | 37 |
 | Cross-sectional | 24 |
 | Narrative review | 24 |
 | Cohort | 23 |
@@ -18,8 +18,8 @@ Fields: type, DOI, canonical URL, opened URL, which files cite it, and what in t
 | Position stand | 3 |
 | RCT | 2 |
 | Umbrella review | 1 |
-| Guideline | 2 |
-| **Total** | **148** |
+| Guideline | 8 |
+| **Total** | **161** |
 
 ## List
 
@@ -1058,3 +1058,93 @@ Type: Other · DOI: none · Files: food-products
 URL: <https://eur-lex.europa.eu/eli/reg/2011/1169/oj>  
 Opened: <https://www.legislation.gov.uk/eur/2011/1169/annex/XIV/adopted>  
 Supports: Annex XIV as originally adopted (UK National Archives copy; the EUR-Lex page returned no text). Energy factors per gram: carbohydrate except polyols 17 kJ or 4 kcal, polyols 10 kJ or 2.4 kcal, protein 17 kJ or 4 kcal, fat 37 kJ or 9 kcal, fibre 8 kJ or 2 kcal, alcohol 29 kJ or 7 kcal, erythritol 0. Rules citing it: Flag labels whose energy does not match the macros.
+### F149
+La Abuela Carmen (no author named), undated. Batch cooking: cocina un día y come sano toda la semana. Brand blog  
+Type: Other · DOI: none · Files: batch-cooking  
+URL: <https://laabuelacarmen.com/batch-cooking-cocina-un-dia-y-come-sano-toda-la-semana/>  
+Opened: <https://laabuelacarmen.com/batch-cooking-cocina-un-dia-y-come-sano-toda-la-semana/>  
+Supports: Web page. Start the session with the longest cooking (pulses, stews, roasts), go on to sautés, creams and sauces, and finish with quick tasks (dressings, chopping). It does not mention a pressure cooker, running appliances in parallel or packing during dead time. Rules citing it: Order the batch session from longest to shortest, in parallel by appliance.
+
+### F150
+TuMenuSemanal (no author named), undated. Batch Cooking: Recetas y Guía para Cocinar una vez a la semana. Blog  
+Type: Other · DOI: none · Files: batch-cooking  
+URL: <https://tumenusemanal.com/blog/batch-cooking-recetas-semanales/>  
+Opened: <https://tumenusemanal.com/blog/batch-cooking-recetas-semanales/>  
+Supports: Web page. Pulses and stocks go on first because they take longest; vegetables and proteins bake in the oven in parallel while grains cook on the hob; utensils are washed during waiting times; the pressure cooker is an option that shortens chickpeas from about 90 to 25 minutes. Its storage table gives 3-5 days without sources and is not used. Rules citing it: Order the batch session from longest to shortest, in parallel by appliance.
+
+### F151
+Agencia Española de Seguridad Alimentaria y Nutrición (AESAN), 2026. Intoxicación y toxiinfección por Bacillus cereus. Agency factsheet (PDF dated 14/01/2026)  
+Type: Guideline · DOI: none · Files: batch-cooking  
+URL: <https://www.aesan.gob.es/dam/jcr:42f74eae-c50a-4b56-abca-22c0b76f7561/Intoxicaci%C3%B3n%20y%20toxiinfecci%C3%B3n%20por%20Bacillus%20cereus.pdf>  
+Opened: <https://www.aesan.gob.es/dam/jcr:42f74eae-c50a-4b56-abca-22c0b76f7561/Intoxicaci%C3%B3n%20y%20toxiinfecci%C3%B3n%20por%20Bacillus%20cereus.pdf>  
+Supports: PDF, text extracted from the downloaded file. Refrigerate cooked food and leftovers straight away or, if not possible, avoid more than 2 hours at room temperature; do not stack containers so air circulates; cold food above 5 °C is a risk; reheat to at least 74 °C for at least 15 seconds; the emetic toxin is not destroyed by reheating. It has no 1-hour rule for rice. Rules citing it: Cool cooked food and refrigerate it within 2 hours, rice within 1 hour; Reheat until steaming hot throughout and reheat rice only once.
+
+### F152
+Food Standards Agency (UK), 2017. How to chill, freeze and defrost food safely. Agency guidance on GOV.UK  
+Type: Guideline · DOI: none · Files: batch-cooking  
+URL: <https://www.gov.uk/government/publications/how-to-chill-freeze-and-defrost-food-safely/how-to-chill-freeze-and-defrost-food-safely>  
+Opened: <https://www.gov.uk/government/publications/how-to-chill-freeze-and-defrost-food-safely/how-to-chill-freeze-and-defrost-food-safely>  
+Supports: Web page. Fridge at 0-5 °C; cool cooked food and refrigerate it within 1-2 hours, not hot; split into smaller portions to cool faster; eat leftovers within 48 hours or freeze them as soon as possible; label frozen food, use airtight containers or freezer bags, freeze in portions; thaw in the fridge (overnight is safest) in a container that catches drips, or in the microwave only if needed and then cook immediately; use within 24 hours of fully defrosting; cooked food can be refrozen but then reheated only once. Rules citing it: Cool cooked food...; Eat from the fridge within 2 days...; Defrost in the fridge the night before; Reheat until steaming hot...; Label each container...
+
+### F153
+Food Standards Agency (UK), 2026. Home food fact checker. Agency guidance on GOV.UK (updated 21 August 2026)  
+Type: Guideline · DOI: none · Files: batch-cooking  
+URL: <https://www.gov.uk/government/publications/home-food-fact-checker/home-food-fact-checker>  
+Opened: <https://www.gov.uk/government/publications/home-food-fact-checker/home-food-fact-checker>  
+Supports: Web page. Chill cooked rice as quickly as possible, ideally within an hour, in smaller portions; keep it in the fridge no more than a day; never reheat rice more than once; reheat until steaming hot all the way through; reheat previously cooked and frozen meat only once. It gives no general 48-hour rule. Rules citing it: Cool cooked food...; Eat from the fridge within 2 days...; Reheat until steaming hot throughout and reheat rice only once.
+
+### F154
+Food Safety Authority of Ireland (FSAI), 2016. Microbial Factsheet Series: Bacillus cereus, Issue No. 2. Agency factsheet  
+Type: Guideline · DOI: none · Files: batch-cooking  
+URL: <https://fsai.ie/getmedia/4f2f6561-441a-4692-a112-b03e660069ca/Bacillus-Cereus-Factsheet-2016-FINAL-ACCESSIBLE.pdf?ext=.pdf>  
+Opened: <https://fsai.ie/getmedia/4f2f6561-441a-4692-a112-b03e660069ca/Bacillus-Cereus-Factsheet-2016-FINAL-ACCESSIBLE.pdf?ext=.pdf>  
+Supports: PDF, text extracted from the downloaded file. Cool food as fast as possible so it can be refrigerated within 2 hours; keep cold food at 5 °C or less; cooked rice needs rapid cooling. Its 75 °C (or 70 °C for 2 minutes) is a cooking temperature, not a reheating one, and is not used. Rules citing it: Cool cooked food and refrigerate it within 2 hours, rice within 1 hour.
+
+### F155
+EROSKI Consumer, 2022. ¿Cuánto dura la comida cocinada en la nevera? Consumer magazine article (7 July 2022)  
+Type: Other · DOI: none · Files: batch-cooking  
+URL: <https://www.consumer.es/?p=110598>  
+Opened: <https://www.consumer.es/?p=110598>  
+Supports: Web page. Store cooked food within 2 hours (less in hot weather) in shallow lidded containers no more than 5 cm deep, split large amounts, below 5 °C. Its table (3-4 days for stews, 4-6 days for rice) gives no sources and contradicts the FSA for rice; it is cited only as a conflict. Rules citing it: Cool cooked food and refrigerate it within 2 hours, rice within 1 hour.
+
+### F156
+Organización de Consumidores y Usuarios (OCU), 2016. Tuppers en los colegios, una opción económica que no debe descuidarse. Consumer organisation article (19 September 2016)  
+Type: Other · DOI: none · Files: batch-cooking  
+URL: <https://www.ocu.org/alimentacion/alimentos/noticias/tuppers-en-los-colegios-una-opcion-economica-que-no-debe-descuidarse>  
+Opened: <https://www.ocu.org/alimentacion/alimentos/noticias/tuppers-en-los-colegios-una-opcion-economica-que-no-debe-descuidarse>  
+Supports: Web page. A prepared dish should not stay more than 48 hours in the fridge; otherwise freeze it, in portions, in an airtight, sturdy container; potato and tomato do not freeze well. Rules citing it: Eat from the fridge within 2 days and freeze the rest the same day.
+
+### F157
+USDA Food Safety and Inspection Service, 2012. Leftovers and Food Safety. Agency factsheet (revised May 2012)  
+Type: Guideline · DOI: none · Files: batch-cooking  
+URL: <https://webarchive.library.unt.edu/web/20120915114427/http:/www.fsis.usda.gov/PDF/Leftovers_and_Food_Safety.pdf>  
+Opened: <https://webarchive.library.unt.edu/web/20120916142620id_/http://www.fsis.usda.gov/PDF/Leftovers_and_Food_Safety.pdf>  
+Supports: PDF from the University of North Texas web archive (the current fsis.usda.gov page returned 403). Leftovers keep 3-4 days in the fridge or 3-4 months frozen; reheat leftovers to 165 °F measured with a food thermometer and bring sauces and soups to a rolling boil; leftovers reheated to 165 °F may be refrozen; minimum internal temperatures 145 °F with a 3-minute rest, 160 °F and 165 °F. Rules citing it: Eat from the fridge within 2 days... (as the conflicting 3-4 days); Reheat until steaming hot throughout...; Check air-fried meat with a thermometer.
+
+### F158
+Agencia Española de Seguridad Alimentaria y Nutrición (AESAN), 2021. ¿Congelas y descongelas los alimentos de forma segura en casa? Agency infographic (NIPO 069-21-012-7)  
+Type: Guideline · DOI: none · Files: batch-cooking  
+URL: <https://www.aesan.gob.es/dam/jcr:38a8f1b3-25dc-40b6-a831-90a04ae3d03f/congelar_descongelar.pdf>  
+Opened: <https://www.aesan.gob.es/dam/jcr:38a8f1b3-25dc-40b6-a831-90a04ae3d03f/congelar_descongelar.pdf>  
+Supports: PDF, text extracted from the downloaded file. Freeze leftovers on the same day; do not freeze raw-eaten vegetables and fruit, potatoes, eggs in shell, high-fat foods, mayonnaise or fried food (texture and flavour, not safety); cool hot food in the fridge before freezing; keep at -18 °C or below; mark each container with the food and its freezing date; first in, first out; individual or household portions in airtight food-contact containers or bags; thaw in the coldest part of the fridge at least 12 hours ahead on a tray, never at room temperature (microbes grow faster at 5-65 °C), or in the microwave at the lowest power and cook at once; do not refreeze thawed food unless cooked above 70 °C for at least 2 minutes. Rules citing it: Eat from the fridge...; Do not freeze...; Defrost in the fridge the night before; Label each container...
+
+### F159
+Lawson N, 2011. Freezing Curry. Ask Nigella question and answer on the author's website (29 January 2011)  
+Type: Other · DOI: none · Files: batch-cooking  
+URL: <https://www.nigella.com/ask/freezing-curry>  
+Opened: <https://www.nigella.com/ask/freezing-curry>  
+Supports: Web page. Yogurt and single cream are likely to split when frozen, so add them after reheating; double cream freezes well; coconut milk may separate slightly but is fine to eat; label the frozen curry with its contents and date. Rules citing it: Do not freeze potatoes, mayonnaise, fried food or yogurt sauces; Label each container...
+
+### F160
+Aufdenkamp B (Nebraska Extension, University of Nebraska-Lincoln), 2025. Food Safety Tips for Air Fryers. Extension newsletter  
+Type: Other · DOI: none · Files: batch-cooking  
+URL: <https://food.unl.edu/free-resources/newsletters/food-safety-tips-electric-air-fryers>  
+Opened: <https://food.unl.edu/free-resources/newsletters/food-safety-tips-electric-air-fryers>  
+Supports: Web page. A food thermometer is the only way to confirm food is safe; poultry 165 °F (73.9 °C), pork and whole cuts 145 °F (62.8 °C) with a 3-minute rest, ground meat 160 °F (71.1 °C); an overfilled basket cooks unevenly. Its °C figures for eggs and fish are wrong and are not used; it does not mention preheating or a single layer. Rules citing it: Check air-fried meat with a thermometer.
+
+### F161
+Bosch Home España, undated. Descubre tu freidora de aire Bosch: Guía de inicio rápido. Manufacturer page  
+Type: Other · DOI: none · Files: batch-cooking  
+URL: <https://www.bosch-home.es/electrodomesticos/preparacion-de-alimentos/freidoras-de-aire/guia-inicio-rapido>  
+Opened: <https://www.bosch-home.es/electrodomesticos/preparacion-de-alimentos/freidoras-de-aire/guia-inicio-rapido>  
+Supports: Web page. Take the basket out halfway and stir; Bosch air fryers need no preheating. No thermometer or internal temperatures. Rules citing it: Check air-fried meat with a thermometer.

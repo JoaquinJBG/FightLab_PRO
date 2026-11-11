@@ -93,6 +93,11 @@ def blocked_by(key: str, flags, no_contact: bool = False) -> list[str]:
         out.append("no_all_out_sprints")
     if modality.contact and no_contact:
         out.append("no_contact")
+    elif no_contact and modality.intensity in (VIGOROUS, MAXIMAL):
+        # R3-3: tras un golpe en la cabeza con síntomas, la vuelta es por fases ("Return to contact
+        # follows a graded clinician-supervised plan"): aeróbico ligero y después moderado, y el
+        # trabajo exigente solo cuando un clínico lo autoriza. Hasta el alta, nada vigoroso.
+        out.append("head_blow_return")
     return out
 
 
