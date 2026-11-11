@@ -1207,6 +1207,12 @@
       "restBetweenSets": "Descanso entre series",
       "lastTime": "Última vez: {last}",
       "firstTime": "Primera vez — a estrenar",
+      "startNow": "Empezar",
+      "conflictTitle": "Ya tienes un entreno en marcha",
+      "conflictBody": "Hay un entreno sin terminar ({what}). Puedes seguir con él o descartarlo para abrir este.",
+      "conflictKeep": "Seguir",
+      "conflictDiscard": "Descartar",
+      "conflictWhat": "{n, plural, one {# ejercicio} other {# ejercicios}}",
       "pr": "PR {kg} kg",
       "removeExercise": "Quitar {name}",
       "reps": "reps",
@@ -1459,7 +1465,10 @@
       "loading": "Cargando…",
       "error": "No se pudieron cargar los récords.",
       "empty": "Aún no hay récords: registra un entreno.",
-      "line": "Peso {weight} kg · e1RM {e1rm} kg · mejor serie {volume} kg · {sessions, plural, one {# sesión} other {# sesiones}}"
+      "lineWeight": "Peso {v} kg",
+      "lineE1rm": "e1RM {v} kg",
+      "lineVolume": "mejor serie {v} kg",
+      "lineSessions": "{n, plural, one {# sesión} other {# sesiones}}"
     },
     "gymProgress": {
       "back": "← Récords",

@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { intlLocale } from "@/lib/locale";
+import { formatNumber, intlLocale } from "@/lib/locale";
 import { TrainingIcon } from "@/components/icons";
 import { EXERCISE_KEYS } from "@/lib/gym";
 import { useProgress, useRecords, type ProgressPoint } from "@/lib/gym-api";
@@ -32,7 +32,8 @@ function ExerciseProgress() {
   const rec = records ? Object.values(records)[0] : null;
   const rawName = data?.name ?? rec?.name ?? nameParam;
   const name = EXERCISE_KEYS[rawName] ? tg(`exercises.${EXERCISE_KEYS[rawName]}`) : rawName;
-  const n = (v: number | null | undefined) => (v == null ? "—" : v.toLocaleString(locale));
+  const n = (v: number | null | undefined, max = 2) => (v == null ? "—" : formatNumber(locale, v, { max }));
+  const kgOf = (v: number | null | undefined, max = 2) => (v == null ? "—" : `${n(v, max)} kg`);
   const points = (data?.sessions ?? []).map((p) => ({ date: p.date, value: value(p, metric) }));
   const last = data?.sessions[data.sessions.length - 1];
 
@@ -75,10 +76,10 @@ function ExerciseProgress() {
         <div className="glass mt-4 p-4" data-testid="exercise-records">
           <p className="t-eyebrow text-muted">{t("records")}</p>
           <dl className="mt-2 grid grid-cols-2 gap-3">
-            <div><dt className="t-label text-muted">{t("maxWeight")}</dt><dd className="stat text-lg text-ink">{n(rec.max_weight_kg)} kg</dd></div>
-            <div><dt className="t-label text-muted">{t("bestE1rm")}</dt><dd className="stat text-lg text-ink">{n(rec.best_e1rm_kg)} kg</dd></div>
-            <div><dt className="t-label text-muted">{t("bestSetVolume")}</dt><dd className="stat text-lg text-ink">{n(rec.best_set_volume_kg)} kg</dd></div>
-            <div><dt className="t-label text-muted">{t("bestSessionVolume")}</dt><dd className="stat text-lg text-ink">{n(rec.best_session_volume_kg)} kg</dd></div>
+            <div><dt className="t-label text-muted">{t("maxWeight")}</dt><dd className="stat text-lg text-ink">{kgOf(rec.max_weight_kg)}</dd></div>
+            <div><dt className="t-label text-muted">{t("bestE1rm")}</dt><dd className="stat text-lg text-ink">{kgOf(rec.best_e1rm_kg, 1)}</dd></div>
+            <div><dt className="t-label text-muted">{t("bestSetVolume")}</dt><dd className="stat text-lg text-ink">{kgOf(rec.best_set_volume_kg)}</dd></div>
+            <div><dt className="t-label text-muted">{t("bestSessionVolume")}</dt><dd className="stat text-lg text-ink">{kgOf(rec.best_session_volume_kg)}</dd></div>
           </dl>
           {rec.reps_by_weight.length > 0 && (
             <>

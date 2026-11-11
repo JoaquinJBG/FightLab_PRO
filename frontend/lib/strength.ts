@@ -8,6 +8,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { exerciseStats } from "./gym";
+import { DEFAULT_LOCALE, formatNumber } from "./locale";
 
 export const lastStats = z.object({
   last: z
@@ -40,15 +41,15 @@ export function useLastStats(names: string[]) {
 
 export type GymStats = { last: string | null; prKg: number | null; e1rmKg: number | null; fromServer: boolean };
 
-const fmtLast = (l: NonNullable<LastStats["last"]>) =>
-  `${l.sets}×${l.reps ?? "—"}${l.weight_kg ? ` · ${l.weight_kg} kg` : ""}`;
+const fmtLast = (l: NonNullable<LastStats["last"]>, locale: string) =>
+  `${l.sets}×${l.reps ?? "—"}${l.weight_kg ? ` · ${formatNumber(locale, l.weight_kg, { max: 2 })} kg` : ""}`;
 
 /** Lo del servidor si tiene el ejercicio; si no, lo del navegador. El récord es el mayor de los
  * dos (una sesión recién guardada puede no haber llegado aún). */
-export function gymStats(name: string, server: Record<string, LastStats> | undefined): GymStats {
-  const local = exerciseStats(name);
+export function gymStats(name: string, server: Record<string, LastStats> | undefined, locale: string = DEFAULT_LOCALE): GymStats {
+  const local = exerciseStats(name, undefined, locale);
   const s = server?.[name];
   if (!s?.last) return { last: local.last, prKg: local.prKg, e1rmKg: null, fromServer: false };
   const prs = [s.pr_kg, local.prKg].filter((v): v is number => v !== null);
-  return { last: fmtLast(s.last), prKg: prs.length ? Math.max(...prs) : null, e1rmKg: s.best_e1rm_kg, fromServer: true };
+  return { last: fmtLast(s.last, locale), prKg: prs.length ? Math.max(...prs) : null, e1rmKg: s.best_e1rm_kg, fromServer: true };
 }

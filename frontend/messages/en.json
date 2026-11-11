@@ -1207,6 +1207,12 @@
       "restBetweenSets": "Rest between sets",
       "lastTime": "Last time: {last}",
       "firstTime": "First time — fresh start",
+      "startNow": "Start",
+      "conflictTitle": "You already have a workout in progress",
+      "conflictBody": "There is an unfinished workout ({what}). You can carry on with it or discard it to open this one.",
+      "conflictKeep": "Carry on",
+      "conflictDiscard": "Discard",
+      "conflictWhat": "{n, plural, one {# exercise} other {# exercises}}",
       "pr": "PR {kg} kg",
       "removeExercise": "Remove {name}",
       "reps": "reps",
@@ -1459,7 +1465,10 @@
       "loading": "Loading…",
       "error": "Couldn't load the records.",
       "empty": "No records yet: log a workout.",
-      "line": "Weight {weight} kg · e1RM {e1rm} kg · best set {volume} kg · {sessions, plural, one {# session} other {# sessions}}"
+      "lineWeight": "Weight {v} kg",
+      "lineE1rm": "e1RM {v} kg",
+      "lineVolume": "best set {v} kg",
+      "lineSessions": "{n, plural, one {# session} other {# sessions}}"
     },
     "gymProgress": {
       "back": "← Records",

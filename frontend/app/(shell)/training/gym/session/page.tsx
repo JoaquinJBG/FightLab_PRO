@@ -4,7 +4,7 @@ import { Fragment, Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { intlLocale } from "@/lib/locale";
+import { formatNumber, intlLocale } from "@/lib/locale";
 import { TrainingIcon, InfoIcon } from "@/components/icons";
 import {
   FOCUS_EXERCISES,
@@ -32,10 +32,12 @@ import {
   type SetEntry,
 } from "@/lib/gym";
 import {
+  bestRecord,
   detectRecords,
   freeSuperset,
   nextInSuperset,
   nextSetType,
+  nextWorkSetIndex,
   parseNum,
   setLabels,
   supersetGroups,
@@ -43,6 +45,7 @@ import {
 } from "@/lib/gym-log";
 import {
   exerciseId,
+  effortModeOf,
   exercisesFromStart,
   fetchRoutineStart,
   recordFor,
@@ -124,7 +127,7 @@ function SessionInner() {
   const [routine, setRoutine] = useState<{ id: number; title: string } | null>(null);
   const [routineSafety, setRoutineSafety] = useState<RoutineStart["safety"] | null>(null);
   const [routineError, setRoutineError] = useState(false);
-  const [exercises, setExercises] = useState<ExerciseEntry[]>([]);
+  const [exercises, setExercisesRaw] = useState<ExerciseEntry[]>([]);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [now, setNow] = useState(0);
   const [phase, setPhase] = useState<"live" | "summary">("live");
@@ -174,62 +177,104 @@ function SessionInner() {
   }, []);
 
   /* ---------- arranque: reanudar sesión viva o empezar nueva ---------- */
-  useEffect(() => {
-    let restored = false;
-    try {
-      const raw = localStorage.getItem(GYM_LIVE_KEY);
-      if (raw) {
-        const live: LiveGym = JSON.parse(raw);
-        const sameRoutine = !routineParam || live?.routine?.id === routineParam;
-        if (live && Array.isArray(live.exercises) && Date.now() - live.savedAt < 12 * 3600_000 && sameRoutine) {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
-          setFocus(live.focus);
-          setExercises(live.exercises);
-          setStartedAt(live.startedAt);
-          setPlanSession(live.plan ?? null);
-          setRoutine(live.routine ?? null);
-          if (live.restUntil && live.restUntil > Date.now()) setRestUntil(live.restUntil);
-          setFilledFrom(-1);
-          restored = true;
-        }
-      }
-      const rd = Number(localStorage.getItem(GYM_REST_KEY));
-      if (REST_OPTS.includes(rd)) setRestDur(rd);
-      if (localStorage.getItem(EFFORT_KEY) === "rir") setEffort("rir");
-    } catch { /* sesión corrupta */ }
+  // R4-14: abrir una pantalla de entreno NO deja un entreno en marcha. El borrador solo se guarda
+  // cuando el usuario mete datos o pulsa «Empezar» (`engaged`). Y si ya hay un entreno en marcha
+  // distinto del que se abre, se pregunta: «Seguir» ese o «Descartar» y abrir el nuevo.
+  const [engaged, setEngaged] = useState(false);
+  const [conflict, setConflict] = useState<LiveGym | null>(null);
 
-    if (!restored && routineParam) {
+  function restoreLive(live: LiveGym) {
+    setFocus(live.focus);
+    setExercisesRaw(live.exercises);
+    setStartedAt(live.startedAt);
+    setPlanSession(live.plan ?? null);
+    setRoutine(live.routine ?? null);
+    if (live.restUntil && live.restUntil > Date.now()) setRestUntil(live.restUntil);
+    setFilledFrom(-1);
+    setEngaged(true);
+  }
+  function startFresh() {
+    setEngaged(false);
+    if (routineParam) {
       setFocus(null);
-      setExercises([]);
+      setExercisesRaw([]);
       setStartedAt(Date.now());
       fetchRoutineStart(routineParam)
         .then((start) => {
           setRoutine({ id: start.routine_id, title: start.title });
           setRoutineSafety(start.safety ?? null);
-          setExercises(exercisesFromStart(start));
+          setExercisesRaw(exercisesFromStart(start));
+          const mode = effortModeOf(start);
+          if (mode) setEffort(mode); // R4-7: la sesión abre en el modo de esfuerzo de la rutina
         })
         .catch(() => setRoutineError(true));
-    } else if (!restored && planParam) {
+    } else if (planParam) {
       setFocus(null);
       setPlanSession(planParam);
-      setExercises([]);
+      setExercisesRaw([]);
       setStartedAt(Date.now());
-    } else if (!restored) {
+    } else {
       const f = focusParam && FOCUS_EXERCISES[focusParam] ? focusParam : null;
       setFocus(f);
-      setExercises((f ? FOCUS_EXERCISES[f] : []).map((name) => ({ name, sets: [blankSet()] })));
+      setExercisesRaw((f ? FOCUS_EXERCISES[f] : []).map((name) => ({ name, sets: [blankSet()] })));
       setStartedAt(Date.now());
+    }
+  }
+  useEffect(() => {
+    let live: LiveGym | null = null;
+    try {
+      const raw = localStorage.getItem(GYM_LIVE_KEY);
+      if (raw) {
+        const parsed: LiveGym = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.exercises) && Date.now() - parsed.savedAt < 12 * 3600_000) live = parsed;
+      }
+      const rd = Number(localStorage.getItem(GYM_REST_KEY));
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (REST_OPTS.includes(rd)) setRestDur(rd);
+      if (localStorage.getItem(EFFORT_KEY) === "rir") setEffort("rir");
+    } catch { /* sesión corrupta */ }
+
+    const opensOther =
+      live !== null &&
+      ((routineParam !== null && live.routine?.id !== routineParam) ||
+        (routineParam === null && planParam !== null && live.plan !== planParam) ||
+        (routineParam === null && planParam === null && focusParam !== null && live.focus !== focusParam));
+    if (live && opensOther) {
+      setConflict(live);
+    } else if (live) {
+      restoreLive(live);
+    } else {
+      startFresh();
     }
     setNow(Date.now());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  function keepRunning() {
+    if (!conflict) return;
+    restoreLive(conflict);
+    setConflict(null);
+  }
+  function discardRunning() {
+    try { localStorage.removeItem(GYM_LIVE_KEY); } catch { /* noop */ }
+    setConflict(null);
+    startFresh();
+  }
+  /** Lo que el usuario cambia a mano: desde ahí hay entreno en marcha (y corre el reloj). */
+  const setExercises: typeof setExercisesRaw = (u) => {
+    if (!engaged) {
+      setEngaged(true);
+      // eslint-disable-next-line react-hooks/purity
+      setStartedAt(Date.now());
+    }
+    setExercisesRaw(u);
+  };
 
   /* ---------- ejercicios de la sesión del plan (cargas del motor; sin carga, vacío) ---------- */
   const activePlan = planState?.active;
   const planSessionData = planSession && activePlan ? activePlan.sessions.find((s) => s.key === planSession) : undefined;
   if (planSessionData && activePlan && filledFrom === null) {
     setFilledFrom(activePlan.id);
-    setExercises(
+    setExercisesRaw(
       planSessionData.items
         .filter((i) => i.sets > 0)
         .map((i) => ({
@@ -254,14 +299,14 @@ function SessionInner() {
 
   /* ---------- persistencia de la sesión viva ---------- */
   useEffect(() => {
-    if (phase !== "live" || startedAt === null) return;
+    if (phase !== "live" || startedAt === null || !engaged || conflict) return; // R4-14: sin borrador hasta que empieza
     try {
       localStorage.setItem(
         GYM_LIVE_KEY,
         JSON.stringify({ startedAt, focus, exercises, savedAt: Date.now(), plan: planSession, routine, restUntil } satisfies LiveGym),
       );
     } catch { /* sin espacio */ }
-  }, [exercises, focus, startedAt, phase, planSession, routine, restUntil]);
+  }, [exercises, focus, startedAt, phase, planSession, routine, restUntil, engaged, conflict]);
 
   /* ---------- wake lock ---------- */
   useEffect(() => {
@@ -338,7 +383,7 @@ function SessionInner() {
       const today = x.sets
         .filter((s, j) => j !== si && s.done)
         .map((s) => ({ kg: parseNum(s.kg) ?? 0, reps: parseNum(s.reps) ?? 0, type: s.type, rpe: parseNum(s.rpe), rir: parseNum(s.rir) }));
-      pr = detectRecords({ kg, reps, type: set.type, rpe: parseNum(set.rpe), rir: parseNum(set.rir) }, recordFor(records, x), today);
+      pr = bestRecord(detectRecords({ kg, reps, type: set.type, rpe: parseNum(set.rpe), rir: parseNum(set.rir) }, recordFor(records, x), today));
       if (pr.length > 0) showToast(t("newRecord", { name: exLabel(x.name), what: pr.map((r) => t(`records.${r}`)).join(" · ") }));
     }
     patchSet(ei, si, { done: willComplete, pr: willComplete && pr.length ? pr : undefined });
@@ -487,6 +532,23 @@ function SessionInner() {
     router.push("/training/gym");
   }
 
+  /* ===================== ENTRENO YA EN MARCHA (R4-14) ===================== */
+  if (conflict) {
+    return (
+      <div className="pt-4 pb-24">
+        <Link href="/training/gym" className="t-label inline-flex min-h-11 items-center text-muted">{t("backToGym")}</Link>
+        <div role="alertdialog" aria-label={t("conflictTitle")} data-testid="live-conflict" className="glass mt-3 p-4">
+          <h1 className="t-title text-lg text-ink">{t("conflictTitle")}</h1>
+          <p className="t-body mt-1 text-sm text-muted">{t("conflictBody", { what: t("conflictWhat", { n: conflict.exercises.length }) })}</p>
+          <div className="mt-3 flex gap-3">
+            <button onClick={discardRunning} className="btn btn-outline min-h-11 flex-1">{t("conflictDiscard")}</button>
+            <button onClick={keepRunning} className="btn btn-primary min-h-11 flex-1">{t("conflictKeep")}</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   /* ============================ RESUMEN ============================ */
   if (phase === "summary") {
     return (
@@ -626,6 +688,11 @@ function SessionInner() {
         <h1 className="t-display text-2xl text-ink">{title}</h1>
       </div>
 
+      {!engaged && exercises.length > 0 && (
+        <button type="button" data-testid="start-now" onClick={() => { setEngaged(true); setStartedAt(Date.now()); }}
+          className="btn btn-primary mt-3 min-h-11 w-full">{t("startNow")}</button>
+      )}
+
       {routineError && <p role="alert" className="t-body mt-3 text-sm text-[#ffd08a]">{t("routineLoadError")}</p>}
       {(routineSafety?.blocked || paused.length > 0 || safetyReasons.length > 0) && (
         <div role="status" data-testid="routine-safety" className="glass mt-3 border border-[rgba(255,180,80,0.3)] p-3">
@@ -662,15 +729,15 @@ function SessionInner() {
       {/* ejercicios */}
       <div className="mt-4 flex flex-col gap-3">
         {exercises.map((x, ei) => {
-          const fromHistory = exerciseStats(x.name, gymHistory);
-          const fromSets = gymStats(x.name, serverStats);
+          const fromHistory = exerciseStats(x.name, gymHistory, locale);
+          const fromSets = gymStats(x.name, serverStats, locale);
           const stats = fromSets.fromServer
             ? { ...fromSets, prKg: [fromSets.prKg, fromHistory.prKg].reduce<number | null>((a, b) => (b === null ? a : a === null ? b : Math.max(a, b)), null) }
             : { ...fromHistory, e1rmKg: null };
           const name = exLabel(x.name);
           const labels = setLabels(x.sets);
           const group = x.superset != null ? groups[x.superset] : undefined;
-          const firstOpenKg = parseNum(x.sets.find((s) => !s.done)?.kg ?? x.sets[x.sets.length - 1]?.kg);
+          const firstOpenKg = parseNum(x.sets[nextWorkSetIndex(x.sets)]?.kg ?? x.sets[x.sets.length - 1]?.kg);
           return (
             <Fragment key={`${x.key ?? x.name}-${ei}`}>
             {undoAt === ei && undoBar}
@@ -682,11 +749,11 @@ function SessionInner() {
                   <p className="t-title text-ink">{name}</p>
                   <p className="t-body text-[11px] text-muted">
                     {stats.last ? t("lastTime", { last: stats.last }) : historyReady ? t("firstTime") : " "}
-                    {stats.prKg !== null ? ` · ${t("pr", { kg: stats.prKg })}` : ""}
+                    {stats.prKg !== null ? ` · ${t("pr", { kg: formatNumber(locale, stats.prKg, { max: 2 }) })}` : ""}
                   </p>
                   {stats.e1rmKg !== null && (
                     <p data-testid="gym-e1rm" className="t-body mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
-                      {t("e1rm", { kg: stats.e1rmKg })}
+                      {t("e1rm", { kg: formatNumber(locale, stats.e1rmKg, { max: 1 }) })}
                       <span className="t-label inline-flex rounded-full border border-white/20 px-2 py-0.5 text-[10px] text-muted">{tp("conventionCoach")}</span>
                     </p>
                   )}
@@ -734,7 +801,7 @@ function SessionInner() {
                 {x.sets.map((s, si) => {
                   const prev = previousSet(x.name, si, gymHistory);
                   const preview = prev
-                    ? prev.kg > 0 ? t("previewKg", { kg: prev.kg, reps: prev.reps }) : t("previewReps", { reps: prev.reps })
+                    ? prev.kg > 0 ? t("previewKg", { kg: formatNumber(locale, prev.kg, { max: 2 }), reps: prev.reps }) : t("previewReps", { reps: prev.reps })
                     : null;
                   return (
                     <SetRow key={si} index={si} label={labels[si]} set={s} effort={effort} preview={preview} records={s.done ? s.pr : undefined}
@@ -792,7 +859,7 @@ function SessionInner() {
         <PlateCalculator initialKg={plates.kg} onClose={() => setPlates(null)}
           onUse={(kg) => {
             const ex = exercises[plates.ei];
-            const si = ex ? ex.sets.findIndex((s) => !s.done) : -1;
+            const si = ex ? nextWorkSetIndex(ex.sets) : -1;
             if (si >= 0) patchSet(plates.ei, si, { kg: String(kg).replace(".", ",") });
           }} />
       )}

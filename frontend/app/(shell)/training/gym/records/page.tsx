@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { intlLocale } from "@/lib/locale";
+import { formatNumber, intlLocale } from "@/lib/locale";
 import { TrainingIcon, ChevronRight } from "@/components/icons";
 import { EXERCISE_KEYS } from "@/lib/gym";
 import { useRecords } from "@/lib/gym-api";
@@ -18,7 +18,15 @@ export default function GymRecordsPage() {
   const exLabel = (n: string) => (EXERCISE_KEYS[n] ? tg(`exercises.${EXERCISE_KEYS[n]}`) : n);
   const { data, isLoading, isError } = useRecords(null);
   const [q, setQ] = useState("");
-  const n = (v: number | null) => (v === null ? "—" : v.toLocaleString(locale));
+  const n = (v: number, max = 2) => formatNumber(locale, v, { max });
+  // R4-5: lo que no existe (sin peso ni reps válidos) no se pinta como «— kg»
+  const line = (r: NonNullable<NonNullable<typeof data>[string]>) =>
+    [
+      r.max_weight_kg != null && t("lineWeight", { v: n(r.max_weight_kg) }),
+      r.best_e1rm_kg != null && t("lineE1rm", { v: n(r.best_e1rm_kg, 1) }),
+      r.best_set_volume_kg != null && t("lineVolume", { v: n(r.best_set_volume_kg) }),
+      t("lineSessions", { n: r.sessions }),
+    ].filter(Boolean).join(" · ");
   const rows = Object.entries(data ?? {})
     .filter((e): e is [string, NonNullable<(typeof e)[1]>] => e[1] !== null)
     .filter(([, r]) => !q.trim() || normalize(exLabel(r.name)).includes(normalize(q)));
@@ -46,7 +54,7 @@ export default function GymRecordsPage() {
               <div className="min-w-0 flex-1">
                 <p className="t-label truncate text-ink">{exLabel(r.name)}</p>
                 <p className="t-body text-[11px] text-muted">
-                  {t("line", { weight: n(r.max_weight_kg), e1rm: n(r.best_e1rm_kg), volume: n(r.best_set_volume_kg), sessions: r.sessions })}
+                  {line(r)}
                 </p>
               </div>
               <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
