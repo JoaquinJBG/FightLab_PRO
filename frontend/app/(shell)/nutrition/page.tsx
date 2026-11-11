@@ -270,7 +270,7 @@ export default function NutritionPage() {
             {(["perder", "mantener", "ganar"] as Goal[]).map((g) => {
               const off = (g === "perder" && deficitBlocked) || (g === "ganar" && surplusBlocked);
               return (
-                <button key={g} onClick={() => changeGoal(g)} disabled={off} data-testid={`goal-${g}`}
+                <button key={g} type="button" onClick={() => changeGoal(g)} disabled={off} data-testid={`goal-${g}`} aria-pressed={goal === g}
                   className="rounded-xl py-2.5 text-sm font-medium transition-colors disabled:opacity-40"
                   style={goal === g ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)", color: "#03101c" } : { background: "transparent", color: "var(--color-muted)" }}>
                   {t(`goal.${g}`)}
@@ -301,9 +301,9 @@ export default function NutritionPage() {
           <p className="t-body text-[11px] text-muted">{t("water.line", { liters: format.number(water * 0.25, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) })}</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => changeWater(-1)} aria-label={t("water.remove")} className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">−</button>
+          <button type="button" onClick={() => changeWater(-1)} aria-label={t("water.remove")} className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">−</button>
           <span className="stat w-14 text-center text-xl text-ink">{water}<span className="text-xs text-muted">/8</span></span>
-          <button onClick={() => changeWater(1)} aria-label={t("water.add")} className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">+</button>
+          <button type="button" onClick={() => changeWater(1)} aria-label={t("water.add")} className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">+</button>
         </div>
       </div>
 

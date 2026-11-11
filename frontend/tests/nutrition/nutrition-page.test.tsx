@@ -29,6 +29,18 @@ describe.each([
     expect(screen.getByText(cat.fibreLine.replace("{grams}", "25"))).toBeTruthy();
   });
 
+  it("F19: todos los botones tienen nombre accesible", async () => {
+    mockApi(base());
+    const { container } = renderApp(<NutritionPage />, locale);
+    await screen.findByText(/\/ 2600 kcal/);
+    const name = (b: Element) => (b.getAttribute("aria-label") || b.getAttribute("title") || b.textContent || "").trim();
+    const unnamed = Array.from(container.querySelectorAll("button")).filter((b) => !name(b)).map((b) => b.outerHTML.slice(0, 160));
+    expect(unnamed).toEqual([]);
+    // El objetivo elegido se anuncia (aria-pressed), como las comidas de Hoy
+    const pressed = ["perder", "mantener", "ganar"].map((g) => screen.queryByTestId(`goal-${g}`)?.getAttribute("aria-pressed"));
+    expect(pressed.filter((p) => p === "true")).toHaveLength(1);
+  });
+
   it("lleva un chip de evidencia junto a las kcal, la proteína, la grasa y la fibra", async () => {
     mockApi(base());
     renderApp(<NutritionPage />, locale);
