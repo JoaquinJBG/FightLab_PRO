@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, screen } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import TodayPage from "@/app/(shell)/today/page";
 import CoachPage from "@/app/(shell)/coach/page";
 import LoadPage from "@/app/(shell)/training/load/page";
@@ -13,6 +13,7 @@ import { CATALOGS, mockApi, renderApp } from "../support/app";
 // en la cabeza. Ahora todas leen el mismo estado (`/coach/safety` → `state`, `lib/safety-state`).
 // Con un golpe activo y con una lesión sin valorar se recorren Hoy, Coach (cabecera, briefing y chat
 // por reglas), Carga y Deportes: ninguna dice «Listo para entrenar» ni ofrece «Intenso» o vigoroso.
+// Apuntar en Hoy un cardio vigoroso ya hecho no se bloquea (spec §8.2): avisa del motivo.
 // (El plan y Mi rutina pintan lo que da el servidor: `backend/coaching/tests/test_safety_state.py`.)
 
 const hooks = vi.hoisted(() => ({ safety: undefined as unknown }));
@@ -104,14 +105,28 @@ describe.each(["head_blow", "injury"] as const)("con %s activo, ninguna pantalla
     hooks.safety = safetyWith(kind);
   });
 
-  it("Hoy: «Vigorosa» desactivada con el motivo", async () => {
-    mockApi({ "/api/proxy/coach/today": { body: TODAY } });
+  it("Hoy: apuntar un cardio «Vigorosa» ya hecho no se bloquea (spec §8.2): se deja marcar y avisa del motivo", async () => {
+    const posts: unknown[] = [];
+    mockApi({
+      "/api/proxy/coach/today": { body: TODAY },
+      "/api/proxy/coach/today/cardio": (init) => {
+        posts.push(JSON.parse(String(init!.body)));
+        return { status: 201, body: TODAY };
+      },
+    });
     renderApp(<TodayPage />);
-    const vigorous = await screen.findByTestId("cardio-intensity-vigorous");
-    expect((vigorous as HTMLButtonElement).disabled).toBe(true);
-    expect(screen.getByTestId("cardio-intensity-moderate").getAttribute("aria-checked")).toBe("true");
+    const vigorous = (await screen.findByTestId("cardio-intensity-vigorous")) as HTMLButtonElement;
+    expect(vigorous.disabled).toBe(false);
+    // «run» es vigoroso por defecto: se queda en «Vigorosa», con el aviso y su motivo
+    expect(vigorous.getAttribute("aria-checked")).toBe("true");
     const why = es.weeklyPlan.blockedBy[kind === "head_blow" ? "head_blow_return" : "injury_unassessed"];
-    expect(screen.getByTestId("cardio-vigorous-off").textContent).toContain(why);
+    expect(screen.getByTestId("cardio-vigorous-warning").textContent).toContain(why);
+    fireEvent.change(screen.getByTestId("cardio-minutes"), { target: { value: "30" } });
+    fireEvent.click(screen.getByTestId("cardio-save"));
+    await waitFor(() => expect(posts).toEqual([{ type: "run", minutes: 30, intensity: "vigorous" }]));
+    // Con «Moderada» no hay aviso
+    fireEvent.click(screen.getByTestId("cardio-intensity-moderate"));
+    expect(screen.queryByTestId("cardio-vigorous-warning")).toBeNull();
     noReady();
   });
 

@@ -3789,6 +3789,6 @@
       "stop": "Don't train"
     },
     "intenseOff": "“Intense” isn't available today: {why}.",
-    "vigorousOff": "“Vigorous” isn't available today: {why}."
+    "vigorousLogged": "You're logging “Vigorous” with an active warning ({why}). It's saved anyway, since it's done; today light or moderate work is advised."
   }
 }

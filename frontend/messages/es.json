@@ -3789,6 +3789,6 @@
       "stop": "No entrenar"
     },
     "intenseOff": "«Intenso» no está disponible hoy: {why}.",
-    "vigorousOff": "«Vigoroso» no está disponible hoy: {why}."
+    "vigorousLogged": "Marcas «Vigorosa» con un aviso activo ({why}). Se apunta igual, porque ya está hecho; hoy lo recomendable es ligero o moderado."
   }
 }

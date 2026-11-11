@@ -371,15 +371,15 @@ function Cardio({ state }: { state: TodayState }) {
   const { sessions, week, types } = state.cardio;
   const [type, setType] = useState(types[0]?.key ?? "walk");
   const [minutes, setMinutes] = useState("");
-  const [picked, setIntensity] = useState<Intensity>(types[0]?.vigorous ? "vigorous" : "moderate");
+  const [intensity, setIntensity] = useState<Intensity>(types[0]?.vigorous ? "vigorous" : "moderate");
   const [invalid, setInvalid] = useState(false);
-  // R4-10/R4-13: con lo vigoroso bloqueado hoy no se ofrece «Vigorosa» (la misma regla del plan,
-  // `lib/safety-state`); va desactivada con el motivo.
+  // Spec §8.2: lo ya hecho se apunta siempre. Con lo vigoroso bloqueado hoy (la regla del plan,
+  // `lib/safety-state`), «Vigorosa» se deja marcar y se avisa del motivo, como el aviso de sesión
+  // vigorosa; lo que se propone (plan, Deportes, Mi rutina) no la ofrece.
   const safeToday = useTodaySafety();
-  const vigorousOff = !!safeToday && !safeToday.vigorousAllowed;
+  const vigorousWarn = !!safeToday && !safeToday.vigorousAllowed && intensity === "vigorous";
   const blockedWhy = useBlockedWhy();
   const tState = useTranslations("safetyState");
-  const intensity: Intensity = vigorousOff && picked === "vigorous" ? "moderate" : picked;
   const typeName = (key: string) => (t.has(`types.${key}`) ? t(`types.${key}`) : key);
   const pct = weekProgress(week.equivalent, week.goal);
 
@@ -497,18 +497,17 @@ function Cardio({ state }: { state: TodayState }) {
                 role="radio"
                 data-testid={`cardio-intensity-${i}`}
                 aria-checked={intensity === i}
-                disabled={vigorousOff && i === "vigorous"}
                 onClick={() => setIntensity(i)}
-                className={`btn btn-sm flex-1 disabled:opacity-40 ${intensity === i ? "btn-primary" : "btn-outline"}`}
+                className={`btn btn-sm flex-1 ${intensity === i ? "btn-primary" : "btn-outline"}`}
               >
                 {t(i)}
               </button>
             ))}
           </div>
         </div>
-        {vigorousOff && safeToday && (
-          <p data-testid="cardio-vigorous-off" role="note" className="t-body mt-1 text-[11px]" style={{ color: "#ffd25a" }}>
-            {tState("vigorousOff", { why: blockedWhy(safeToday.vigorousBlockedBy) })}
+        {vigorousWarn && safeToday && (
+          <p data-testid="cardio-vigorous-warning" role="status" className="t-body mt-1 text-[11px]" style={{ color: "#ffd25a" }}>
+            {tState("vigorousLogged", { why: blockedWhy(safeToday.vigorousBlockedBy) })}
           </p>
         )}
         <p className={`t-body mt-1 flex flex-wrap items-center gap-2 text-[11px] ${invalid ? "text-warn" : "text-muted"}`}>
