@@ -2626,6 +2626,7 @@
     "done": "Importado",
     "checkFirst": "Revisa los archivos antes de importarlos.",
     "nothing": "No hay nada nuevo que importar: todo lo de los archivos ya estaba.",
+    "unreadable": "No se ha podido leer ninguno de los archivos, así que no hay nada que importar. Abajo tienes el motivo de cada uno.",
     "kinds": {
       "parte_diario_json": "copia de ParteDiario",
       "parte_diario_csv": "CSV de ParteDiario",

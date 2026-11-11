@@ -2626,6 +2626,7 @@
     "done": "Imported",
     "checkFirst": "Check the files before importing them.",
     "nothing": "Nothing new to import: everything in the files was already there.",
+    "unreadable": "None of the files could be read, so there's nothing to import. The reason for each one is below.",
     "kinds": {
       "parte_diario_json": "ParteDiario backup",
       "parte_diario_csv": "ParteDiario CSV",
