@@ -49,4 +49,6 @@ export const READY_USERS = {
   // menaje del usuario. Sin menús ni cocina al empezar.
   menuImport: "e2e-menu-import@fightlab.test",
   batch: "e2e-batch@fightlab.test",
+  // F17 (biblioteca de ejercicios): crea, edita y borra sus propios ejercicios.
+  exercises: "e2e-exercises@fightlab.test",
 };

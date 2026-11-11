@@ -30,15 +30,21 @@ function Frames({ images, name }: { images: ExerciseImage[]; name: string }) {
     const id = setInterval(() => setI((n) => (n + 1) % images.length), FRAME_MS);
     return () => clearInterval(id);
   }, [playing, images.length]);
-  const img = images[i] ?? images[0];
+  // Todos los fotogramas se cargan a la vez y se apilan: al alternar no hay parpadeo.
   return (
     <div className="relative overflow-hidden rounded-2xl bg-[#f4f7fb]">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={img.url} alt={`${name} · ${t("frame", { n: i + 1, total: images.length })}`}
-        className="mx-auto aspect-[4/3] w-full max-w-sm object-contain" />
+      <div className="relative mx-auto aspect-[4/3] w-full max-w-sm">
+        {images.map((img, n) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={img.url} src={img.url} aria-hidden={n !== i}
+            alt={n === i ? `${name} · ${t("frame", { n: n + 1, total: images.length })}` : ""}
+            className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-200 ${n === i ? "opacity-100" : "opacity-0"}`} />
+        ))}
+      </div>
       {images.length > 1 && (
         <button type="button" onClick={() => setPlaying((p) => !p)} aria-pressed={playing}
-          className="badge absolute bottom-2 right-2 min-h-11 bg-[rgba(2,4,10,0.75)] text-ink">
+          className="badge absolute bottom-2 right-2 min-h-11"
+          style={{ background: "rgba(2,4,10,0.8)", color: "var(--color-ink)" }}>
           {playing ? t("pause") : t("play")}
         </button>
       )}
@@ -54,9 +60,16 @@ function Ext({ href, children }: { href: string; children: React.ReactNode }) {
   );
 }
 
+const SOURCE_NAMES: Record<string, string> = { wger: "wger", everkinetic: "Everkinetic" };
+
 /** Pie de créditos: un renglón por autor y licencia de las imágenes, y el del texto. */
 export function ExerciseCredits({ exercise }: { exercise: Exercise }) {
   const t = useTranslations("exercises.detail");
+  // «Everkinetic» si el autor es la propia fuente; si no, «autor vía wger».
+  const who = (author: string, source: string) => {
+    const name = SOURCE_NAMES[source] ?? source;
+    return author === name ? author : t("via", { author, source: name });
+  };
   const seen = new Set<string>();
   const images = exercise.images.filter((img) => {
     const id = `${img.author}|${img.license}|${img.source_url}`;
@@ -72,18 +85,14 @@ export function ExerciseCredits({ exercise }: { exercise: Exercise }) {
       <ul className="t-body mt-1 space-y-1 text-xs text-muted">
         {images.map((img) => (
           <li key={`${img.author}|${img.source_url}`}>
-            <Ext href={img.source_url}>
-              {t("imageCredit", { author: img.author, source: img.source === "wger" ? "wger" : "Everkinetic", license: img.license })}
-            </Ext>{" "}
-            · <Ext href={img.license_url}>{img.license}</Ext>
+            <Ext href={img.source_url}>{t("imageCredit", { who: who(img.author, img.source) })}</Ext>
+            {" · "}<Ext href={img.license_url}>{img.license}</Ext>
             {img.modified ? <span> · {t("modified", { modified: img.modified })}</span> : null}
           </li>
         ))}
         {tc && tc.source !== "fightlab" && tc.author && tc.license && (
           <li>
-            <Ext href={tc.source_url ?? "https://wger.de/"}>
-              {t("textCredit", { author: tc.author, source: tc.source === "wger" ? "wger" : "Everkinetic", license: tc.license })}
-            </Ext>
+            <Ext href={tc.source_url ?? "https://wger.de/"}>{t("textCredit", { who: who(tc.author, tc.source) })}</Ext>
             {tc.license_url ? <> · <Ext href={tc.license_url}>{tc.license}</Ext></> : null}
             {tc.modified ? <span> · {t("modified", { modified: tc.modified })}</span> : null}
           </li>

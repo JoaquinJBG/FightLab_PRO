@@ -56,6 +56,7 @@ SETUPS = {
     "catalogue": ({}, {}),
     "menuImport": ({"timezone": "Europe/Madrid"}, {}),
     "batch": ({"timezone": "Europe/Madrid"}, {}),
+    "exercises": ({}, {}),
 }
 for key, email in READY.items():
     u, p = fresh(email)
