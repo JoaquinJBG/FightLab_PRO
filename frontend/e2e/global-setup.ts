@@ -51,9 +51,12 @@ SETUPS = {
     "history": ({}, {}),
     "historyScoff": ({}, {"scoff_yes_count": 2}),
     "today": ({"timezone": "Europe/Madrid"}, {}),
+    "routines": ({}, {}),
+    "gymLog": ({}, {}),
     "catalogue": ({}, {}),
     "menuImport": ({"timezone": "Europe/Madrid"}, {}),
     "batch": ({"timezone": "Europe/Madrid"}, {}),
+    "exercises": ({}, {}),
 }
 for key, email in READY.items():
     u, p = fresh(email)
@@ -110,6 +113,10 @@ MealPlan.objects.create(profile=p, start_date=today, days=[{"date": today.isofor
     {"meal": "breakfast", "dishes": [{"dish": "Avena con yogur", "items": []}]},
     {"meal": "lunch", "tupper": True, "dishes": [{"dish": "Arroz con pollo", "items": []}]},
 ]}])
+
+# F17 R (rutinas): una lesión de rodilla sin evaluar que pausa la sentadilla.
+from coaching.services import injury_add
+injury_add(UserProfile.objects.get(user__email=READY["routines"]), area="rodilla", status="active", exercises=["Sentadilla"])
 `;
   execFileSync(python, ["manage.py", "shell", "-c", code], { cwd: backend, stdio: "inherit" });
 }

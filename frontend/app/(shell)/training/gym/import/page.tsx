@@ -37,6 +37,16 @@ function Summary({ result }: { result: ImportResult }) {
       {result.sets.duplicates > 0 && (
         <p data-testid="import-duplicates" className="t-body mt-1 text-xs text-muted">{t("summary.duplicates", { n: result.sets.duplicates })}</p>
       )}
+      {result.routines && (
+        <p data-testid="import-routines" className="t-body mt-1 text-xs text-ink">
+          {t(result.dry_run ? "summary.routinesPreview" : "summary.routines", { n: result.routines.new })}
+          {result.routines.existing > 0 && ` · ${t("summary.routinesExisting", { n: result.routines.existing })}`}
+          {result.routines.unavailable > 0 && ` · ${t("summary.routinesUnavailable", { n: result.routines.unavailable })}`}
+          {!result.dry_run && result.routines.new > 0 && (
+            <> · <Link href="/training/routines" className="text-neon">{t("summary.routinesLink")}</Link></>
+          )}
+        </p>
+      )}
       {result.warnings.length > 0 && (
         <ul className="mt-3 flex flex-col gap-1 border-t border-[rgba(150,190,255,0.1)] pt-2.5">
           {result.warnings.map((w) => (

@@ -165,8 +165,10 @@ describe("Revisión semanal (en)", () => {
     expect(rows.map((r) => r.textContent)).toEqual([
       expect.stringMatching(/MMA.*Not in the plan/),
       expect.stringMatching(/Gym A.*Done$/),
-      expect.stringMatching(/Gym B.*Done on/),
+      expect.stringMatching(/Gym B.*Moved earlier: done on/),
     ]);
+    // R3-11: la lista dice que se adelantó y por qué cuenta
+    expect(screen.getByTestId("adherence-moved-note").textContent).toContain("weekly dose");
     expect(rows.every((r) => r.dataset.done === "true")).toBe(true);
   });
 

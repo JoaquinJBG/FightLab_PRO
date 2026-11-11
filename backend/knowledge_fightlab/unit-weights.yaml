@@ -1,0 +1,14 @@
+# FightLab convention: weight of one unit of foods sold by the unit.
+#
+# Part of FightLab's evidence annex, but not evidence: the app needs the weight of one unit to turn a
+# pack sold by units ("12 ud", "docena") into grams, so that the shopping list prices the whole pack
+# and not only the grams a recipe uses. The figure is a FightLab choice, not a measured value; check
+# the pack. Matching is by whole words, case and accents ignored (coach.tastes.matches). Review or
+# extend it here; coaching/chain_catalogue.py does not change. This content belongs to FightLab and
+# is licensed CC BY 4.0. Checked on 2026-11-09.
+
+label: FightLab convention
+checked_on: 2026-11-09
+foods:
+  - words: [huevo, huevos, egg, eggs]
+    grams: 63  # one egg with its shell, the smallest size L egg; size M eggs weigh less

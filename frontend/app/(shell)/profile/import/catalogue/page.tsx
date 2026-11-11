@@ -7,7 +7,7 @@ import { RatingBadge } from "@/components/catalogue/RatingBadge";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { formatNumber, intlLocale } from "@/lib/locale";
 import {
-  CATALOGUE_ACCEPT, CatalogueError, DEFAULT_CHAIN, MAX_FILE_MB, RATINGS, RATING_KEY,
+  CATALOGUE_ACCEPT, CatalogueError, type ChainProduct, DEFAULT_CHAIN, MAX_FILE_MB, RATINGS, RATING_KEY,
   useChainCatalogue, useDeleteCatalogue, useImportCatalogue, useSubstitutes,
   type Catalogue, type ImportResult, type RatingValue,
 } from "@/lib/chain-catalogue";
@@ -179,6 +179,7 @@ function CatalogueList() {
                 </p>
                 {p.equivalent_of && <p className="t-body text-[11px] text-muted">{t("list.equivalent", { food: p.equivalent_of })}</p>}
                 <div className="mt-1.5"><RatingBadge rating={p.rating} check={p.check} ruleKey={p.rule_key} grades={data.rule_grades} bare /></div>
+                <Why product={p} thresholds={data.thresholds} />
               </li>
             ))}
           </ul>
@@ -247,6 +248,40 @@ function SubstitutesCard() {
         </div>
       )}
     </section>
+  );
+}
+
+/** R3-6: por qué FightLab valora así un producto (qué semáforo está en rojo, su Nutri-Score...) y,
+ * si el archivo lo valoraba distinto, cuál era su valoración. */
+function Why({ product, thresholds }: { product: ChainProduct; thresholds: { key: string; value: number | string }[] }) {
+  const t = useTranslations("chainCatalogue.why");
+  const tc = useTranslations("chainCatalogue");
+  const rating = (value: string) => (RATINGS as readonly string[]).includes(value) ? tc(`rating.${RATING_KEY[value as RatingValue]}`) : value;
+  const locale = intlLocale(useLocale());
+  const drink = product.per === "100 ml";
+  const n = (v: number) => v.toLocaleString(locale, { maximumFractionDigits: 2 });
+  const lines = product.reasons.map((r) => {
+    const nutrient = r.code.startsWith("high_") ? r.code.slice(5) : null;
+    if (nutrient) {
+      const value = product[`${nutrient}_g` as "sugars_g" | "saturates_g" | "salt_g"];
+      const limit = thresholds.find((x) => x.key === `${drink ? "drink" : "food"}.${nutrient}.high`)?.value;
+      return t("high", {
+        nutrient: t(`nutrients.${nutrient}`), value: value != null ? n(value) : "?",
+        limit: typeof limit === "number" ? n(limit) : String(limit ?? "?"), per: product.per,
+      });
+    }
+    return t.has(`reasons.${r.code}`) ? t(`reasons.${r.code}`, r.params) : r.code;
+  });
+  const differs = product.file_rating && product.file_rating !== product.rating;
+  if (lines.length === 0 && !differs) return null;
+  return (
+    <details data-testid="catalogue-why" className="mt-1.5">
+      <summary className="t-label cursor-pointer text-muted">{t("title")}</summary>
+      <ul className="t-body mt-1 flex flex-col gap-0.5 text-[11px] text-ink">
+        {lines.map((line, i) => <li key={i} data-testid="catalogue-why-reason" data-code={product.reasons[i].code}>{line}</li>)}
+        {differs && <li data-testid="catalogue-why-file" className="text-muted">{t("file", { file: rating(product.file_rating!), engine: rating(product.rating) })}</li>}
+      </ul>
+    </details>
   );
 }
 

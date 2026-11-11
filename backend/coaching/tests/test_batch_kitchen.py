@@ -177,3 +177,35 @@ def test_diner_categories_are_annex_data_labelled_as_convention():
     assert "hake" in kitchen.categories()["pescado"] and "merluza" in kitchen.categories()["pescado"]
     assert kitchen.category_names()["seafood"] == "marisco"
     assert kitchen.expand("fish")[0] == "fish" and "tuna" in kitchen.expand("fish")
+
+
+@pytest.mark.django_db
+def test_r3_1_seven_days_with_tupper_dinners_and_a_diner_never_drop_the_dinner_silently(today_fixed):
+    """R3-1 (ronda 3 en el móvil): 7 días, tupper en comida y cena, batch, comensal «cena sin pescado
+    salvo gambas» y calamar en «No te gusta». De jueves a domingo salía sin cena y «Comprobado»."""
+    user = make_user()
+    client = client_for(user)
+    client.put(KITCHEN, {"equipment": FULL, "diners": [
+        {"name": "Pareja", "restrictions": [{"meals": ["dinner"], "exclude": ["pescado"], "allow": ["gambas"]}]}]}, format="json")
+    client.put("/api/v1/coach/tastes", {"disliked_foods": ["calamar"]}, format="json")
+    resp = client.post("/api/v1/coach/menu", {"start_date": TODAY.isoformat(), "days": 7, "meals": list(menus.MEALS),
+                                              "tupper_meals": ["lunch", "dinner"], "batch": True}, format="json")
+    assert resp.status_code in (201, 422), resp.json()
+    body = resp.json()
+    saved = body.get("days", [])
+    rejected = body.get("rejected", [])
+    # Cada día guardado trae las 4 comidas pedidas; los que no, salen rechazados con la comida que falta.
+    for day in saved:
+        assert {m["meal"] for m in day["meals"]} == set(menus.MEALS), day["date"]
+        assert day["check"]["ok"] is True
+    assert len(saved) + len(rejected) == 7
+    for r in rejected:
+        assert "missing" in r
+    # Con los platos de la comida como reserva, no falta la cena ningún día.
+    assert all("dinner" not in r["missing"] for r in rejected)
+
+
+def test_missing_meals_marks_a_day_without_a_requested_meal():
+    draft = {"date": "2026-11-05", "meals": [{"meal": "breakfast"}, {"meal": "lunch"}]}
+    assert menus.missing_meals(draft, ["breakfast", "lunch", "dinner"]) == ["dinner"]
+    assert menus.missing_meals(draft, ["breakfast"]) == []

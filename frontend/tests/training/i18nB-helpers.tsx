@@ -1,4 +1,5 @@
 import { render } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { NextIntlClientProvider } from "next-intl";
 import type { ReactElement } from "react";
 import { expect } from "vitest";
@@ -8,10 +9,14 @@ export const errors: unknown[] = [];
 
 export function renderEn(ui: ReactElement) {
   errors.length = 0;
+  // React Query para lo que lo usa (el selector de ejercicios, los récords): sin reintentos
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
-    <NextIntlClientProvider locale="en" messages={en} onError={(e) => { errors.push(e); }}>
-      {ui}
-    </NextIntlClientProvider>,
+    <QueryClientProvider client={qc}>
+      <NextIntlClientProvider locale="en" messages={en} onError={(e) => { errors.push(e); }}>
+        {ui}
+      </NextIntlClientProvider>
+    </QueryClientProvider>,
   );
 }
 

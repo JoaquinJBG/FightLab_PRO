@@ -483,10 +483,13 @@ def _checks(user, today: date, days: list[dict]) -> tuple[list[dict], dict]:
     """La comprobación del motor de cada día; sin objetivos de kcal (o sin un dato del perfil) el
     menú se guarda sin ella."""
     try:
-        result = menus.check_days(user, today, days)
+        # R3-8: los objetivos se guardan con sus reglas, como en un menú de FightLab, para que la
+        # pantalla enseñe su evidencia y no "convención".
+        targets = menus.menu_targets(user, today)
+        result = menus.check_days(user, today, days, targets)
     except (menus.MenuBlocked, ProfileIncomplete):
         return [], {}
-    return result["days"], result
+    return result["days"], {**result, "targets": targets}
 
 
 def save(user, parsed: ParsedMenu, today: date, *, replace_start: bool = False, keep_existing: bool = False) -> dict:

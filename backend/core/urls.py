@@ -21,6 +21,8 @@ urlpatterns = [
     path("api/v1/", include("activities.urls")),
     path("api/v1/", include("userstate.urls")),
     path("api/v1/", include("notifications.urls")),
+    path("api/v1/", include("exercises.urls")),
+    path("api/v1/", include("routines.urls")),
     path("api/v1/", include("tickets.urls")),
 ]
 

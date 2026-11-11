@@ -7,7 +7,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { intlLocale } from "@/lib/locale";
 import { TrainingIcon, InfoIcon } from "@/components/icons";
 import {
-  LIBRARY,
   FOCUS_EXERCISES,
   EXERCISE_KEYS,
   FOCUS_KEYS,
@@ -30,12 +29,35 @@ import {
   type ExerciseEntry,
   type LiveGym,
   type GymSession,
+  type SetEntry,
 } from "@/lib/gym";
-import { enqueueActivity, fetchServerActivities, pendingQueueItems, mergeByClientId } from "@/lib/activities";
+import {
+  detectRecords,
+  freeSuperset,
+  nextInSuperset,
+  nextSetType,
+  parseNum,
+  setLabels,
+  supersetGroups,
+  type RecordKind,
+} from "@/lib/gym-log";
+import {
+  exerciseId,
+  exercisesFromStart,
+  fetchRoutineStart,
+  recordFor,
+  updateRoutineFromSession,
+  useRecords,
+  type RoutineStart,
+} from "@/lib/gym-api";
+import { fetchServerActivities, firstReason, mergeByClientId, pendingQueueItems, saveActivityNow } from "@/lib/activities";
 import { useWeeklyPlan } from "@/lib/plan";
 import { gymStats, useLastStats } from "@/lib/strength";
 import { GYM_INCLUDES, type GymInclude } from "@/lib/session-check";
 import { VigorousWarning } from "@/components/safety/VigorousWarning";
+import { ExercisePicker } from "@/components/exercises/ExercisePicker";
+import { SetRow } from "@/components/gym/SetRow";
+import { PlateCalculator } from "@/components/gym/PlateCalculator";
 
 function fmtClock(sec: number) {
   const h = Math.floor(sec / 3600);
@@ -64,7 +86,21 @@ function beep(freq: number, dur: number, gain = 0.3) {
   } catch { /* sin audio */ }
 }
 
+/** Aviso del fin del descanso con la app en segundo plano o la pantalla apagada: el reloj es
+    de pared (como el de Deportes) y, si hay permiso, sale una notificación del service worker. */
+function notifyRestDone(text: string) {
+  try {
+    if (typeof document === "undefined" || !document.hidden) return;
+    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+    void navigator.serviceWorker?.ready.then((reg) => reg.showNotification(text, { tag: "flp-rest", silent: false }));
+  } catch { /* noop */ }
+}
+
 const REST_OPTS = [60, 90, 120];
+const EXERCISE_REST_OPTS = [0, 30, 45, 60, 75, 90, 120, 150, 180, 240, 300];
+const EFFORT_KEY = "flp_gym_effort";
+
+const blankSet = (): SetEntry => ({ kg: "", reps: "", done: false });
 
 function SessionInner() {
   const t = useTranslations("training.gymSession");
@@ -73,18 +109,21 @@ function SessionInner() {
   const locale = intlLocale(useLocale());
   const focusLabel = (f: string) => (FOCUS_KEYS[f] ? tg(`foci.${FOCUS_KEYS[f]}`) : f);
   const exLabel = (n: string) => (EXERCISE_KEYS[n] ? tg(`exercises.${EXERCISE_KEYS[n]}`) : n);
-  const groupLabel = (g: string) => (FOCUS_KEYS[g] ? tg(`foci.${FOCUS_KEYS[g]}`) : g);
   const router = useRouter();
   const params = useSearchParams();
   const focusParam = params.get("focus");
   // Sesión del plan de la semana (Mi rutina → "Empezar sesión A"): se rellena con sus ejercicios.
   const planParam = params.get("plan");
+  // F17: empezar desde una rutina (`?routine=<id>`, botón «Empezar entreno» de Rutinas).
+  const routineParam = Number(params.get("routine")) || null;
   const [planSession, setPlanSession] = useState<string | null>(null);
-  // Id del plan con el que ya se rellenó la sesión (-1: sesión restaurada, no se rellena).
   const [filledFrom, setFilledFrom] = useState<number | null>(null);
   const { data: planState } = useWeeklyPlan(planParam !== null);
 
   const [focus, setFocus] = useState<string | null>(null);
+  const [routine, setRoutine] = useState<{ id: number; title: string } | null>(null);
+  const [routineSafety, setRoutineSafety] = useState<RoutineStart["safety"] | null>(null);
+  const [routineError, setRoutineError] = useState(false);
   const [exercises, setExercises] = useState<ExerciseEntry[]>([]);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [now, setNow] = useState(0);
@@ -94,30 +133,38 @@ function SessionInner() {
   const [confirm, setConfirm] = useState<"finish" | "discard" | null>(null);
   const [undos, setUndos] = useState<{ ex: ExerciseEntry; index: number }[]>([]);
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Test de 1RM o pliometría: trabajo vigoroso que pide el aviso (spec §8.2)
   const [includes, setIncludes] = useState<GymInclude[]>([]);
+  const [effort, setEffort] = useState<"rpe" | "rir">("rpe");
+  const [menuFor, setMenuFor] = useState<number | null>(null);
+  const [notesOpen, setNotesOpen] = useState<Record<number, boolean>>({});
+  const [plates, setPlates] = useState<{ ei: number; kg: number | null } | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [nextHint, setNextHint] = useState<number | null>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // Guardar (F2): lo que dice el servidor si no acepta la sesión
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [updateRoutine, setUpdateRoutine] = useState(false);
 
-  // descanso entre series
+  // descanso entre series (por ejercicio, con el de por defecto)
   const [restDur, setRestDur] = useState(90);
   const [restUntil, setRestUntil] = useState<number | null>(null);
   const restDone = useRef(false);
 
-  // búsqueda de ejercicios
   const [adding, setAdding] = useState(false);
-  const [q, setQ] = useState("");
 
   /* ---------- historial para "Última vez"/PR: local + servidor (otro dispositivo) ---------- */
   const [gymHistory, setGymHistory] = useState<GymSession[]>([]);
   const [historyReady, setHistoryReady] = useState(false);
   useEffect(() => {
-    // Pintura inmediata desde local; el servidor sobreescribe al llegar.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setGymHistory(loadGymSessions());
     let alive = true;
     fetchServerActivities("GYM").then((server) => {
       if (!alive) return;
       setHistoryReady(true);
-      if (!server) return; // el servidor no respondió: se queda con lo local
+      if (!server) return;
       const pending = pendingQueueItems("GYM").map(gymSessionFromPending);
       const merged = mergeByClientId(loadGymSessions(), pending, server.map(gymSessionFromServer));
       merged.sort((a, b) => b.ts - a.ts);
@@ -133,23 +180,36 @@ function SessionInner() {
       const raw = localStorage.getItem(GYM_LIVE_KEY);
       if (raw) {
         const live: LiveGym = JSON.parse(raw);
-        // Lectura síncrona de localStorage tras montar (no existe en el
-        // servidor, evita el desajuste de hidratación).
-        if (live && Array.isArray(live.exercises) && Date.now() - live.savedAt < 12 * 3600_000) {
+        const sameRoutine = !routineParam || live?.routine?.id === routineParam;
+        if (live && Array.isArray(live.exercises) && Date.now() - live.savedAt < 12 * 3600_000 && sameRoutine) {
           // eslint-disable-next-line react-hooks/set-state-in-effect
           setFocus(live.focus);
           setExercises(live.exercises);
           setStartedAt(live.startedAt);
           setPlanSession(live.plan ?? null);
+          setRoutine(live.routine ?? null);
+          if (live.restUntil && live.restUntil > Date.now()) setRestUntil(live.restUntil);
           setFilledFrom(-1);
           restored = true;
         }
       }
       const rd = Number(localStorage.getItem(GYM_REST_KEY));
       if (REST_OPTS.includes(rd)) setRestDur(rd);
+      if (localStorage.getItem(EFFORT_KEY) === "rir") setEffort("rir");
     } catch { /* sesión corrupta */ }
 
-    if (!restored && planParam) {
+    if (!restored && routineParam) {
+      setFocus(null);
+      setExercises([]);
+      setStartedAt(Date.now());
+      fetchRoutineStart(routineParam)
+        .then((start) => {
+          setRoutine({ id: start.routine_id, title: start.title });
+          setRoutineSafety(start.safety ?? null);
+          setExercises(exercisesFromStart(start));
+        })
+        .catch(() => setRoutineError(true));
+    } else if (!restored && planParam) {
       setFocus(null);
       setPlanSession(planParam);
       setExercises([]);
@@ -157,12 +217,7 @@ function SessionInner() {
     } else if (!restored) {
       const f = focusParam && FOCUS_EXERCISES[focusParam] ? focusParam : null;
       setFocus(f);
-      setExercises(
-        (f ? FOCUS_EXERCISES[f] : []).map((name) => ({
-          name,
-          sets: [{ kg: "", reps: "", done: false }],
-        })),
-      );
+      setExercises((f ? FOCUS_EXERCISES[f] : []).map((name) => ({ name, sets: [blankSet()] })));
       setStartedAt(Date.now());
     }
     setNow(Date.now());
@@ -170,7 +225,6 @@ function SessionInner() {
   }, []);
 
   /* ---------- ejercicios de la sesión del plan (cargas del motor; sin carga, vacío) ---------- */
-  // Se ajusta el estado al llegar el plan, en el render (sin efecto): una sola vez por plan.
   const activePlan = planState?.active;
   const planSessionData = planSession && activePlan ? activePlan.sessions.find((s) => s.key === planSession) : undefined;
   if (planSessionData && activePlan && filledFrom === null) {
@@ -188,12 +242,15 @@ function SessionInner() {
   /* ---------- reloj de sesión (wall-clock) ---------- */
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
+    const wake = () => setNow(Date.now()); // al volver de segundo plano, al momento
+    document.addEventListener("visibilitychange", wake);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", wake); };
   }, []);
   const elapsed = startedAt ? Math.max(0, Math.floor((now - startedAt) / 1000)) : 0;
 
-  /* ---------- "Última vez" y récords: del servidor (`SetLog`), o del navegador si aún no están ---------- */
   const { data: serverStats } = useLastStats(exercises.map((x) => x.name));
+  // Récords de antes de este entreno (F17): para avisar al batirlos
+  const { data: records } = useRecords(exercises.map(exerciseId));
 
   /* ---------- persistencia de la sesión viva ---------- */
   useEffect(() => {
@@ -201,10 +258,10 @@ function SessionInner() {
     try {
       localStorage.setItem(
         GYM_LIVE_KEY,
-        JSON.stringify({ startedAt, focus, exercises, savedAt: Date.now(), plan: planSession } satisfies LiveGym),
+        JSON.stringify({ startedAt, focus, exercises, savedAt: Date.now(), plan: planSession, routine, restUntil } satisfies LiveGym),
       );
     } catch { /* sin espacio */ }
-  }, [exercises, focus, startedAt, phase, planSession]);
+  }, [exercises, focus, startedAt, phase, planSession, routine, restUntil]);
 
   /* ---------- wake lock ---------- */
   useEffect(() => {
@@ -225,66 +282,95 @@ function SessionInner() {
       beep(880, 0.15);
       setTimeout(() => beep(880, 0.2), 180);
       try { navigator.vibrate?.([150, 80, 150]); } catch { /* noop */ }
+      notifyRestDone(t("restOver"));
       setRestUntil(null);
     }
-  }, [restLeft, restUntil]);
+  }, [restLeft, restUntil, t]);
+  // Con la app en segundo plano el intervalo se frena: un temporizador al fin exacto del descanso.
+  useEffect(() => {
+    if (restUntil === null) return;
+    const id = setTimeout(() => setNow(Date.now()), Math.max(0, restUntil - Date.now()) + 50);
+    return () => clearTimeout(id);
+  }, [restUntil]);
 
-  function startRest() {
-    // Se dispara al marcar una serie hecha (evento de usuario), no durante el render.
+  function startRest(seconds: number) {
+    if (seconds <= 0) return;
     restDone.current = false;
     // eslint-disable-next-line react-hooks/purity
-    setRestUntil(Date.now() + restDur * 1000);
+    setRestUntil(Date.now() + seconds * 1000);
   }
   function changeRest(v: number) {
     setRestDur(v);
     try { localStorage.setItem(GYM_REST_KEY, String(v)); } catch { /* noop */ }
   }
+  function changeEffort(v: "rpe" | "rir") {
+    setEffort(v);
+    try { localStorage.setItem(EFFORT_KEY, v); } catch { /* noop */ }
+  }
+  const restOf = (x: ExerciseEntry) => (x.restS ?? restDur);
+
+  function showToast(text: string) {
+    setToast(text);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 4000);
+  }
 
   /* ---------- edición de ejercicios/series ---------- */
-  function updateSet(ei: number, si: number, field: "kg" | "reps", value: string) {
+  const patchExercise = (ei: number, patch: Partial<ExerciseEntry>) =>
+    setExercises((xs) => xs.map((x, i) => (i === ei ? { ...x, ...patch } : x)));
+  function patchSet(ei: number, si: number, patch: Partial<SetEntry>) {
     setExercises((xs) =>
-      xs.map((x, i) =>
-        i !== ei ? x : { ...x, sets: x.sets.map((s, j) => (j !== si ? s : { ...s, [field]: value.replace(/[^\d.,]/g, "").slice(0, 6) })) },
-      ),
+      xs.map((x, i) => (i !== ei ? x : { ...x, sets: x.sets.map((s, j) => (j !== si ? s : { ...s, ...patch })) })),
     );
   }
-  // logging fricción-mínima: un toque en "anterior: 80 kg × 8" copia esos
-  // valores a la serie actual (no toca `done`, por si el usuario quiere ajustarlos antes)
   function applyPreviousSet(ei: number, si: number, set: { kg: number; reps: number }) {
-    setExercises((xs) =>
-      xs.map((x, i) =>
-        i !== ei
-          ? x
-          : { ...x, sets: x.sets.map((s, j) => (j !== si ? s : { ...s, kg: String(set.kg), reps: String(set.reps) })) },
-      ),
-    );
+    patchSet(ei, si, { kg: String(set.kg).replace(".", ","), reps: String(set.reps) });
   }
   function toggleDone(ei: number, si: number) {
-    // se decide ANTES del setState (updater puro: seguro en StrictMode y con clics rápidos)
-    const willStart = !exercises[ei]?.sets[si]?.done;
-    setExercises((xs) =>
-      xs.map((x, i) =>
-        i !== ei
-          ? x
-          : { ...x, sets: x.sets.map((s, j) => (j !== si ? s : { ...s, done: !s.done })) },
-      ),
-    );
-    if (willStart) startRest(); // al COMPLETAR una serie arranca el descanso
+    const x = exercises[ei];
+    const set = x?.sets[si];
+    if (!x || !set) return;
+    const willComplete = !set.done;
+    let pr: RecordKind[] = [];
+    if (willComplete) {
+      const kg = parseNum(set.kg) ?? 0;
+      const reps = parseNum(set.reps) ?? 0;
+      const today = x.sets
+        .filter((s, j) => j !== si && s.done)
+        .map((s) => ({ kg: parseNum(s.kg) ?? 0, reps: parseNum(s.reps) ?? 0, type: s.type, rpe: parseNum(s.rpe), rir: parseNum(s.rir) }));
+      pr = detectRecords({ kg, reps, type: set.type, rpe: parseNum(set.rpe), rir: parseNum(set.rir) }, recordFor(records, x), today);
+      if (pr.length > 0) showToast(t("newRecord", { name: exLabel(x.name), what: pr.map((r) => t(`records.${r}`)).join(" · ") }));
+    }
+    patchSet(ei, si, { done: willComplete, pr: willComplete && pr.length ? pr : undefined });
+    if (!willComplete) return;
+    // Superserie: se pasa al siguiente del grupo; el descanso, tras el último (como Hevy)
+    const next = nextInSuperset(exercises, ei);
+    if (next && !next.last) {
+      setNextHint(next.index);
+      cardRefs.current[next.index]?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+      return;
+    }
+    setNextHint(null);
+    startRest(restOf(x));
   }
   function addSet(ei: number) {
     setExercises((xs) =>
       xs.map((x, i) => {
         if (i !== ei) return x;
         const prev = x.sets[x.sets.length - 1];
-        return { ...x, sets: [...x.sets, { kg: prev?.kg ?? "", reps: prev?.reps ?? "", done: false }] };
+        return { ...x, sets: [...x.sets, { kg: prev?.kg ?? "", reps: prev?.reps ?? "", done: false, ...(prev?.type && prev.type !== "warmup" ? { type: prev.type } : {}) }] };
       }),
     );
+  }
+  function removeSet(ei: number, si: number) {
+    setExercises((xs) => xs.map((x, i) => (i !== ei ? x : { ...x, sets: x.sets.filter((_, j) => j !== si) })));
   }
   function removeExercise(ei: number) {
     const ex = exercises[ei];
     if (!ex) return;
-    setExercises((xs) => xs.filter((_, i) => i !== ei));
+    setExercises((xs) => normaliseSupersets(xs.filter((_, i) => i !== ei)));
     setUndos((u) => [...u, { ex, index: ei }]);
+    setMenuFor(null);
     if (undoTimer.current) clearTimeout(undoTimer.current);
     undoTimer.current = setTimeout(() => setUndos([]), 8000);
   }
@@ -296,44 +382,90 @@ function SessionInner() {
     if (undoTimer.current) clearTimeout(undoTimer.current);
     undoTimer.current = setTimeout(() => setUndos([]), 8000);
   }
-  useEffect(() => () => { if (undoTimer.current) clearTimeout(undoTimer.current); }, []);
-  function addExercise(name: string) {
+  useEffect(() => () => {
+    if (undoTimer.current) clearTimeout(undoTimer.current);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+  }, []);
+  function addExercise(name: string, key: string | null) {
     setExercises((xs) =>
-      xs.some((x) => x.name === name) ? xs : [...xs, { name, sets: [{ kg: "", reps: "", done: false }] }],
+      xs.some((x) => (key ? x.key === key : x.name === name)) ? xs : [...xs, { name, key, sets: [blankSet()] }],
     );
-    setAdding(false);
-    setQ("");
+  }
+  function move(ei: number, dir: -1 | 1) {
+    setExercises((xs) => {
+      const to = ei + dir;
+      if (to < 0 || to >= xs.length) return xs;
+      const out = [...xs];
+      [out[ei], out[to]] = [out[to], out[ei]];
+      return out;
+    });
+    setMenuFor(null);
+  }
+  function linkWithNext(ei: number) {
+    setExercises((xs) => {
+      if (ei + 1 >= xs.length) return xs;
+      const group = xs[ei].superset ?? xs[ei + 1].superset ?? freeSuperset(xs);
+      return xs.map((x, i) => (i === ei || i === ei + 1 ? { ...x, superset: group } : x));
+    });
+    setMenuFor(null);
+  }
+  function unlink(ei: number) {
+    setExercises((xs) => normaliseSupersets(xs.map((x, i) => (i === ei ? { ...x, superset: null } : x))));
+    setMenuFor(null);
   }
 
   /* ---------- terminar y guardar ---------- */
   const parsedExercises = savedExercises(exercises);
-  const { totalSets, volume } = sessionTotals(parsedExercises);
+  // El resumen sale de lo mismo que se envía (`gymSets`): enseña lo que se guarda (F2)
+  const sentSets = gymSets(parsedExercises);
+  const { volume } = sessionTotals(parsedExercises);
+  const totalSets = sentSets.length;
   const incomplete = incompleteSets(exercises);
-  // `plan_session` e `includes` (aviso de sesión vigorosa) van en el detail: se les reserva su
-  // sitio para no pasar del tope del backend.
   const planned: Record<string, unknown> = {
     ...(planSession ? { plan_session: planSession } : {}),
+    ...(routine ? { routine_id: routine.id } : {}),
     ...(includes.length > 0 ? { includes } : {}),
   };
   const detailMax = MAX_DETAIL_CHARS - (Object.keys(planned).length > 0 ? JSON.stringify(planned).length : 0);
   const breakdownFits = buildActivityDetail(focus, volume, parsedExercises, detailMax).breakdown;
+  const recordsBroken = exercises.reduce((a, x) => a + x.sets.filter((s) => s.done && s.pr?.length).length, 0);
+  const title = focus ? t("workoutFocus", { focus: focusLabel(focus) }) : routine ? routine.title : planSession ? tp("session", { key: planSession }) : t("workout");
 
   function finish() {
-    if (incomplete.tickedEmpty + incomplete.unticked > 0) setConfirm("finish");
+    setMenuFor(null);
+    if (incomplete.tickedEmpty + incomplete.unticked + incomplete.impossible > 0) setConfirm("finish");
     else {
       setConfirm(null);
       setPhase("summary");
     }
   }
 
-  function save() {
-    // Se ejecuta al pulsar "Guardar" (evento de usuario), no durante el render.
-    // tope de 4 h: una sesión restaurada horas después no debe inflar la carga
+  async function save() {
+    if (saving) return;
+    setSaving(true);
+    setSaveError(null);
     const capped = Math.min(elapsed, 4 * 3600);
     const minutes = capped / 60;
     // eslint-disable-next-line react-hooks/purity
     const ts = Date.now();
     const clientId = crypto.randomUUID();
+    const { detail } = buildActivityDetail(focus, volume, parsedExercises, detailMax);
+    const result = await saveActivityNow({
+      client_id: clientId,
+      kind: "GYM",
+      title: (focus ?? routine?.title ?? "Gimnasio").slice(0, 80),
+      started_at: new Date(ts - capped * 1000).toISOString(),
+      duration_sec: Math.max(1, Math.round(capped)),
+      rpe,
+      detail: { ...detail, ...planned },
+      sets: sentSets,
+    });
+    if (result.status === "invalid") {
+      // El servidor no la acepta: se dice por qué y no se pierde nada de lo escrito
+      setSaveError(firstReason(result.errors) ?? t("saveRejected"));
+      setSaving(false);
+      return;
+    }
     pushGymSession({
       id: `${ts}`,
       client_id: clientId,
@@ -344,52 +476,52 @@ function SessionInner() {
       load: rpe ? Math.round(minutes * rpe) : null,
       volume,
       exercises: parsedExercises,
+      ...(result.status !== "queued" && result.id ? { serverId: result.id } : {}),
     });
-    // Si el desglose no cabe en el detail, las series siguen yendo enteras en `sets` (SetLog).
-    const { detail } = buildActivityDetail(focus, volume, parsedExercises, detailMax);
-    enqueueActivity({
-      client_id: clientId,
-      kind: "GYM",
-      title: focus ?? "Gimnasio",
-      started_at: new Date(ts - capped * 1000).toISOString(),
-      duration_sec: Math.max(1, Math.round(capped)),
-      rpe,
-      detail: { ...detail, ...planned },
-      sets: gymSets(parsedExercises),
-    });
+    if (routine && updateRoutine) await updateRoutineFromSession(routine.id, parsedExercises);
     localStorage.removeItem(GYM_LIVE_KEY);
-    router.push("/training/gym");
+    router.push(result.status === "queued" ? "/training/gym?saved=queued" : "/training/gym?saved=1");
   }
   function discard() {
     localStorage.removeItem(GYM_LIVE_KEY);
     router.push("/training/gym");
   }
 
-  const results = q.trim().length > 0
-    ? LIBRARY.flatMap((g) => g.items.filter((i) => exLabel(i).toLocaleLowerCase(locale).includes(q.toLocaleLowerCase(locale))).map((i) => ({ group: g.group, name: i })))
-    : LIBRARY.flatMap((g) => g.items.map((i) => ({ group: g.group, name: i })));
-
   /* ============================ RESUMEN ============================ */
   if (phase === "summary") {
     return (
-      <div className="pt-4">
+      <div className="pt-4 pb-8">
         <h1 className="t-display text-2xl text-ink">{t("howWasIt")}</h1>
         <div className="glass neon-edge mt-4 p-5">
-          <p className="t-title text-ink">{focus ? t("workoutFocus", { focus: focusLabel(focus) }) : t("gymWorkout")}</p>
+          <p className="t-title text-ink">{focus ? t("workoutFocus", { focus: focusLabel(focus) }) : routine ? routine.title : t("gymWorkout")}</p>
           <div className="mt-3 flex justify-between text-center">
             <div><p className="stat text-xl text-ink">{fmtClock(elapsed)}</p><p className="t-label text-muted">{t("duration")}</p></div>
-            <div><p className="stat text-xl text-ink">{totalSets}</p><p className="t-label text-muted">{t("setsLabel", { n: totalSets })}</p></div>
-            <div><p className="stat text-xl neon-text">{volume.toLocaleString(locale)}</p><p className="t-label text-muted">{t("totalKg")}</p></div>
+            <div><p data-testid="summary-sets" className="stat text-xl text-ink">{totalSets}</p><p className="t-label text-muted">{t("setsLabel", { n: totalSets })}</p></div>
+            <div><p data-testid="summary-volume" className="stat text-xl neon-text">{volume.toLocaleString(locale)}</p><p className="t-label text-muted">{t("totalKg")}</p></div>
           </div>
+          {recordsBroken > 0 && <p className="t-body mt-2 text-center text-xs text-neon">{t("recordsBroken", { n: recordsBroken })}</p>}
           {parsedExercises.length > 0 && (
-            <ul className="mt-3 flex flex-col gap-1 border-t border-[rgba(150,190,255,0.1)] pt-3">
-              {parsedExercises.map((x) => (
-                <li key={x.name} className="t-body flex justify-between text-xs text-muted">
-                  <span>{exLabel(x.name)}</span>
-                  <span className="text-ink">{t("setCount", { n: x.sets.length })}</span>
+            <ul data-testid="summary-list" className="mt-3 flex flex-col gap-2 border-t border-[rgba(150,190,255,0.1)] pt-3">
+              {parsedExercises.map((x, i) => (
+                <li key={`${x.key ?? x.name}-${i}`} className="t-body text-xs text-muted">
+                  <div className="flex justify-between">
+                    <span className="text-ink">{exLabel(x.name)}</span>
+                    <span className="text-ink">{t("setCount", { n: x.sets.length })}</span>
+                  </div>
+                  <p className="mt-0.5">
+                    {x.sets.map((s, j) => (
+                      <span key={j} className="mr-2 inline-block">
+                        {s.type && s.type !== "normal" ? `${t(`setTypeShort.${s.type}`)} ` : ""}
+                        {s.kg > 0 ? t("previewKg", { kg: s.kg.toLocaleString(locale), reps: s.reps }) : t("previewReps", { reps: s.reps })}
+                      </span>
+                    ))}
+                  </p>
                 </li>
               ))}
             </ul>
+          )}
+          {incomplete.impossible > 0 && (
+            <p role="status" className="t-body mt-2 text-[11px] text-[#ffd08a]">{t("impossibleNotSaved", { n: incomplete.impossible })}</p>
           )}
         </div>
 
@@ -434,9 +566,22 @@ function SessionInner() {
           <VigorousWarning params={includes.length > 0 ? { kind: "GYM", includes } : null} />
         </div>
 
+        {routine && (
+          <label className="glass mt-4 flex min-h-11 items-center gap-3 p-4">
+            <input type="checkbox" checked={updateRoutine} onChange={(e) => setUpdateRoutine(e.target.checked)} className="h-5 w-5" />
+            <span className="t-body text-sm text-ink">{t("updateRoutine", { title: routine.title })}</span>
+          </label>
+        )}
+
+        {saveError && (
+          <p role="alert" data-testid="save-error" className="t-body mt-4 rounded-xl border border-[rgba(255,107,107,0.4)] p-3 text-sm text-[#ff8a8a]">
+            {t("saveRejectedWhy", { reason: saveError })}
+          </p>
+        )}
+
         <div className="mt-4 flex gap-3">
           <button onClick={() => { setConfirm(null); setPhase("live"); }} className="btn btn-outline min-h-11 flex-1">{t("back")}</button>
-          <button onClick={save} disabled={totalSets === 0} className="btn btn-primary flex-1 min-h-11 disabled:opacity-60">{t("save")}</button>
+          <button onClick={() => void save()} disabled={totalSets === 0 || saving} className="btn btn-primary flex-1 min-h-11 disabled:opacity-60">{saving ? t("saving") : t("save")}</button>
         </div>
         {totalSets === 0 && <p className="t-body mt-2 text-center text-[11px] text-muted">{t("saveHint")}</p>}
         {totalSets > 0 && !breakdownFits && (
@@ -464,25 +609,51 @@ function SessionInner() {
       <button onClick={undoRemove} className="t-label min-h-11 shrink-0 px-2 text-neon">{t("undo")}</button>
     </div>
   );
+  const groups = supersetGroups(exercises);
+  const resting = restLeft !== null && restLeft > 0;
+  const paused = routineSafety?.paused ?? [];
+  const safetyReasons = (routineSafety?.reasons ?? []).map((r) => r.text).filter((x): x is string => !!x);
 
   return (
-    <div className="pt-4 pb-24">
+    // F18: con el descanso en marcha, sitio de sobra debajo para que la barra no tape «Terminar»
+    <div className={`pt-4 ${resting ? "pb-48" : "pb-24"}`}>
       <div className="flex items-center justify-between">
         <Link href="/training/gym" className="t-label inline-flex min-h-11 items-center text-muted">{t("backToGym")}</Link>
         <span className="stat text-lg text-neon tabular-nums">{fmtClock(elapsed)}</span>
       </div>
       <div className="mt-1 flex items-center gap-2">
         <span className="text-neon"><TrainingIcon className="h-6 w-6" /></span>
-        <h1 className="t-display text-2xl text-ink">{focus ? t("workoutFocus", { focus: focusLabel(focus) }) : planSession ? tp("session", { key: planSession }) : t("workout")}</h1>
+        <h1 className="t-display text-2xl text-ink">{title}</h1>
       </div>
 
-      {/* descanso entre series */}
-      <div className="glass mt-3 flex items-center justify-between p-3">
+      {routineError && <p role="alert" className="t-body mt-3 text-sm text-[#ffd08a]">{t("routineLoadError")}</p>}
+      {(routineSafety?.blocked || paused.length > 0 || safetyReasons.length > 0) && (
+        <div role="status" data-testid="routine-safety" className="glass mt-3 border border-[rgba(255,180,80,0.3)] p-3">
+          {routineSafety?.blocked && <p className="t-body text-sm text-[#ffd08a]">{t("routineBlocked")}</p>}
+          {paused.length > 0 && <p className="t-body text-sm text-[#ffd08a]">{t("routinePaused", { names: paused.map((p) => exLabel(p.name)).join(", ") })}</p>}
+          {safetyReasons.length > 0 && (
+            <ul className="mt-1 flex flex-col gap-0.5">
+              {safetyReasons.map((r, i) => <li key={i} className="t-body text-xs text-[#ffd08a]">{r}</li>)}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {/* descanso por defecto y RPE/RIR */}
+      <div className="glass mt-3 flex flex-wrap items-center justify-between gap-2 p-3">
         <span className="t-label text-muted">{t("restBetweenSets")}</span>
         <div className="flex gap-1.5">
           {REST_OPTS.map((v) => (
-            <button key={v} type="button" onClick={() => changeRest(v)} className={`badge min-h-11 min-w-11 justify-center ${restDur === v ? "badge-neon" : ""}`}>
+            <button key={v} type="button" onClick={() => changeRest(v)} aria-pressed={restDur === v} className={`badge min-h-11 min-w-11 justify-center ${restDur === v ? "badge-neon" : ""}`}>
               {v}s
+            </button>
+          ))}
+        </div>
+        <span className="t-label text-muted">{t("effortMode")}</span>
+        <div className="flex gap-1.5">
+          {(["rpe", "rir"] as const).map((m) => (
+            <button key={m} type="button" onClick={() => changeEffort(m)} aria-pressed={effort === m} className={`badge min-h-11 min-w-11 justify-center ${effort === m ? "badge-neon" : ""}`}>
+              {m.toUpperCase()}
             </button>
           ))}
         </div>
@@ -491,57 +662,101 @@ function SessionInner() {
       {/* ejercicios */}
       <div className="mt-4 flex flex-col gap-3">
         {exercises.map((x, ei) => {
-          // "Última vez" y récord: del servidor (`SetLog`) si tiene el ejercicio; si no, del
-          // historial de sesiones (servidor + este navegador).
           const fromHistory = exerciseStats(x.name, gymHistory);
           const fromSets = gymStats(x.name, serverStats);
           const stats = fromSets.fromServer
             ? { ...fromSets, prKg: [fromSets.prKg, fromHistory.prKg].reduce<number | null>((a, b) => (b === null ? a : a === null ? b : Math.max(a, b)), null) }
             : { ...fromHistory, e1rmKg: null };
           const name = exLabel(x.name);
+          const labels = setLabels(x.sets);
+          const group = x.superset != null ? groups[x.superset] : undefined;
+          const firstOpenKg = parseNum(x.sets.find((s) => !s.done)?.kg ?? x.sets[x.sets.length - 1]?.kg);
           return (
-            <Fragment key={x.name}>
+            <Fragment key={`${x.key ?? x.name}-${ei}`}>
             {undoAt === ei && undoBar}
-            <div className="glass p-4">
+            <div ref={(el) => { cardRefs.current[ei] = el; }} data-testid="exercise-card"
+              className={`glass p-4 ${group ? "border-l-4 border-l-[#c79bff]" : ""} ${nextHint === ei ? "neon-edge" : ""}`}>
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
+                  {group && <p className="t-label text-[11px] text-[#c79bff]">{t("supersetLabel", { group })}</p>}
                   <p className="t-title text-ink">{name}</p>
                   <p className="t-body text-[11px] text-muted">
-                    {stats.last ? t("lastTime", { last: stats.last }) : historyReady ? t("firstTime") : " "}
+                    {stats.last ? t("lastTime", { last: stats.last }) : historyReady ? t("firstTime") : " "}
                     {stats.prKg !== null ? ` · ${t("pr", { kg: stats.prKg })}` : ""}
                   </p>
                   {stats.e1rmKg !== null && (
-                    // Epley con las repeticiones en reserva: convención del coach, sin regla
                     <p data-testid="gym-e1rm" className="t-body mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
                       {t("e1rm", { kg: stats.e1rmKg })}
                       <span className="t-label inline-flex rounded-full border border-white/20 px-2 py-0.5 text-[10px] text-muted">{tp("conventionCoach")}</span>
                     </p>
                   )}
                 </div>
-                <button onClick={() => removeExercise(ei)} aria-label={t("removeExercise", { name })} className="t-label flex h-11 w-11 shrink-0 items-center justify-center text-muted hover:text-bad">✕</button>
+                <div className="flex shrink-0">
+                  <button type="button" onClick={() => setMenuFor(menuFor === ei ? null : ei)} aria-expanded={menuFor === ei}
+                    aria-label={t("exerciseMenu", { name })} className="t-label flex h-11 w-11 items-center justify-center text-muted">⋯</button>
+                  <button onClick={() => removeExercise(ei)} aria-label={t("removeExercise", { name })} className="t-label flex h-11 w-11 items-center justify-center text-muted hover:text-bad">✕</button>
+                </div>
               </div>
 
-              <div className="mt-3 grid grid-cols-[1.25rem_minmax(0,1fr)_minmax(0,1fr)_2.75rem] items-center gap-2">
-                <span className="t-label text-muted">#</span>
-                <span className="t-label text-muted">kg</span>
-                <span className="t-label text-muted">{t("reps")}</span>
+              {menuFor === ei && (
+                <div className="mt-2 flex flex-wrap gap-1.5" data-testid="exercise-actions">
+                  <button type="button" className="badge min-h-11" onClick={() => { setNotesOpen((o) => ({ ...o, [ei]: true })); setMenuFor(null); }}>{t("addNote")}</button>
+                  <button type="button" className="badge min-h-11" onClick={() => { setPlates({ ei, kg: firstOpenKg !== null && !Number.isNaN(firstOpenKg) ? firstOpenKg : null }); setMenuFor(null); }}>{t("plates.open")}</button>
+                  {ei + 1 < exercises.length && <button type="button" className="badge min-h-11" onClick={() => linkWithNext(ei)}>{t("supersetWithNext")}</button>}
+                  {x.superset != null && <button type="button" className="badge min-h-11" onClick={() => unlink(ei)}>{t("supersetRemove")}</button>}
+                  {ei > 0 && <button type="button" className="badge min-h-11" onClick={() => move(ei, -1)}>{t("moveUp")}</button>}
+                  {ei + 1 < exercises.length && <button type="button" className="badge min-h-11" onClick={() => move(ei, 1)}>{t("moveDown")}</button>}
+                </div>
+              )}
+
+              {(notesOpen[ei] || x.notes) && (
+                <textarea value={x.notes ?? ""} onChange={(e) => patchExercise(ei, { notes: e.target.value.slice(0, 1000) })}
+                  placeholder={t("notePlaceholder")} aria-label={t("noteAria", { name })} rows={2}
+                  className="field mt-2 w-full px-3 py-2 text-sm" />
+              )}
+
+              <label className="mt-2 flex items-center justify-between gap-2">
+                <span className="t-label text-[11px] text-muted">{t("exerciseRest")}</span>
+                <select value={x.restS ?? ""} aria-label={t("exerciseRestAria", { name })}
+                  onChange={(e) => patchExercise(ei, { restS: e.target.value === "" ? null : Number(e.target.value) })}
+                  className="field min-h-11 px-2 py-1 text-sm">
+                  <option value="">{t("restDefault", { s: restDur })}</option>
+                  {EXERCISE_REST_OPTS.map((v) => <option key={v} value={v}>{v === 0 ? t("restOff") : fmtClock(v)}</option>)}
+                </select>
+              </label>
+
+              <div className="mt-3 grid grid-cols-[2rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)_2.75rem] items-center gap-1.5">
+                <span className="t-label text-center text-muted">{t("setCol")}</span>
+                <span className="t-label text-center text-muted">kg</span>
+                <span className="t-label text-center text-muted">{t("reps")}</span>
+                <span className="t-label text-center text-muted">{effort.toUpperCase()}</span>
                 <span />
                 {x.sets.map((s, si) => {
                   const prev = previousSet(x.name, si, gymHistory);
-                  // Texto del chip "anterior" desde el catálogo (no `formatSetPreview`, que es literal)
                   const preview = prev
                     ? prev.kg > 0 ? t("previewKg", { kg: prev.kg, reps: prev.reps }) : t("previewReps", { reps: prev.reps })
                     : null;
                   return (
-                    <SetRow key={si} index={si} set={s} preview={preview}
-                      onKg={(v) => updateSet(ei, si, "kg", v)}
-                      onReps={(v) => updateSet(ei, si, "reps", v)}
+                    <SetRow key={si} index={si} label={labels[si]} set={s} effort={effort} preview={preview} records={s.done ? s.pr : undefined}
+                      onChange={(patch) => patchSet(ei, si, patch)}
+                      onCycleType={() => patchSet(ei, si, { type: nextSetType(s.type) })}
                       onDone={() => toggleDone(ei, si)}
                       onUsePreview={prev ? () => applyPreviousSet(ei, si, prev) : undefined} />
                   );
                 })}
               </div>
-              <button onClick={() => addSet(ei)} className="btn btn-tonal btn-sm mt-3 min-h-11 w-full">{t("addSet")}</button>
+              <div className="mt-3 flex gap-2">
+                <button onClick={() => addSet(ei)} className="btn btn-tonal btn-sm min-h-11 flex-1">{t("addSet")}</button>
+                {x.sets.length > 1 && !x.sets[x.sets.length - 1].done && (
+                  <button onClick={() => removeSet(ei, x.sets.length - 1)} aria-label={t("removeLastSet", { name })} className="btn btn-outline btn-sm min-h-11">−</button>
+                )}
+              </div>
+              {nextHint !== null && group && nextInSuperset(exercises, ei)?.index === nextHint && (
+                <button type="button" onClick={() => cardRefs.current[nextHint]?.scrollIntoView?.({ behavior: "smooth", block: "start" })}
+                  className="t-label mt-2 min-h-11 w-full text-left text-[#c79bff]">
+                  {t("supersetNext", { name: exLabel(exercises[nextHint]?.name ?? "") })}
+                </button>
+              )}
             </div>
             </Fragment>
           );
@@ -549,35 +764,19 @@ function SessionInner() {
         {undoAt === exercises.length && undoBar}
       </div>
 
-      {/* añadir ejercicio */}
+      {/* añadir ejercicio: el selector de la biblioteca (rama E) */}
       <div className="mt-4">
-        {adding ? (
-          <div className="glass p-4">
-            <div className="flex items-center justify-between">
-              <p className="t-label text-ink">{t("addExercise")}</p>
-              <button onClick={() => { setAdding(false); setQ(""); }} className="t-label min-h-11 px-2 text-muted">{t("close")}</button>
-            </div>
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("searchPlaceholder")} autoFocus
-              className="field mt-2 w-full px-4 py-3 text-sm" />
-            <div className="mt-2 flex max-h-56 flex-col gap-1 overflow-y-auto">
-              {results.map((r) => (
-                <button key={r.name} onClick={() => addExercise(r.name)} className="flex items-center justify-between rounded-xl px-3 py-2.5 text-left hover:bg-[rgba(255,255,255,0.05)]">
-                  <span className="t-body text-sm text-ink">{exLabel(r.name)}</span>
-                  <span className="t-body text-[11px] text-muted">{groupLabel(r.group)}</span>
-                </button>
-              ))}
-              {results.length === 0 && <p className="t-body py-3 text-center text-xs text-muted">{t("noResults")}</p>}
-            </div>
-          </div>
-        ) : (
-          <button onClick={() => setAdding(true)} className="btn btn-tonal min-h-11 w-full">{t("addExerciseBtn")}</button>
-        )}
+        <button onClick={() => setAdding(true)} className="btn btn-tonal min-h-11 w-full">{t("addExerciseBtn")}</button>
       </div>
+      {adding && (
+        <ExercisePicker multiple onClose={() => setAdding(false)} onSelect={(ex) => addExercise(ex.name, ex.key)} />
+      )}
 
       {confirm === "finish" ? (
         <ConfirmBar
           text={[
             incomplete.tickedEmpty > 0 && t("incompleteTicked", { n: incomplete.tickedEmpty }),
+            incomplete.impossible > 0 && t("impossibleNotSaved", { n: incomplete.impossible }),
             incomplete.unticked > 0 && t("incompleteUnticked", { n: incomplete.unticked }),
           ].filter(Boolean).join(" ")}
           confirmLabel={t("finishAnyway")}
@@ -589,9 +788,24 @@ function SessionInner() {
         <button onClick={finish} className="btn btn-primary mt-4 min-h-11 w-full">{t("finish")}</button>
       )}
 
+      {plates && (
+        <PlateCalculator initialKg={plates.kg} onClose={() => setPlates(null)}
+          onUse={(kg) => {
+            const ex = exercises[plates.ei];
+            const si = ex ? ex.sets.findIndex((s) => !s.done) : -1;
+            if (si >= 0) patchSet(plates.ei, si, { kg: String(kg).replace(".", ",") });
+          }} />
+      )}
+
+      {toast && (
+        <div role="status" data-testid="record-toast" className="fixed inset-x-0 top-3 z-50 flex justify-center px-3">
+          <p className="glass glow rounded-2xl px-4 py-2.5 text-sm text-ink">{toast}</p>
+        </div>
+      )}
+
       {/* chip flotante de descanso */}
-      {restLeft !== null && restLeft > 0 && (
-        <div className="fixed inset-x-0 bottom-24 z-40 flex justify-center px-2">
+      {resting && (
+        <div data-testid="rest-bar" className="fixed inset-x-0 bottom-24 z-40 flex justify-center px-2">
           <div className="glass glow flex items-center gap-3 rounded-full px-4 py-2.5">
             <span className="t-label text-muted">{t("rest")}</span>
             <span className="stat text-xl neon-text tabular-nums">{restLeft}s</span>
@@ -612,40 +826,11 @@ function SessionInner() {
   );
 }
 
-function SetRow({ index, set, preview, onKg, onReps, onDone, onUsePreview }: {
-  index: number;
-  set: { kg: string; reps: string; done: boolean };
-  preview: string | null;
-  onKg: (v: string) => void;
-  onReps: (v: string) => void;
-  onDone: () => void;
-  onUsePreview?: () => void;
-}) {
-  const t = useTranslations("training.gymSession");
-  const n = index + 1;
-  const inputCls = `field min-h-11 w-full min-w-0 px-2 py-2 text-center text-base ${set.done ? "opacity-60" : ""}`;
-  return (
-    <>
-      <span className="t-body text-sm text-muted">{n}</span>
-      <input value={set.kg} onChange={(e) => onKg(e.target.value)} inputMode="decimal" placeholder="—"
-        aria-label={t("weightAria", { n })} className={inputCls} />
-      <input value={set.reps} onChange={(e) => onReps(e.target.value)} inputMode="numeric" placeholder="—"
-        aria-label={t("repsAria", { n })} className={inputCls} />
-      <button type="button" onClick={onDone} aria-label={t("setDone", { n })} aria-pressed={set.done}
-        className="flex h-11 w-11 items-center justify-center rounded-full border text-sm transition-colors"
-        style={set.done
-          ? { background: "#43e8a0", borderColor: "transparent", color: "#03101c" }
-          : { borderColor: "rgba(150,190,255,0.25)", color: "var(--color-muted)" }}>
-        ✓
-      </button>
-      {preview && !set.done && (
-        <button type="button" onClick={onUsePreview} className="col-span-4 -mt-1 flex min-h-11 items-center text-left"
-          aria-label={t("previousAria", { preview })}>
-          <span className="t-body text-[11px] text-muted hover:text-neon">{t("previous", { preview })}</span>
-        </button>
-      )}
-    </>
-  );
+/** Tras quitar o separar: un grupo de superserie con un solo ejercicio deja de serlo. */
+function normaliseSupersets(xs: ExerciseEntry[]): ExerciseEntry[] {
+  const count = new Map<number, number>();
+  for (const x of xs) if (x.superset != null) count.set(x.superset, (count.get(x.superset) ?? 0) + 1);
+  return xs.map((x) => (x.superset != null && (count.get(x.superset) ?? 0) < 2 ? { ...x, superset: null } : x));
 }
 
 function ConfirmBar({ text, confirmLabel, cancelLabel, onConfirm, onCancel }: {

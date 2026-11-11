@@ -72,15 +72,23 @@ class Activity(models.Model):
         return f"Activity<{self.profile.user.email} {self.kind} @ {self.started_at:%Y-%m-%d}>"
 
 
+SET_TYPES = ("warmup", "normal", "drop", "failure")
+
+
 class SetLog(models.Model):
     """Una serie de una sesión de gimnasio (spec §6.5): lo mismo que guarda `ExerciseSet` del
     coach, para que `coach.strength` lea las series sin pasar por `Activity.detail`.
 
     `weight_kg` es nulo en los ejercicios con el peso corporal (como en el coach).
+
+    F17: `exercise_key` es la clave del contrato (`cat:<slug>` o `custom:<id>`; nula en lo antiguo).
+    Lo que es del ejercicio y no de la serie (`superset`, `notes` y `rest_s`) va en cada fila, como
+    en el CSV de Hevy: así una serie sola lleva todo lo que hace falta para rehacer el bloque.
     """
 
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name="sets")
     exercise = models.CharField(max_length=120)
+    exercise_key = models.CharField(max_length=160, null=True, blank=True, db_index=True)
     exercise_index = models.PositiveSmallIntegerField()
     set_index = models.PositiveSmallIntegerField()
     set_type = models.CharField(max_length=16, default="normal")
@@ -98,6 +106,10 @@ class SetLog(models.Model):
     )
     distance_km = models.DecimalField(max_digits=7, decimal_places=3, null=True, blank=True)
     duration_s = models.PositiveIntegerField(null=True, blank=True)
+    # Grupo de superserie dentro de la sesión (los bloques con el mismo número van juntos).
+    superset = models.PositiveSmallIntegerField(null=True, blank=True)
+    notes = models.TextField(blank=True, default="")
+    rest_s = models.PositiveIntegerField(null=True, blank=True, validators=[MaxValueValidator(3600)])
 
     class Meta:
         ordering = ("activity", "exercise_index", "set_index")
@@ -109,3 +121,19 @@ class SetLog(models.Model):
 
     def __str__(self):
         return f"SetLog<{self.exercise} {self.weight_kg}x{self.reps}>"
+
+
+class ImportedRoutine(models.Model):
+    """Rutina creada al importar un historial (una por título de entreno): reimportar no la
+    vuelve a crear. `routine_id` es el id que devolvió la API de rutinas (nulo si no se pudo)."""
+
+    profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="imported_routines")
+    source = models.CharField(max_length=32)
+    title = models.CharField(max_length=120)
+    routine_id = models.PositiveIntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["profile", "source", "title"], name="unique_imported_routine_title")
+        ]

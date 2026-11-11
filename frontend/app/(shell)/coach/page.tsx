@@ -218,7 +218,13 @@ export default function CoachPage() {
         <span className="badge">{t("badges.week", { au: metrics?.weekAU ?? 0 })}</span>
         {weight != null && <span className="badge">{formatNumber(locale, weight, { digits: 1 })} kg</span>}
         {weighDays != null && <span className="badge">{t("badges.weighIn", { days: weighDays })}</span>}
-        {recovery && <span className="badge" style={{ color: recovery.color }}>{recoveryText(recovery, t).label}</span>}
+        {/* R3-3: la cabecera sale del mismo estado de seguridad que el briefing: con un golpe en la
+            cabeza activo no dice «Listo para entrenar» */}
+        {ctx.noContact ? (
+          <span data-testid="coach-safety-badge" className="badge" style={{ color: "#ff5a6e" }}>{t("badges.headBlow")}</span>
+        ) : (
+          recovery && <span data-testid="coach-recovery-badge" className="badge" style={{ color: recovery.color }}>{recoveryText(recovery, t).label}</span>
+        )}
       </div>
 
       {/* Briefing por reglas con datos reales */}

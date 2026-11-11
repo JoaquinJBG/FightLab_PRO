@@ -69,6 +69,8 @@ INSTALLED_APPS = [
     "userstate",
     "coaching",
     "notifications",
+    "exercises",
+    "routines",
     "tickets.apps.TicketsConfig",
 ]
 

@@ -24,6 +24,18 @@
     "fightlab": {
       "title": "FightLab licence",
       "body": "FightLab Pro, by Joaquín J Beltrán García. Code under MIT (<license>LICENSE</license>); content under CC BY 4.0 (<licenseContent>LICENSE-CONTENT.md</licenseContent>)."
+    },
+    "exercises": {
+      "title": "Exercise library",
+      "body": "The images and some of the steps come from <wger>wger</wger> and <ek>Everkinetic</ek>, licensed <ccbysa>CC BY-SA</ccbysa> with each author credited. They are not under the code licence or FightLab's CC BY 4.0: they were only resized, converted to WebP or minified. The combat steps and a few others are FightLab's own (CC BY 4.0).",
+      "link": "See the credits for each image",
+      "pageTitle": "Exercise credits",
+      "intro": "Author, source and licence of every image and text in the library. Tap a name to open its page.",
+      "images": "Images",
+      "texts": "Texts",
+      "loading": "Loading the credits…",
+      "error": "Couldn't load the credits.",
+      "count": "{n, plural, one {# exercise with credits} other {# exercises with credits}}"
     }
   },
   "evidence": {
@@ -869,7 +881,9 @@
         "rpe": "RPE {n}",
         "au": "{n} AU",
         "deleteConfirm": "Delete everything?",
-        "untitled": "Sport"
+        "untitled": "Sport",
+        "more": "Show more sessions",
+        "offline": "No connection to the server: you're seeing what's saved on this device."
       },
       "weightNoteMissing": "Enter your weight to estimate kcal.",
       "weightNoteNone": "Kcal aren't estimated without a logged weight.",
@@ -962,7 +976,9 @@
         "delete": "Delete",
         "session": "Session",
         "withPartner": "with {partner}",
-        "deleteConfirm": "Delete everything?"
+        "deleteConfirm": "Delete everything?",
+        "more": "Show more sessions",
+        "offline": "No connection to the server: you're seeing what's saved on this device."
       },
       "chat": {
         "open": "Open coach chat",
@@ -1015,6 +1031,14 @@
         "review": {
           "title": "Weekly review",
           "sub": "Adherence, weight, calories and deload, with their rules"
+        },
+        "routines": {
+          "title": "Routines",
+          "sub": "Your routines, folders and classic programs"
+        },
+        "exercises": {
+          "title": "Exercises",
+          "sub": "Library with images, steps and your own exercises"
         }
       }
     },
@@ -1152,7 +1176,14 @@
         "row": "Row",
         "tricepsExtensionShort": "Triceps extension"
       },
-      "importLink": "Import from Hevy or CSV"
+      "importLink": "Import from Hevy or CSV",
+      "more": "Show more workouts",
+      "historyOffline": "No connection to the server: you're seeing what's saved on this device.",
+      "pendingUpload": "waiting to upload",
+      "savedOk": "Workout saved to your account.",
+      "savedQueued": "Workout saved on this device: it will upload as soon as there's a connection.",
+      "routinesLink": "Routines",
+      "recordsLink": "Records and progress"
     },
     "gymSession": {
       "loading": "Loading…",
@@ -1211,7 +1242,80 @@
       "includes": {
         "one_rm_test": "A 1RM test",
         "plyometrics": "Plyometrics (jumps)"
-      }
+      },
+      "setTypeAria": "Set {n} type: {type}. Tap to change it",
+      "setTypes": {
+        "normal": "Normal",
+        "warmup": "Warm-up",
+        "drop": "Drop set",
+        "failure": "To failure"
+      },
+      "setTypeShort": {
+        "normal": "N",
+        "warmup": "W",
+        "drop": "D",
+        "failure": "F"
+      },
+      "rpeAria": "RPE, set {n}",
+      "rirAria": "RIR, set {n}",
+      "issues": {
+        "kgBad": "Unreadable weight: type a number with a single decimal point.",
+        "kgMax": "More than 1000 kg is not possible: check the weight. This set won't be saved like this.",
+        "repsMax": "More than 1000 reps is not possible: check the reps.",
+        "rpeRange": "RPE goes from 1 to 10.",
+        "rirRange": "RIR goes from 0 to 10.",
+        "kgHigh": "More than 500 kg: are you sure? Check for an extra digit.",
+        "repsHigh": "More than 100 reps: are you sure?"
+      },
+      "records": {
+        "weight": "Weight record",
+        "e1rm": "e1RM record",
+        "volume": "Volume record",
+        "reps": "Rep record at that weight"
+      },
+      "newRecord": "New record on {name}: {what}",
+      "recordsBroken": "{n, plural, one {# record broken} other {# records broken}}",
+      "restOver": "Rest over: next set",
+      "saving": "Saving…",
+      "saveRejected": "The server didn't accept the workout.",
+      "saveRejectedWhy": "Not saved: {reason} Fix it and save again; nothing was lost.",
+      "impossibleNotSaved": "{n} set(s) with an impossible weight or reps won't be saved.",
+      "updateRoutine": "Update the routine “{title}” with today's workout",
+      "routineLoadError": "Couldn't load the routine. You can add the exercises by hand.",
+      "routineBlocked": "Today the coach doesn't recommend training: check the safety notice in Today before starting.",
+      "routinePaused": "Paused because of an injury: {names}. Skip or swap them.",
+      "effortMode": "Effort per set",
+      "supersetLabel": "Superset {group}",
+      "supersetWithNext": "Superset with next",
+      "supersetRemove": "Remove from superset",
+      "supersetNext": "Next in the superset: {name} →",
+      "exerciseMenu": "Options for {name}",
+      "addNote": "Note",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "notePlaceholder": "Exercise note (grip, machine, discomfort…)",
+      "noteAria": "Note for {name}",
+      "exerciseRest": "Rest for this exercise",
+      "exerciseRestAria": "Rest for {name}",
+      "restDefault": "Default ({s} s)",
+      "restOff": "No rest",
+      "setCol": "Set",
+      "removeLastSet": "Remove the last set of {name}",
+      "plates": {
+        "open": "Plates",
+        "title": "Plate calculator",
+        "close": "Close ✕",
+        "target": "Total weight (kg)",
+        "bar": "Bar (kg)",
+        "available": "Available plates (kg)",
+        "empty": "Type the total weight to see the plates.",
+        "belowBar": "The weight is less than the bar ({bar} kg).",
+        "perSide": "On each side",
+        "barOnly": "Bar only",
+        "remainder": "{kg} kg per side missing with these plates: load {loaded} kg.",
+        "use": "Use {kg} kg for the set"
+      },
+      "removeSet": "Remove set {n}"
     },
     "myRoutine": {
       "back": "← Training",
@@ -1309,13 +1413,84 @@
         "monotony": "How similar your daily loads are (mean/deviation over the last 7 days). Very high = little variation, more risk; alternate hard and easy days.",
         "strain": "Strain = weekly load × monotony. It measures your total accumulated stress for the week."
       }
+    },
+    "history": {
+      "rejected": "Couldn't save “{title}”: {reason}",
+      "droppedSets": "“{title}” was saved without {n} set(s) with impossible values.",
+      "untitled": "Session",
+      "noReason": "the server gave no reason.",
+      "dismiss": "Dismiss"
+    },
+    "calendar": {
+      "prev": "Previous month",
+      "next": "Next month",
+      "offline": "No connection to the server",
+      "trainedDays": "{n, plural, =0 {No training days} one {# training day} other {# training days}}",
+      "dayAria": "{date}: {n, plural, one {# session} other {# sessions}}",
+      "kinds": {
+        "GYM": "Gym",
+        "MMA": "MMA",
+        "SPORT": "Sport"
+      },
+      "loading": "Loading…",
+      "untitled": "Session"
+    },
+    "gymHistory": {
+      "back": "← Gym",
+      "notFound": "This workout doesn't exist or was deleted.",
+      "titleAria": "Workout title",
+      "imported": "imported",
+      "exercises": "exercises",
+      "notePlaceholder": "Workout note",
+      "noteAria": "Workout note",
+      "edit": "Edit",
+      "editHint": "Sets without reps or with impossible values aren't saved.",
+      "addSet": "+ Set",
+      "delete": "Delete workout",
+      "deleteConfirm": "Delete this workout? This can't be undone.",
+      "saveError": "Couldn't save the change.",
+      "deleteError": "Couldn't delete it. Try again."
+    },
+    "gymRecords": {
+      "back": "← Gym",
+      "title": "Records",
+      "intro": "Your best marks per exercise, not counting warm-ups. e1RM is an estimate.",
+      "search": "Search exercise",
+      "loading": "Loading…",
+      "error": "Couldn't load the records.",
+      "empty": "No records yet: log a workout.",
+      "line": "Weight {weight} kg · e1RM {e1rm} kg · best set {volume} kg · {sessions, plural, one {# session} other {# sessions}}"
+    },
+    "gymProgress": {
+      "back": "← Records",
+      "title": "Progress",
+      "metric": "What to show",
+      "metrics": {
+        "e1rm": "e1RM",
+        "weight": "Heaviest weight",
+        "volume": "Volume",
+        "bestSet": "Best set (kg × reps)"
+      },
+      "loading": "Loading…",
+      "error": "Couldn't load the progress.",
+      "empty": "No working sets of this exercise yet.",
+      "e1rmNote": "e1RM: Epley with reps in reserve, an estimate.",
+      "lastBest": "Best set of the last session ({date}): {kg} kg × {reps}",
+      "records": "Records",
+      "maxWeight": "Heaviest weight",
+      "bestE1rm": "Best e1RM",
+      "bestSetVolume": "Best set (volume)",
+      "bestSessionVolume": "Best session (volume)",
+      "repsByWeight": "Most reps at each weight",
+      "reps": "{n} reps"
     }
   },
   "coach": {
     "title": "Coach",
     "badges": {
       "week": "Week {au} AU",
-      "weighIn": "Weigh-in in {days} d"
+      "weighIn": "Weigh-in in {days} d",
+      "headBlow": "Blow to the head: no contact or hard training"
     },
     "recovery": {
       "cuidado": {
@@ -2007,7 +2182,8 @@
       "no_all_out_sprints": "SIT and REHIT need every PAR-Q+ answer to be NO",
       "no_contact": "no contact until a clinician clears you",
       "no_training": "no training until a doctor reviews it",
-      "prerequisites": "they need 4 weeks of regular moderate cardio without symptoms"
+      "prerequisites": "they need 4 weeks of regular moderate cardio without symptoms",
+      "head_blow_return": "nothing vigorous after the blow to the head until a clinician clears you"
     },
     "cardio": {
       "dose": "{minutes} min a week of moderate cardio",
@@ -2134,8 +2310,10 @@
       "intakeNoTarget": "You ate {mean} kcal on average over {days, plural, one {# logged day} other {# logged days}}.",
       "intakeNone": "No intake logged this week: add it in the check-in to compare it with your target.",
       "intakeBlocked": "For safety, what you eat is not compared with a calorie target.",
-      "doneOn": "Done on {date}",
-      "extra": "Not in the plan"
+      "extra": "Not in the plan",
+      "doneEarlier": "Moved earlier: done on {date}",
+      "doneLater": "Made up: done on {date}",
+      "movedNote": "A session moved to another day of the week counts for the planned one: the plan asks for a weekly dose."
     },
     "weight": {
       "ok": "Trend: {kg} kg average over the last week; {rate} kg a week ({pct} % a week) over {days} days.",
@@ -2321,7 +2499,8 @@
       "empty": "no dish fitted your tastes",
       "repeats": "it repeated a dish",
       "blocking": "{kind}: {entry}",
-      "unknown": "unknown foods: {list}"
+      "unknown": "unknown foods: {list}",
+      "missing": "{meal} missing: no dish left that every diner can eat, fits a lunchbox if you asked for one and does not repeat within 7 days"
     },
     "flags": {
       "title": "Notes from your tastes",
@@ -2576,7 +2755,12 @@
       "sessionsUpdated": "{n, plural, one {# session extended} other {# sessions extended}}",
       "range": "From {first} to {last}",
       "importer": "Read as {name}",
-      "nothingNew": "Nothing new: everything in the file was already there."
+      "nothingNew": "Nothing new: everything in the file was already there.",
+      "routines": "{n, plural, =0 {No new routines} one {# new routine, one per workout title} other {# new routines, one per workout title}}",
+      "routinesPreview": "{n, plural, =0 {No routines will be created} one {# routine will be created, one per workout title} other {# routines will be created, one per workout title}}",
+      "routinesExisting": "{n} already there",
+      "routinesUnavailable": "{n} couldn't be created: it will retry on the next import",
+      "routinesLink": "See routines"
     },
     "warnings": {
       "template_rows": "{n, plural, one {# empty template row} other {# empty template rows}} (sets never filled in): not imported.",
@@ -3081,6 +3265,27 @@
       "too_many_rows": "The file has more than {max} rows.",
       "throttled": "Too many attempts in a row. Wait a minute.",
       "server": "Could not finish. Try again."
+    },
+    "why": {
+      "title": "Why this rating",
+      "high": "{nutrient} in red: {value} g per {per} (over {limit} g, FSA traffic light)",
+      "nutrients": {
+        "sugars": "Sugars",
+        "saturates": "Saturated fat",
+        "salt": "Salt"
+      },
+      "reasons": {
+        "nutriscore": "Nutri-Score {grade}",
+        "fats_nutriscore_only": "Oil or fat: only the Nutri-Score counts, not the saturated-fat light",
+        "fruit_sugar": "The sugar comes from fruit: it does not count as red",
+        "no_data": "Label data (sugars, salt or saturates) missing to rate it",
+        "syrup": "In syrup: fair",
+        "energy_mismatch": "The label's kcal do not match its macros (more than 15 % apart)",
+        "alcohol": "Alcoholic drink: not part of the plan",
+        "baby_food": "Baby food: not part of the plan",
+        "not_for_plan": "Not a food for the plan"
+      },
+      "file": "The file rated it “{file}”; FightLab rates it again with its engine: “{engine}”."
     }
   },
   "kitchen": {
@@ -3120,6 +3325,264 @@
       "addRestriction": "Add another restriction",
       "add": "Add diner",
       "categories": "Words that cover groups: {list}. The list is FightLab's and is not complete: what it does not name is not flagged."
+    }
+  },
+  "exercises": {
+    "muscles": {
+      "chest": "Chest",
+      "lats": "Lats",
+      "upper_back": "Upper back",
+      "traps": "Traps",
+      "lower_back": "Lower back",
+      "front_delts": "Front delts",
+      "side_delts": "Side delts",
+      "rear_delts": "Rear delts",
+      "biceps": "Biceps",
+      "triceps": "Triceps",
+      "forearms": "Forearms",
+      "abs": "Abs",
+      "obliques": "Obliques",
+      "quads": "Quads",
+      "hamstrings": "Hamstrings",
+      "glutes": "Glutes",
+      "adductors": "Adductors",
+      "abductors": "Abductors",
+      "calves": "Calves",
+      "neck": "Neck",
+      "hip_flexors": "Hip flexors",
+      "full_body": "Full body",
+      "cardio": "Cardio"
+    },
+    "equipment": {
+      "barbell": "Barbell",
+      "dumbbell": "Dumbbells",
+      "kettlebell": "Kettlebell",
+      "machine": "Machine",
+      "cable": "Cable",
+      "smith_machine": "Smith machine",
+      "ez_bar": "EZ bar",
+      "bench": "Bench",
+      "pull_up_bar": "Pull-up bar",
+      "band": "Resistance band",
+      "plate": "Plate",
+      "medicine_ball": "Medicine ball",
+      "suspension": "Suspension (TRX)",
+      "heavy_bag": "Heavy bag",
+      "jump_rope": "Jump rope",
+      "mat": "Mat",
+      "bodyweight": "Bodyweight",
+      "other": "Other"
+    },
+    "categories": {
+      "strength": "Strength",
+      "mobility": "Mobility",
+      "combat": "Combat",
+      "cardio": "Cardio"
+    },
+    "picker": {
+      "title": "Add exercise",
+      "titleMultiple": "Add exercises",
+      "search": "Search exercise",
+      "searchAria": "Search the exercise library",
+      "muscleFilter": "Muscle",
+      "equipmentFilter": "Equipment",
+      "allMuscles": "All muscles",
+      "allEquipment": "All equipment",
+      "recent": "Recent",
+      "all": "All exercises",
+      "results": "{n, plural, one {# exercise} other {# exercises}}",
+      "noResults": "No exercise matches that search.",
+      "loading": "Loading the library…",
+      "error": "Couldn't load the exercise library.",
+      "retry": "Retry",
+      "close": "Close",
+      "add": "Add",
+      "addN": "Add ({n})",
+      "create": "Create exercise",
+      "createNamed": "Create “{name}”",
+      "custom": "Custom",
+      "info": "Open {name}",
+      "select": "Choose {name}"
+    },
+    "form": {
+      "titleNew": "New exercise",
+      "titleEdit": "Edit exercise",
+      "name": "Name",
+      "namePlaceholder": "For example, Meadows row",
+      "primary": "Primary muscle",
+      "secondary": "Secondary muscles (optional)",
+      "equipment": "Equipment",
+      "notes": "Notes (optional)",
+      "notesPlaceholder": "How you do it, machine settings…",
+      "save": "Save",
+      "create": "Create and add",
+      "createOnly": "Create",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "nameRequired": "Give the exercise a name.",
+      "primaryRequired": "Choose at least one primary muscle.",
+      "error": "Couldn't save. Try again."
+    },
+    "detail": {
+      "back": "Back",
+      "notFound": "This exercise doesn't exist or is gone.",
+      "error": "Couldn't load the exercise.",
+      "primary": "Primary muscle",
+      "secondary": "Secondary",
+      "equipment": "Equipment",
+      "category": "Type",
+      "steps": "How to do it",
+      "noSteps": "No written steps for this exercise yet.",
+      "stepsInEnglish": "These steps are only in English for now.",
+      "stepsInSpanish": "These steps are only in Spanish for now.",
+      "notes": "Your notes",
+      "noImage": "No openly licensed image yet.",
+      "pause": "Stop the animation",
+      "play": "Animate",
+      "frame": "Frame {n} of {total}",
+      "credits": "Credits",
+      "imageCredit": "Image: {who}",
+      "textCredit": "Text: {who}",
+      "ownText": "Text: FightLab · CC BY 4.0",
+      "modified": "Changes: {modified}",
+      "custom": "Custom exercise",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirm": "Delete “{name}”? Sets you already logged keep their name.",
+      "deleteYes": "Yes, delete",
+      "deleteError": "Couldn't delete. Try again.",
+      "via": "{author} via {source}"
+    },
+    "library": {
+      "title": "Exercises",
+      "sub": "The app's library and your own exercises.",
+      "count": "{n, plural, one {# exercise} other {# exercises}}"
+    }
+  },
+  "routines": {
+    "back": "← Training",
+    "title": "Routines",
+    "subtitle": "Your routines in folders, no limits. Start a workout from any of them.",
+    "new": "New routine",
+    "create": "Create",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "edit": "Edit",
+    "start": "Start workout",
+    "startShort": "Start",
+    "loading": "Loading…",
+    "loadError": "Couldn't load your routines. Check your connection and try again.",
+    "saveError": "Couldn't save. Check the data and try again.",
+    "notFound": "That routine doesn't exist or isn't yours.",
+    "empty": {
+      "title": "No routines yet",
+      "body": "Build one from scratch or load a classic program and edit it your way."
+    },
+    "card": {
+      "empty": "No exercises yet",
+      "counts": "{exercises, plural, one {# exercise} other {# exercises}} · {sets, plural, one {# set} other {# sets}}",
+      "edited": "Edited by you",
+      "menu": "More options for {name}",
+      "moveTo": "Folder",
+      "deleteConfirm": "Delete “{name}”? This can't be undone."
+    },
+    "folders": {
+      "new": "New folder",
+      "none": "No folder",
+      "namePlaceholder": "Folder name",
+      "menu": "Options for folder {name}",
+      "rename": "Rename",
+      "delete": "Delete folder",
+      "deleteTitle": "What should happen to the routines in “{name}”?",
+      "deleteKeep": "Delete only the folder (routines stay, without a folder)",
+      "deleteAll": "Delete the folder and its {n, plural, one {# routine} other {# routines}}",
+      "empty": "Empty folder.",
+      "plan": "From the plan",
+      "program": "Program"
+    },
+    "reorder": {
+      "label": "Move",
+      "drag": "Drag to move {name}",
+      "up": "Move {name} up",
+      "down": "Move {name} down"
+    },
+    "editor": {
+      "newTitle": "New routine",
+      "editTitle": "Edit routine",
+      "titlePlaceholder": "Routine name",
+      "titleRequired": "Give the routine a name.",
+      "routineNotes": "Routine notes",
+      "folder": "Folder",
+      "noExercises": "Add exercises to plan their sets.",
+      "addExercise": "Add exercise",
+      "addSet": "Add set",
+      "remove": "Remove",
+      "removeExercise": "Remove {name} from the routine",
+      "removeSet": "Remove set {n}",
+      "notesPlaceholder": "Exercise notes",
+      "notesFor": "Notes for {name}",
+      "rest": "Rest",
+      "restOff": "No timer",
+      "effortToggle": "Plan effort as {mode}",
+      "supersetLabel": "Superset {label}",
+      "supersetWithNext": "Superset with next",
+      "supersetRemove": "Remove from superset",
+      "save": "Save",
+      "saved": "Saved",
+      "saving": "Saving…",
+      "saveAndStart": "Save and start",
+      "invalidNumber": "Type a number (comma or dot, only once).",
+      "outOfRange": "It has to be between {min} and {max}.",
+      "setTypeFor": "Type of set {n} of {name}",
+      "repsFor": "Reps for set {n}",
+      "repsMaxFor": "Max reps for set {n}",
+      "kgFor": "Kilos for set {n}",
+      "rirFor": "RIR for set {n}",
+      "rpeFor": "RPE for set {n}",
+      "col": {
+        "set": "Set",
+        "reps": "Reps",
+        "max": "Max"
+      },
+      "setType": {
+        "warmup": "Warm-up",
+        "normal": "Normal",
+        "drop": "Drop set",
+        "failure": "To failure"
+      },
+      "setTypeShort": {
+        "warmup": "W",
+        "normal": "N",
+        "drop": "D",
+        "failure": "F"
+      },
+      "effortUse": "Use {mode}"
+    },
+    "programs": {
+      "title": "Classic programs",
+      "sub": "Full body, upper/lower and push/pull/legs, ready to load",
+      "back": "← Routines",
+      "intro": "Each program is copied as your own routines in a new folder: then change them however you like.",
+      "days": "{n} days/wk",
+      "load": "Load as my routines",
+      "loading": "Loading…",
+      "level": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      }
+    },
+    "plan": {
+      "title": "Plan routines",
+      "intro": "The coach's plan turned into routines. You can edit them: when a new plan arrives, your changes are never lost without asking.",
+      "editedWarning": "There's a new plan and you changed {names}. What should we do?",
+      "keep": "Keep my version and add the new ones",
+      "overwrite": "Replace with the new plan's",
+      "regenerate": "Regenerate from the plan",
+      "blocked": "The coach doesn't recommend training today: plan routines won't be regenerated until the block is lifted.",
+      "syncError": "Couldn't build the plan routines.",
+      "syncing": "Building the plan routines…"
     }
   }
 }

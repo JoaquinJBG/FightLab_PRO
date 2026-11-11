@@ -171,6 +171,23 @@ describe("Catálogo de la cadena (en)", () => {
     expectClean(container, ["Mercadona", "Pechuga inventada de ave", "Galleta inventada", "pechuga de pollo, cruda", "Marca Prueba", "Bandeja 500 g"]);
   });
 
+  it("R3-6: dice por qué un producto es «evitar» y que el archivo lo valoraba distinto", () => {
+    state.catalogue = emptyCatalogue({
+      total: 1, chains: ["Mercadona"], ratings: { evitar: 1 }, matched: 1,
+      products: [product({ name: "Galleta inventada", rating: "evitar", sugars_g: 30, nutriscore: "E", file_rating: "bueno",
+        reasons: [{ code: "nutriscore", params: { grade: "E" } }, { code: "high_sugars", params: {} }] })],
+    });
+    renderEn(<CatalogueImportPage />);
+    const reasons = screen.getAllByTestId("catalogue-why-reason");
+    expect(reasons.map((r) => r.textContent)).toEqual([
+      "Nutri-Score E",
+      "Sugars in red: 30 g per 100 g (over 22.5 g, FSA traffic light)",
+    ]);
+    expect(screen.getByTestId("catalogue-why-file").textContent).toBe(
+      "The file rated it “Good”; FightLab rates it again with its engine: “Avoid”.",
+    );
+  });
+
   it("sustitutos: los penalizados (evitar) se marcan", () => {
     state.subsData = substitutesResult.parse({
       food: { name: "chicken breast, raw", grams: 150, kcal: 180, rating: null },

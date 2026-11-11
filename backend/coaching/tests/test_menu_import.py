@@ -245,3 +245,35 @@ def test_chain_product_comes_from_the_configured_provider_with_the_engine_food_k
     assert section == "Pescadería"  # sin sección de la cadena, la del menú
     assert hake["product"]["rating"] is None and hake["product"]["review"] is True  # valor desconocido: nada
     assert lines["pechuga de pollo, cruda"][1]["product"] is None
+
+
+def test_r3_2_a_two_week_menu_splits_the_list_by_week_and_fills_missing_sections():
+    """R3-2: el menú de 14 días sin semana ni sección en la lista: «Semana 1/2» no filtraba y todo
+    caía en «Otros». La semana sale de los platos de cada día y la sección, de la lista del anexo."""
+    data = schema1(days=10)
+    for item in data["shopping"]["items"]:
+        item.pop("when", None)
+        item.pop("section", None)
+    data["shopping"]["note"] = "amounts are for the form each name gives (raw, cooked, drained); a batch is bought once"
+    user = make_user()
+    menu = upload(user, json.dumps(data).encode()).json()["menu"]
+    shopping = menu["shopping_list"]
+    assert shopping["weeks"] == [1, 2]
+    assert shopping["note"] == ""  # R3-4: la nota fija del coach en inglés no se repite
+    lines = {i["key"]: (s["section"], i) for s in shopping["sections"] for i in s["items"]}
+    section, hake = lines["merluza, cruda"]
+    assert section == "Pescadería"
+    # Merluza en la cena de 9 días (uno es comida libre): 7 la primera semana... salvo la libre.
+    assert hake["by_week"] == {"1": 1500.0, "2": 750.0} and hake["when"] == [1, 2]
+    section, lentils = lines["lentejas, cocidas"]
+    assert section == "Legumbres"
+    # Una tanda de 10 raciones se compra entera en la semana en que se cocina.
+    assert lentils["by_week"] == {"1": 2200.0, "2": 0.0} and lentils["when"] == [1]
+    assert lines["pechuga de pollo, cruda"][0] == "Carnicería"
+
+
+def test_r3_8_an_imported_menu_keeps_the_rules_of_its_targets():
+    user = make_user()
+    menu = upload(user, schema1_bytes()).json()["menu"]
+    assert menu["targets"]["kcal"] and menu["rules"]["kcal"][0]["key"]
+    assert MealPlan.objects.get(profile=user.profile).targets["rules"]["protein_g"]

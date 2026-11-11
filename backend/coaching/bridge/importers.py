@@ -48,6 +48,9 @@ class Parsed:
     sets: list[ExerciseSet]
     # Hevy: inicio de la sesión → fin, para la duración (las demás fuentes no la dan).
     end_times: dict[datetime, datetime] = field(default_factory=dict)
+    # F17: lo que el motor no pasa a `ExerciseSet`, en paralelo a `sets` (una por fila): la
+    # superserie (`superset_id`) y la descripción de la sesión de Hevy.
+    extras: list[dict] = field(default_factory=list)
 
 
 # Mensajes de `ImporterError` del motor → código de la app. El primero que case gana.
@@ -105,6 +108,22 @@ def _hevy_end_times(path: Path) -> dict[datetime, datetime]:
     return out
 
 
+def _hevy_extras(path: Path) -> list[dict]:
+    """Por fila, como `HevyCsv.read` (una serie por fila y en el mismo orden): `superset_id`
+    (entero o None) y la descripción de la sesión."""
+    out = []
+    for row in base.read_rows(path):
+        raw = (row.get("superset_id") or "").strip()
+        try:
+            superset = int(float(raw)) if raw else None
+        except ValueError:
+            superset = None
+        if superset is not None and not 0 <= superset <= 200:
+            superset = None
+        out.append({"superset": superset, "description": _clean_text((row.get("description") or "").strip())})
+    return out
+
+
 def parse(data: bytes, importer: str | None = None) -> Parsed:
     """Las series del archivo con el importador pedido o, sin él, el que lo reconozca."""
     check_bytes(data)
@@ -117,9 +136,12 @@ def parse(data: bytes, importer: str | None = None) -> Parsed:
             chosen = base.get(importer) if importer else base.detect(path)
             sets = chosen.read(path)
             end_times = _hevy_end_times(path) if chosen.name == "hevy_csv" else {}
+            extras = _hevy_extras(path) if chosen.name == "hevy_csv" else []
         except ImporterError as exc:
             raise _error(exc, path) from None
         except (csv.Error, UnicodeDecodeError, KeyError) as exc:
             raise ImportFileError("invalid", {}, str(exc).replace(str(path), "file")) from None
     sets = [replace(s, notes=_clean_text(s.notes), session_title=_clean_text(s.session_title)) for s in sets]
-    return Parsed(chosen.name, sets, end_times)
+    if len(extras) != len(sets):  # por si el motor cambia y deja de dar una serie por fila
+        extras = []
+    return Parsed(chosen.name, sets, end_times, extras)

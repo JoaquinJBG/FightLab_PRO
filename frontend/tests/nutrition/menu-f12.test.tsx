@@ -201,3 +201,36 @@ describe.each(["es", "en"] as const)("producto de la cadena en la lista (%s)", (
     expect(products[0].textContent).toContain("bote 400 g");
   });
 });
+
+describe("ronda 3 en el móvil", () => {
+  const base = () => ({
+    "/api/proxy/coach/products": { body: { products: [] } },
+    "/api/proxy/coach/tickets": { body: { enabled: false, max_upload_mb: 2, tickets: [] } },
+  });
+
+  it("R3-2: con una semana elegida enseña lo de esa semana; sin semanas, no hay pestañas", async () => {
+    const list = IMPORTED_MENU.shopping_list!;
+    const lentils = { ...list.sections[1].items[0], by_week: { "1": 2200, "2": 0 }, when: [1] };
+    const withWeeks = { ...list, sections: [{ section: "Legumbres", items: [lentils] }] };
+    mockApi({ ...base(), "/api/proxy/coach/menu": { body: importedState({ menu: { ...IMPORTED_MENU, shopping_list: withWeeks } }) } });
+    renderApp(<MenuPage />, "es");
+    const shopping = await screen.findByTestId("shopping-list");
+    expect(within(shopping).getByTestId("shopping-item").textContent).toContain("1100 g");
+    fireEvent.click(within(shopping).getAllByTestId("shopping-week-tab")[1]);
+    expect(within(shopping).getByTestId("shopping-item").textContent).toContain("2200 g");
+    cleanup();
+    const noWeeks = { ...list, sections: [{ section: "", items: [{ ...lentils, by_week: null, when: [] }] }] };
+    mockApi({ ...base(), "/api/proxy/coach/menu": { body: importedState({ menu: { ...IMPORTED_MENU, shopping_list: noWeeks } }) } });
+    renderApp(<MenuPage />, "es");
+    await screen.findByTestId("shopping-list");
+    expect(screen.queryAllByTestId("shopping-week-tab")).toHaveLength(0);
+  });
+
+  it("R3-1: un día rechazado dice qué comida falta y por qué", async () => {
+    const rejected = [{ date: "2026-11-05", check: null, unknown: [], repeats: false, blocking: [], empty: false, missing: ["dinner"] }];
+    mockApi({ ...base(), "/api/proxy/coach/menu": { body: importedState({ menu: { ...IMPORTED_MENU, rejected } }) } });
+    renderApp(<MenuPage />, "es");
+    const day = await screen.findByTestId("menu-rejected-day");
+    expect(day.textContent).toContain("falta Cena: no queda ningún plato");
+  });
+});

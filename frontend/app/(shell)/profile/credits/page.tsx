@@ -9,6 +9,9 @@ import {
   OFF_URL,
   PARQ_URL,
   USDA_URL,
+  CC_BY_SA_URL,
+  EVERKINETIC_URL,
+  WGER_URL,
 } from "@/lib/credits";
 import { EngineLine } from "@/components/evidence/EngineLine";
 
@@ -32,6 +35,9 @@ export default function CreditsPage() {
     parq: (c: React.ReactNode) => <Ext href={PARQ_URL}>{c}</Ext>,
     license: (c: React.ReactNode) => <Ext href={FIGHTLAB_LICENSE_URL}>{c}</Ext>,
     licenseContent: (c: React.ReactNode) => <Ext href={FIGHTLAB_LICENSE_CONTENT_URL}>{c}</Ext>,
+    wger: (c: React.ReactNode) => <Ext href={WGER_URL}>{c}</Ext>,
+    ek: (c: React.ReactNode) => <Ext href={EVERKINETIC_URL}>{c}</Ext>,
+    ccbysa: (c: React.ReactNode) => <Ext href={CC_BY_SA_URL}>{c}</Ext>,
   };
 
   return (
@@ -56,6 +62,14 @@ export default function CreditsPage() {
           <li>{t.rich("data.off", link)}</li>
           <li>{t.rich("data.parq", link)}</li>
         </ul>
+      </section>
+
+      <section className="glass rise mt-4 p-5">
+        <h2 className="t-label text-muted">{t("exercises.title")}</h2>
+        <p className="t-body mt-2 text-ink">{t.rich("exercises.body", link)}</p>
+        <Link href="/profile/credits/exercises" className="btn btn-outline mt-3 w-full">
+          {t("exercises.link")}
+        </Link>
       </section>
 
       <section className="glass rise mt-4 p-5">

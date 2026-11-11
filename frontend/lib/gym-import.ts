@@ -18,6 +18,8 @@ export const importResult = z.object({
   sets: z.object({ imported: z.number(), duplicates: z.number(), in_file: z.number() }),
   range: z.object({ first: z.string(), last: z.string() }).nullable(),
   warnings: z.array(z.object({ code: z.string(), count: z.number() })),
+  // F17: rutinas de Hevy (una por título, con su última sesión), creadas con la API de rutinas
+  routines: z.object({ new: z.number(), existing: z.number(), unavailable: z.number() }).optional(),
 });
 export type ImportResult = z.infer<typeof importResult>;
 

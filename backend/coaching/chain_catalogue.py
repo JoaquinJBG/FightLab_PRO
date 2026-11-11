@@ -9,8 +9,12 @@
   precio (también por `POST /coach/chain-products/shopping`).
 - Coste, igual en los dos: con el peso del envase (`pack_grams`, leído del formato), envases ×
   peso del envase / 1000 × `precio_kilo`, que es lo que se paga; sin él, gramos / 1000 × `precio_kilo`.
+  Un formato por unidades ("12 ud", "docena") pesa lo que dicen sus unidades por el peso de una
+  (`knowledge_fightlab/unit-weights.yaml`, convención de FightLab): R3-5, así el precio es el del
+  envase entero y no el de los gramos de la receta.
 - `substitutes(user, name, grams)`: sustitutos isocalóricos de un alimento, como hacía ParteDiario:
-  la misma energía con un reparto de macros parecido. Los `evitar` se penalizan y van al final.
+  la misma energía con un reparto de macros parecido y de la misma sección del súper (R3-7: unas
+  patatas fritas no sustituyen a unas galletas). Los `evitar` se penalizan y van al final.
 
 Lo que se guarda es del usuario y no sale de su cuenta.
 """
@@ -18,9 +22,14 @@ from __future__ import annotations
 
 import math
 import re
+from functools import lru_cache
+from pathlib import Path
 
+import yaml
 from coach import foods
+from coach.tastes import matches
 from coach.text import fold
+from django.conf import settings
 
 from . import product_rating
 from .chain_import import apply_rating
@@ -134,6 +143,34 @@ UNIT_GRAMS = {"kg": 1000, "g": 1, "l": 1000, "cl": 10, "ml": 1}  # ml ≈ g, com
 _NUM = r"(\d+(?:[.,]\d+)?)"
 PACK_MULTI = re.compile(rf"{_NUM}\s*[x×]\s*{_NUM}\s*(kg|g|l|cl|ml)\b", re.IGNORECASE)
 PACK_SINGLE = re.compile(rf"{_NUM}\s*(kg|g|l|cl|ml)\b", re.IGNORECASE)
+PACK_UNITS = re.compile(r"(\d+)\s*(?:ud|uds|u|unidad|unidades|units?|pcs|piezas?|huevos)\b\.?", re.IGNORECASE)
+PACK_DOZEN = {"media docena": 6, "docena": 12, "half dozen": 6, "dozen": 12}
+UNIT_WEIGHTS_FILE = Path(settings.BASE_DIR) / "knowledge_fightlab" / "unit-weights.yaml"
+
+
+@lru_cache(maxsize=1)
+def _unit_weights() -> list[dict]:
+    return yaml.safe_load(UNIT_WEIGHTS_FILE.read_text(encoding="utf-8"))["foods"]
+
+
+def unit_grams(*names: str) -> float | None:
+    """El peso de una unidad de un alimento que se vende por unidades (un huevo), por su nombre."""
+    names = tuple(n for n in names if n)
+    for entry in _unit_weights():
+        if any(matches(word, *names) for word in entry["words"]):
+            return float(entry["grams"])
+    return None
+
+
+def pack_units(pack: str) -> int | None:
+    """Cuántas unidades trae un envase por unidades ("12 ud", "Docena", "6 huevos")."""
+    text = fold(pack or "")
+    for words, n in PACK_DOZEN.items():
+        if words in text:
+            return n
+    if m := PACK_UNITS.search(text):
+        return int(m.group(1))
+    return None
 
 
 def _rank(p: ChainProduct) -> tuple:
@@ -141,9 +178,10 @@ def _rank(p: ChainProduct) -> tuple:
     return (CHOICE_ORDER.get(p.rating, 9), p.label_check == product_rating.REVIEW, price, p.name)
 
 
-def pack_grams(pack: str) -> float | None:
+def pack_grams(pack: str, *names: str) -> float | None:
     """El peso (o volumen) de un envase según su formato: "Bandeja 500 g" → 500, "Pack 6 x 80 g"
-    → 480, "Brik 1 l" → 1000. `None` si el formato no dice cuánto lleva ("Caja 6 uds")."""
+    → 480, "Brik 1 l" → 1000. Por unidades ("12 ud"), las unidades por el peso de una del alimento
+    (`names`, si se sabe). `None` si no se puede saber."""
     text = (pack or "").replace(" ", " ")
     if m := PACK_MULTI.search(text):
         count, size, unit = m.groups()
@@ -151,14 +189,20 @@ def pack_grams(pack: str) -> float | None:
     if m := PACK_SINGLE.search(text):
         size, unit = m.groups()
         return float(size.replace(",", ".")) * UNIT_GRAMS[unit.lower()]
-    return None
+    units = pack_units(text)
+    each = unit_grams(*names) if units else None
+    return units * each if units and each else None
+
+
+def _pack_grams(p: ChainProduct) -> float | None:
+    return pack_grams(p.pack, p.name, p.alias, p.equivalent_of)
 
 
 def packs_for(grams: float, p: ChainProduct) -> int:
     """Envases para cubrir `grams`, redondeando hacia arriba (1 si no se sabe lo que lleva uno)."""
     if grams <= 0:
         return 0
-    size = pack_grams(p.pack)
+    size = _pack_grams(p)
     return math.ceil(grams / size - 1e-9) if size else 1
 
 
@@ -166,7 +210,7 @@ def _cost(grams: float | None, p: ChainProduct | None) -> float | None:
     """Lo que cuesta comprar `grams`: los envases enteros si se sabe su peso; si no, los gramos."""
     if p is None or p.price_per_kg is None or grams is None:
         return None
-    size = pack_grams(p.pack)
+    size = _pack_grams(p)
     bought = packs_for(grams, p) * size if size else grams
     return round(bought / 1000 * p.price_per_kg, 2)
 
@@ -217,7 +261,7 @@ def chain_product(user, food_key: str, grams: float) -> dict | None:
         "chain": product.chain,
         "product": product.name,
         "pack": product.pack or None,
-        "pack_grams": pack_grams(product.pack),
+        "pack_grams": _pack_grams(product),
         "packs": packs_for(grams, product),
         "section": product.category or None,
         "rating": HOOK_RATING.get(product.rating),
@@ -252,7 +296,7 @@ def shopping_for(user, items: list[dict], chain: str | None = None) -> dict:
             "grams": grams,
             "product": None if product is None else {
                 "id": product.pk, "chain": product.chain, "name": product.name, "pack": product.pack,
-                "pack_grams": pack_grams(product.pack),
+                "pack_grams": _pack_grams(product),
                 "packs": packs_for(grams, product) if grams is not None else None,
                 "section": product.category or None,
                 "price_per_kg": product.price_per_kg, "rating": product.rating, "check": product.label_check or None,
@@ -290,6 +334,7 @@ def _candidates(user, lang: str) -> list[dict]:
     out = []
     for f in menu_table(user):
         out.append({"key": f"food:{fold(f.name_es)}", "name": f.name_en if lang == "en" else f.name_es,
+                    "section": section_key(f.name_es, f.name_en),
                     "names": {fold(f.name_es), fold(f.name_en), f.barcode} - {""},
                     "kind": "product" if f.barcode else "food", "chain": f.chain or None, "pack": None,
                     "kcal": f.kcal, "protein_g": f.protein_g, "carbs_g": f.carbs_g, "fat_g": f.fat_g,
@@ -303,10 +348,19 @@ def _candidates(user, lang: str) -> list[dict]:
             c["rating"], c["check"] = ratings[c["barcode"]].rating, ratings[c["barcode"]].check or None
     for p in refresh(ChainProduct.objects.filter(profile=user.profile)):
         out.append({"key": f"chain:{p.pk}", "name": p.name, "names": {fold(p.name), fold(p.alias)} - {""},
+                    "section": section_key(p.name, p.alias, p.equivalent_of, p.category),
                     "kind": "chain", "chain": p.chain, "pack": p.pack or None, "kcal": p.kcal,
                     "protein_g": p.protein_g, "carbs_g": p.carbs_g, "fat_g": p.fat_g,
                     "rating": p.rating, "check": p.label_check or None, "barcode": p.ean or None, "id": p.pk})
     return out
+
+
+def section_key(*names: str) -> str | None:
+    """La sección del súper de un alimento o producto (por su nombre o su categoría), como la lista
+    de la compra (`shopping.section_of`)."""
+    from .shopping import section_of
+
+    return section_of(*names)
 
 
 def substitutes(user, name: str, grams: float, lang: str = "es", limit: int = SUBSTITUTES_LIMIT) -> dict | None:
@@ -323,6 +377,9 @@ def substitutes(user, name: str, grams: float, lang: str = "es", limit: int = SU
     scored = []
     for c in candidates:
         if c is base or wanted in c["names"] or c["rating"] == product_rating.NOT_FOOD:
+            continue
+        # R3-7: de la misma sección del súper (mismo tipo o uso); sin sección conocida, por macros.
+        if base["section"] and c["section"] != base["section"]:
             continue
         if not c["kcal"] or c["kcal"] < MIN_KCAL_PER_100:
             continue

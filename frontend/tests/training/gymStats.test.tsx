@@ -21,10 +21,15 @@ vi.mock("next/navigation", () => ({
 }));
 vi.mock("@/lib/activities", () => ({
   enqueueActivity: state.enqueue,
+  // F17: el guardado va al momento (`POST activities`); aquí, a la cola como sin red
+  saveActivityNow: async (item: unknown) => { state.enqueue(item); return { status: "queued" }; },
+  firstReason: () => null,
   // historial de sesiones del servidor (beta): sin respuesta, "Última vez" sale de SetLog o del navegador
   fetchServerActivities: vi.fn(async () => null), pendingQueueItems: () => [], mergeByClientId: (...xs: unknown[][]) => xs.flat(),
 }));
 vi.mock("@/lib/plan", () => ({ useWeeklyPlan: () => ({ data: undefined }) }));
+// Récords de antes del entreno (F17): sin datos del servidor
+vi.mock("@/lib/gym-api", async (orig) => ({ ...(await orig<typeof import("@/lib/gym-api")>()), useRecords: () => ({ data: undefined }) }));
 vi.mock("@/lib/session-check", async (orig) => ({ ...(await orig<typeof import("@/lib/session-check")>()), useSessionCheck: (p: unknown) => { state.checks.push(p); return { data: undefined }; } }));
 vi.mock("@/lib/strength", async (orig) => ({
   ...(await orig<typeof import("@/lib/strength")>()),

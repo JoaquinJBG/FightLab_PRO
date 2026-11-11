@@ -9,14 +9,24 @@ En los dos casos cada línea puede llevar el producto y el formato de la cadena 
 llama a la función de `settings.SHOPPING_CHAIN_PROVIDER` (ruta con puntos; la pone la F13 en
 settings, p. ej. `coaching.chain_catalogue.chain_product`). Sin ella, no hay producto.
 
+Si el menú es de más de 7 días, cada línea lleva lo de cada semana (`by_week`), calculado por el
+motor con los platos de cada día (una tanda cuenta en la semana en que se cocina), y la semana en
+que hace falta (`when`) si el menú no la trae (R3-2). La sección: la de la cadena, la del menú y, si
+no hay ninguna, la de `knowledge_fightlab/shopping-sections.yaml` (convención de FightLab).
+
 Lo tachado se guarda en `ShoppingCheck` por el nombre del alimento sin mayúsculas ni tildes, así
 sobrevive a una reimportación del menú.
 """
 from __future__ import annotations
 
-from datetime import date
+from collections import defaultdict
+from datetime import date, timedelta
+from functools import lru_cache
+from pathlib import Path
 
+import yaml
 from coach import foods, mealplan
+from coach.tastes import matches
 from coach.text import fold
 from django.conf import settings
 from django.utils.module_loading import import_string
@@ -58,6 +68,70 @@ def _food_key(name: str, table) -> str | None:
     return food.name_en if food else None
 
 
+# ---------------------------------------------------------------- secciones por defecto
+
+SECTIONS_FILE = Path(settings.BASE_DIR) / "knowledge_fightlab" / "shopping-sections.yaml"
+
+
+@lru_cache(maxsize=1)
+def _sections() -> list[dict]:
+    return yaml.safe_load(SECTIONS_FILE.read_text(encoding="utf-8"))["sections"]
+
+
+def section_of(*names: str) -> str | None:
+    """La clave de la sección del súper que nombra alguno de `names`, o `None`."""
+    names = tuple(n for n in names if n)
+    for section in _sections():
+        if any(matches(word, *names) for word in section["words"]):
+            return section["key"]
+    return None
+
+
+def default_section(name: str, table, lang: str) -> str:
+    """La sección del súper por el nombre del alimento (en los dos idiomas si está en la tabla), o
+    `OTHER_SECTION`. convention (FightLab): lista de palabras del anexo, no completa."""
+    food = foods.find(name, table)
+    key = section_of(name, food.name_es, food.name_en) if food else section_of(name)
+    label = "en" if lang == "en" else "es"
+    return next((s[label] for s in _sections() if s["key"] == key), OTHER_SECTION)
+
+
+# ---------------------------------------------------------------- por semana
+
+
+def _line_key(name: str, table) -> str:
+    food = foods.find(name, table)
+    return fold(food.name_en) if food else fold(name)
+
+
+def week_amounts(plan: MealPlan, table) -> dict[str, dict[int, float]]:
+    """Gramos (o ml) de cada alimento por semana del menú (1: los 7 primeros días; 2: el resto),
+    como `mealplan.shopping`: una tanda se compra una vez, a sus raciones, en la semana en que se
+    cocina (la de su primer día). Vacío si el menú es de 7 días o menos."""
+    from . import menus
+
+    if not plan.days:
+        return {}
+    first = date.fromisoformat(plan.days[0]["date"])
+    if (date.fromisoformat(plan.days[-1]["date"]) - first).days < 7:
+        return {}
+    _, days = mealplan.parse(menus._with_dates(plan.days))
+    out: dict[str, dict[int, float]] = defaultdict(lambda: defaultdict(float))
+    for group in mealplan.batches(days):
+        week = 1 if group.dates[0] < first + timedelta(days=7) else 2
+        times = group.servings if group.servings > 1 else 1
+        for name, amount in group.items:
+            out[_line_key(name, table)][week] += float(amount) * times
+    return {k: {w: round(v, 2) for w, v in weeks.items()} for k, weeks in out.items()}
+
+
+def _by_week(name: str, table, weeks: dict) -> tuple[dict | None, list[int]]:
+    found = weeks.get(_line_key(name, table))
+    if not found:
+        return None, []
+    return {str(w): found.get(w, 0.0) for w in (1, 2)}, [w for w in (1, 2) if found.get(w)]
+
+
 def item_key(name: str) -> str:
     return fold(name).strip()[:KEY_MAX]
 
@@ -70,27 +144,30 @@ def _weeks(plan: MealPlan) -> list[int]:
     return [1, 2] if (last - first).days >= 7 else [1]
 
 
-def _imported_lines(plan: MealPlan, user) -> list[dict]:
+def _imported_lines(plan: MealPlan, user, lang: str) -> list[dict]:
     from . import menus
 
     table = menus.menu_table(user)
+    weeks = week_amounts(plan, table)
     lines = []
     for item in plan.shopping.get("items") or []:
         unit = "ml" if "ml" in item and "grams" not in item else "g"
         amount = item.get("grams") if unit == "g" else item.get("ml")
         two = item.get("grams_two") if unit == "g" else item.get("ml_two")
         product = chain_product(user, _food_key(item["name"], table), amount or 0)
+        by_week, computed_when = _by_week(item["name"], table, weeks)
         lines.append({
             "key": item_key(item["name"]),
             "name": item["name"],
             "amount": amount,
             "amount_two": two,
             "unit": unit,
-            # La sección de la cadena manda; si no la hay, la del menú.
-            "section": (product or {}).get("section") or item.get("section") or OTHER_SECTION,
+            # La sección de la cadena manda; si no la hay, la del menú; si no, la de por defecto.
+            "section": (product or {}).get("section") or item.get("section") or default_section(item["name"], table, lang),
             "pack": item.get("pack"),
             "chain": item.get("chain"),
-            "when": item.get("when") or [],
+            "when": item.get("when") or computed_when,
+            "by_week": by_week,
             "dishes": item.get("dishes") or [],
             "batches": item.get("batches"),
             "product": product,
@@ -105,22 +182,25 @@ def _computed(plan: MealPlan, user, lang: str) -> tuple[list[dict], dict]:
     _, days = mealplan.parse(menus._with_dates(plan.days))
     pantry = menus.tastes_get(user).pantry or []
     computed = mealplan.shopping(days, table, lang, pantry)
+    weeks = week_amounts(plan, table)
     lines = []
     for chain, items in computed["chains"].items():
         for item in items:
             unit = "ml" if "ml" in item else "g"
             amount = round(item.get("grams", item.get("ml", 0)), 2)
             product = chain_product(user, _food_key(item["name"], table), amount)
+            by_week, computed_when = _by_week(item["name"], table, weeks)
             lines.append({
                 "key": item_key(item["name"]),
                 "name": item["name"],
                 "amount": amount,
                 "amount_two": None,
                 "unit": unit,
-                "section": (product or {}).get("section") or OTHER_SECTION,
+                "section": (product or {}).get("section") or default_section(item["name"], table, lang),
                 "pack": (product or {}).get("pack"),
                 "chain": None if chain == mealplan.ANY_CHAIN else chain,
-                "when": [],
+                "when": computed_when,
+                "by_week": by_week,
                 "dishes": [],
                 "batches": None,
                 "product": product,
@@ -133,10 +213,19 @@ def _computed(plan: MealPlan, user, lang: str) -> tuple[list[dict], dict]:
     return lines, extra
 
 
+# R3-4: la nota fija en inglés que el coach pone en todas sus listas ("amounts are for the form
+# each name gives…"). La app ya enseña la suya traducida, así que esa no se repite.
+COACH_NOTE_START = "amounts are for the form each name gives"
+
+
+def _note(note: str) -> str:
+    return "" if fold(note).strip().startswith(COACH_NOTE_START) else note
+
+
 def shopping_data(plan: MealPlan, user, lang: str) -> dict:
     imported = bool(plan.shopping.get("items"))
     if imported:
-        lines = _imported_lines(plan, user)
+        lines = _imported_lines(plan, user, lang)
         extra = {"unknown": [], "pantry_skipped": [], "batches": plan.shopping.get("batches") or []}
     else:
         lines, extra = _computed(plan, user, lang)
@@ -151,7 +240,7 @@ def shopping_data(plan: MealPlan, user, lang: str) -> dict:
         "source": "menu" if imported else "engine",
         "sections": [{"section": s, "items": sections[s]} for s in order],
         "weeks": _weeks(plan),
-        "note": plan.shopping.get("note") or "",
+        "note": _note(plan.shopping.get("note") or ""),
         "total": len(lines),
         "checked": sum(1 for line in lines if line["checked"]),
         **extra,

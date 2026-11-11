@@ -39,10 +39,16 @@ export const READY_USERS = {
   historyScoff: "e2e-history-scoff@fightlab.test",
   // Fase 11 (Hoy): plan de la semana activo con gimnasio hoy y un menú con dos comidas para hoy.
   today: "e2e-today@fightlab.test",
+  // F17 R (rutinas y programas): con una lesión sin evaluar que pausa la sentadilla.
+  routines: "e2e-routines@fightlab.test",
+  // F17 H (registro, historial y récords): importa de Hevy y entrena desde la rutina importada.
+  gymLog: "e2e-gymlog@fightlab.test",
   // Fase 13: catálogo de cadena privado (CSV inventado) y su valoración.
   catalogue: "e2e-catalogue@fightlab.test",
   // Fase 12: importar menús completos (JSON schema 1 y YAML del coach) y la sesión de batch con el
   // menaje del usuario. Sin menús ni cocina al empezar.
   menuImport: "e2e-menu-import@fightlab.test",
   batch: "e2e-batch@fightlab.test",
+  // F17 (biblioteca de ejercicios): crea, edita y borra sus propios ejercicios.
+  exercises: "e2e-exercises@fightlab.test",
 };

@@ -139,11 +139,11 @@ describe("incompleteSets", () => {
     const xs: ExerciseEntry[] = [
       { name: "A", sets: [set("", "", true), set("50", "", false), set("", "", false), set("60", "5", false), set("60", "5", true)] },
     ];
-    expect(incompleteSets(xs)).toEqual({ tickedEmpty: 1, unticked: 2 });
+    expect(incompleteSets(xs)).toEqual({ tickedEmpty: 1, unticked: 2, impossible: 0 });
   });
 
   test("todo limpio: ceros", () => {
-    expect(incompleteSets([{ name: "A", sets: [set("60", "5", true), set("", "", false)] }])).toEqual({ tickedEmpty: 0, unticked: 0 });
+    expect(incompleteSets([{ name: "A", sets: [set("60", "5", true), set("", "", false)] }])).toEqual({ tickedEmpty: 0, unticked: 0, impossible: 0 });
   });
 });
 

@@ -80,6 +80,16 @@ describe("Importar entrenos (en)", () => {
     expectClean(container);
   });
 
+  it("Hevy: las rutinas que salen de los títulos de los entrenos (F17)", () => {
+    state.result = result({ dry_run: false, routines: { new: 2, existing: 1, unavailable: 0 } });
+    const { container } = renderEn(<GymImportPage />);
+    fireEvent.change(screen.getByTestId("import-file"), { target: { files: [csv()] } });
+    fireEvent.click(screen.getByRole("button", { name: "Import" }));
+    expect(screen.getByTestId("import-routines").textContent).toBe("2 new routines, one per workout title · 1 already there · See routines");
+    expect(screen.getByRole("link", { name: "See routines" }).getAttribute("href")).toBe("/training/routines");
+    expectClean(container);
+  });
+
   it("reimportar el mismo archivo: nada nuevo", () => {
     state.result = result({ dry_run: false, sessions: { new: 0, updated: 0, total: 3 }, sets: { imported: 0, duplicates: 20, in_file: 21 }, range: null, warnings: [] });
     const { container } = renderEn(<GymImportPage />);

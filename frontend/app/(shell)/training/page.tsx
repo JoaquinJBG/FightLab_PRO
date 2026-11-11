@@ -19,6 +19,8 @@ const cards = [
   { href: "/training/sports", Icon: RunIcon, id: "sports" },
   { href: "/training/mma", Icon: GloveIcon, id: "mma" },
   { href: "/training/gym", Icon: TrainingIcon, id: "gym" },
+  { href: "/training/routines", Icon: ClipboardIcon, id: "routines" },
+  { href: "/training/exercises", Icon: TrainingIcon, id: "exercises" },
   { href: "/training/plan", Icon: ClipboardIcon, id: "plan" },
   { href: "/training/review", Icon: ClipboardIcon, id: "review" },
   { href: "/training/my-routine", Icon: ClipboardIcon, id: "myRoutine" },
