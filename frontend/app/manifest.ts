@@ -21,7 +21,10 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     start_url: "/today",
     scope: "/",
     display: "standalone",
-    orientation: "portrait",
+    // F21: sin fijar la orientación. En horizontal la barra de navegación va compacta, y fijarla en
+    // vertical estorbaba con el móvil apoyado de lado en el gimnasio, en tabletas y en la pantalla
+    // interior de un plegable.
+    orientation: "any",
     background_color: "#05070e",
     theme_color: "#05070e",
     // F16: el icono dice «FL», como el logo de la app, en todos los tamaños y con su versión

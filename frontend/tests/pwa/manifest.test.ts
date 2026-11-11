@@ -29,6 +29,10 @@ describe("manifest de la PWA", () => {
     }
   });
 
+  it("F21: sin la orientación fijada en vertical", async () => {
+    expect((await manifest()).orientation).not.toBe("portrait");
+  });
+
   it("los PNG tienen el tamaño que dicen", () => {
     const size = (f: string) => {
       const b = readFileSync(pub(f));

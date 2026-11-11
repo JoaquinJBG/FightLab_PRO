@@ -39,6 +39,22 @@ test("F4: el chat del coach ocupa la pantalla y con el teclado se ve la última 
   await expect(page.getByTestId("tab-bar")).toBeVisible();
 });
 
+test("F21: en horizontal la barra de navegación va compacta y la app se sigue usando", async ({ page, session }) => {
+  void session;
+  await page.setViewportSize({ width: 760, height: 330 });
+  await page.goto("/today");
+  const nav = page.getByTestId("tab-bar");
+  await expect(nav).toBeVisible();
+  const box = (await nav.boundingBox())!;
+  // Antes ocupaba 97 de 330 px (29 %); ahora, menos del 20 %
+  expect(box.height).toBeLessThan(66);
+  // Sin el texto, cada pestaña sigue teniendo nombre
+  await expect(page.getByRole("link", { name: "Entreno" })).toBeVisible();
+  // En vertical sigue como siempre, con el texto
+  await page.setViewportSize({ width: 353, height: 681 });
+  await expect(nav.getByText("Entreno")).toBeVisible();
+});
+
 test("F15: cerrar sesión lleva a /login sin «Sesión caducada» y sin peticiones que den 401", async ({ page, session }) => {
   void session;
   let loggedOut = false;

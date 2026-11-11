@@ -15,7 +15,7 @@ export default function ShellLayout({
       <ServerWarmup />
       <StateRejectedNotice />
       <OfflineNotice />
-      <main className="safe-top flex-1 px-4 pb-28">
+      <main className="safe-top flex-1 px-4 pb-28 [@media(orientation:landscape)_and_(max-height:500px)]:pb-16">
         <OnboardingGate>{children}</OnboardingGate>
       </main>
       <WeighMigrate />
