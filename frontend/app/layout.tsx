@@ -61,7 +61,7 @@ export default async function RootLayout({
         <NextIntlClientProvider>
           <QueryProvider>{children}</QueryProvider>
         </NextIntlClientProvider>
-        <ServiceWorkerRegister />
+        <ServiceWorkerRegister locale={locale} />
       </body>
     </html>
   );

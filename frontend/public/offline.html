@@ -43,8 +43,10 @@
     </div>
   </main>
   <script>
-    // Página propia sin conexión del service worker (F5). Idioma: el de la app (cookie flp_lang),
-    // si no el del navegador; en español por defecto.
+    // Página propia sin conexión del service worker (F5). Idioma (R4-3): el de la app, no el del
+    // navegador. La cookie flp_lang es httpOnly (no se lee desde aquí), así que la app guarda su
+    // idioma en localStorage (flp_lang, app/sw-register.tsx); después la cookie si se pudiera leer;
+    // sin ninguno, el del navegador; en español por defecto.
     (function () {
       var en = {
         title: "You're offline",
@@ -54,8 +56,12 @@
         today: "Go to Today",
         doc: "FightLab Pro · Offline"
       };
+      var stored = null;
+      try { stored = window.localStorage.getItem("flp_lang"); } catch (e) { stored = null; }
       var m = /(?:^|;\s*)flp_lang=(es|en)/.exec(document.cookie || "");
-      var lang = m ? m[1] : ((navigator.language || "es").toLowerCase().indexOf("en") === 0 ? "en" : "es");
+      var lang = stored === "es" || stored === "en" ? stored
+        : m ? m[1]
+        : ((navigator.language || "es").toLowerCase().indexOf("en") === 0 ? "en" : "es");
       if (lang === "en") {
         document.documentElement.lang = "en";
         document.title = en.doc;

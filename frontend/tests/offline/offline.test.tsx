@@ -192,7 +192,7 @@ describe("service worker sin conexión", () => {
   it("guarda la página propia sin conexión al instalarse", async () => {
     const sw = loadSw(async () => page("net"));
     await sw.run("install");
-    expect([...sw.stores.get("flp-shell-v1")!.keys()]).toContain("https://app.test/offline.html");
+    expect([...sw.stores.get("flp-shell-v2")!.keys()]).toContain("https://app.test/offline.html");
   });
 
   it("con red sirve la red y guarda una copia; sin red abre la copia (el armazón)", async () => {
