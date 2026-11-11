@@ -8,7 +8,7 @@ el aviso de sesión vigorosa (`import.spec.ts`, con CSV inventados) y la importa
 ParteDiario y del coach de la fase 10 (`history.spec.ts`, con datos inventados) y la pantalla Hoy
 con los avisos apagados de la fase 11 (`today.spec.ts`) y los menús completos de la fase 12 (`menu-import.spec.ts`:
 importar JSON schema 1 y YAML del coach, reimportar sin perder lo tachado y la víspera en Hoy; `batch.spec.ts`: el
-menaje manda en el cronograma y la sesión de batch a pantalla completa) y el catálogo de cadena privado de la fase 13 (`catalogue.spec.ts`, con un CSV inventado) y la biblioteca de ejercicios de la F17 con sus créditos (`exercises.spec.ts`, a 353×681) de punta a punta: Next (BFF) + Django + motor del coach.
+menaje manda en el cronograma y la sesión de batch a pantalla completa) y el catálogo de cadena privado de la fase 13 (`catalogue.spec.ts`, con un CSV inventado) y la biblioteca de ejercicios de la F17 con sus créditos (`exercises.spec.ts`, a 353×681) y el escáner de código de barras (`scanner.spec.ts`: cámara falsa, código inyectado y OFF sin configurar) de punta a punta: Next (BFF) + Django + motor del coach.
 Usan el Chrome instalado (`channel: "chrome"`), así que no hace falta `playwright install`.
 Tras el login la app va a `/today` (Hoy); el resumen de antes está en `/dashboard`.
 
@@ -45,7 +45,7 @@ El selector de idioma está encendido por defecto (`LANGUAGE_SELECTOR_ENABLED` e
 `NEXT_PUBLIC_LANGUAGE_SELECTOR_ENABLED` en el build del frontend; con `False`/`false` se apaga).
 Una prueba recorre el onboarding con un navegador en inglés eligiendo inglés en el primer paso.
 
-`menu.spec.ts` espera el backend **sin** `COACH_OFF_CONTACT` (comprueba que el proxy de Open Food
+`menu.spec.ts` y `scanner.spec.ts` esperan el backend **sin** `COACH_OFF_CONTACT` (comprueba que el proxy de Open Food
 Facts dice que no está configurado y que no se llama a OFF). Los menús usan siempre el proveedor
 simulado: no hace falta `ANTHROPIC_API_KEY` y, aunque la haya, no se llama a Anthropic.
 

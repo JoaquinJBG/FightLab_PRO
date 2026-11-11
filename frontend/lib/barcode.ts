@@ -109,7 +109,9 @@ export async function startScanner(video: HTMLVideoElement, onCode: (code: strin
     stopped = true;
     stopEngine();
     stream.getTracks().forEach((t) => t.stop());
-    video.srcObject = null;
+    // Solo si sigue siendo nuestro: un arranque anterior que se para tarde (React en desarrollo
+    // monta dos veces) no debe quitarle la imagen al escáner que ya funciona.
+    if (video.srcObject === stream) video.srcObject = null;
   };
   const found = (raw: string, format?: string | null) => {
     if (stopped) return;

@@ -21,7 +21,7 @@ from .helpers import TODAY, client_for, make_user, today_fixed  # noqa: F401
 pytestmark = pytest.mark.django_db
 
 CONTACT = "test@example.invalid"
-CHAIN_EAN = "2000000000059"
+CHAIN_EAN = "2000000000053"
 OFF_EAN = "8400000000017"
 UPC_A = "036000291452"  # 12 cifras: en el catálogo como EAN-13 con un 0 delante
 RAW = {
