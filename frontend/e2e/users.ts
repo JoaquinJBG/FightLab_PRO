@@ -51,4 +51,6 @@ export const READY_USERS = {
   batch: "e2e-batch@fightlab.test",
   // F17 (biblioteca de ejercicios): crea, edita y borra sus propios ejercicios.
   exercises: "e2e-exercises@fightlab.test",
+  // Fase 14 (menús con la IA del usuario): crea un token, pega un JSON roto y uno bueno y lo revoca.
+  menuAi: "e2e-menu-ai@fightlab.test",
 };

@@ -33,7 +33,7 @@ test("copiar el contexto para la IA y pegar su respuesta, rota y buena", async (
   await page.route("**/api/proxy/coach/menu/paste", async (route) => {
     const body = JSON.parse(route.request().postData() ?? "{}");
     pastes.push(body);
-    if (!String(body.menu).includes('"days": [')) {
+    if (!String(body.menu).includes("\"dishes\"")) {
       return route.fulfill({
         status: 400, contentType: "application/json",
         body: JSON.stringify({ code: "paste_not_json", detail: "x", info: "line 1, column 24: Expecting value", params: { line: 1, column: 24 } }),

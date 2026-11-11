@@ -8,7 +8,7 @@ el aviso de sesión vigorosa (`import.spec.ts`, con CSV inventados) y la importa
 ParteDiario y del coach de la fase 10 (`history.spec.ts`, con datos inventados) y la pantalla Hoy
 con los avisos apagados de la fase 11 (`today.spec.ts`) y los menús completos de la fase 12 (`menu-import.spec.ts`:
 importar JSON schema 1 y YAML del coach, reimportar sin perder lo tachado y la víspera en Hoy; `batch.spec.ts`: el
-menaje manda en el cronograma y la sesión de batch a pantalla completa) y el catálogo de cadena privado de la fase 13 (`catalogue.spec.ts`, con un CSV inventado) y la biblioteca de ejercicios de la F17 con sus créditos (`exercises.spec.ts`, a 353×681) de punta a punta: Next (BFF) + Django + motor del coach.
+menaje manda en el cronograma y la sesión de batch a pantalla completa) y el catálogo de cadena privado de la fase 13 (`catalogue.spec.ts`, con un CSV inventado) y la biblioteca de ejercicios de la F17 con sus créditos (`exercises.spec.ts`, a 353×681) y los menús con la IA del usuario de la fase 14 (`menu-ai.spec.ts`: token de la skill en `/api/ext/menu`, copiar el contexto y pegar un JSON roto y uno bueno, revocar) de punta a punta: Next (BFF) + Django + motor del coach.
 Usan el Chrome instalado (`channel: "chrome"`), así que no hace falta `playwright install`.
 Tras el login la app va a `/today` (Hoy); el resumen de antes está en `/dashboard`.
 
