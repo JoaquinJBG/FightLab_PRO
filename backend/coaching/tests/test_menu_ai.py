@@ -12,7 +12,7 @@ from datetime import timedelta
 
 import pytest
 
-from coaching import menu_context, menu_llm, menus
+from coaching import menu_context, menu_import, menu_llm, menus
 from coaching.menu_tokens import MAX_ACTIVE, hash_token
 from coaching.models import MealPlan, MenuApiToken
 
@@ -60,6 +60,46 @@ def ai_menu(start=START, days=2, **extra) -> dict:
     return data
 
 
+@pytest.fixture
+def all_days_pass(monkeypatch):
+    """Para las pruebas que solo necesitan un menú de IA guardado (tokens, contexto, ids): el motor
+    da por buenos todos los días. Las de R4-1 usan el motor de verdad."""
+    real = menu_import._checks
+
+    def checks(user, today, days):
+        out, result = real(user, today, days)
+        return [{**c, "ok": True} for c in out], result
+
+    monkeypatch.setattr(menu_import, "_checks", checks)
+
+
+MEAL_LABELS = {"breakfast": "Desayuno", "lunch": "Comida", "dinner": "Cena", "snack": "Merienda"}
+
+
+def passing_ai_menu(user, start=START, days=2, menu_id=None, title="Menú inventado que cuadra") -> dict:
+    """Un menú de IA cuyos días pasan el motor de verdad: los del generador automático (sin IA)
+    pasados al JSON `schema: 1`. El menú automático se borra."""
+    resp = client_for(user).post("/api/v1/coach/menu", {"start_date": start.isoformat(), "days": days}, format="json")
+    assert resp.status_code == 201, resp.json()
+    plan = MealPlan.objects.get(pk=resp.json()["id"])
+    out_days, dishes = [], {}
+    for day in plan.days:
+        meals = []
+        for meal in day["meals"]:
+            dish = meal["dishes"][0]
+            key = f"{day['date']}-{meal['meal']}"
+            ingredients = []
+            for item in dish["items"]:
+                food, _, amount = item.rpartition("=")
+                unit = "ml" if amount.endswith("ml") else "grams"
+                ingredients.append({"food": food, unit: float(amount.removesuffix("ml"))})
+            dishes[key] = {"name": dish["dish"], "ingredients": ingredients, "seasoning": dish.get("seasoning") or []}
+            meals.append({"meal": MEAL_LABELS[meal["meal"]], "dish_id": key})
+        out_days.append({"date": day["date"], "meals": meals})
+    plan.delete()
+    return {"schema": 1, "id": menu_id or f"ia-{start.isoformat()}", "title": title, "days": out_days, "dishes": dishes}
+
+
 # ---------------------------------------------------------------- B: token
 
 
@@ -90,7 +130,7 @@ def test_token_reads_the_context_and_records_its_use():
     assert MenuApiToken.objects.get(profile=user.profile).last_used_at is not None
 
 
-def test_token_scope_is_only_context_and_import():
+def test_token_scope_is_only_context_and_import(all_days_pass):
     user = make_user()
     token = new_token(user)
     client = with_token(token)
@@ -171,7 +211,7 @@ def test_context_has_what_the_ai_needs_and_nothing_personal():
         assert private not in text
 
 
-def test_context_in_english_and_with_recent_menus_and_dishes_to_avoid():
+def test_context_in_english_and_with_recent_menus_and_dishes_to_avoid(all_days_pass):
     user = make_user()
     client_for(user).post(PASTE, {"menu": ai_menu(start=TODAY - timedelta(days=2))}, format="json")
     user.profile.language = "en"
@@ -185,7 +225,7 @@ def test_context_in_english_and_with_recent_menus_and_dishes_to_avoid():
     assert "Lentejas con pollo" in ctx["avoid_dishes"]
 
 
-def test_context_default_start_is_after_the_last_menu():
+def test_context_default_start_is_after_the_last_menu(all_days_pass):
     user = make_user()
     client_for(user).post(PASTE, {"menu": ai_menu(start=TODAY, days=2)}, format="json")
     ctx = client_for(user).get(APP_CONTEXT).json()
@@ -207,7 +247,7 @@ def test_context_refuses_bad_requests_and_missing_targets():
 # ---------------------------------------------------------------- B: subir
 
 
-def test_import_with_token_saves_a_user_ai_menu_checked_by_the_engine():
+def test_import_with_token_saves_a_user_ai_menu_checked_by_the_engine(all_days_pass):
     user = make_user()
     resp = with_token(new_token(user)).post(IMPORT, {"menu": ai_menu()}, format="json")
     assert resp.status_code == 201, resp.json()
@@ -237,7 +277,7 @@ def test_dry_run_checks_without_saving_and_names_unknown_foods():
     assert not MealPlan.objects.filter(profile=user.profile).exists()
 
 
-def test_same_id_replaces_and_another_menu_on_the_same_day_asks_first():
+def test_same_id_replaces_and_another_menu_on_the_same_day_asks_first(all_days_pass):
     user = make_user()
     client = with_token(new_token(user))
     assert client.post(IMPORT, {"menu": ai_menu()}, format="json").status_code == 201
@@ -252,7 +292,7 @@ def test_same_id_replaces_and_another_menu_on_the_same_day_asks_first():
     assert MealPlan.objects.filter(profile=user.profile).count() == 1
 
 
-def test_an_ai_menu_never_overwrites_an_imported_menu_with_the_same_id():
+def test_an_ai_menu_never_overwrites_an_imported_menu_with_the_same_id(all_days_pass):
     user = make_user()
     from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -268,7 +308,7 @@ def test_an_ai_menu_never_overwrites_an_imported_menu_with_the_same_id():
 # ---------------------------------------------------------------- C: pegar
 
 
-def test_paste_accepts_the_ai_reply_with_fences_and_chatter():
+def test_paste_accepts_the_ai_reply_with_fences_and_chatter(all_days_pass):
     user = make_user()
     text = "Aquí tienes tu menú:\n```json\n" + json.dumps(ai_menu(), ensure_ascii=False, indent=2) + "\n```\n¡Que aproveche!"
     resp = client_for(user).post(PASTE, {"menu": text}, format="json")
@@ -321,7 +361,7 @@ def _ctx(user, **extra):
     )
 
 
-def test_auto_reuses_dishes_from_previous_menus():
+def test_auto_reuses_dishes_from_previous_menus(all_days_pass):
     user = make_user()
     data = ai_menu(start=TODAY - timedelta(days=20))
     data["days"][1]["meals"][1]["tupper"] = False

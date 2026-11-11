@@ -10,7 +10,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { importResponse, MenuError, type MealKey } from "./menu";
+import { importResponse, MenuError, rejectedDay, type MealKey, type RejectedDay } from "./menu";
 
 const BASE = "/api/proxy/coach";
 
@@ -99,7 +99,15 @@ export const pasteResponse = importResponse.extend({
   checked: z.boolean(),
   days_ok: z.number(),
   days_failing: z.array(z.string()),
+  // R4-1: los días que no cuadran no se guardan; vuelven con su motivo
+  rejected: z.array(rejectedDay).optional().default([]),
 });
+
+/** Los días rechazados que trae un error (`no_valid_days`, R4-1). */
+export function errorRejected(error: MenuError | null): RejectedDay[] {
+  const parsed = z.array(rejectedDay).safeParse((error?.data as { rejected?: unknown } | null | undefined)?.rejected);
+  return parsed.success ? parsed.data : [];
+}
 export type PasteResponse = z.infer<typeof pasteResponse>;
 
 /** Pega el JSON que devolvió la IA (el texto tal cual: el servidor quita las vallas ```json y lo

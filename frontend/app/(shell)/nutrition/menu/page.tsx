@@ -111,7 +111,8 @@ function MenuScreen() {
           const tupperMeals = tupper.filter((m) => meals.includes(m));
           generate.mutate(
             { start_date: state.data.today, days, meals, tupper_meals: tupperMeals, ...(batch && tupperMeals.length > 0 ? { batch: true } : {}) },
-            { onSuccess: () => pick(null) },
+            // R4-2: se enseña el menú recién creado (por su id), no el que empieza más tarde
+            { onSuccess: (created) => pick(created.id) },
           );
         }}
       >

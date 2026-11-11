@@ -40,13 +40,14 @@ PASTE_MESSAGES = {
     "paste_empty": "menu_paste_empty",
     "paste_not_json": "menu_paste_not_json",
     "paste_no_schema": "menu_paste_no_schema",
+    "no_valid_days": "menu_no_valid_days",
 }
 
 
 def _import_error(exc: menu_import.ImportInvalid) -> Response:
     return Response(
         {"code": exc.code, "detail": msg(PASTE_MESSAGES.get(exc.code, "menu_import_invalid"), **exc.params),
-         "info": exc.detail, "params": exc.params},
+         "info": exc.detail, "params": exc.params, **exc.extra},
         status=IMPORT_STATUS.get(exc.code, status.HTTP_400_BAD_REQUEST),
     )
 
@@ -119,6 +120,8 @@ class MenuAiImportView(_MenuAiView):
             return _import_error(exc)
         plan = result["plan"]
         checks = plan.checks or []
+        # R4-1: los días que no cuadran no se guardan; vuelven con su motivo (`rejected`).
+        rejected = result.get("rejected") or []
         return Response(
             {
                 "summary": menu_import.summary(parsed),
@@ -126,7 +129,8 @@ class MenuAiImportView(_MenuAiView):
                 "kept_checks": result["kept_checks"],
                 "checked": bool(checks),
                 "days_ok": sum(1 for c in checks if c.get("ok")),
-                "days_failing": [c["date"] for c in checks if not c.get("ok")],
+                "days_failing": [r["date"] for r in rejected] + [c["date"] for c in checks if not c.get("ok")],
+                "rejected": rejected,
                 "menu": menus.plan_data(plan, user, _lang()),
             },
             status=status.HTTP_200_OK if result["replaced"] else status.HTTP_201_CREATED,

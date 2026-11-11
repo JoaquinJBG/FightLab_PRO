@@ -73,11 +73,12 @@ STORAGE_KEYS = ("fridge_days", "freezer", "freeze", "reheat", "note", "where")
 
 
 class ImportInvalid(ValueError):
-    def __init__(self, code: str = "import_invalid", detail: str = "", **params):
+    def __init__(self, code: str = "import_invalid", detail: str = "", extra: dict | None = None, **params):
         super().__init__(code)
         self.code = code
         self.detail = detail
         self.params = params
+        self.extra = extra or {}  # datos que no van al texto (p. ej. los días rechazados, R4-1)
 
 
 @dataclass
@@ -505,28 +506,70 @@ def preflight(user, parsed: ParsedMenu, today: date) -> tuple[list[dict], dict]:
     return _checks(user, today, parsed.days)
 
 
+def _ok_days(plan: MealPlan) -> int:
+    return sum(1 for c in plan.checks or [] if c.get("ok"))
+
+
+def _keep_only(parsed: ParsedMenu, keep: set[str]) -> None:
+    """Deja en `parsed` solo los días `keep` (ISO), con sus platos y sesiones de batch."""
+    parsed.days = [d for d in parsed.days if d["date"] in keep]
+    parsed.start = date.fromisoformat(parsed.days[0]["date"])
+    parsed.end = date.fromisoformat(parsed.days[-1]["date"])
+    used = {d.get("id") for day in parsed.days for m in day["meals"] for d in m.get("dishes") or []}
+    parsed.dishes = {k: v for k, v in parsed.dishes.items() if k in used}
+    sessions = []
+    for session in parsed.batch_sessions:
+        ids = [i for i in session["dishes"] if i in used]
+        if ids:
+            sessions.append({**session, "dishes": ids,
+                             "timeline": [e for e in session["timeline"] if e.get("dish") in (None, *ids)]})
+    parsed.batch_sessions = sessions
+
+
 def save(user, parsed: ParsedMenu, today: date, *, replace_start: bool = False, keep_existing: bool = False) -> dict:
-    """Guarda un menú importado. Devuelve `{plan, replaced, kept, ...}`.
+    """Guarda un menú importado. Devuelve `{plan, replaced, kept, rejected, ...}`.
 
     - Mismo `menu_id` que uno ya guardado: lo sustituye en la misma fila (se quedan lo tachado y
       los tickets). Con `keep_existing` (el "no pisar" de la F10) se deja como está.
-    - Otro menú distinto que empieza el mismo día: `start_taken` (409) salvo `replace_start`.
+    - Otro menú distinto que empieza el mismo día: `start_taken` (409) salvo `replace_start`, con
+      cuántos días válidos tienen el menú guardado y el nuevo (R4-1).
+    - Un menú de la IA del usuario (`user_ai`, F14) pasa por el motor como uno de FightLab: los
+      días que no cuadran no se guardan (`rejected`, con el motivo) y, si no cuadra ninguno,
+      `no_valid_days` (422) sin tocar nada (R4-1). Los menús importados de la F12 (los del propio
+      usuario, a menudo antiguos) se guardan enteros con su comprobación, como antes.
     """
     _validate_draft(parsed)
     profile = user.profile
     _refuse_free_meal(user, parsed, today)
+    checks, result = _checks(user, today, parsed.days)
+    rejected: list[dict] = []
+    if parsed.source == MealPlan.Source.USER_AI and checks:
+        by_date = {c["date"]: c for c in checks}
+        failing = [c for c in checks if not c["ok"]]
+        rejected = [menus._rejected(c["date"], c) for c in failing]
+        if len(failing) == len(checks):
+            raise ImportInvalid("no_valid_days", parsed.start.isoformat(), extra={"rejected": rejected}, days=len(checks))
+        if failing:
+            _keep_only(parsed, {c["date"] for c in checks if c["ok"]})
+            checks = [by_date[d["date"]] for d in parsed.days]
+            keep = {d["date"] for d in parsed.days}
+            result = {**result, "taste_flags": [f for f in result.get("taste_flags", []) if f["date"] in keep]}
     with transaction.atomic():
         existing = MealPlan.objects.select_for_update().filter(profile=profile, menu_id=parsed.menu_id).first()
         if existing and keep_existing:
-            return {"plan": existing, "replaced": False, "kept": True, "kept_checks": 0}
+            return {"plan": existing, "replaced": False, "kept": True, "kept_checks": 0, "rejected": []}
         clash = MealPlan.objects.filter(profile=profile, start_date=parsed.start)
         if existing:
             clash = clash.exclude(pk=existing.pk)
         if clash.exists():
             if not replace_start:
-                raise ImportInvalid("start_taken", parsed.start.isoformat())
+                old = clash.first()
+                raise ImportInvalid(
+                    "start_taken", parsed.start.isoformat(),
+                    old_ok=_ok_days(old), old_days=len(old.days or []), old_checked=bool(old.checks),
+                    new_ok=sum(1 for c in checks if c.get("ok")), new_days=len(parsed.days), new_checked=bool(checks),
+                )
             clash.delete()
-        checks, result = _checks(user, today, parsed.days)
         values = {
             "start_date": parsed.start,
             "end_date": parsed.end,
@@ -538,7 +581,7 @@ def save(user, parsed: ParsedMenu, today: date, *, replace_start: bool = False, 
             "batch_sessions": parsed.batch_sessions,
             "shopping": parsed.shopping,
             "checks": checks,
-            "rejected": [],
+            "rejected": rejected,
             "targets": result.get("targets", {}),
             "taste_flags": result.get("taste_flags", []),
             # Fase 14: un menú de la IA del usuario dice que lo es (`user_ai`); el resto, `import`.
@@ -558,6 +601,7 @@ def save(user, parsed: ParsedMenu, today: date, *, replace_start: bool = False, 
         "replaced": existing is not None,
         "kept": False,
         "kept_checks": ShoppingCheck.objects.filter(plan=plan).count() if existing else 0,
+        "rejected": rejected,
     }
 
 
