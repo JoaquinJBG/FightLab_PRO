@@ -2318,7 +2318,8 @@
         "off_unavailable": "No se ha podido consultar Open Food Facts.",
         "search_empty": "Escribe al menos una palabra.",
         "generic": "No se ha podido completar."
-      }
+      },
+      "manual": "Creado por ti"
     },
     "pdf": {
       "download": "Descargar PDF",
@@ -2847,6 +2848,100 @@
       "too_many_rows": "El archivo tiene más de {max} filas.",
       "throttled": "Demasiados intentos seguidos. Espera un minuto.",
       "server": "No se ha podido completar. Inténtalo de nuevo."
+    }
+  },
+  "scanner": {
+    "openLong": "Escanear código de barras",
+    "openIntro": "EAN o UPC del envase: tu catálogo primero, luego Open Food Facts.",
+    "title": "Escanear código",
+    "close": "Cerrar el escáner",
+    "starting": "Abriendo la cámara…",
+    "aim": "Apunta al código de barras del envase.",
+    "engineZxing": "Lector compatible (tu navegador no trae lector propio).",
+    "torchOn": "Encender linterna",
+    "torchOff": "Apagar linterna",
+    "manualTitle": "O escribe el código",
+    "manualLabel": "Código de barras",
+    "manualPlaceholder": "8 a 14 cifras",
+    "manualGo": "Buscar",
+    "manualInvalid": "Ese código no es válido: revisa las cifras (el último dígito no cuadra).",
+    "errors": {
+      "denied": "No hay permiso para usar la cámara. Actívalo en los ajustes del navegador para esta web, o escribe el código a mano.",
+      "noCamera": "No se ha encontrado ninguna cámara. Escribe el código a mano.",
+      "unsupported": "Este navegador no deja usar la cámara aquí (hace falta HTTPS). Escribe el código a mano.",
+      "failed": "No se ha podido abrir la cámara. Escribe el código a mano o inténtalo de nuevo."
+    },
+    "result": {
+      "code": "Código {code}",
+      "searching": "Buscando {code}…",
+      "rescan": "Escanear otro",
+      "cancel": "Cancelar",
+      "noName": "Producto sin nombre",
+      "sources": {
+        "chain": "De tu catálogo de {chain}",
+        "catalogue": "De tus productos",
+        "manual": "Creado por ti",
+        "off": "Open Food Facts · sin verificar"
+      },
+      "attribution": "Datos de Open Food Facts, colaborativos y sin verificar, bajo licencia ODbL.",
+      "per": "Por {per}: {kcal} kcal · P {p} · C {c} · G {f}",
+      "noKcal": "La ficha no trae las kcal: complétala a mano para poder añadirla.",
+      "complete": "Completar a mano",
+      "amount": "Cantidad",
+      "units": {
+        "g": "g",
+        "ml": "ml",
+        "serving": "Ración ({grams} {unit})",
+        "pack": "Envase ({grams} {unit})"
+      },
+      "servings": "raciones",
+      "packs": "envases",
+      "less": "Menos",
+      "more": "Más",
+      "total": "{grams} {unit}",
+      "amountInvalid": "Escribe una cantidad mayor que 0 (con coma o punto).",
+      "addTo": "Añadir a {meal}",
+      "saveProduct": "Guardar en mis productos",
+      "saved": "Guardado en tus productos",
+      "inCatalogue": "Ya está en tu catálogo.",
+      "lookupFailed": "No se ha podido buscar el código. Revisa la conexión e inténtalo de nuevo.",
+      "notFound": {
+        "none": "Ni tu catálogo ni Open Food Facts tienen este código.",
+        "off_not_configured": "No está en tu catálogo y la búsqueda en Open Food Facts no está configurada en este servidor.",
+        "off_rate_limited": "No está en tu catálogo y Open Food Facts no admite más consultas ahora: espera un minuto.",
+        "off_busy": "No está en tu catálogo y Open Food Facts está ocupado: espera un minuto.",
+        "off_unavailable": "No está en tu catálogo y no se ha podido consultar Open Food Facts."
+      },
+      "create": "Crear el alimento con este código",
+      "macros": "{kcal} kcal · P {p} · C {c} · G {f}"
+    },
+    "manual": {
+      "title": "Nuevo alimento · {code}",
+      "intro": "Copia los valores de la etiqueta. Se guarda en tus productos y la próxima vez se encuentra solo.",
+      "name": "Nombre",
+      "brand": "Marca (opcional)",
+      "per": "Valores por",
+      "kcal": "kcal",
+      "protein": "Proteína (g)",
+      "carbs": "Hidratos (g)",
+      "fat": "Grasa (g)",
+      "more": "Más datos de la etiqueta (opcional)",
+      "fibre": "Fibra (g)",
+      "sugars": "Azúcares (g)",
+      "saturates": "Grasa saturada (g)",
+      "salt": "Sal (g)",
+      "save": "Guardar alimento",
+      "saving": "Guardando…",
+      "invalid": "Revisa los números: kcal hasta 900 y cada nutriente hasta 100 g por 100 g (con coma o punto).",
+      "warnings": {
+        "kcal_gap": "Las kcal no cuadran con los macros (4/4/9). Revisa la etiqueta."
+      },
+      "errors": {
+        "name_taken": "Ya hay un alimento con ese nombre. Usa otro (por ejemplo, con la marca).",
+        "barcode_taken": "Ese código ya es de un producto de tu catálogo.",
+        "invalid": "Revisa los datos: falta el nombre o algún número no vale.",
+        "generic": "No se ha podido guardar. Inténtalo de nuevo."
+      }
     }
   }
 }

@@ -2318,7 +2318,8 @@
         "off_unavailable": "Could not reach Open Food Facts.",
         "search_empty": "Type at least one word.",
         "generic": "Could not complete it."
-      }
+      },
+      "manual": "Created by you"
     },
     "pdf": {
       "download": "Download PDF",
@@ -2847,6 +2848,100 @@
       "too_many_rows": "The file has more than {max} rows.",
       "throttled": "Too many attempts in a row. Wait a minute.",
       "server": "Could not finish. Try again."
+    }
+  },
+  "scanner": {
+    "openLong": "Scan barcode",
+    "openIntro": "EAN or UPC on the pack: your catalogue first, then Open Food Facts.",
+    "title": "Scan barcode",
+    "close": "Close the scanner",
+    "starting": "Opening the camera…",
+    "aim": "Point at the barcode on the pack.",
+    "engineZxing": "Compatible reader (your browser has no built-in one).",
+    "torchOn": "Turn torch on",
+    "torchOff": "Turn torch off",
+    "manualTitle": "Or type the code",
+    "manualLabel": "Barcode",
+    "manualPlaceholder": "8 to 14 digits",
+    "manualGo": "Look up",
+    "manualInvalid": "That code is not valid: check the digits (the last one does not match).",
+    "errors": {
+      "denied": "No permission to use the camera. Allow it in your browser settings for this site, or type the code.",
+      "noCamera": "No camera found. Type the code instead.",
+      "unsupported": "This browser does not allow the camera here (HTTPS is needed). Type the code instead.",
+      "failed": "The camera could not be opened. Type the code or try again."
+    },
+    "result": {
+      "code": "Code {code}",
+      "searching": "Looking up {code}…",
+      "rescan": "Scan another",
+      "cancel": "Cancel",
+      "noName": "Unnamed product",
+      "sources": {
+        "chain": "From your {chain} catalogue",
+        "catalogue": "From your products",
+        "manual": "Created by you",
+        "off": "Open Food Facts · unverified"
+      },
+      "attribution": "Data from Open Food Facts, crowd-sourced and unverified, under the ODbL licence.",
+      "per": "Per {per}: {kcal} kcal · P {p} · C {c} · F {f}",
+      "noKcal": "The record has no kcal: complete it by hand to add it.",
+      "complete": "Complete by hand",
+      "amount": "Amount",
+      "units": {
+        "g": "g",
+        "ml": "ml",
+        "serving": "Serving ({grams} {unit})",
+        "pack": "Pack ({grams} {unit})"
+      },
+      "servings": "servings",
+      "packs": "packs",
+      "less": "Less",
+      "more": "More",
+      "total": "{grams} {unit}",
+      "amountInvalid": "Type an amount above 0 (with a comma or a point).",
+      "addTo": "Add to {meal}",
+      "saveProduct": "Save to my products",
+      "saved": "Saved to your products",
+      "inCatalogue": "Already in your catalogue.",
+      "lookupFailed": "The code could not be looked up. Check your connection and try again.",
+      "notFound": {
+        "none": "Neither your catalogue nor Open Food Facts has this code.",
+        "off_not_configured": "Not in your catalogue, and Open Food Facts lookup is not set up on this server.",
+        "off_rate_limited": "Not in your catalogue, and Open Food Facts takes no more lookups right now: wait a minute.",
+        "off_busy": "Not in your catalogue, and Open Food Facts is busy: wait a minute.",
+        "off_unavailable": "Not in your catalogue, and Open Food Facts could not be reached."
+      },
+      "create": "Create the food with this code",
+      "macros": "{kcal} kcal · P {p} · C {c} · F {f}"
+    },
+    "manual": {
+      "title": "New food · {code}",
+      "intro": "Copy the values from the label. It is saved to your products and found by itself next time.",
+      "name": "Name",
+      "brand": "Brand (optional)",
+      "per": "Values per",
+      "kcal": "kcal",
+      "protein": "Protein (g)",
+      "carbs": "Carbs (g)",
+      "fat": "Fat (g)",
+      "more": "More label data (optional)",
+      "fibre": "Fibre (g)",
+      "sugars": "Sugars (g)",
+      "saturates": "Saturated fat (g)",
+      "salt": "Salt (g)",
+      "save": "Save food",
+      "saving": "Saving…",
+      "invalid": "Check the numbers: kcal up to 900 and each nutrient up to 100 g per 100 g (comma or point).",
+      "warnings": {
+        "kcal_gap": "The kcal do not match the macros (4/4/9). Check the label."
+      },
+      "errors": {
+        "name_taken": "There is already a food with that name. Use another one (with the brand, say).",
+        "barcode_taken": "That code already belongs to a product in your catalogue.",
+        "invalid": "Check the data: the name is missing or a number is not valid.",
+        "generic": "It could not be saved. Try again."
+      }
     }
   }
 }
