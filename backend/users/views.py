@@ -11,6 +11,7 @@ from . import services
 from .serializers import (
     MeSerializer,
     NormalizedTokenObtainPairSerializer,
+    PasswordResetCheckSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
     RegisterSerializer,
@@ -99,6 +100,22 @@ class PasswordResetRequestView(APIView):
         services.password_reset_request(**serializer.validated_data)
         # Siempre 200: no revela si el email existe.
         return Response({"detail": "If the account exists, an email was sent"})
+
+
+class PasswordResetCheckView(APIView):
+    """¿Vale el enlace de recuperación? Si vale, el email de la cuenta (F27)."""
+
+    permission_classes = [AllowAny]
+    throttle_classes = [TrustedBffScopedRateThrottle]
+    throttle_scope = "password-reset-check"
+
+    def post(self, request):
+        serializer = PasswordResetCheckSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = services.password_reset_email(**serializer.validated_data)
+        if email is None:
+            return Response({"detail": "Invalid or expired reset link"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"email": email}, status=status.HTTP_200_OK)
 
 
 class PasswordResetConfirmView(APIView):

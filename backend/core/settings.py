@@ -195,6 +195,8 @@ REST_FRAMEWORK = {
         "user-state": "60/min",
         "resend": "5/hour",
         "password-reset-confirm": "5/hour",
+        # Comprobar el enlace de recuperación (F27): se pide una vez al abrir la pantalla.
+        "password-reset-check": "20/hour",
         # Proxy de Open Food Facts (fase 8): por usuario, además del límite de OFF para todo el servidor.
         "coach-off": "10/min",
         "coach-import": "20/min",

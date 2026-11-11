@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -30,6 +30,25 @@ function ResetPasswordForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  // F27: el email de la cuenta del enlace, para el campo de usuario oculto. Sin él, Chrome no sabe
+  // de qué cuenta es la contraseña nueva: sugiere la suya y luego pide «Añade tu nombre de usuario».
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    if (!uid || !token) return;
+    let alive = true;
+    fetch("/api/auth/password-reset/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ uid, token }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { email?: unknown } | null) => {
+        if (alive && typeof d?.email === "string") setEmail(d.email);
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [uid, token]);
 
   const missingLink = !uid || !token;
   const heading = t.rich(creating ? "resetPassword.titleCreate" : "resetPassword.titleReset", { neon: (c) => <span className="neon-text">{c}</span> });
@@ -105,10 +124,23 @@ function ResetPasswordForm() {
     <>
       <h1 className="t-display text-3xl text-ink">{heading}</h1>
       <form className="mt-6 flex flex-col gap-3" onSubmit={onSubmit}>
+        {/* Campo de usuario oculto para el gestor de contraseñas (F27): no se ve ni se puede tocar */}
+        <input
+          type="email"
+          name="username"
+          autoComplete="username"
+          value={email}
+          readOnly
+          tabIndex={-1}
+          aria-hidden="true"
+          data-testid="reset-username"
+          className="sr-only"
+        />
         <label className="flex flex-col gap-1.5">
           <span className="t-label text-muted">{creating ? t("common.password") : t("resetPassword.newPassword")}</span>
           <input
             type="password"
+            name="new-password"
             autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -120,6 +152,7 @@ function ResetPasswordForm() {
           <span className="t-label text-muted">{t("resetPassword.confirm")}</span>
           <input
             type="password"
+            name="confirm-password"
             autoComplete="new-password"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
