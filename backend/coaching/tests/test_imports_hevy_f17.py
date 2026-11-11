@@ -50,7 +50,7 @@ def test_one_routine_per_title_with_its_last_session(today_fixed):
     # Hechas desde el servidor: `source=import` y el título de Hevy (el cliente no puede ponerlos)
     assert {(r.source, r.source_ref) for r in routines.values()} == {("import", "Push A"), ("import", "Legs")}
     push = list(routines["Push A"].exercises.order_by("order"))
-    assert [e.name for e in push] == ["Bench Press (Barbell)", "Lateral Raise (Dumbbell)", "Zottman Wobble Curl"]
+    assert [e.name for e in push] == ["Press banca", "Elevaciones laterales", "Zottman Wobble Curl"]
     bench = push[0]
     assert bench.notes == "Pause 1 s" and bench.exercise_key == contract.legacy_key("Bench Press (Barbell)")
     # Las series de la última vez (27 oct), no las del 20.
@@ -115,7 +115,40 @@ def test_the_payload_follows_the_contract(today_fixed, monkeypatch):
         "notes": "",
         "exercises": [{
             "exercise_key": contract.legacy_key("Squat (Barbell)"),
-            "name": "Squat (Barbell)", "notes": "", "rest_s": None, "superset": None,
+            "name": "Sentadilla", "notes": "", "rest_s": None, "superset": None,
             "sets": [{"set_type": "normal", "reps": 5, "reps_max": None, "weight_kg": 100.0, "rpe": None, "rir": None}],
         }],
     }
+
+
+# R4-5: un título repetido con ejercicios distintos en cada sesión, y nombres en inglés de Hevy
+HEVY_MULTI = HEVY_HEADER + (
+    # 20 oct: press banca, elevaciones laterales y dominadas (solo esta sesión tiene las dos últimas)
+    'Push,"20 Oct 2026, 18:00","20 Oct 2026, 19:00",,Bench Press (Barbell),,,0,normal,75,8,,,\n'
+    'Push,"20 Oct 2026, 18:00","20 Oct 2026, 19:00",,Lateral Raise (Dumbbell),,,0,normal,8,15,,,\n'
+    'Push,"20 Oct 2026, 18:00","20 Oct 2026, 19:00",,Pull Up,,,0,normal,,9,,,\n'
+    # 27 oct (la última): press militar y press banca, en este orden
+    'Push,"27 Oct 2026, 18:00","27 Oct 2026, 19:00",,Overhead Press (Barbell),,,0,normal,50,6,,,\n'
+    'Push,"27 Oct 2026, 18:00","27 Oct 2026, 19:00",,Bench Press (Barbell),,,0,normal,80,6,,,\n'
+)
+
+
+def test_hevy_english_names_are_stored_with_the_catalog_spanish_name(today_fixed):
+    user = make_user()
+    upload(client_for(user), HEVY_MULTI)
+    names = set(SetLog.objects.filter(activity__profile=user.profile).values_list("exercise", flat=True))
+    assert names == {"Press banca", "Elevaciones laterales", "Dominadas", "Press militar"}
+    # «Pull Up» y «Dominadas» son el mismo ejercicio: una sola clave
+    assert SetLog.objects.filter(exercise="Dominadas").values_list("exercise_key", flat=True).distinct().get() == "cat:pull-up"
+
+
+def test_routine_by_title_has_every_exercise_of_every_session(today_fixed):
+    user = make_user()
+    upload(client_for(user), HEVY_MULTI)
+    push = list(Routine.objects.get(profile=user.profile, title="Push").exercises.order_by("order"))
+    # El orden de la última sesión y, al final, los que solo estaban en las anteriores.
+    assert [e.name for e in push] == ["Press militar", "Press banca", "Elevaciones laterales", "Dominadas"]
+    # Las series de cada ejercicio son las de la última sesión en la que salió.
+    assert [s["weight_kg"] for s in push[1].sets] == [80.0]
+    assert [s["weight_kg"] for s in push[2].sets] == [8.0]
+    assert push[3].exercise_key == "cat:pull-up"

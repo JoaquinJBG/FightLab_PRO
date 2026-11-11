@@ -105,3 +105,19 @@ def imported_routine_exists(user, source_ref: str) -> bool:
     except ImportError:
         return False
     return Routine.objects.filter(profile=user.profile, source=Routine.Source.IMPORT, source_ref=source_ref[:160]).exists()
+
+
+def catalog_name(key: str | None, lang: str, fallback: str) -> str:
+    """El nombre del ejercicio del catálogo en `lang` (el español si no hay en ese idioma); el
+    mismo `fallback` si la clave no es del catálogo o la app no está. Así, lo que se importa de
+    Hevy en inglés («Pull Up») se guarda y se enseña como el del catálogo («Dominadas»)."""
+    if not key or not key.startswith("cat:"):
+        return fallback
+    try:
+        from exercises.catalog import catalog_by_key
+    except ImportError:
+        return fallback
+    entry = catalog_by_key().get(key)
+    if not entry:
+        return fallback
+    return entry["names"].get(lang) or entry["names"].get("es") or fallback

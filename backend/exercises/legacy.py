@@ -15,6 +15,7 @@ from __future__ import annotations
 from functools import cache
 
 from .catalog import catalog, entry_names, normalize
+from .hevy_aliases import HEVY_ALIASES
 
 
 @cache
@@ -28,6 +29,10 @@ def _name_index() -> dict[str, str]:
     for entry in catalog():
         for name in entry_names(entry):
             index.setdefault(normalize(name), entry["key"])
+    # Alias de Hevy que el catálogo fijado no trae (al final: los nombres del catálogo ganan)
+    for key, names in HEVY_ALIASES.items():
+        for name in names:
+            index.setdefault(normalize(name), key)
     return index
 
 
