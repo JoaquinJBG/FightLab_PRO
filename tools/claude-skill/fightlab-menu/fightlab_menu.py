@@ -212,6 +212,18 @@ def _status_line(day: dict) -> str:
     return f"{day['date']}: {'OK' if day.get('ok') else 'FAIL'} ({numbers})" + (f" | {'; '.join(extra)}" if extra else "")
 
 
+def _rejected_line(day: dict) -> str:
+    """Why FightLab did not save a day (R4-1): targets, repeats, blocking flags and unknown foods."""
+    check = day.get("check") or {}
+    why = [f"{k} {v}" for k, v in check.items() if v != "ok"]
+    if day.get("repeats"):
+        why.append("repeats a dish")
+    why += [f"{f.get('kind')}: {f.get('entry')}" for f in day.get("blocking") or []]
+    if day.get("unknown"):
+        why.append("not in the food table, not counted: " + ", ".join(day["unknown"]))
+    return f"- {day.get('date')}: " + ("; ".join(why) or "does not pass")
+
+
 def cmd_check(args) -> int:
     menu = load_menu(args.menu)
     problems = local_problems(menu, _food_names(args.context))
@@ -255,7 +267,17 @@ def cmd_upload(args) -> int:
     body = {"menu": menu, **({"replace_start": True} if args.replace_start else {})}
     status, data = request("POST", "menu/import", body)
     if status == 409 and data.get("code") == "start_taken":
-        _out("Another menu already starts that day. Ask the user, then run upload again with --replace-start.")
+        params = data.get("params") or {}
+        counts = (f" The saved one has {params['old_ok']} of {params.get('old_days')} valid days; this one has "
+                  f"{params.get('new_ok')} of {params.get('new_days')}.") if "old_ok" in params else ""
+        _out("Another menu already starts that day." + counts + " Ask the user, then run upload again with --replace-start.")
+        return EXIT_FAIL
+    if data.get("code") == "no_valid_days":
+        # R4-1: no day meets the targets, so FightLab saves nothing and keeps the user's menu.
+        _out(f"Not uploaded: {data.get('detail', '')}")
+        for day in data.get("rejected") or []:
+            _out(_rejected_line(day))
+        _out("Fix those days (run check) and upload again.")
         return EXIT_FAIL
     if status not in (200, 201):
         _out(f"Not uploaded ({status} {data.get('code', '')}): {data.get('detail', '')}")
@@ -266,7 +288,12 @@ def cmd_upload(args) -> int:
     verb = "Replaced" if data.get("replaced") else "Saved"
     _out(f"{verb} in FightLab: {summary.get('title') or summary['menu_id']} ({summary['start']} to {summary['end']}, "
          f"{summary['days']} days). Days that meet the targets: {data.get('days_ok')} of {summary['days']}.")
-    if data.get("days_failing"):
+    if data.get("rejected"):
+        # R4-1: the days that do not meet the targets are not saved.
+        _out("Days not saved because they do not meet the targets:")
+        for day in data["rejected"]:
+            _out(_rejected_line(day))
+    elif data.get("days_failing"):
         _out("Days that do not: " + ", ".join(data["days_failing"]))
     return EXIT_OK
 

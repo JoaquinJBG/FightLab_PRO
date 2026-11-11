@@ -78,31 +78,51 @@ COMBAT_WORK = (
 CARDIO_OPTIONS = ("walking_brisk", "continuous_moderate", "jump_rope", "hiit", "sprints", "sit", "rehit")
 
 
-def blocked_by(key: str, flags, no_contact: bool = False) -> list[str]:
-    """Los flags que excluyen la modalidad `key` (vacío: está permitida)."""
-    modality = MODALITY_INTENSITY[key]
+HARD = (VIGOROUS, MAXIMAL)
+
+
+def intensity_blocked_by(intensity: str, flags, no_contact: bool = False, injured: bool = False) -> list[str]:
+    """Los flags que excluyen hoy una intensidad, sea cual sea la modalidad (vacío: permitida).
+
+    La única regla de «nada vigoroso» de la app: la usan el plan, Mi rutina, Deportes, Carga, Hoy
+    y el Coach a través de `coaching.safety_state` (R3-3, R4-10, R4-13)."""
     out = []
     if flags.no_training:
         out.append("no_training")
-    if modality.intensity in (VIGOROUS, MAXIMAL):
+    if intensity in HARD:
         if flags.review_before_vigorous:
             out.append("review_before_vigorous")
         if flags.cap_moderate:
             out.append("cap_moderate")
-    if modality.all_out_sprint and flags.no_all_out_sprints:
-        out.append("no_all_out_sprints")
-    if modality.contact and no_contact:
-        out.append("no_contact")
-    elif no_contact and modality.intensity in (VIGOROUS, MAXIMAL):
-        # R3-3: tras un golpe en la cabeza con síntomas, la vuelta es por fases ("Return to contact
-        # follows a graded clinician-supervised plan"): aeróbico ligero y después moderado, y el
-        # trabajo exigente solo cuando un clínico lo autoriza. Hasta el alta, nada vigoroso.
-        out.append("head_blow_return")
+        if no_contact:
+            # R3-3: tras un golpe en la cabeza con síntomas, la vuelta es por fases ("Return to
+            # contact follows a graded clinician-supervised plan"): aeróbico ligero y después
+            # moderado, y el trabajo exigente solo cuando un clínico lo autoriza. Hasta el alta,
+            # nada vigoroso.
+            out.append("head_blow_return")
+        if injured:
+            # convention (FightLab, R4-13): con una lesión que nadie ha valorado, el motor pide que
+            # un médico o fisio la vea antes de cargarla ("stop and refer for sharp or worsening
+            # pain"); hasta entonces, nada vigoroso.
+            out.append("injury_unassessed")
     return out
 
 
-def allowed(key: str, flags, no_contact: bool = False) -> bool:
-    return not blocked_by(key, flags, no_contact)
+def blocked_by(key: str, flags, no_contact: bool = False, injured: bool = False) -> list[str]:
+    """Los flags que excluyen la modalidad `key` (vacío: está permitida). Con contacto y
+    `no_contact` sale `no_contact`; el resto es la regla de la intensidad."""
+    modality = MODALITY_INTENSITY[key]
+    contact_out = modality.contact and no_contact
+    out = intensity_blocked_by(modality.intensity, flags, no_contact and not contact_out, injured)
+    if modality.all_out_sprint and flags.no_all_out_sprints:
+        out.append("no_all_out_sprints")
+    if contact_out:
+        out.append("no_contact")
+    return out
+
+
+def allowed(key: str, flags, no_contact: bool = False, injured: bool = False) -> bool:
+    return not blocked_by(key, flags, no_contact, injured)
 
 
 def rule_literals() -> set[str]:

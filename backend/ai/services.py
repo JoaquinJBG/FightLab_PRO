@@ -143,6 +143,23 @@ def injury_note(areas: list[str]) -> str:
         "numbness or weakness. Do not stop the rest of the training because of it. "
         f"Cite [[regla:{INJURY_RULE}]]."
     )
+def readiness_note(level: str, blocked_by: list[str]) -> str:
+    """R4-13: el estado de seguridad de hoy (`coaching.safety_state`) manda sobre la recuperación
+    que manda la app: nunca «listo para entrenar» ni trabajo vigoroso si no toca."""
+    if level == "stop":
+        return (
+            "Today's safety state is STOP (set by the server): the athlete should not train until a "
+            "doctor reviews them. Never say they are ready to train, whatever the recovery data says."
+        )
+    return (
+        "Today's safety state is CAUTION (set by the server"
+        + (f": {', '.join(blocked_by)}" if blocked_by else "")
+        + "). Never say they are ready to train hard and do not suggest vigorous or maximal work "
+        "(hard sparring, HIIT, sprints, max lifts), whatever the recovery or load data says; "
+        "light to moderate work only, within the limits above."
+    )
+
+
 NO_CUT_NOTE = (
     "The athlete is under 18. Give no weight-cut or rapid weight-loss information; say that "
     "sports-medicine consensus discourages weight making in young athletes and suggest a doctor or "

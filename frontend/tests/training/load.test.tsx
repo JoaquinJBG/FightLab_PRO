@@ -4,7 +4,7 @@ import { renderEn, expectClean } from "./i18nB-helpers";
 import LoadPage from "@/app/(shell)/training/load/page";
 
 const state = vi.hoisted(() => ({ logs: [] as unknown[], metrics: null as unknown }));
-vi.mock("@/lib/hooks", () => ({ useBiometrics: () => ({ data: state.logs }) }));
+vi.mock("@/lib/hooks", () => ({ useBiometrics: () => ({ data: state.logs }), useSafety: () => ({ data: undefined }) }));
 vi.mock("@/lib/activities", () => ({ fetchServerMetrics: vi.fn(async () => null) }));
 // El resto de `@/lib/load` es real: la banda usa LOAD_BAND_META (su color neutro)
 vi.mock("@/lib/load", async (importOriginal) => ({

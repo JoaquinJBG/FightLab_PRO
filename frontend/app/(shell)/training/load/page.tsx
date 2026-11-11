@@ -11,6 +11,8 @@ import { BoltIcon, InfoIcon, ArrowUpRight } from "@/components/icons";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { LoadComparisonCard, LoadIndices } from "@/components/load/LoadComparisonCard";
 import { COMBAT_RULES } from "@/lib/combat-rules";
+import { useTodaySafety } from "@/lib/safety-state";
+import { SafetyStateCard } from "@/components/safety/SafetyStateCard";
 
 const BAR_AREA_PX = 80; // alto del día más cargado
 const BAR_MIN_PX = 4; // un día sin carga deja una marca
@@ -113,6 +115,9 @@ export default function LoadPage() {
   }, []);
 
   const recovery: Recovery | null = computeRecovery(logs);
+  // R4-13: el estado de seguridad de hoy manda sobre la recuperación (nunca «Listo para entrenar»
+  // con un golpe en la cabeza, una lesión o un «para y consulta»).
+  const safety = useTodaySafety();
   const m = metrics;
   const max = m ? Math.max(...m.daily7, 1) : 1;
   const labels = dayIndexes().map((i) => t(`dayInitials.${i}`));
@@ -126,8 +131,10 @@ export default function LoadPage() {
       </div>
       <p className="t-body mt-1 text-xs text-muted">{t("subtitle")}</p>
 
-      {/* Estado de hoy (recuperación) */}
-      {recovery ? (
+      {/* Estado de hoy: primero la seguridad, después la recuperación */}
+      {safety && safety.level !== "ok" ? (
+        <SafetyStateCard state={safety} className="mt-4" />
+      ) : recovery ? (
         <section className="glass neon-edge mt-4 p-5">
           <div className="flex items-center gap-1.5">
             <p className="t-eyebrow text-muted">{t("todayState")}</p>

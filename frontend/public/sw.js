@@ -6,7 +6,8 @@
 //   hay copia de esa pantalla, la página propia sin conexión (/offline.html, en es y en). Al
 //   cerrar sesión, la app borra las copias de las pantallas (finishLogout en lib/hooks.ts);
 // - /api nunca pasa por la caché: los datos y la sesión siempre van a la red.
-const VERSION = "v1";
+// v2 (R4-3): la página sin conexión nueva (idioma de la app) sustituye a la guardada.
+const VERSION = "v2";
 const SHELL_CACHE = `flp-shell-${VERSION}`;
 const PAGES_CACHE = `flp-pages-${VERSION}`;
 const STATIC_CACHE = `flp-static-${VERSION}`;

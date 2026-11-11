@@ -37,11 +37,11 @@ from django.utils import timezone
 
 from activities.models import Activity
 
-from . import rules
+from . import rules, safety_state
 from .bridge.adapters import _tz, set_records, to_coach_profile
 from .bridge.muscle_map import muscle_map
 from .bridge.reasons import Reason, parse_reason
-from .combat import NO_CONTACT_RULE, RETURN_STEPS_RULE, combat_flags
+from .combat import NO_CONTACT_RULE, RETURN_STEPS_RULE
 from .models import WeeklyPlan, WeeklyReview
 from .strength import WEEKLY_SETS_RULE, suggestion_for, suggestion_rule_key
 from .targets import _key, reasons_data, rule_refs, targets_data, zones_data
@@ -335,14 +335,14 @@ def _effort(profile, flags, today: date) -> dict:
 # ---------------------------------------------------------------- cardio y MMA
 
 
-def _modality(key: str, flags, no_contact: bool) -> dict:
+def _modality(key: str, state: safety_state.SafetyState) -> dict:
     m = rules.MODALITY_INTENSITY[key]
     return {
         "key": key,
         "intensity": m.intensity,
         "rule_key": _key(m.rule) if m.rule else None,
         "convention": m.convention,
-        "blocked_by": rules.blocked_by(key, flags, no_contact),
+        "blocked_by": state.blocked_by(key),
     }
 
 
@@ -364,7 +364,7 @@ def cardio_split(needed: int, days: list[str]) -> tuple[list[str], int]:
     return chosen, per_day
 
 
-def _cardio(user, flags, today: date, days: list[str], mma_minutes: int, lang: str, no_contact: bool = False) -> dict:
+def _cardio(user, state: safety_state.SafetyState, today: date, days: list[str], mma_minutes: int, lang: str) -> dict:
     needed = max(0, CARDIO_MODERATE_MIN - mma_minutes)
     days, per_day = cardio_split(needed, days)
     try:
@@ -373,10 +373,10 @@ def _cardio(user, flags, today: date, days: list[str], mma_minutes: int, lang: s
         zone = None
     options, excluded = [], []
     for key in CARDIO_OFFERED:
-        item = _modality(key, flags, no_contact)
+        item = _modality(key, state)
         (excluded if item["blocked_by"] else options).append(item)
     for key in ALL_OUT:
-        item = _modality(key, flags, no_contact)
+        item = _modality(key, state)
         item["blocked_by"] = item["blocked_by"] or ["prerequisites"]
         excluded.append(item)
     return {
@@ -396,8 +396,8 @@ def _cardio(user, flags, today: date, days: list[str], mma_minutes: int, lang: s
     }
 
 
-def _mma_entry(day: str, flags, no_contact: bool, time: str | None) -> dict:
-    work = [_modality(k, flags, no_contact) for k in rules.COMBAT_WORK]
+def _mma_entry(day: str, state: safety_state.SafetyState, time: str | None) -> dict:
+    work = [_modality(k, state) for k in rules.COMBAT_WORK]
     return {
         "day": day,
         "time": time,
@@ -538,7 +538,8 @@ def defaults(user, today: date) -> dict:
 def build(user, today: date, request: PlanRequest) -> dict:
     """Los campos del plan (sin guardar). Todo sale del motor o de una regla; nada del LLM."""
     profile, flags = check_trainable(user, today)
-    fight = combat_flags(user.profile, today)
+    state = safety_state.of(user.profile, today, flags)
+    fight = state.fight
 
     mma_days = _validate_days(request.mma_days if request.mma_days is not None else mma_days_detected(user, today), "mma_days")
     previous = _previous_plan(user)
@@ -593,13 +594,13 @@ def build(user, today: date, request: PlanRequest) -> dict:
             "rotation_convention": "coach",
         })
     for day in mma_days:
-        schedule.append(_mma_entry(day, flags, fight.no_contact, times.get(day)))
+        schedule.append(_mma_entry(day, state, times.get(day)))
 
     cardio_days = request.cardio_days
     if cardio_days is None:
         cardio_days = [d for d in DAYS if d not in gym_days and d not in mma_days] or gym_days
     cardio_days = _validate_days(cardio_days, "cardio_days")
-    cardio = _cardio(user, flags, today, cardio_days, mma_minutes_per_week(user, today), "en", fight.no_contact)
+    cardio = _cardio(user, state, today, cardio_days, mma_minutes_per_week(user, today), "en")
     for day in cardio["days"]:
         schedule.append({"day": day, "time": times.get(day), "kind": "cardio",
                          "minutes": cardio["minutes_per_day"], "rule_key": cardio["rule_key"]})
@@ -690,13 +691,14 @@ def live_safety(plan: WeeklyPlan, today: date) -> dict | None:
     except (ProfileIncomplete, ValueError):
         return None
     flags = safety.flags(profile, today)
-    fight = combat_flags(plan.profile, today)
+    state = safety_state.of(plan.profile, today, flags)
+    fight = state.fight
     changed = False
 
     schedule = []
     for entry in plan.training_schedule or []:
         if entry.get("kind") == "mma":
-            fresh = _mma_entry(entry["day"], flags, fight.no_contact, entry.get("time"))
+            fresh = _mma_entry(entry["day"], state, entry.get("time"))
             before = {w["key"]: w.get("blocked_by") for w in entry.get("excluded", [])}
             if before != {w["key"]: w["blocked_by"] for w in fresh["excluded"]}:
                 changed = True
@@ -710,11 +712,11 @@ def live_safety(plan: WeeklyPlan, today: date) -> dict | None:
         before = {w["key"]: w.get("blocked_by") for w in cardio.get("excluded", [])}
         options, excluded = [], []
         for w in offered:
-            fresh = _modality(w["key"], flags, fight.no_contact)
+            fresh = _modality(w["key"], state)
             (excluded if fresh["blocked_by"] else options).append(fresh)
         for w in cardio.get("excluded", []):
             if w.get("key") in ALL_OUT:
-                fresh = _modality(w["key"], flags, fight.no_contact)
+                fresh = _modality(w["key"], state)
                 fresh["blocked_by"] = fresh["blocked_by"] or ["prerequisites"]
                 excluded.append(fresh)
         if before != {w["key"]: w["blocked_by"] for w in excluded}:

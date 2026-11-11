@@ -11,7 +11,8 @@ import { comparisonRule, loadBadge, ruleCitations } from "@/lib/load-texts";
 import { computeRecovery } from "@/lib/recovery";
 import { latestWeightKg } from "@/lib/body-inputs";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
-import { buildBriefing, buildRecs, coachReply, injuryAreas, num, recoveryText, type CoachTr, type Ctx } from "@/lib/coach-rules";
+import { buildBriefing, buildRecs, coachReply, num, readyAllowed, recoveryText, withMemoryLesion, type CoachTr, type Ctx } from "@/lib/coach-rules";
+import { todaySafety } from "@/lib/safety-state";
 import { fetchServerMetrics } from "@/lib/activities";
 import { useUserState } from "@/lib/user-state";
 import { useSessionState } from "@/lib/session-state";
@@ -55,6 +56,7 @@ export default function CoachPage() {
   const t = useTranslations("coach");
   const tl = useTranslations("load");
   const tc = useTranslations("combat");
+  const ts = useTranslations("safetyState");
   const locale = useLocale();
   const listFmt = new Intl.ListFormat(locale, { type: "conjunction" });
   const { data: logs = [] } = useBiometrics();
@@ -108,6 +110,7 @@ export default function CoachPage() {
   const memoryWeightHidden = weightHidden || !safety || !!safety.flags.no_weight_targets;
 
   const recovery = computeRecovery(logs);
+  const safeToday = todaySafety(safety);
   const lastWeightLog = weightHidden ? undefined : logs.find((l) => num(l.weight_kg ?? null) !== null);
   // F28: con dos pesajes el mismo día cuenta la media del día, como en Biometría, Hoy y la tendencia
   const weight = lastWeightLog ? latestWeightKg(logs) : null;
@@ -129,9 +132,12 @@ export default function CoachPage() {
     weighDays,
     cutAllowed: !!safety && !["no_cut_content", "no_weight_targets", "no_deficit", "hold_deficit"].some((f) => safety.flags[f]),
     minor: !!safety?.flags.no_cut_content,
-    // F26: el golpe en la cabeza y las lesiones (del perfil y de la memoria del coach) cuentan al momento
-    noContact: !!safety?.flags.no_contact,
-    injuries: injuryAreas(safety?.reasons ?? [], memory.lesion),
+    // F26 y R4-13: el golpe en la cabeza, las lesiones (del perfil y de la memoria del coach) y el
+    // resto del estado de seguridad de hoy salen de una sola fuente (`lib/safety-state`)
+    noContact: !!safeToday?.noContact,
+    injuries: withMemoryLesion(safeToday?.injuries ?? [], memory.lesion),
+    safetyLevel: safeToday?.level,
+    vigorousAllowed: safeToday?.vigorousAllowed,
   };
 
   const recs = buildRecs(ctx, tr, listFmt)
@@ -222,8 +228,14 @@ export default function CoachPage() {
             cabeza activo no dice «Listo para entrenar» */}
         {ctx.noContact ? (
           <span data-testid="coach-safety-badge" className="badge" style={{ color: "#ff5a6e" }}>{t("badges.headBlow")}</span>
+        ) : safeToday && safeToday.level !== "ok" ? (
+          <span data-testid="coach-safety-badge" data-level={safeToday.level} className="badge" style={{ color: safeToday.level === "stop" ? "#ff5a6e" : "#ffd25a" }}>
+            {ts(`badge.${safeToday.level}`)}
+          </span>
         ) : (
-          recovery && <span data-testid="coach-recovery-badge" className="badge" style={{ color: recovery.color }}>{recoveryText(recovery, t).label}</span>
+          recovery && (recovery.state !== "listo" || readyAllowed(ctx)) && (
+            <span data-testid="coach-recovery-badge" className="badge" style={{ color: recovery.color }}>{recoveryText(recovery, t).label}</span>
+          )
         )}
       </div>
 

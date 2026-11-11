@@ -503,7 +503,9 @@
       "manual": "Apuntado a mano",
       "photo": "Foto del plato",
       "recent": "De tus recientes",
-      "yesterday": "Copiado de ayer"
+      "yesterday": "Copiado de ayer",
+      "scanned": "Escaneado",
+      "catalogue": "De tu catálogo"
     },
     "menuUnmark": "{name}: se quita desmarcando la comida en Hoy",
     "menuUnmarkShort": "En Hoy"
@@ -1520,7 +1522,9 @@
       "nutrition": "Ver nutrición",
       "headBlow": "Tienes el contacto bloqueado por un golpe en la cabeza con síntomas. El día del golpe no se entrena; después, nada de sparring, clinch, drills con compañero, grappling en vivo ni entrenos duros hasta que un clínico te dé el alta. La vuelta al contacto va por fases.",
       "headBlowAction": "Ver el bloqueo",
-      "injury": "Lesión guardada ({areas}): lo que carga esa zona va sin progresión, y sin carga hasta que la valore un médico o un fisioterapeuta. El resto del entreno sigue."
+      "injury": "Lesión guardada ({areas}): lo que carga esa zona va sin progresión, y sin carga hasta que la valore un médico o un fisioterapeuta. El resto del entreno sigue.",
+      "safetyStop": "Hoy no entrenes: hay un aviso de «para y consulta». Mira el motivo arriba y habla con tu médico antes de volver.",
+      "noVigorous": "Hoy, con precaución: nada vigoroso, solo trabajo ligero o moderado."
     },
     "recs": {
       "heading": "Recomendaciones",
@@ -1611,7 +1615,9 @@
       },
       "headBlowActive": "Lo primero es el golpe en la cabeza que avisaste: hasta que un clínico te dé el alta, nada de sparring ni contacto y nada de entrenar duro; el día del golpe, no entrenes. Caminar y la actividad diaria están bien si no empeoran los síntomas. La vuelta al contacto va por fases y la autoriza un clínico. Si notas dolor de cuello, vómitos, confusión o un dolor de cabeza que va a más, ve a urgencias ya.",
       "injuryKnown": "Tienes guardada una lesión: {areas}.",
-      "injuryLimit": "Ojo con tu lesión ({areas}): lo que carga esa zona, sin progresión y sin carga hasta que la valore un médico o un fisioterapeuta; el resto, normal."
+      "injuryLimit": "Ojo con tu lesión ({areas}): lo que carga esa zona, sin progresión y sin carga hasta que la valore un médico o un fisioterapeuta; el resto, normal.",
+      "safetyStop": "Hoy no: hay un aviso de «para y consulta» y un médico tiene que revisarlo antes de entrenar.",
+      "noVigorous": "Hoy nada duro ({acwr}): tienes un aviso activo y toca trabajo ligero o moderado. Mira el motivo en Inicio o en Carga."
     },
     "advanced": {
       "title": "Avanzado"
@@ -2183,7 +2189,8 @@
       "no_contact": "sin contacto hasta el alta de un clínico",
       "no_training": "sin entrenar hasta la revisión médica",
       "prerequisites": "piden 4 semanas de cardio moderado regular sin síntomas",
-      "head_blow_return": "nada vigoroso tras el golpe en la cabeza hasta el alta de un clínico"
+      "head_blow_return": "nada vigoroso tras el golpe en la cabeza hasta el alta de un clínico",
+      "injury_unassessed": "nada vigoroso con una lesión sin valorar, hasta que la vea un médico o fisio"
     },
     "cardio": {
       "dose": "{minutes} min a la semana de cardio moderado",
@@ -2499,7 +2506,7 @@
       "empty": "no había platos que encajen con tus gustos",
       "repeats": "repetía un plato",
       "blocking": "{kind}: {entry}",
-      "unknown": "alimentos desconocidos: {list}",
+      "unknown": "no están en la tabla, no cuentan en las kcal: {list}",
       "missing": "falta {meal}: no queda ningún plato que puedan comer todos los comensales, que vaya en tupper si lo pediste y que no se repita en 7 días"
     },
     "flags": {
@@ -2734,7 +2741,7 @@
       "saved": "Guardado: {title}, {days, plural, one {# día} other {# días}}.",
       "replaced": "Sustituido: {title}, {days, plural, one {# día} other {# días}}.",
       "allOk": "Los {days} días cuadran con tus objetivos.",
-      "failing": "{ok} de {days} días cuadran. No cuadran: {dates}. Pídele a tu IA que los ajuste y vuelve a pegarlo: sustituye a este.",
+      "failing": "{ok} de {days} días cuadran. No se han guardado los que no cuadran ({dates}): pídele a tu IA que los ajuste y vuelve a pegarlo.",
       "startTaken": "Ya hay otro menú que empieza ese día. ¿Lo sustituyes?",
       "replace": "Sustituir",
       "where": "Dónde: {info}",
@@ -2749,9 +2756,13 @@
         "free_meal_refused": "Sin comida libre tras un cribado de TCA positivo: este menú no se guarda.",
         "no_calorie_targets": "Sin objetivos de kcal no hay menú que preparar.",
         "profile_incomplete": "Completa tu perfil para preparar un menú.",
-        "generic": "No se ha podido. Inténtalo de nuevo."
-      }
-    }
+        "generic": "No se ha podido. Inténtalo de nuevo.",
+        "no_valid_days": "Ninguno de los {days} días cuadra con tus objetivos: no se ha guardado nada y tu menú no se ha tocado."
+      },
+      "startTakenCounts": "Ya hay otro menú que empieza ese día, con {old} de {oldDays} días válidos. El nuevo tiene {new} de {newDays} días válidos. ¿Lo sustituyes?",
+      "rejectedTitle": "Por qué no cuadra cada día:"
+    },
+    "unknownFood": "no está en la tabla, no cuenta en las kcal"
   },
   "sessionCheck": {
     "title": "Sesión vigorosa: mejor con revisión",
@@ -3046,7 +3057,8 @@
       "trained": "Entreno hecho",
       "mobility": "Movilidad",
       "yes": "Sí",
-      "notYet": "Aún no"
+      "notYet": "Aún no",
+      "pending": "pendiente de enviar"
     },
     "weight": {
       "title": "Peso",
@@ -3757,5 +3769,26 @@
       "body": "En Menú, «Prepararlo con mi IA» copia tus datos y las instrucciones para pegarlos en claude.ai u otra IA. Luego pegas su respuesta en la misma pantalla.",
       "cta": "Ir a Menú"
     }
+  },
+  "safetyState": {
+    "eyebrow": "Estado de hoy",
+    "caution": "Con precaución",
+    "cautionBody": "Hoy nada vigoroso: trabajo ligero o moderado.",
+    "cautionBodyVigorousOk": "Tenlo en cuenta antes de entrenar.",
+    "stop": "Hoy no entrenes",
+    "stopBody": "Para y consulta: un médico tiene que revisarlo antes de entrenar.",
+    "since": "desde el {date}",
+    "until": {
+      "clearance": "hasta el alta de un clínico",
+      "assessed": "hasta que la valore un médico o fisio",
+      "cleared": "hasta que te den el alta",
+      "review": "hasta la revisión de un profesional"
+    },
+    "badge": {
+      "caution": "Precaución",
+      "stop": "No entrenar"
+    },
+    "intenseOff": "«Intenso» no está disponible hoy: {why}.",
+    "vigorousLogged": "Marcas «Vigorosa» con un aviso activo ({why}). Se apunta igual, porque ya está hecho; hoy lo recomendable es ligero o moderado."
   }
 }

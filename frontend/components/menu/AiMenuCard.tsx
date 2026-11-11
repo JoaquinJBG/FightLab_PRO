@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import type { MealKey } from "@/lib/menu";
-import { buildPrompt, copyLater, errorInfo, fetchContext, usePasteMenu, type PasteResponse } from "@/lib/menu-ai";
+import { buildPrompt, copyLater, errorInfo, errorRejected, fetchContext, usePasteMenu, type PasteResponse } from "@/lib/menu-ai";
+import { RejectedDays } from "./MenuView";
 
 type Copy = { state: "idle" | "working" | "copied" | "manual" | "error"; text?: string; start?: string; days?: number; error?: string };
 
@@ -26,6 +27,7 @@ export function AiMenuCard({ days, meals, tupper, onSaved }: {
   const code = paste.error?.code;
   const info = errorInfo(paste.error);
   const params = ((paste.error?.data as { params?: Record<string, number | string> } | null)?.params) ?? {};
+  const rejected = errorRejected(paste.error);
 
   async function onCopy() {
     setCopy({ state: "working" });
@@ -91,16 +93,27 @@ export function AiMenuCard({ days, meals, tupper, onSaved }: {
 
       {code === "start_taken" && pending && (
         <div data-testid="menu-ai-confirm" className="mt-3">
-          <p role="alert" className="t-body text-xs text-warn">{t("startTaken")}</p>
+          {/* R4-1: solo se pregunta con al menos un día válido; dice cuántos tiene cada menú */}
+          <p role="alert" className="t-body text-xs text-warn">
+            {typeof params.new_ok === "number"
+              ? t("startTakenCounts", { old: params.old_ok ?? 0, oldDays: params.old_days ?? 0, new: params.new_ok, newDays: params.new_days ?? 0 })
+              : t("startTaken")}
+          </p>
           <button type="button" className="btn btn-primary btn-sm mt-2" onClick={() => save(pending, true)}>{t("replace")}</button>
         </div>
       )}
       {code && code !== "start_taken" && (
         <div role="alert" data-testid="menu-ai-error" data-code={code} className="mt-2">
           <p className="t-body text-xs text-bad">
-            {t.has(`errors.${code}`) ? t(`errors.${code}`, { line: params.line ?? "?", column: params.column ?? "?", max: params.max ?? 35 }) : paste.error?.message || t("errors.generic")}
+            {t.has(`errors.${code}`) ? t(`errors.${code}`, { line: params.line ?? "?", column: params.column ?? "?", max: params.max ?? 35, days: params.days ?? rejected.length }) : paste.error?.message || t("errors.generic")}
           </p>
-          {info && code !== "paste_not_json" && <p className="t-body mt-1 text-[11px] text-muted">{t("where", { info })}</p>}
+          {rejected.length > 0 && (
+            <div data-testid="menu-ai-rejected" className="mt-1">
+              <p className="t-label text-[11px] text-ink">{t("rejectedTitle")}</p>
+              <RejectedDays rejected={rejected} />
+            </div>
+          )}
+          {info && code !== "paste_not_json" && code !== "no_valid_days" && <p className="t-body mt-1 text-[11px] text-muted">{t("where", { info })}</p>}
           <p className="t-body mt-1 text-[11px] text-muted">{t("askAgain")}</p>
         </div>
       )}
@@ -112,9 +125,15 @@ export function AiMenuCard({ days, meals, tupper, onSaved }: {
           {done.checked && (
             <p className={`t-body mt-1 text-xs ${done.days_failing.length ? "text-warn" : "text-good"}`}>
               {done.days_failing.length
-                ? t("failing", { ok: done.days_ok, days: done.summary.days, dates: done.days_failing.join(", ") })
+                ? t("failing", { ok: done.days_ok, days: done.summary.days + done.rejected.length, dates: done.days_failing.join(", ") })
                 : t("allOk", { days: done.summary.days })}
             </p>
+          )}
+          {done.rejected.length > 0 && (
+            <div data-testid="menu-ai-rejected" className="mt-1">
+              <p className="t-label text-[11px] text-ink">{t("rejectedTitle")}</p>
+              <RejectedDays rejected={done.rejected} />
+            </div>
           )}
         </div>
       )}

@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 
+from coaching import menu_import
 from coaching.models import MealPlan
 
 from .helpers import TODAY, client_for, fix_today, make_user
@@ -97,6 +98,21 @@ def test_skill_downloads_checks_and_uploads_with_the_token(skill, live_server, m
         out = capsys.readouterr().out
         assert f"{start.isoformat()}: " in out and code in (0, 1)
         assert not MealPlan.objects.filter(profile=user.profile).exists()  # comprobar no guarda
+
+        # R4-1: si no cuadra ningún día, no se guarda nada y dice por qué cada día
+        if code == 1:
+            assert skill.main(["upload", str(menu_file)]) == 1
+            out = capsys.readouterr().out
+            assert "Not uploaded" in out and f"- {start.isoformat()}: " in out
+            assert not MealPlan.objects.filter(profile=user.profile).exists()
+            # (el resto de la prueba sube un menú que el motor da por bueno)
+            real = menu_import._checks
+
+            def all_pass(*args):
+                checks, result = real(*args)
+                return [{**c, "ok": True} for c in checks], result
+
+            monkeypatch.setattr(menu_import, "_checks", all_pass)
 
         assert skill.main(["upload", str(menu_file)]) == 0
         assert "Saved in FightLab" in capsys.readouterr().out

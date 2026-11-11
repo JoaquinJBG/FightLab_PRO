@@ -503,7 +503,9 @@
       "manual": "Logged by hand",
       "photo": "Photo of the plate",
       "recent": "From your recent foods",
-      "yesterday": "Copied from yesterday"
+      "yesterday": "Copied from yesterday",
+      "scanned": "Scanned",
+      "catalogue": "From your catalogue"
     },
     "menuUnmark": "{name}: remove it by unmarking the meal in Today",
     "menuUnmarkShort": "In Today"
@@ -1520,7 +1522,9 @@
       "nutrition": "View nutrition",
       "headBlow": "Contact is blocked after a blow to the head with symptoms. No training on the day of the blow; after that, no sparring, clinch, partner drills, live grappling or hard training until a clinician clears you. The return to contact goes step by step.",
       "headBlowAction": "See the block",
-      "injury": "Saved injury ({areas}): whatever loads that area gets no progression, and no load until a doctor or physiotherapist assesses it. The rest of your training goes on."
+      "injury": "Saved injury ({areas}): whatever loads that area gets no progression, and no load until a doctor or physiotherapist assesses it. The rest of your training goes on.",
+      "safetyStop": "Don't train today: there is a stop-and-check warning. See the reason above and talk to your doctor before you go back.",
+      "noVigorous": "Take care today: nothing vigorous, light or moderate work only."
     },
     "recs": {
       "heading": "Recommendations",
@@ -1611,7 +1615,9 @@
       },
       "headBlowActive": "First, the blow to the head you reported: until a clinician clears you, no sparring, no contact and no hard training; on the day of the blow, do not train. Walking and daily activity are fine if they do not make the symptoms worse. The return to contact goes step by step and a clinician authorises it. With neck pain, vomiting, confusion or a headache that gets worse, go to the emergency department now.",
       "injuryKnown": "You have a saved injury: {areas}.",
-      "injuryLimit": "Mind your injury ({areas}): whatever loads that area, no progression and no load until a doctor or physiotherapist assesses it; the rest as normal."
+      "injuryLimit": "Mind your injury ({areas}): whatever loads that area, no progression and no load until a doctor or physiotherapist assesses it; the rest as normal.",
+      "safetyStop": "Not today: there is a stop-and-check warning and a doctor needs to review it before you train.",
+      "noVigorous": "Nothing hard today ({acwr}): you have an active warning, so light or moderate work only. See the reason on Home or Load."
     },
     "advanced": {
       "title": "Advanced"
@@ -2183,7 +2189,8 @@
       "no_contact": "no contact until a clinician clears you",
       "no_training": "no training until a doctor reviews it",
       "prerequisites": "they need 4 weeks of regular moderate cardio without symptoms",
-      "head_blow_return": "nothing vigorous after the blow to the head until a clinician clears you"
+      "head_blow_return": "nothing vigorous after the blow to the head until a clinician clears you",
+      "injury_unassessed": "nothing vigorous with an unassessed injury until a doctor or physio sees it"
     },
     "cardio": {
       "dose": "{minutes} min a week of moderate cardio",
@@ -2499,7 +2506,7 @@
       "empty": "no dish fitted your tastes",
       "repeats": "it repeated a dish",
       "blocking": "{kind}: {entry}",
-      "unknown": "unknown foods: {list}",
+      "unknown": "not in the food table, they don't count towards kcal: {list}",
       "missing": "{meal} missing: no dish left that every diner can eat, fits a lunchbox if you asked for one and does not repeat within 7 days"
     },
     "flags": {
@@ -2734,7 +2741,7 @@
       "saved": "Saved: {title}, {days, plural, one {# day} other {# days}}.",
       "replaced": "Replaced: {title}, {days, plural, one {# day} other {# days}}.",
       "allOk": "All {days} days meet your targets.",
-      "failing": "{ok} of {days} days meet your targets. Not these: {dates}. Ask your AI to adjust them and paste it again: it replaces this one.",
+      "failing": "{ok} of {days} days fit. The ones that don't ({dates}) were not saved: ask your AI to adjust them and paste it again.",
       "startTaken": "Another menu starts on that day. Replace it?",
       "replace": "Replace",
       "where": "Where: {info}",
@@ -2749,9 +2756,13 @@
         "free_meal_refused": "No free meal after a positive eating-disorder screen: this menu is not saved.",
         "no_calorie_targets": "Without calorie targets there is no menu to prepare.",
         "profile_incomplete": "Complete your profile to prepare a menu.",
-        "generic": "That did not work. Try again."
-      }
-    }
+        "generic": "That did not work. Try again.",
+        "no_valid_days": "None of the {days} days fits your targets: nothing was saved and your menu was left as it was."
+      },
+      "startTakenCounts": "Another menu starts on that day, with {old} of {oldDays} valid days. The new one has {new} of {newDays} valid days. Replace it?",
+      "rejectedTitle": "Why each day doesn't fit:"
+    },
+    "unknownFood": "not in the food table, doesn't count towards kcal"
   },
   "sessionCheck": {
     "title": "Vigorous session: best reviewed first",
@@ -3046,7 +3057,8 @@
       "trained": "Workout done",
       "mobility": "Mobility",
       "yes": "Yes",
-      "notYet": "Not yet"
+      "notYet": "Not yet",
+      "pending": "waiting to be sent"
     },
     "weight": {
       "title": "Weight",
@@ -3757,5 +3769,26 @@
       "body": "In Menu, \"Prepare it with my AI\" copies your data and the instructions to paste into claude.ai or another AI. Then you paste its reply on the same screen.",
       "cta": "Go to Menu"
     }
+  },
+  "safetyState": {
+    "eyebrow": "Today's status",
+    "caution": "Take care today",
+    "cautionBody": "Nothing vigorous today: light or moderate work only.",
+    "cautionBodyVigorousOk": "Keep this in mind before you train.",
+    "stop": "Don't train today",
+    "stopBody": "Stop and check: a doctor needs to review this before you train.",
+    "since": "since {date}",
+    "until": {
+      "clearance": "until a clinician clears you",
+      "assessed": "until a doctor or physio assesses it",
+      "cleared": "until you are discharged",
+      "review": "until a professional reviews it"
+    },
+    "badge": {
+      "caution": "Take care",
+      "stop": "Don't train"
+    },
+    "intenseOff": "“Intense” isn't available today: {why}.",
+    "vigorousLogged": "You're logging “Vigorous” with an active warning ({why}). It's saved anyway, since it's done; today light or moderate work is advised."
   }
 }

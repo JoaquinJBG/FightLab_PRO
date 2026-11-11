@@ -141,12 +141,14 @@ class MenuPdfView(APIView):
 IMPORT_STATUS = {
     "start_taken": status.HTTP_409_CONFLICT,
     "free_meal_refused": status.HTTP_409_CONFLICT,
+    "no_valid_days": status.HTTP_422_UNPROCESSABLE_ENTITY,
 }
 IMPORT_MESSAGES = {
     "import_invalid": "menu_import_invalid",
     "import_too_long": "menu_import_too_long",
     "start_taken": "menu_start_taken",
     "free_meal_refused": "menu_free_meal_refused",
+    "no_valid_days": "menu_no_valid_days",
 }
 
 

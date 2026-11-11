@@ -52,8 +52,10 @@ into a command line, a file in a repository or your reply.
    it printed (a disliked or untried food you kept, and why).
 6. **Upload.** Run `menu upload <temp dir>/fightlab-menu.json`. If it says another menu already
    starts that day, ask the user whether to replace it; only after a clear yes, run it again
-   with `--replace-start`. Uploading the same `id` again replaces that menu (what was ticked on
-   the shopping list stays).
+   with `--replace-start` (it says how many valid days the saved menu and the new one have).
+   Uploading the same `id` again replaces that menu (what was ticked on the shopping list
+   stays). FightLab only saves the days that meet the targets; if none does, it saves nothing,
+   keeps the user's menu and lists why each day fails.
 7. **Finish.** Tell the user it is in FightLab → Nutrition → Menu (marked "Your AI"), with the
    days that meet the targets. Delete the two temporary files.
 

@@ -123,6 +123,29 @@ export const safetyReason = z.object({
 });
 export type SafetyReason = z.infer<typeof safetyReason>;
 
+// R4-10/R4-13: el estado de seguridad de hoy, la única fuente para todas las pantallas
+// (`coaching/safety_state.py`). Los servidores anteriores no lo mandan: opcional.
+export const safetyStateItem = z.object({
+  kind: z.enum(["stop", "head_blow", "injury", "limit"]),
+  code: z.string(),
+  rule_key: z.string().nullable(),
+  grade: z.string().nullable(),
+  params: z.record(z.string(), z.unknown()),
+  text: z.string(),
+  since: z.string().nullable(),
+  until: z.enum(["clearance", "assessed", "cleared", "review"]),
+});
+export type SafetyStateItem = z.infer<typeof safetyStateItem>;
+
+export const safetyState = z.object({
+  level: z.enum(["ok", "caution", "stop"]),
+  no_contact: z.boolean(),
+  no_training: z.boolean(),
+  vigorous: z.object({ allowed: z.boolean(), blocked_by: z.array(z.string()) }),
+  active: z.array(safetyStateItem),
+});
+export type SafetyStateData = z.infer<typeof safetyState>;
+
 export const safety = z.object({
   screened: z.boolean(),
   flags: z.record(z.string(), z.boolean()),
@@ -139,6 +162,7 @@ export const safety = z.object({
   weight: z.object({ kg: z.number(), date: z.string() }).nullable(),
   // El CRT6 oficial (E.5): se enlaza, nunca se reproduce.
   crt6_url: z.string().nullable().optional(),
+  state: safetyState.optional(),
 });
 export type Safety = z.infer<typeof safety>;
 

@@ -22,6 +22,7 @@ import {
   type MenuDish,
   type MenuItem,
   type MenuMeal,
+  type RejectedDay,
   type Rating,
 } from "@/lib/menu";
 
@@ -133,6 +134,7 @@ function RateButtons({ dish }: { dish: string }) {
 
 function Dish({ dish }: { dish: MenuDish }) {
   const t = useTranslations("menu.day");
+  const tm = useTranslations("menu");
   const [open, setOpen] = useState(false);
   return (
     <div data-testid="menu-dish" data-dish={dish.dish} className="mt-1">
@@ -141,8 +143,10 @@ function Dish({ dish }: { dish: MenuDish }) {
       </button>
       <ul className="t-body mt-0.5 text-[11px] text-muted">
         {dish.items.map((i, n) => (
-          <li key={`${i.name}-${n}`} data-testid="menu-item">
+          <li key={`${i.name}-${n}`} data-testid="menu-item" data-known={i.known ? "true" : "false"}>
             {i.name} · <Amount item={i} />
+            {/* R4-1: un alimento que no está en la tabla no suma kcal ni macros: se dice */}
+            {!i.known && <span data-testid="menu-item-unknown" className="text-warn"> · {tm("unknownFood")}</span>}
             {i.product && i.url && (
               <> · <a href={i.url} target="_blank" rel="noopener noreferrer" className="text-neon underline">{t("offProduct")}</a></>
             )}
@@ -237,13 +241,24 @@ function Day({ day, menu }: { day: MenuDay; menu: Menu }) {
 
 function Rejected({ menu }: { menu: Menu }) {
   const t = useTranslations("menu.rejected");
-  const tm = useTranslations("menu");
-  const tk = useTranslations("menu.flags.kinds");
-  const f = useFormat();
   if (menu.rejected.length === 0) return null;
   return (
     <Section title={t("title")} testId="menu-rejected">
-      {menu.rejected.map((r) => {
+      <RejectedDays rejected={menu.rejected} />
+    </Section>
+  );
+}
+
+/** Por qué no cuadra cada día (R4-1: también al pegar el menú de tu IA): objetivos, plato
+ * repetido, alergias, comidas que faltan y los alimentos que no están en la tabla, por nombre. */
+export function RejectedDays({ rejected }: { rejected: RejectedDay[] }) {
+  const t = useTranslations("menu.rejected");
+  const tm = useTranslations("menu");
+  const tk = useTranslations("menu.flags.kinds");
+  const f = useFormat();
+  return (
+    <>
+      {rejected.map((r) => {
         const why: string[] = [];
         if (r.empty) why.push(t("empty"));
         if (r.check) {
@@ -259,7 +274,7 @@ function Rejected({ menu }: { menu: Menu }) {
           </p>
         );
       })}
-    </Section>
+    </>
   );
 }
 

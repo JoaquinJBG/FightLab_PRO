@@ -42,7 +42,16 @@ export type Ctx = {
   noContact?: boolean;
   // F26: lesiones activas (las del perfil, de /coach/safety, y la de «Contarle a mi coach»)
   injuries?: string[];
+  // R4-13: el estado de seguridad de hoy (`lib/safety-state`): con «stop» no se entrena y sin
+  // `vigorousAllowed` nunca se dice «listo» ni se propone nada vigoroso.
+  safetyLevel?: "ok" | "caution" | "stop";
+  vigorousAllowed?: boolean;
 };
+
+/** ¿Puede el coach decir hoy «listo para entrenar duro»? Solo sin nada activo. */
+export function readyAllowed(ctx: Ctx): boolean {
+  return (ctx.safetyLevel ?? "ok") === "ok" && ctx.vigorousAllowed !== false && !ctx.noContact;
+}
 
 // Reglas del bloqueo por un golpe en la cabeza: el bloqueo y la vuelta al contacto por fases (la
 // misma que enseña la tarjeta del golpe, que es por donde se quita con el alta de un clínico).
@@ -54,6 +63,12 @@ export function injuryAreas(reasons: { code: string; params: Record<string, unkn
     .filter((r) => r.code === "injury_unassessed" || r.code === "injury_managed")
     .map((r) => r.params.area)
     .filter((a): a is string => typeof a === "string" && a.trim() !== "");
+  return withMemoryLesion(areas, memoryLesion);
+}
+
+/** Las zonas del estado de seguridad más la lesión de la memoria del coach, sin repetir. */
+export function withMemoryLesion(list: string[], memoryLesion?: string | null): string[] {
+  const areas = [...list];
   if (memoryLesion && memoryLesion.trim()) areas.push(memoryLesion.trim());
   const seen = new Set<string>();
   return areas.filter((a) => {
@@ -96,13 +111,17 @@ export function buildBriefing(ctx: Ctx, { t, tl, tc, locale }: CoachTr, listFmt?
     }
     return { text: bits.join(" "), rules, blocked: true };
   }
+  // R4-13: «para y consulta» manda sobre todo lo demás
+  if (ctx.safetyLevel === "stop") return { text: t("briefing.safetyStop"), rules, blocked: true };
   if (ctx.recovery?.state === "cuidado") {
     bits.push(t("briefing.care"));
   } else if (isBigJump(ctx.metrics)) {
     bits.push(tl("coach.briefingUp", { pct: ctx.metrics!.weekVsAvgPct! }));
     rules.push(COMBAT_RULES.comparison);
-  } else if (ctx.recovery?.state === "listo") {
+  } else if (ctx.recovery?.state === "listo" && readyAllowed(ctx)) {
     bits.push(t("briefing.ready"));
+  } else if (ctx.vigorousAllowed === false) {
+    bits.push(t("briefing.noVigorous"));
   } else if (ctx.metrics && ctx.metrics.weekAU > 0) {
     bits.push(t("briefing.week", { au: ctx.metrics.weekAU }));
   } else {
@@ -288,10 +307,13 @@ export function coachReply(text: string, ctx: Ctx, { t, tl, tc, locale }: CoachT
   if (/fuerte|intens|sparring|entren|hoy|hard|train|today/.test(low)) {
     // F26: con una lesión guardada, el consejo de carga lleva su límite (solo lo que afecta a la zona)
     const limit = injuries.length ? ` ${t("reply.injuryLimit", { areas })}${cite(SAFETY_RULES.newPain)}` : "";
+    // R4-13: sin lo vigoroso permitido hoy, nunca «listo para trabajo duro»
+    if (ctx.safetyLevel === "stop") return t("reply.safetyStop");
+    if (ctx.vigorousAllowed === false) return t("reply.noVigorous", { acwr: acwrTxt }) + limit;
     if (rec && ctx.recovery?.state === "cuidado") return t("reply.hardCare", { chips: listFmt.format(rec.chips) }) + limit;
     if (isBigJump(m)) return tl("coach.replyHigh", { comparison: acwrTxt }) + limit;
     if (injuries.length) return t("reply.hardNormal", { acwr: acwrTxt }) + limit;
-    if (ctx.recovery?.state === "listo") return t("reply.hardReady", { acwr: acwrTxt });
+    if (ctx.recovery?.state === "listo" && readyAllowed(ctx)) return t("reply.hardReady", { acwr: acwrTxt });
     return t("reply.hardNormal", { acwr: acwrTxt });
   }
   if (/fatiga|cansad|agujetas|recuper|fatigue|tired|sore|recover/.test(low)) {

@@ -155,17 +155,36 @@ export function useToday() {
 }
 
 /* `key` y `field` (F5, sin conexión): sin red la mutación queda en pausa, y otra nueva del mismo
- * campo sustituye a la que esperaba (ver lib/offline.ts). Sin `field`, todas se envían. */
+ * campo sustituye a la que esperaba (ver lib/offline.ts). Sin `field`, todas se envían.
+ *
+ * `optimistic` (R4-6): la pantalla enseña el cambio al momento, también sin red (la marca queda
+ * «pendiente de enviar»). Si el envío falla del todo, vuelve lo que había y se pide el día otra
+ * vez al servidor. */
 function useTodayMutation<T>(
   run: (vars: T) => Promise<TodayState>,
   invalidate: string[] = [],
   offline?: { key: string; field: (vars: unknown) => string | null },
+  optimistic?: (state: TodayState, vars: T) => TodayState,
 ) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: run,
     mutationKey: offline ? ["today", offline.key] : undefined,
     meta: offline ? ({ offlineField: offline.field } satisfies OfflineMeta) : undefined,
+    onMutate: optimistic
+      ? async (vars: T) => {
+          await qc.cancelQueries({ queryKey: ["today"] });
+          const previous = qc.getQueryData<TodayState>(["today"]);
+          if (previous) qc.setQueryData<TodayState>(["today"], optimistic(previous, vars));
+          return { previous };
+        }
+      : undefined,
+    onError: (_err, _vars, context) => {
+      const previous = (context as { previous?: TodayState } | undefined)?.previous;
+      if (!optimistic || !previous) return;
+      qc.setQueryData(["today"], previous);
+      void qc.invalidateQueries({ queryKey: ["today"] });
+    },
     onSuccess: (data) => {
       qc.setQueryData(["today"], data);
       for (const key of invalidate) qc.invalidateQueries({ queryKey: [key] });
@@ -180,7 +199,7 @@ export function useSaveDay() {
   return useTodayMutation((patch: DayPatch) => send(BASE, "POST", patch), ["checkin", "weigh-in", "trend", "biometrics"], {
     key: "day",
     field: patchField,
-  });
+  }, applyDayPatch);
 }
 
 export function useMarkMeal() {
@@ -194,7 +213,31 @@ export function useMarkMeal() {
     },
     [],
     { key: "meal", field: (v) => (v as { meal?: string } | undefined)?.meal ?? null },
+    applyMealMark,
   );
+}
+
+/** R4-6: el día con el parche ya puesto, antes de que conteste el servidor. El tipo de día
+ * (`null` = el del plan) y el peso los recalcula el servidor: aquí solo se pinta lo marcado. */
+export function applyDayPatch(state: TodayState, patch: DayPatch): TodayState {
+  const next: TodayState = { ...state };
+  if ("trained" in patch) next.trained = patch.trained ?? null;
+  if ("mobility" in patch) next.mobility = patch.mobility ?? null;
+  if ("day_type" in patch && patch.day_type) {
+    next.day_type = patch.day_type;
+    next.day_type_set = true;
+  }
+  if (typeof patch.weight_kg === "number") next.weight_kg = patch.weight_kg;
+  return next;
+}
+
+/** R4-6: la comida con su marca nueva (o sin marca), antes de que conteste el servidor. */
+export function applyMealMark(state: TodayState, v: { meal: string; state: MealState | null; change?: string }): TodayState {
+  if (!state.menu) return state;
+  const meals = state.menu.meals.map((m) =>
+    m.meal === v.meal ? { ...m, mark: v.state ? { state: v.state, change: v.change ?? null } : null } : m,
+  );
+  return { ...state, menu: { ...state.menu, meals } };
 }
 
 export function useAddCardio() {

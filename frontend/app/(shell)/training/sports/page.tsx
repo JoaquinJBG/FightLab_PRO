@@ -13,6 +13,8 @@ import { useActivityHistory } from "@/lib/activity-history";
 import { RejectedNotice } from "@/components/gym/RejectedNotice";
 import { SPORT_FORMATS, type SportFormat } from "@/lib/session-check";
 import { VigorousWarning } from "@/components/safety/VigorousWarning";
+import { useBlockedWhy } from "@/components/safety/SafetyStateCard";
+import { todaySafety } from "@/lib/safety-state";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { COMBAT_RULES } from "@/lib/combat-rules";
 import { KCAL_BAND } from "@/lib/combat-mets";
@@ -48,6 +50,7 @@ const FORMAT_SPORTS = ["run", "bike", "swim", "elliptical"];
 const INTENSITIES: [string, number][] = [["Suave", 0.85], ["Moderado", 1], ["Intenso", 1.2]];
 const INTENSITY_ID: Record<string, string> = { Suave: "light", Moderado: "moderate", Intenso: "intense" };
 const EFFORT_IDS = ["light", "moderate", "intense"] as const;
+const INTENSE_IDX = 2;
 
 const kcalOf = (met: number, factor: number, weight: number, minutes: number) =>
   Math.round(((met * factor * 3.5 * weight) / 200) * minutes);
@@ -169,6 +172,14 @@ export default function SportsPage() {
   const [kcalAcc, setKcalAcc] = useState(0);
   const [running, setRunning] = useState(false);
   const [intIdx, setIntIdx] = useState(1);
+  const tState = useTranslations("safetyState");
+  const blockedWhy = useBlockedWhy();
+  // R4-10: con lo vigoroso bloqueado hoy (golpe en la cabeza, lesión sin valorar, «para y
+  // consulta»…), «Intenso» no se ofrece: va desactivado con el motivo. La regla es la del plan y Mi
+  // rutina (`lib/safety-state`); una sesión retomada en «Intenso» sigue en «Moderado».
+  const safeToday = todaySafety(safety);
+  const intenseBlocked = !!safeToday && !safeToday.vigorousAllowed;
+  const effIdx = intenseBlocked && intIdx === INTENSE_IDX ? INTENSE_IDX - 1 : intIdx;
   const [rpe, setRpe] = useState<number | null>(null);
   const [sportFormat, setSportFormat] = useState<SportFormat>("continuous");
   const [rpeInfo, setRpeInfo] = useState(false);
@@ -182,7 +193,7 @@ export default function SportsPage() {
   // intensidad ACTUAL (por tramos: cambiarla solo afecta hacia delante).
   useEffect(() => {
     if (!running || !sel) return;
-    const rate = kcalPerSec(sel.met, INTENSITIES[intIdx][1], weight);
+    const rate = kcalPerSec(sel.met, INTENSITIES[effIdx][1], weight);
     const baseElapsed = elapsedRef.current;
     const startTime = Date.now();
     const id = setInterval(() => {
@@ -195,7 +206,7 @@ export default function SportsPage() {
       }
     }, 500);
     return () => clearInterval(id);
-  }, [running, sel, intIdx, weight]);
+  }, [running, sel, effIdx, weight]);
 
   // persistir la sesión en vivo (recuperable si se cierra la app)
   useEffect(() => {
@@ -270,7 +281,7 @@ export default function SportsPage() {
       sportName: sel.name,
       durationSec: elapsed,
       kcal: hasWeight ? Math.round(kcalAcc) : null,
-      intensity: INTENSITIES[intIdx][0],
+      intensity: INTENSITIES[effIdx][0],
       rpe,
       load: rpe ? Math.round(minutes * rpe) : null,
       ts,
@@ -286,7 +297,7 @@ export default function SportsPage() {
       kcal: hasWeight ? Math.min(20_000, Math.max(0, Math.round(kcalAcc))) : null,
       detail: {
         sport_key: sel.key,
-        intensity: INTENSITIES[intIdx][0],
+        intensity: INTENSITIES[effIdx][0],
         ...(FORMAT_SPORTS.includes(sel.key) ? { format: sportFormat } : {}),
       },
     });
@@ -331,7 +342,7 @@ export default function SportsPage() {
   /* ---------------- vistas del tracker ---------------- */
   if (sel) {
     const Icon = sel.Icon;
-    const detail = sel.speeds ? sel.speeds[intIdx] : t(`effort.${EFFORT_IDS[intIdx]}`);
+    const detail = sel.speeds ? sel.speeds[effIdx] : t(`effort.${EFFORT_IDS[effIdx]}`);
 
     /* resumen + RPE antes de guardar */
     if (phase === "summary") {
@@ -447,8 +458,10 @@ export default function SportsPage() {
         <div className="mt-3">
           <div className="glass grid grid-cols-3 gap-1 rounded-2xl p-1">
             {INTENSITIES.map(([canon], i) => (
-              <button key={canon} onClick={() => setIntIdx(i)} className="rounded-xl py-2.5 text-sm font-medium transition-colors"
-                style={intIdx === i
+              <button key={canon} type="button" onClick={() => setIntIdx(i)} data-testid={`sport-intensity-${INTENSITY_ID[canon]}`}
+                disabled={intenseBlocked && i === INTENSE_IDX} aria-describedby={intenseBlocked && i === INTENSE_IDX ? "intense-off" : undefined}
+                className="rounded-xl py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                style={effIdx === i
                   ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)", color: "#03101c" }
                   : { background: "transparent", color: "var(--color-muted)" }}>
                 {intensityLabel(canon)}
@@ -456,8 +469,13 @@ export default function SportsPage() {
             ))}
           </div>
           <p className="t-body mt-2 text-center text-xs text-muted">
-            {intensityLabel(INTENSITIES[intIdx][0])} · <span className="text-ink">{detail}</span>
+            {intensityLabel(INTENSITIES[effIdx][0])} · <span className="text-ink">{detail}</span>
           </p>
+          {intenseBlocked && safeToday && (
+            <p id="intense-off" data-testid="sport-intense-off" role="note" className="t-body mt-1 text-center text-[11px]" style={{ color: "#ffd25a" }}>
+              {tState("intenseOff", { why: blockedWhy(safeToday.vigorousBlockedBy) })}
+            </p>
+          )}
         </div>
 
         <div className="mt-4 flex gap-3">
