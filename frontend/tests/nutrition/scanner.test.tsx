@@ -219,7 +219,7 @@ describe("Nutrición → Añadir: escanear", () => {
     fireEvent.click(screen.getByTestId("scan-add"));
     const day = Object.keys(localStorage).find((k) => k.startsWith("flp_nutri_")) as string;
     const [item] = JSON.parse(localStorage.getItem(day) as string);
-    expect(item).toMatchObject({ meal: "Comida", name: "Yogur inventado", grams: 200, kcal: 120, p: 8, c: 10, f: 5, source: "food" });
+    expect(item).toMatchObject({ meal: "Comida", name: "Yogur inventado", grams: 200, kcal: 120, p: 8, c: 10, f: 5, source: "scanned" }); // R4-9: «Escaneado», no «Buscado en la tabla»
     expect(push).toHaveBeenCalledWith("/nutrition");
   });
 

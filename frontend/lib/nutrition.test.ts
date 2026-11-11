@@ -1,5 +1,6 @@
 import { describe, test, expect } from "vitest";
-import { photoErrorForStatus, photoErrorKind, scale } from "./nutrition";
+import { itemSource, photoErrorForStatus, photoErrorKind, scale, searchSource } from "./nutrition";
+import es from "@/messages/es.json";
 
 describe("scale", () => {
   test("escala los macros por gramos (valores por 100 g)", () => {
@@ -47,5 +48,20 @@ describe("photoErrorKind", () => {
   test("200/otros códigos: null", () => {
     expect(photoErrorKind(200)).toBeNull();
     expect(photoErrorKind(500)).toBeNull();
+  });
+});
+
+describe("R4-9: el origen de lo que viene del catálogo", () => {
+  test("un producto de tu catálogo sale «De tu catálogo»; uno de la tabla de la región o un alimento, de la tabla", () => {
+    expect(searchSource({ kind: "product", source: "off" })).toBe("catalogue");
+    expect(searchSource({ kind: "product", source: "label:Mercadona" })).toBe("food");
+    expect(searchSource({ kind: "food", source: "usda" })).toBe("food");
+  });
+
+  test("«Escaneado» y «De tu catálogo» tienen su texto y no caen en «Apuntado a mano»", () => {
+    expect(itemSource({ source: "scanned" })).toBe("scanned");
+    expect(itemSource({ source: "catalogue" })).toBe("catalogue");
+    expect(es.nutrition.source.scanned).toBe("Escaneado");
+    expect(es.nutrition.source.catalogue).toBe("De tu catálogo");
   });
 });

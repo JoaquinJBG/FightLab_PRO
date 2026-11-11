@@ -5,8 +5,15 @@
 import { hydrateUserState, hydrateUserStatePrefix, rawStringSerde, syncUserState } from "@/lib/user-state";
 
 /** De dónde sale cada entrada del diario (F6). `menu` la pone el servidor al marcar una comida
- * del menú como «Hecha» en Hoy, con `link` a esa marca; las de antes no traen origen. */
-export const ITEM_SOURCES = ["menu", "food", "manual", "photo", "recent", "yesterday"] as const;
+ * del menú como «Hecha» en Hoy, con `link` a esa marca; las de antes no traen origen. R4-9:
+ * `scanned` (código de barras) y `catalogue` (un producto de tu catálogo elegido en la búsqueda). */
+export const ITEM_SOURCES = ["menu", "food", "manual", "photo", "recent", "yesterday", "scanned", "catalogue"] as const;
+
+/** El origen de un alimento elegido en la búsqueda: un producto de tu catálogo (no los de la tabla
+ * de la región, que vienen con el motor) o un alimento de la tabla. */
+export function searchSource(food: { kind: string; source: string }): ItemSource {
+  return food.kind === "product" && !food.source.startsWith("label:") ? "catalogue" : "food";
+}
 export type ItemSource = (typeof ITEM_SOURCES)[number];
 
 export type Item = {

@@ -10,6 +10,7 @@ import {
   MEALS,
   addItem,
   recentFoods,
+  searchSource,
   scale,
   yesterdayMealItems,
   photoErrorKind,
@@ -79,7 +80,7 @@ function AddInner() {
   function addFood() {
     if (!sel || !scaled || saving) return;
     setSaving(true);
-    addItem({ meal, name: sel.name, grams, kcal: scaled.kcal, p: scaled.p, c: scaled.c, f: scaled.f, source: "food" });
+    addItem({ meal, name: sel.name, grams, kcal: scaled.kcal, p: scaled.p, c: scaled.c, f: scaled.f, source: searchSource(sel) });
     router.push("/nutrition");
   }
 
@@ -87,8 +88,8 @@ function AddInner() {
   function addScanned(e: ScannedEntry) {
     if (saving) return;
     setSaving(true);
-    // Origen "food": es un producto de la tabla (catálogo propio u OFF), como el de la búsqueda.
-    addItem({ meal, name: e.name, grams: e.grams, kcal: e.kcal, p: e.p, c: e.c, f: e.f, source: "food" });
+    // R4-9: sale en Nutrición como «Escaneado», no como buscado en la tabla.
+    addItem({ meal, name: e.name, grams: e.grams, kcal: e.kcal, p: e.p, c: e.c, f: e.f, source: "scanned" });
     router.push("/nutrition");
   }
 
