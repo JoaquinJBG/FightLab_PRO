@@ -3059,6 +3059,27 @@
       "too_many_rows": "The file has more than {max} rows.",
       "throttled": "Too many attempts in a row. Wait a minute.",
       "server": "Could not finish. Try again."
+    },
+    "why": {
+      "title": "Why this rating",
+      "high": "{nutrient} in red: {value} g per {per} (over {limit} g, FSA traffic light)",
+      "nutrients": {
+        "sugars": "Sugars",
+        "saturates": "Saturated fat",
+        "salt": "Salt"
+      },
+      "reasons": {
+        "nutriscore": "Nutri-Score {grade}",
+        "fats_nutriscore_only": "Oil or fat: only the Nutri-Score counts, not the saturated-fat light",
+        "fruit_sugar": "The sugar comes from fruit: it does not count as red",
+        "no_data": "Label data (sugars, salt or saturates) missing to rate it",
+        "syrup": "In syrup: fair",
+        "energy_mismatch": "The label's kcal do not match its macros (more than 15 % apart)",
+        "alcohol": "Alcoholic drink: not part of the plan",
+        "baby_food": "Baby food: not part of the plan",
+        "not_for_plan": "Not a food for the plan"
+      },
+      "file": "The file rated it “{file}”; FightLab rates it again with its engine: “{engine}”."
     }
   },
   "kitchen": {

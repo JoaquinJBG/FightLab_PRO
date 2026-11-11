@@ -293,3 +293,34 @@ def test_substitutes_api(client, user):
     assert all(abs(s["kcal"] - 120) <= 15 for s in r.data["substitutes"])  # redondeo a 5 g
     assert client.get("/api/v1/coach/substitutes", {"food": "no existe inventado"}).status_code == 404
     assert client.get("/api/v1/coach/substitutes", {"food": "x", "grams": "0"}).status_code == 400
+
+
+# ---------------------------------------------------------------- ronda 3 en el móvil
+
+
+def test_r3_5_a_pack_sold_by_units_is_priced_whole(client, user):
+    """R3-5: los huevos «12 ud» salían con el precio de los 126 g de la receta, no del envase."""
+    text = SCORED_HEADER + "90060,,Huevos L inventados,,Huevos,12 ud,3.00,140,12.5,0.7,9.7,0,3.1,0.4,0,A,1,,,,,,,,,,\n"
+    upload(client, text)
+    upload(client, "name_es,nombre_mercadona,equivale_a,ean,mercadona_id,kcal,protein_g,carbs_g,fat_g,fibre_g,fuente,valoracion\n"
+                   "h,Huevos L inventados,\"huevo entero, crudo\",,90060,,,,,,,\n")
+    eggs = chain_catalogue.chain_product(user, "huevo entero, crudo", 126)
+    # 12 huevos × 63 g (convención de FightLab) = 756 g a 3 €/kg = 2,27 € el envase entero.
+    assert (eggs["packs"], eggs["pack_grams"], eggs["price"]) == (1, 756.0, 2.27)
+    assert chain_catalogue.chain_product(user, "huevo entero, crudo", 900)["packs"] == 2
+    assert chain_catalogue.pack_units("Docena") == 12 and chain_catalogue.pack_units("6 huevos") == 6
+    assert chain_catalogue.pack_grams("Caja 6 uds") is None  # sin saber de qué, no se inventa
+
+
+def test_r3_7_substitutes_are_of_the_same_kind(client, user):
+    """R3-7: «patatas fritas de bolsa» salía como primer sustituto de 50 g de galletas."""
+    text = SCORED_HEADER + (
+        "90070,,Galletas maria inventadas,,Galletas,Paquete 800 g,3,440,7,72,13,2,1,0.5,2,C,4,,,,,,,,,,\n"
+        "90071,,Patatas fritas de bolsa inventadas,,Aperitivos,Bolsa 150 g,8,530,6,52,33,4,0.5,1.2,3,D,4,,,,,,,,,,\n"
+        "90072,,Galletas de avena inventadas,,Galletas,Paquete 400 g,4,450,8,68,15,2,1,0.4,5,C,4,,,,,,,,,,\n"
+    )
+    upload(client, text)
+    result = chain_catalogue.substitutes(user, "Galletas maria inventadas", 50, limit=50)
+    names = [s["name"] for s in result["substitutes"]]
+    assert "Galletas de avena inventadas" in names
+    assert not any("patatas" in n.lower() for n in names)

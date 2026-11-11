@@ -5,7 +5,8 @@
 # engine has no food categories. Matching is by whole words, case and accents ignored, singular or
 # plural (coach.tastes.matches), against the food's name in Spanish and English; the first section
 # that matches wins, so the order matters (for example "leche de coco" must reach Conservas before
-# Lácteos reads "leche"). It is not complete: a food it does not name goes to "Otros". Review or
+# Lácteos reads "leche", and "patatas fritas" Aperitivos before Frutas y verduras reads "patata").
+# The same sections tell which substitutes are of the same kind (coaching/chain_catalogue.py). It is not complete: a food it does not name goes to "Otros". Review or
 # extend it here; the logic in coaching/shopping.py does not change. This content belongs to
 # FightLab and is licensed CC BY 4.0. Checked on 2026-11-09.
 
@@ -13,6 +14,15 @@ label: FightLab convention
 checked_on: 2026-11-09
 other: {es: Otros, en: Other}
 sections:
+  - key: snacks
+    es: Aperitivos
+    en: Snacks
+    words: [patatas fritas, patatas chips, chips, snack, aperitivo, palomitas, crisps, popcorn]
+  - key: sweets
+    es: Dulces y galletas
+    en: Sweets and biscuits
+    words: [galleta, galletas, chocolate, bolleria, magdalena, bizcocho, cacao, mermelada, miel, azucar, crema de cacao,
+            cookie, biscuit, cake, muffin, jam, honey, sugar, cocoa]
   - key: drinks
     es: Bebidas
     en: Drinks
@@ -32,7 +42,7 @@ sections:
     es: Carnicería
     en: Meat
     words: [pollo, pavo, ternera, cerdo, cordero, conejo, vacuno, carne picada, contramuslo, pechuga, solomillo, lomo,
-            hamburguesa, jamon, chorizo, salchicha, bacon, chicken, turkey, beef, pork, lamb, rabbit, mince, ham, sausage]
+            hamburguesa, jamon, chorizo, salchicha, bacon, carne, embutido, fiambre, charcuteria, chicken, turkey, beef, pork, lamb, rabbit, mince, ham, sausage]
   - key: eggs
     es: Huevos
     en: Eggs
@@ -49,8 +59,8 @@ sections:
     es: Panadería y cereales
     en: Bread and cereals
     words: [pan, tostada, arroz, pasta, macarrones, espaguetis, fideo, cuscus, quinoa, avena, copos de avena, harina,
-            tortita, tortilla de trigo, cereal, galleta, bread, toast, rice, pasta, noodle, couscous, quinoa, oats,
-            flour, cracker, biscuit]
+            tortita, tortilla de trigo, cereal, bread, toast, rice, pasta, noodle, couscous, quinoa, oats,
+            flour, cracker]
   - key: nuts
     es: Frutos secos y semillas
     en: Nuts and seeds

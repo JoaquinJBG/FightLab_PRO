@@ -78,16 +78,22 @@ def _sections() -> list[dict]:
     return yaml.safe_load(SECTIONS_FILE.read_text(encoding="utf-8"))["sections"]
 
 
+def section_of(*names: str) -> str | None:
+    """La clave de la sección del súper que nombra alguno de `names`, o `None`."""
+    names = tuple(n for n in names if n)
+    for section in _sections():
+        if any(matches(word, *names) for word in section["words"]):
+            return section["key"]
+    return None
+
+
 def default_section(name: str, table, lang: str) -> str:
     """La sección del súper por el nombre del alimento (en los dos idiomas si está en la tabla), o
     `OTHER_SECTION`. convention (FightLab): lista de palabras del anexo, no completa."""
     food = foods.find(name, table)
-    names = (name, food.name_es, food.name_en) if food else (name,)
+    key = section_of(name, food.name_es, food.name_en) if food else section_of(name)
     label = "en" if lang == "en" else "es"
-    for section in _sections():
-        if any(matches(word, *names) for word in section["words"]):
-            return section[label]
-    return OTHER_SECTION
+    return next((s[label] for s in _sections() if s["key"] == key), OTHER_SECTION)
 
 
 # ---------------------------------------------------------------- por semana
