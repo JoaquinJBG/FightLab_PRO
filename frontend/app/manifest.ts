@@ -28,7 +28,7 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     background_color: "#05070e",
     theme_color: "#05070e",
     // F16: el icono dice «FL», como el logo de la app, en todos los tamaños y con su versión
-    // «maskable» (fondo a sangre y letras en la zona segura) para los iconos adaptables de Android.
+    // «maskable» (fondo a sangre y letras dentro del círculo central del 80 %) para los iconos adaptables de Android.
     // Los PNG salen de los SVG con `node scripts/icons.mjs`.
     icons: [
       { src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
