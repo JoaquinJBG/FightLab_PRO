@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from datetime import date
 
+from django.utils import translation
 from rest_framework import status
 from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated
@@ -31,6 +32,7 @@ from core.messages import msg
 from . import menu_context, menu_import, menus
 from .menu_tokens import MenuTokenAuthentication
 from .menu_views import IMPORT_MESSAGES, IMPORT_STATUS, _blocked
+from .models import MenuApiToken
 from .safety_views import _lang, _today
 
 PASTE_MESSAGES = {
@@ -57,11 +59,22 @@ def _meals(raw: str) -> list[str] | None:
     return [m for m in menus.MEALS if m in words]
 
 
-class MenuContextView(APIView):
+class _MenuAiView(APIView):
+    """Con el token no hay navegador: el idioma es el del perfil del usuario (con la sesión de la
+    app manda el de la petición, que el BFF ya toma del perfil)."""
+
     authentication_classes = [MenuTokenAuthentication, JWTAuthentication]
     permission_classes = [IsAuthenticated]
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "menu-ai"
+
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        if isinstance(request.auth, MenuApiToken) and request.user.profile.language in ("es", "en"):
+            translation.activate(request.user.profile.language)
+
+
+class MenuContextView(_MenuAiView):
 
     def get(self, request):
         q = request.query_params
@@ -90,12 +103,8 @@ class MenuContextView(APIView):
         return response
 
 
-class MenuAiImportView(APIView):
-    authentication_classes = [MenuTokenAuthentication, JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+class MenuAiImportView(_MenuAiView):
     parser_classes = [JSONParser]
-    throttle_classes = [ScopedRateThrottle]
-    throttle_scope = "menu-ai"
 
     def post(self, request):
         body = request.data if isinstance(request.data, dict) else {}

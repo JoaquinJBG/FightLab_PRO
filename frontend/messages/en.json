@@ -2396,7 +2396,7 @@
     "intro": "The coach suggests the dishes and its engine checks every day against your calorie, protein, fat and fibre targets. Days that do not pass are not saved.",
     "loading": "Loading…",
     "error": "Could not load the menu.",
-    "simulated": "Sample FightLab dishes picked by a simulated suggester (no AI). The numbers come from the coach's engine.",
+    "simulated": "Automatic, no AI: FightLab dishes and dishes from your earlier menus, with your tastes, your diners and My kitchen. The numbers come from the coach engine.",
     "engine": "Coach engine {sha}",
     "rateHint": "Tap a dish to rate it: the ones you like come back in later menus and the ones you would not repeat are left out.",
     "blocked": {
@@ -2595,11 +2595,17 @@
         "generated": "Prepared by FightLab (simulated LLM and engine)",
         "json": "Imported (app JSON)",
         "yaml": "Imported (coach YAML)",
-        "partediario": "Imported from the ParteDiario backup"
+        "partediario": "Imported from the ParteDiario backup",
+        "user_ai": "Prepared with your AI and checked by the engine"
       },
       "others": "Saved menus",
       "option": "Menu from {start}",
-      "kitchenHint": "Fill in your equipment in Profile → My kitchen so the timeline only uses your appliances."
+      "kitchenHint": "Fill in your equipment in Profile → My kitchen so the timeline only uses your appliances.",
+      "origin": {
+        "user_ai": "Your AI",
+        "auto": "Automatic",
+        "import": "Imported"
+      }
     },
     "batch": {
       "title": "Batch sessions",
@@ -2695,7 +2701,40 @@
       }
     },
     "kitchenLink": "My kitchen: equipment and diners",
-    "kitchenLinkHint": "The batch timeline uses your appliances and menus respect each diner."
+    "kitchenLinkHint": "The batch timeline uses your appliances and menus respect each diner.",
+    "ai": {
+      "title": "With your AI (free)",
+      "intro": "Copy your targets, tastes, My kitchen and the instructions, paste them into claude.ai (or another AI) and paste the JSON it returns here. It uses the days and meals above. The engine checks it like a FightLab menu.",
+      "copy": "Prepare it with my AI",
+      "copying": "Preparing…",
+      "copied": "Copied: {days, plural, one {# day} other {# days}} from {start}. Paste it into your AI and copy its whole reply.",
+      "copyManual": "It could not be copied automatically: tap the box, select everything and copy it by hand.",
+      "dataTitle": "Data (JSON):",
+      "pasteLabel": "Paste your AI's reply here",
+      "pastePlaceholder": "{\"schema\": 1, \"days\": […], \"dishes\": {…}}",
+      "save": "Check and save",
+      "saving": "Checking…",
+      "saved": "Saved: {title}, {days, plural, one {# day} other {# days}}.",
+      "replaced": "Replaced: {title}, {days, plural, one {# day} other {# days}}.",
+      "allOk": "All {days} days meet your targets.",
+      "failing": "{ok} of {days} days meet your targets. Not these: {dates}. Ask your AI to adjust them and paste it again: it replaces this one.",
+      "startTaken": "Another menu starts on that day. Replace it?",
+      "replace": "Replace",
+      "where": "Where: {info}",
+      "askAgain": "Ask your AI to fix it following the format in the text you copied, and paste it again.",
+      "skillLink": "Have Claude Code on your PC? Prepare it with the skill (Profile → My AI)",
+      "errors": {
+        "paste_empty": "Paste the JSON your AI gave you here.",
+        "paste_not_json": "That is not valid JSON (line {line}, column {column}). Copy your AI's whole reply, from the first brace to the last.",
+        "paste_no_schema": "The JSON is not a FightLab menu: it lacks \"schema\": 1.",
+        "import_invalid": "The JSON does not follow the menu format.",
+        "import_too_long": "A menu covers 1 to {max} days.",
+        "free_meal_refused": "No free meal after a positive eating-disorder screen: this menu is not saved.",
+        "no_calorie_targets": "Without calorie targets there is no menu to prepare.",
+        "profile_incomplete": "Complete your profile to prepare a menu.",
+        "generic": "That did not work. Try again."
+      }
+    }
   },
   "sessionCheck": {
     "title": "Vigorous session: best reviewed first",
@@ -3560,6 +3599,45 @@
       "blocked": "The coach doesn't recommend training today: plan routines won't be regenerated until the block is lifted.",
       "syncError": "Couldn't build the plan routines.",
       "syncing": "Building the plan routines…"
+    }
+  },
+  "myAi": {
+    "link": "My AI (menus)",
+    "back": "← Profile",
+    "title": "My AI",
+    "intro": "Prepare your menus with your own AI (your Claude subscription or another one). FightLab uses no paid AI: it only hands over your data and checks the menu with its engine.",
+    "loading": "Loading…",
+    "copy": "Copy",
+    "copied": "Copied",
+    "pc": {
+      "title": "From your PC, with Claude Code",
+      "step1": "Install the fightlab-menu skill.",
+      "docs": "How to install it",
+      "step2": "Create a token here and keep it on your PC (FIGHTLAB_TOKEN variable or the file from the guide). Never commit it to a repository.",
+      "step3": "Put the address below in FIGHTLAB_URL.",
+      "step4": "In Claude Code, ask for \"this week's menu\": it downloads your data, prepares the menu, checks it with the engine and uploads it.",
+      "url": "Address for the skill (FIGHTLAB_URL)"
+    },
+    "tokens": {
+      "title": "Personal tokens",
+      "scope": "A token can only read the menu data and upload menus. It gives access to nothing else in your account.",
+      "name": "Token name",
+      "namePlaceholder": "Home PC",
+      "create": "Create token",
+      "once": "Copy it now: it is shown only this once. If you lose it, revoke it and create another.",
+      "none": "You have no tokens yet.",
+      "created": "created {date}",
+      "used": "used {date}",
+      "unused": "never used",
+      "revoke": "Revoke",
+      "revokeConfirm": "Revoke? It stops working now",
+      "full": "You have {max} active tokens: revoke one to create another.",
+      "error": "The token could not be created."
+    },
+    "phone": {
+      "title": "From your phone",
+      "body": "In Menu, \"Prepare it with my AI\" copies your data and the instructions to paste into claude.ai or another AI. Then you paste its reply on the same screen.",
+      "cta": "Go to Menu"
     }
   }
 }

@@ -10,6 +10,7 @@ import { MenuView } from "@/components/menu/MenuView";
 import { ProductsCard } from "@/components/menu/ProductsCard";
 import { TastesCard } from "@/components/menu/TastesCard";
 import { ImportMenuCard } from "@/components/menu/ImportMenuCard";
+import { AiMenuCard } from "@/components/menu/AiMenuCard";
 import { MEALS, useGenerateMenu, useMenu, type MealKey } from "@/lib/menu";
 
 const DEFAULT_DAYS = 3;
@@ -156,6 +157,7 @@ function MenuScreen() {
         )}
       </form>
 
+      <AiMenuCard days={days} meals={meals} tupper={tupper} onSaved={pick} />
       <ImportMenuCard onImported={pick} />
       {picker}
       {menu && <MenuView menu={menu} />}

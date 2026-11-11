@@ -174,7 +174,10 @@ def test_context_has_what_the_ai_needs_and_nothing_personal():
 def test_context_in_english_and_with_recent_menus_and_dishes_to_avoid():
     user = make_user()
     client_for(user).post(PASTE, {"menu": ai_menu(start=TODAY - timedelta(days=2))}, format="json")
-    ctx = with_token(new_token(user)).get(CONTEXT, {"start": START.isoformat()}, HTTP_ACCEPT_LANGUAGE="en").json()
+    user.profile.language = "en"
+    user.profile.save()
+    # Con el token, el idioma es el del perfil (la petición de la skill no lleva el del navegador).
+    ctx = with_token(new_token(user)).get(CONTEXT, {"start": START.isoformat()}, HTTP_ACCEPT_LANGUAGE="es").json()
     assert ctx["lang"] == "en" and ctx["request"]["meal_labels"]["lunch"] == "Lunch"
     assert "oats" in {f[0] for f in ctx["foods"]} or any("oat" in f[0] for f in ctx["foods"])
     assert ctx["instructions"].startswith("You are FightLab")
