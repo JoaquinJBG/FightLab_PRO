@@ -24,32 +24,17 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     orientation: "portrait",
     background_color: "#05070e",
     theme_color: "#05070e",
+    // F16: el icono dice «FL», como el logo de la app, en todos los tamaños y con su versión
+    // «maskable» (fondo a sangre y letras en la zona segura) para los iconos adaptables de Android.
+    // Los PNG salen de los SVG con `node scripts/icons.mjs`.
     icons: [
-      {
-        src: "/icon.svg",
-        sizes: "any",
-        type: "image/svg+xml",
-        purpose: "any",
-      },
-      {
-        src: "/icon-maskable.svg",
-        sizes: "any",
-        type: "image/svg+xml",
-        purpose: "maskable",
-      },
+      { src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
+      { src: "/icon-maskable.svg", sizes: "any", type: "image/svg+xml", purpose: "maskable" },
       // PNG rasterizados: iOS y algunos instaladores de Android no aceptan SVG.
-      {
-        src: "/icon-192.png",
-        sizes: "192x192",
-        type: "image/png",
-        purpose: "any",
-      },
-      {
-        src: "/icon-512.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "any",
-      },
+      { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icon-maskable-192.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
+      { src: "/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
     shortcuts: [
       shortcut(tToday("today"), "/today", "shortcut-today"),
