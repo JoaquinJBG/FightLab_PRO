@@ -63,6 +63,17 @@ def test_imported_sets_feed_the_gym(today_fixed):
     user = make_user()
     client = client_for(user)
     upload(client, HEVY_A)
-    data = last(client, "Bench Press (Barbell)")["Bench Press (Barbell)"]
-    assert data["last"] == {"date": "2026-09-03", "sets": 2, "reps": 6, "weight_kg": 80.0}
-    assert data["pr_kg"] == 80.0
+    # El mismo ejercicio se encuentra con el nombre en español (el de la app) y con el de Hevy
+    both = last(client, "Press banca", "Bench Press (Barbell)")
+    for name in ("Press banca", "Bench Press (Barbell)"):
+        assert both[name]["last"] == {"date": "2026-09-03", "sets": 2, "reps": 6, "weight_kg": 80.0}
+        assert both[name]["pr_kg"] == 80.0
+
+
+def test_english_and_spanish_names_are_one_exercise(today_fixed):
+    # Series guardadas antes con el nombre en inglés y las de ahora con el del catálogo, juntas
+    user = make_user()
+    log_session(user, date(2026, 10, 20), [("Pull Up", [(None, 8)])])
+    log_session(user, date(2026, 10, 27), [("Dominadas", [(None, 10)])])
+    data = last(client_for(user), "Dominadas")["Dominadas"]
+    assert data["last"]["date"] == "2026-10-27"

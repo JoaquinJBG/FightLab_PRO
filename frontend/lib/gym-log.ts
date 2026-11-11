@@ -187,3 +187,22 @@ export function freeSuperset(xs: Pick<ExerciseEntry, "superset">[]): number {
   while (used.has(n)) n++;
   return n;
 }
+
+/* ------------------- a qué serie va «Usar X kg» (R4-8) ------------------- */
+
+/** La siguiente serie sin hacer que no es de calentamiento; si solo quedan calentamientos, la
+    primera sin hacer. -1 si no queda ninguna. */
+export function nextWorkSetIndex(sets: Pick<SetEntry, "done" | "type">[]): number {
+  const work = sets.findIndex((s) => !s.done && (s.type ?? "normal") !== "warmup");
+  return work >= 0 ? work : sets.findIndex((s) => !s.done);
+}
+
+/* --------- un único criterio de récord en la sesión y en el resumen (R4-11) --------- */
+
+/** Criterio: por serie, cuenta el MEJOR tipo de récord que bate (peso > e1RM > volumen > reps a
+    ese peso). La insignia de la serie, el aviso y «N récords batidos» del resumen cuentan lo mismo:
+    una serie con récord = un récord. */
+export function bestRecord(kinds: RecordKind[]): RecordKind[] {
+  for (const k of ["weight", "e1rm", "volume", "reps"] as RecordKind[]) if (kinds.includes(k)) return [k];
+  return [];
+}

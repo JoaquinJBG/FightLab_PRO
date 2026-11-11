@@ -127,35 +127,35 @@ export function SetRow({ set, index, normalIndex, effort, exerciseName, onChange
       </label>
       <NumField
         testId="set-reps"
-        label={t("repsFor", { n })}
+        label={t("repsFor", { n, name: exerciseName })}
         value={set.reps}
         bounds={BOUNDS.reps}
         onCommit={(v) => onChange({ ...set, reps: v, reps_max: v !== null && set.reps_max !== null && set.reps_max < v ? null : set.reps_max })}
       />
       <NumField
         testId="set-reps-max"
-        label={t("repsMaxFor", { n })}
+        label={t("repsMaxFor", { n, name: exerciseName })}
         value={set.reps_max}
         bounds={{ ...BOUNDS.reps_max, min: set.reps ?? 0 }}
         onCommit={(v) => onChange({ ...set, reps_max: v })}
       />
       <NumField
         testId="set-kg"
-        label={t("kgFor", { n })}
+        label={t("kgFor", { n, name: exerciseName })}
         value={set.weight_kg}
         bounds={BOUNDS.weight_kg}
         onCommit={(v) => onChange({ ...set, weight_kg: v })}
       />
       {effort === "rir" ? (
-        <NumField testId="set-rir" label={t("rirFor", { n })} value={set.rir} bounds={BOUNDS.rir} onCommit={(v) => onChange({ ...set, rir: v })} />
+        <NumField testId="set-rir" label={t("rirFor", { n, name: exerciseName })} value={set.rir} bounds={BOUNDS.rir} onCommit={(v) => onChange({ ...set, rir: v })} />
       ) : (
-        <NumField testId="set-rpe" label={t("rpeFor", { n })} value={set.rpe} bounds={BOUNDS.rpe} onCommit={(v) => onChange({ ...set, rpe: v })} />
+        <NumField testId="set-rpe" label={t("rpeFor", { n, name: exerciseName })} value={set.rpe} bounds={BOUNDS.rpe} onCommit={(v) => onChange({ ...set, rpe: v })} />
       )}
       <button
         type="button"
         data-testid="set-remove"
         className="flex h-8 items-center justify-center text-muted hover:text-[var(--color-bad)]"
-        aria-label={t("removeSet", { n })}
+        aria-label={t("removeSet", { n, name: exerciseName })}
         onClick={onRemove}
       >
         ✕

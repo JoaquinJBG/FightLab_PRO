@@ -82,10 +82,12 @@ export function ExerciseBlock(props: Props) {
           {t("rest")}
           <select
             data-testid="exercise-rest"
-            className="field w-24 min-w-0 px-2 py-1.5 text-sm"
-            value={exercise.rest_s ?? 0}
-            onChange={(e) => onChange({ ...exercise, rest_s: Number(e.target.value) || null })}
+            className="field w-28 min-w-0 px-2 py-1.5 text-sm"
+            value={exercise.rest_s ?? ""}
+            onChange={(e) => onChange({ ...exercise, rest_s: e.target.value === "" ? null : Number(e.target.value) })}
           >
+            {/* null = sin elegir (la sesión usa su descanso por defecto); 0 = sin temporizador */}
+            {exercise.rest_s === null && <option value="">{t("restDefault")}</option>}
             {REST_OPTIONS.map((s) => (
               <option key={s} value={s}>
                 {s === 0 ? t("restOff") : fmtRest(s)}

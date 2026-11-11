@@ -266,3 +266,15 @@ export function exercisesFromServerSets(sets: ServerActivityDetail["sets"]): Exe
   }
   return out;
 }
+
+/** R4-7: el modo de esfuerzo con el que se planificó la rutina. Si alguna serie lleva RIR y
+    ninguna RPE, «rir»; si alguna lleva RPE y ninguna RIR, «rpe»; sin esfuerzo planificado (o
+    mezclado), null: se deja el que tenga el usuario. */
+export function effortModeOf(start: Pick<RoutineStart, "exercises">): "rir" | "rpe" | null {
+  const sets = start.exercises.flatMap((e) => e.sets);
+  const rir = sets.some((s) => s.rir !== null);
+  const rpe = sets.some((s) => s.rpe !== null);
+  if (rir && !rpe) return "rir";
+  if (rpe && !rir) return "rpe";
+  return null;
+}

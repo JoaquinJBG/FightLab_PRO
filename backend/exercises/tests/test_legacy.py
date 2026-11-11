@@ -62,3 +62,20 @@ def test_english_and_hevy_names():
 @pytest.mark.parametrize("name", [None, "", "   ", "Mi ejercicio raro", "Bench Press (Smith Machine) XYZ"])
 def test_unknown_names_return_none(name):
     assert legacy_exercise_key(name) is None
+
+
+@pytest.mark.parametrize("name,key", [
+    ("Pull Up", "cat:pull-up"),
+    ("Pull Up (Assisted)", "cat:pull-up"),
+    ("Overhead Press (Barbell)", "cat:overhead-press"),
+    ("Overhead Press", "cat:overhead-press"),
+    ("Overhead Press (Dumbbell)", "cat:dumbbell-shoulder-press"),
+    ("Dip", "cat:dips"),
+    ("Reverse Fly (Dumbbell)", "cat:rear-delt-fly"),
+    ("Pec Deck (Machine)", "cat:pec-deck"),
+    ("Squat", "cat:barbell-back-squat"),
+    ("Iso-Lateral Row (Machine)", "cat:seated-machine-row"),
+    ("Pendlay Row (Barbell)", "cat:barbell-row"),
+])
+def test_extra_hevy_aliases(name, key):
+    assert legacy_exercise_key(name) == key

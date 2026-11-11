@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { intlLocale } from "@/lib/locale";
+import { formatNumber, intlLocale } from "@/lib/locale";
 import { TrainingIcon } from "@/components/icons";
 import { EXERCISE_KEYS, gymSets, savedExercises, sessionTotals, type ExerciseEntry, type SetEntry } from "@/lib/gym";
 import { nextSetType, setLabels, supersetGroups } from "@/lib/gym-log";
@@ -155,7 +155,7 @@ export default function GymHistoryDetailPage() {
                   {x.sets.map((s, si) => (
                     <li key={si} className="t-body flex justify-between text-sm text-ink">
                       <span className="w-8 text-muted">{s.type && s.type !== "normal" ? ts(`setTypeShort.${s.type}`) : labels[si]}</span>
-                      <span className="flex-1">{s.kg ? ts("previewKg", { kg: s.kg, reps: s.reps }) : ts("previewReps", { reps: s.reps })}</span>
+                      <span className="flex-1">{s.kg ? ts("previewKg", { kg: formatNumber(locale, s.kg, { max: 2 }), reps: s.reps }) : ts("previewReps", { reps: s.reps })}</span>
                       <span className="text-muted">{s.rpe ? `RPE ${s.rpe}` : s.rir ? `RIR ${s.rir}` : ""}</span>
                     </li>
                   ))}

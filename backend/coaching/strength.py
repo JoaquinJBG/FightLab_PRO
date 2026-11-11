@@ -159,18 +159,28 @@ def _last_session(history) -> dict | None:
     return {"date": day.isoformat(), "sets": len(sets), "reps": top.reps, "weight_kg": top.weight_kg}
 
 
+def _exercise_ident(name: str) -> str:
+    try:
+        from exercises.legacy import legacy_exercise_key
+    except ImportError:
+        return name.lower()
+    return legacy_exercise_key(name) or name.lower()
+
+
 def last_data(user, today: date, names: list[str]) -> dict:
     """"Última vez", récord de carga y mejor e1RM de cada ejercicio de `names`, de `SetLog`.
 
     El récord es la carga máxima de una serie de trabajo (las series con el peso corporal y los
     calentamientos no cuentan). El e1RM es el del coach (Epley con las repeticiones en reserva,
     `best_by_day`), sobre todo el historial."""
+    # Un ejercicio es el mismo por su clave del catálogo («Pull Up» = «Dominadas»); sin ella, por
+    # el nombre sin mayúsculas. Así lo importado con nombres en inglés también cuenta.
     by_lower: dict[str, list] = defaultdict(list)
     for s in set_records(user, until=today):
-        by_lower[s.exercise.lower()].append(s)
+        by_lower[_exercise_ident(s.exercise)].append(s)
     exercises = {}
     for name in dict.fromkeys(n.strip() for n in names if n.strip()):
-        history = by_lower.get(name.lower(), [])
+        history = by_lower.get(_exercise_ident(name), [])
         loads = [s.weight_kg for s in history if coach_strength.is_working(s) and s.weight_kg]
         points = best_by_day(history)
         exercises[name] = {

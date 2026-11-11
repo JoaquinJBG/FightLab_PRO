@@ -1,5 +1,6 @@
 import type { SyncSet } from "./activities";
 import { setIssue } from "./gym-log";
+import { DEFAULT_LOCALE, formatNumber } from "./locale";
 
 // Tipos, biblioteca de ejercicios y persistencia local del gimnasio.
 // (localStorage por ahora; pasa al backend con Exercise/WorkoutSession en fase 3)
@@ -234,6 +235,7 @@ export function gymSessionFromPending(item: SyncItem): GymSession {
 export function exerciseStats(
   name: string,
   sessions: GymSession[] = loadGymSessions(),
+  locale: string = DEFAULT_LOCALE,
 ): { last: string | null; prKg: number | null } {
   let prKg: number | null = null;
   let last: string | null = null;
@@ -245,7 +247,7 @@ export function exerciseStats(
     }
     if (last === null) {
       const top = ex.sets.reduce((a, b) => (b.kg > a.kg ? b : a), ex.sets[0]);
-      last = `${ex.sets.length}×${top.reps}${top.kg > 0 ? ` · ${top.kg} kg` : ""}`;
+      last = `${ex.sets.length}×${top.reps}${top.kg > 0 ? ` · ${formatNumber(locale, top.kg, { max: 2 })} kg` : ""}`;
     }
   }
   return { last, prKg };
