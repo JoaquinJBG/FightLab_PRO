@@ -153,6 +153,46 @@ describe("editor", () => {
     expect(body.exercises[0]).not.toHaveProperty("_uid");
   });
 
+  it("R4-7: el descanso que enseña el editor es el que se guarda, y «Sin temporizador» se guarda como 0", async () => {
+    const fetchMock = api();
+    renderApp(<RoutineEditor id={null} />);
+    fireEvent.change(screen.getByTestId("routine-title"), { target: { value: "Tirón" } });
+    fireEvent.click(screen.getByTestId("exercise-add"));
+    fireEvent.click(screen.getByText("picker-add"));
+    const [row, curl] = screen.getAllByTestId("routine-exercise");
+    // Se ve lo que se guarda: 2:00 con barra y 1:30 con mancuernas, no «Sin temporizador».
+    expect((within(row).getByTestId("exercise-rest") as HTMLSelectElement).value).toBe("120");
+    expect(within(row).getByDisplayValue("2:00")).toBeTruthy();
+    expect(within(curl).getByDisplayValue("1:30")).toBeTruthy();
+    // Sin temporizador: se guarda 0 (la sesión no arranca el descanso), no null (= el de por defecto).
+    fireEvent.change(within(curl).getByTestId("exercise-rest"), { target: { value: "0" } });
+    expect(within(curl).getByDisplayValue("Sin temporizador")).toBeTruthy();
+    fireEvent.click(screen.getByTestId("routine-save"));
+    await waitFor(() => expect(nav.replace).toHaveBeenCalled());
+    expect(lastBody(fetchMock, "/api/proxy/gym/routines").exercises.map((e: { rest_s: number }) => e.rest_s)).toEqual([120, 0]);
+  });
+
+  it("R4-7: sin descanso elegido sale «Por defecto» y se guarda null", async () => {
+    const fetchMock = api();
+    renderApp(<RoutineEditor id={7} initial={{ ...initial(), exercises: [{ ...initial().exercises[0], rest_s: null }] }} />);
+    expect(within(screen.getByTestId("routine-exercise")).getByDisplayValue("Por defecto")).toBeTruthy();
+    fireEvent.change(screen.getByTestId("routine-title"), { target: { value: "Torso B" } });
+    fireEvent.click(screen.getByTestId("routine-save"));
+    await waitFor(() => expect(lastBody(fetchMock, "/api/proxy/gym/routines/7")).toBeTruthy());
+    expect(lastBody(fetchMock, "/api/proxy/gym/routines/7").exercises[0].rest_s).toBeNull();
+  });
+
+  it("R4-12: las etiquetas de cada serie llevan el nombre del ejercicio", () => {
+    api();
+    renderApp(<RoutineEditor id={7} initial={initial()} />);
+    const [bench] = screen.getAllByTestId("routine-exercise");
+    expect(within(bench).getByLabelText("Kilos de la serie 1 de Press banca")).toBeTruthy();
+    expect(within(bench).getByLabelText("Repeticiones de la serie 2 de Press banca")).toBeTruthy();
+    expect(within(bench).getByLabelText("Repeticiones máximas de la serie 2 de Press banca")).toBeTruthy();
+    expect(within(bench).getByLabelText("RIR de la serie 2 de Press banca")).toBeTruthy();
+    expect(within(bench).getByLabelText("Quitar la serie 1 de Press banca")).toBeTruthy();
+  });
+
   it("sin título no guarda y lo dice", () => {
     const fetchMock = api();
     renderApp(<RoutineEditor id={null} />);
