@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { formatDate } from "@/lib/locale";
 import { useMe, useProfile, useLogout } from "@/lib/hooks";
 import { SafetyBanner } from "@/components/safety/SafetyBanner";
 
@@ -16,13 +16,13 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 export default function ProfilePage() {
-  const router = useRouter();
   const { data: me } = useMe();
   const { data: profile } = useProfile();
   const logout = useLogout();
   const tc = useTranslations("common");
   const ts = useTranslations("safety");
   const t = useTranslations("profile");
+  const locale = useLocale();
   const th = useTranslations("historyImport");
   const tr = useTranslations("reminders");
   const tk = useTranslations("kitchen");
@@ -30,9 +30,9 @@ export default function ProfilePage() {
   // Valor desconocido del servidor: se muestra tal cual en vez de romper la vista
   const opt = (group: string, v?: string | null) => (v ? (t.has(`options.${group}.${v}`) ? t(`options.${group}.${v}`) : v) : null);
 
+  // useLogout limpia el dispositivo y abre /login con una carga completa (F15).
   async function onLogout() {
     await logout.mutateAsync();
-    router.push("/login");
   }
 
   const dash = (x?: string | number | null) => (x === null || x === undefined || x === "" ? "—" : String(x));
@@ -48,13 +48,13 @@ export default function ProfilePage() {
           </div>
           <div>
             <p className="t-body text-ink">{me?.email ?? "—"}</p>
-            <span className="badge badge-neon mt-1">{me?.role ?? "—"}</span>
+            <span className="badge badge-neon mt-1">{me?.role ? (t.has(`roles.${me.role}`) ? t(`roles.${me.role}`) : me.role) : "—"}</span>
           </div>
         </div>
       </section>
 
       <section className="glass rise mt-4 px-5 py-2" style={{ animationDelay: "100ms" }}>
-        <Row label={t("dob")} value={dash(profile?.date_of_birth)} />
+        <Row label={t("dob")} value={profile?.date_of_birth ? formatDate(locale, profile.date_of_birth, "longYear") : "—"} />
         <Row label={t("gender")} value={dash(opt("gender", profile?.gender))} />
         <Row label={t("height")} value={profile?.height_cm != null ? t("heightValue", { cm: profile.height_cm }) : "—"} />
         <Row label={t("stance")} value={dash(opt("stance", profile?.dominant_stance))} />

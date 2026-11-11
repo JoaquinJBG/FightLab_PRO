@@ -167,3 +167,30 @@ def test_password_reset_throttle_blocks_after_limit(client, verified_user, monke
         client.post("/api/v1/auth/password-reset", {"email": "a@b.com"}, format="json")
     resp = client.post("/api/v1/auth/password-reset", {"email": "a@b.com"}, format="json")
     assert resp.status_code == 429
+
+
+# --- F27: el email del enlace, para el campo de usuario oculto de la pantalla ---
+
+
+@pytest.mark.django_db
+def test_password_reset_check_returns_the_email_of_a_valid_link(client, verified_user):
+    uid, token = generate_password_reset_uid_and_token(verified_user)
+    resp = client.post("/api/v1/auth/password-reset/check", {"uid": uid, "token": token}, format="json")
+    assert resp.status_code == 200
+    assert resp.json() == {"email": "a@b.com"}
+
+
+@pytest.mark.django_db
+def test_password_reset_check_says_nothing_with_a_bad_link(client, verified_user):
+    uid, _ = generate_password_reset_uid_and_token(verified_user)
+    resp = client.post("/api/v1/auth/password-reset/check", {"uid": uid, "token": "malo"}, format="json")
+    assert resp.status_code == 400
+    assert "email" not in resp.json()
+    assert "a@b.com" not in resp.content.decode()
+
+
+@pytest.mark.django_db
+def test_password_reset_check_does_not_use_the_link(client, verified_user):
+    uid, token = generate_password_reset_uid_and_token(verified_user)
+    client.post("/api/v1/auth/password-reset/check", {"uid": uid, "token": token}, format="json")
+    assert check_password_reset_token(verified_user, token)  # el enlace sigue sirviendo para cambiarla

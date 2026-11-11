@@ -24,6 +24,19 @@ export function steps(opts: { female: boolean; hypertension: boolean }): Step[] 
   return out;
 }
 
+/** «Paso n de total» (F10): una pantalla por número. «Lo básico» tiene dos pantallas (los datos y
+ * luego el peso) y antes las dos decían «Paso 3 de 7»: 8 pantallas para 7 pasos. */
+export function stepProgress(flow: Step[], step: Step, basicsWeight: boolean): { n: number; total: number } {
+  const screens: string[] = [];
+  for (const s of flow) {
+    if (s === "welcome" || s === "done") continue;
+    screens.push(s);
+    if (s === "basics") screens.push("basics:weight");
+  }
+  const key = step === "basics" && basicsWeight ? "basics:weight" : step;
+  return { n: screens.indexOf(key) + 1, total: screens.length };
+}
+
 /* ---------------------------------- SCOFF ---------------------------------- */
 
 // Las cinco preguntas del coach, en este orden (setup/SKILL.md, paso 2).

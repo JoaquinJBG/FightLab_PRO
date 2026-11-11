@@ -75,7 +75,10 @@
     "redo": "Redo the screening",
     "loading": "Working out your safety notices…",
     "error": "Your safety notices could not be loaded.",
-    "none": "No safety notices from what you told us."
+    "none": "No safety notices from what you told us.",
+    "fold": "Collapse",
+    "unfold": "Show",
+    "folded": "{count, plural, one {# safety notice} other {# safety notices}}"
   },
   "onboarding": {
     "step": "Step {n} of {total}",
@@ -1570,6 +1573,8 @@
       "typing": "The coach is typing…",
       "placeholder": "Ask your coach…",
       "send": "Send",
+      "expand": "Expand",
+      "collapse": "Close chat",
       "quick": {
         "how": "How am I doing?",
         "hard": "Train hard today?",
@@ -1674,6 +1679,11 @@
       "save": "Save changes"
     },
     "logout": "Sign out",
+    "roles": {
+      "ATHLETE": "Athlete",
+      "COACH": "Coach",
+      "ADMIN": "Admin"
+    },
     "heightValue": "{cm} cm",
     "options": {
       "gender": {
@@ -2384,6 +2394,12 @@
       "body": "A change couldn't be saved to your account (invalid data or limit reached). It's still on this device.",
       "close": "Close"
     },
+    "offline": {
+      "title": "Offline",
+      "idle": "Anything you change now will be sent once you're back online.",
+      "pending": "{count, plural, one {# change waiting to be sent} other {# changes waiting to be sent}}: it goes out by itself once you're back online.",
+      "sending": "{count, plural, one {Sending # pending change…} other {Sending # pending changes…}}"
+    },
     "gate": {
       "slow": "The server is taking a while to respond.",
       "error": "Couldn't load your profile.",
@@ -2837,6 +2853,7 @@
     "done": "Imported",
     "checkFirst": "Check the files before importing them.",
     "nothing": "Nothing new to import: everything in the files was already there.",
+    "unreadable": "None of the files could be read, so there's nothing to import. The reason for each one is below.",
     "kinds": {
       "parte_diario_json": "ParteDiario backup",
       "parte_diario_csv": "ParteDiario CSV",
@@ -3119,8 +3136,14 @@
       "android": "Android: in Chrome, with the app installed or open in the browser.",
       "ios": "iPhone and iPad: only with the app added to the home screen (Share → Add to Home Screen), on iOS 16.4 or later.",
       "iosNow": "You're on iPhone or iPad in the browser: first add the app to the home screen (Share → Add to Home Screen) and open it from there.",
-      "unsupported": "This browser doesn't support reminders. On Android use Chrome; on iPhone, add the app to the home screen (iOS 16.4+).",
-      "denied": "You've blocked notifications for this site. Allow them in the browser settings (site permissions → Notifications) and come back."
+      "unsupported": "This browser doesn't support reminders. On Android use Chrome; on iPhone, add the app to the home screen (iOS 16.4+)."
+    },
+    "help": {
+      "titleDefault": "Reminders aren't on: the browser didn't give permission.",
+      "titleDenied": "You've blocked notifications for this site.",
+      "android": "Android: tap the padlock in the address bar → Permissions → Notifications → Allow. If no prompt appears, Chrome's notifications are off on the phone: Settings → Apps → Chrome → Notifications, and turn them on. With the app installed, also check Settings → Apps → FightLab → Notifications.",
+      "ios": "iPhone and iPad: reminders only work with the app on the Home Screen (Share → Add to Home Screen, iOS 16.4 or later) and opened from that icon. If it's already there, check Settings → Notifications → FightLab.",
+      "retry": "Once you've changed it, come back and tap “Turn on reminders here”."
     },
     "device": {
       "title": "This device",

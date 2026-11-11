@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { djangoFetch, djangoRequest } from "@/lib/api";
 import { clientIpHeaders } from "@/lib/auth-forward";
+import { sharedRefresh } from "@/lib/refresh-flight";
 import {
   getAccess,
   getRefresh,
@@ -118,14 +119,17 @@ async function handle(req: Request, path: string[]) {
       // aún válido).
       const refreshUnavailable = () =>
         NextResponse.json({ code: "refresh_unavailable" }, { status: 503 });
-      let ref: Awaited<ReturnType<typeof djangoFetch>>;
+      let ref: { status: number; data: unknown };
       try {
-        ref = await djangoFetch("/auth/refresh", {
-          method: "POST",
-          body: { refresh: refreshBefore },
-          timeoutMs: Math.min(RETRY_TIMEOUT_MS, remaining()),
-          headers: ipHeaders,
-        });
+        // Single-flight (F30): las peticiones simultáneas con el mismo refresh comparten uno.
+        ref = await sharedRefresh(refreshBefore, () =>
+          djangoFetch("/auth/refresh", {
+            method: "POST",
+            body: { refresh: refreshBefore },
+            timeoutMs: Math.min(RETRY_TIMEOUT_MS, remaining()),
+            headers: ipHeaders,
+          }),
+        );
       } catch {
         return refreshUnavailable();
       }

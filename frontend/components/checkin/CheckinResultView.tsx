@@ -107,7 +107,7 @@ export function CheckinResultView({
 
       <div className="mt-5 grid grid-cols-2 gap-2">
         <button type="button" onClick={onAgain} className="btn btn-tonal">{t("result.again")}</button>
-        <Link href="/dashboard" className="btn btn-primary">{t("result.home")}</Link>
+        <Link href="/today" className="btn btn-primary">{t("result.home")}</Link>
       </div>
     </div>
   );

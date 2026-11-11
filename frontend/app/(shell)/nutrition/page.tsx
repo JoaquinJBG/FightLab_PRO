@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { formatNumber } from "@/lib/locale";
 import { useProfile, useSafety, useTargets, useUpdateProfile, useWeighIn } from "@/lib/hooks";
 import { coachToLegacyGoal, legacyToCoachGoal } from "@/lib/goal";
 import { SafetyPanel } from "@/components/safety/SafetyBanner";
@@ -45,11 +46,13 @@ function missingKind(field: string): "equation_sex" | "weight" | "profile" {
 function Bar({ label, val, target, color, rule }: { label: string; val: number; target: number | null; color: string; rule?: RuleRef }) {
   const pct = target && target > 0 ? Math.min(100, (val / target) * 100) : 0;
   const t = useTranslations("nutrition");
+  const locale = useLocale();
+  const g = (v: number) => formatNumber(locale, v, { max: 1 });
   return (
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-x-1">
         <span className="t-label text-muted">{label}</span>
-        <span className="t-body whitespace-nowrap text-xs text-ink">{target == null ? t("gramsOnly", { value: val }) : t("gramsOf", { value: val, target })}</span>
+        <span className="t-body whitespace-nowrap text-xs text-ink">{target == null ? t("gramsOnly", { value: g(val) }) : t("gramsOf", { value: g(val), target: g(target) })}</span>
       </div>
       <div className="mt-1 h-2 rounded-full bg-[rgba(150,190,255,0.12)]">
         <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
@@ -267,7 +270,7 @@ export default function NutritionPage() {
             {(["perder", "mantener", "ganar"] as Goal[]).map((g) => {
               const off = (g === "perder" && deficitBlocked) || (g === "ganar" && surplusBlocked);
               return (
-                <button key={g} onClick={() => changeGoal(g)} disabled={off} data-testid={`goal-${g}`}
+                <button key={g} type="button" onClick={() => changeGoal(g)} disabled={off} data-testid={`goal-${g}`} aria-pressed={goal === g}
                   className="rounded-xl py-2.5 text-sm font-medium transition-colors disabled:opacity-40"
                   style={goal === g ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)", color: "#03101c" } : { background: "transparent", color: "var(--color-muted)" }}>
                   {t(`goal.${g}`)}
@@ -298,9 +301,9 @@ export default function NutritionPage() {
           <p className="t-body text-[11px] text-muted">{t("water.line", { liters: format.number(water * 0.25, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) })}</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => changeWater(-1)} aria-label={t("water.remove")} className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">−</button>
+          <button type="button" onClick={() => changeWater(-1)} aria-label={t("water.remove")} className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">−</button>
           <span className="stat w-14 text-center text-xl text-ink">{water}<span className="text-xs text-muted">/8</span></span>
-          <button onClick={() => changeWater(1)} aria-label={t("water.add")} className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">+</button>
+          <button type="button" onClick={() => changeWater(1)} aria-label={t("water.add")} className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">+</button>
         </div>
       </div>
 

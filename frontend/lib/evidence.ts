@@ -49,6 +49,29 @@ export function pickRuleText(rule: RuleDetail, locale: string): RuleText {
   };
 }
 
+/* F20 de la prueba en móvil: las reglas de la base de evidencia están escritas también para el motor
+ * («El texto del coach puede decir que…», «la app no debe decir…»). Al usuario se le enseña lo que
+ * le sirve: la frase «X puede/debe decir que Y» queda en «Y», y las prohibiciones dirigidas a la
+ * app (qué no debe decir o cómo etiquetar un aviso) se quitan. */
+const ENGINE_ONLY =
+  /\b(?:must not|should not|may not)\s+(?:say|imply|suggest|tell|present)\b|\bmust be label+ed\b|\bno debe(?:n)?\s+(?:decir|dar a entender|sugerir|presentar)\b|\bdebe etiquetarse\b/i;
+const SPEAKER_PREFIX =
+  /^.*?\b(?:FightLab|the app|la app|(?:the )?coach(?:'s)? text|el texto del coach)\s+(?:may|can|must|should|puede|debe)\s+(?:say|tell|decir)\b[^.;]*?\s(?:that|que)\s+/i;
+
+export function userFacingRuleText(text: string): string {
+  if (!text) return text;
+  const out: string[] = [];
+  for (const sentence of text.split(/(?<=[.!?])\s+/)) {
+    if (ENGINE_ONLY.test(sentence)) continue;
+    const m = SPEAKER_PREFIX.exec(sentence);
+    if (m) {
+      const rest = sentence.slice(m[0].length);
+      out.push(rest.charAt(0).toLocaleUpperCase() + rest.slice(1));
+    } else out.push(sentence);
+  }
+  return out.length > 0 ? out.join(" ") : text;
+}
+
 /** `[[regla:clave]]` en un texto del chat → trozos de texto y claves de regla. */
 export function splitCitations(text: string): { text?: string; key?: string }[] {
   const out: { text?: string; key?: string }[] = [];

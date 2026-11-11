@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useRule } from "@/lib/hooks";
-import { asGrade, GRADE_COLOR, pickRuleText } from "@/lib/evidence";
+import { asGrade, GRADE_COLOR, pickRuleText, userFacingRuleText } from "@/lib/evidence";
 import type { EvidenceSource } from "@/lib/schemas";
 
 function sourceHref(s: EvidenceSource): string | null {
@@ -52,7 +52,7 @@ export function EvidenceSheet({ ruleKey, onClose }: { ruleKey: string; onClose: 
                 {t(`label.${text.label}`)}
               </p>
             )}
-            <p className="t-body mt-3 whitespace-pre-line text-ink">{text.rule_text}</p>
+            <p data-testid="rule-text" className="t-body mt-3 whitespace-pre-line text-ink">{userFacingRuleText(text.rule_text)}</p>
 
             {text.applies_to && (
               <section className="mt-4">
@@ -63,7 +63,7 @@ export function EvidenceSheet({ ruleKey, onClose }: { ruleKey: string; onClose: 
             {text.conflicts && (
               <section className="mt-4">
                 <h4 className="t-label text-muted">{t("unclear")}</h4>
-                <p className="t-body mt-1 whitespace-pre-line text-ink">{text.conflicts}</p>
+                <p className="t-body mt-1 whitespace-pre-line text-ink">{userFacingRuleText(text.conflicts)}</p>
               </section>
             )}
 

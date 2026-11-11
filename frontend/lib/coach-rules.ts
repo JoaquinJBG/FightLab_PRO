@@ -13,11 +13,18 @@ import { COMBAT_RULES, type RuleRef } from "@/lib/combat-rules";
 import { cite, comparisonPhrase, comparisonRule, isBigJump } from "@/lib/load-texts";
 import { detectSafetyTopic, type SafetyTopic } from "@/lib/chat-safety";
 import { SAFETY_RULES } from "@/lib/safety-rules";
+import { formatNumber } from "@/lib/locale";
 
 export type Tr = ReturnType<typeof useTranslations>;
 
 /** Traductores que usan las reglas: `coach`, `load` y `combat`. */
-export type CoachTr = { t: Tr; tl: Tr; tc: Tr };
+/** `locale` (F12): con él, los decimales salen con el formato del idioma («80,1» en español). */
+export type CoachTr = { t: Tr; tl: Tr; tc: Tr; locale?: string };
+
+/** Un decimal para el texto del coach: con el idioma, `formatNumber`; sin él, como antes. */
+function dec(locale: string | undefined, v: number, digits = 1): string {
+  return locale ? formatNumber(locale, v, { digits }) : v.toFixed(digits);
+}
 
 /* ------------------- contexto real del atleta (local) -------------------- */
 
@@ -75,7 +82,7 @@ export function recoveryText(r: Recovery, t: Tr) {
 
 /* --------------------- briefing y recomendaciones por reglas -------------- */
 
-export function buildBriefing(ctx: Ctx, { t, tl, tc }: CoachTr, listFmt?: Intl.ListFormat): { text: string; rules: RuleRef[]; blocked: boolean } {
+export function buildBriefing(ctx: Ctx, { t, tl, tc, locale }: CoachTr, listFmt?: Intl.ListFormat): { text: string; rules: RuleRef[]; blocked: boolean } {
   const bits: string[] = [];
   const rules: RuleRef[] = [];
   const injuries = ctx.injuries ?? [];
@@ -104,7 +111,7 @@ export function buildBriefing(ctx: Ctx, { t, tl, tc }: CoachTr, listFmt?: Intl.L
   if (ctx.cutAllowed && ctx.weighTarget != null && ctx.weighDays != null && ctx.weight != null) {
     const over = ctx.weight - ctx.weighTarget;
     if (over > 0.3 && ctx.weighDays <= 10) {
-      bits.push(tc("cut.briefing", { days: ctx.weighDays, over: over.toFixed(1) }));
+      bits.push(tc("cut.briefing", { days: ctx.weighDays, over: dec(locale, over) }));
       rules.push(COMBAT_RULES.plannedWeight);
     }
   }
@@ -127,7 +134,7 @@ export type Rec = {
   rule?: RuleRef | null; // la regla del número o del consejo; null = convención de FightLab
 };
 
-export function buildRecs(ctx: Ctx, { t, tl, tc }: CoachTr, listFmt?: Intl.ListFormat): Rec[] {
+export function buildRecs(ctx: Ctx, { t, tl, tc, locale }: CoachTr, listFmt?: Intl.ListFormat): Rec[] {
   const recs: Rec[] = [];
   const m = ctx.metrics;
 
@@ -184,7 +191,7 @@ export function buildRecs(ctx: Ctx, { t, tl, tc }: CoachTr, listFmt?: Intl.ListF
       id: "pesaje",
       icon: "weigh",
       tone: ctx.weighDays <= 5 ? "warn" : "info",
-      title: tc("cut.recTitle", { over: (ctx.weight - ctx.weighTarget).toFixed(1), days: ctx.weighDays }),
+      title: tc("cut.recTitle", { over: dec(locale, ctx.weight - ctx.weighTarget), days: ctx.weighDays }),
       why: tc("cut.recWhy"),
       action: { label: tc("cut.recAction"), href: "/nutrition/weigh-in" },
       rule: COMBAT_RULES.plannedWeight,
@@ -243,7 +250,7 @@ export function safetyReply(topic: SafetyTopic, t: Tr): string {
   return t(`reply.safety.${topic}`) + SAFETY_REPLY_RULES[topic].map(cite).join("");
 }
 
-export function coachReply(text: string, ctx: Ctx, { t, tl, tc }: CoachTr, listFmt: Intl.ListFormat): string {
+export function coachReply(text: string, ctx: Ctx, { t, tl, tc, locale }: CoachTr, listFmt: Intl.ListFormat): string {
   // Seguridad primero: con dolor, una lesión, un golpe en la cabeza, mareo o fiebre no hay
   // consejo de carga, sino la misma regla que el check-in y el cribado.
   const topic = detectSafetyTopic(text);
@@ -273,10 +280,10 @@ export function coachReply(text: string, ctx: Ctx, { t, tl, tc }: CoachTr, listF
     if (ctx.cutAllowed && ctx.weighTarget != null && ctx.weighDays != null) {
       const over = ctx.weight - ctx.weighTarget;
       return over > 0
-        ? tc("cut.replyOver", { over: over.toFixed(1), days: ctx.weighDays }) + cite(COMBAT_RULES.plannedWeight)
+        ? tc("cut.replyOver", { over: dec(locale, over), days: ctx.weighDays }) + cite(COMBAT_RULES.plannedWeight)
         : t("reply.weightAt", { target: ctx.weighTarget, days: ctx.weighDays });
     }
-    return t("reply.weightLast", { weight: ctx.weight.toFixed(1) });
+    return t("reply.weightLast", { weight: dec(locale, ctx.weight) });
   }
   if (/fuerte|intens|sparring|entren|hoy|hard|train|today/.test(low)) {
     // F26: con una lesión guardada, el consejo de carga lleva su límite (solo lo que afecta a la zona)
@@ -292,7 +299,7 @@ export function coachReply(text: string, ctx: Ctx, { t, tl, tc }: CoachTr, listF
   }
   if (/carga|acwr|riesgo|load|risk/.test(low)) {
     return m && m.weekAU > 0
-      ? tl("coach.replyLoad", { au: m.weekAU, comparison: acwrTxt, mono: m.monotonia != null ? m.monotonia.toFixed(1) : "—" })
+      ? tl("coach.replyLoad", { au: m.weekAU, comparison: acwrTxt, mono: m.monotonia != null ? dec(locale, m.monotonia) : "—" })
       : tl("coach.replyNone");
   }
   if (/cómo voy|como voy|resumen|how am i|summary/.test(low)) {
@@ -301,8 +308,8 @@ export function coachReply(text: string, ctx: Ctx, { t, tl, tc }: CoachTr, listF
     if (rec) parts.push(t("reply.summaryRecovery", { label: rec.label.toLowerCase() }));
     if (ctx.weight != null) {
       parts.push(ctx.weighTarget != null
-        ? t("reply.summaryWeightTarget", { weight: ctx.weight.toFixed(1), target: ctx.weighTarget })
-        : t("reply.summaryWeight", { weight: ctx.weight.toFixed(1) }));
+        ? t("reply.summaryWeightTarget", { weight: dec(locale, ctx.weight), target: dec(locale, ctx.weighTarget) })
+        : t("reply.summaryWeight", { weight: dec(locale, ctx.weight) }));
     }
     return parts.length > 0 ? t("reply.summary", { parts: parts.join(" · ") }) : t("reply.summaryNone");
   }

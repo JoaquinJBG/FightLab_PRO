@@ -170,6 +170,38 @@ describe("Importar historial (en)", () => {
     expectClean(container, ["12,5"]);
   });
 
+  it("F17: si ningún archivo se puede leer lo dice así y no ofrece «Importar»", () => {
+    state.results = [result({
+      days: { total: 0, new: 0, filled: 0, conflict: 0, unchanged: 0, written: 0 },
+      conflicts: [], discarded: [], notices: [], items: ZERO_ITEMS, reviews: ZERO_REVIEWS, range: null,
+      files: [
+        { name: "foto.jpg", kind: null, days: 0, reviews: 0, error: { code: "unknown_format", params: {} } },
+        { name: "mal.csv", kind: "sets", days: 0, reviews: 0, error: null },
+      ],
+      sets: [{ name: "mal.csv", result: null, error: { code: "decimal_comma", params: { line: 3 } } }],
+    })];
+    const { container } = renderEn(<HistoryImportPage />);
+    fireEvent.change(screen.getByTestId("history-files"), { target: { files: files() } });
+    fireEvent.click(screen.getByRole("button", { name: "Check files" }));
+    expect(screen.getByTestId("history-unreadable").textContent).toMatch(/None of the files could be read/);
+    expect(screen.queryByTestId("history-nothing")).toBeNull(); // no «todo ya estaba»
+    expect(screen.queryByTestId("history-import")).toBeNull();
+    expect(screen.getAllByTestId("history-file-error")).toHaveLength(2);
+    expectClean(container);
+  });
+
+  it("con nada nuevo tampoco ofrece «Importar»", () => {
+    state.results = [result({
+      days: { total: 5, new: 0, filled: 0, conflict: 0, unchanged: 5, written: 0 },
+      conflicts: [], discarded: [], notices: [], items: ZERO_ITEMS, reviews: ZERO_REVIEWS,
+    })];
+    renderEn(<HistoryImportPage />);
+    fireEvent.change(screen.getByTestId("history-files"), { target: { files: files() } });
+    fireEvent.click(screen.getByRole("button", { name: "Check files" }));
+    expect(screen.getByTestId("history-nothing")).toBeTruthy();
+    expect(screen.queryByTestId("history-import")).toBeNull();
+  });
+
   it.each([
     [new HistoryImportError("too_many_files", { max: 60 }), "You can upload up to 60 files at once."],
     [new HistoryImportError("throttled"), "Too many attempts in a row. Wait a minute."],

@@ -5,6 +5,7 @@ from .logout import LogoutView
 from .views import (
     MeView,
     NormalizedTokenObtainPairView,
+    PasswordResetCheckView,
     PasswordResetConfirmView,
     PasswordResetRequestView,
     RegisterView,
@@ -20,6 +21,7 @@ urlpatterns = [
     path("auth/refresh", TokenRefreshView.as_view(), name="refresh"),
     path("auth/logout", LogoutView.as_view(), name="logout"),
     path("auth/password-reset", PasswordResetRequestView.as_view(), name="password-reset"),
+    path("auth/password-reset/check", PasswordResetCheckView.as_view(), name="password-reset-check"),
     path(
         "auth/password-reset/confirm",
         PasswordResetConfirmView.as_view(),

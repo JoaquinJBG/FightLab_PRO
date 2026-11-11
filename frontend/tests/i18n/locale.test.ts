@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { intlLocale, resolveLocale } from "@/lib/locale";
+import { capitalizeFirst, formatDate, formatNumber, intlLocale, resolveLocale } from "@/lib/locale";
 import { foodName } from "@/lib/nutrition";
 
 describe("resolveLocale", () => {
@@ -39,5 +39,27 @@ describe("formato y nombres en inglés", () => {
     expect(foodName("Pechuga de pollo", "en")).toBe("Chicken breast");
     expect(foodName("Pechuga de pollo", "es")).toBe("Pechuga de pollo");
     expect(foodName("Algo nuevo", "en")).toBe("Algo nuevo");
+  });
+});
+
+describe("formatNumber / formatDate / capitalizeFirst (F11, F12)", () => {
+  it("coma decimal en español y punto en inglés", () => {
+    expect(formatNumber("es", 92.5, { digits: 1 })).toBe("92,5");
+    expect(formatNumber("en", 92.5, { digits: 1 })).toBe("92.5");
+    expect(formatNumber("es", 80, { digits: 1 })).toBe("80,0");
+    expect(formatNumber("es", 80.25, { max: 1 })).toBe("80,3");
+    expect(formatNumber("es", "34.1")).toBe("34,1"); // Decimal del servidor como texto
+    expect(formatNumber("es", 1.5, { signed: true, digits: 1 })).toBe("+1,5");
+    expect(formatNumber("es", "x")).toBe("x");
+  });
+
+  it("fechas con el formato del idioma, «de» en minúscula y sin moverse de día", () => {
+    expect(formatDate("es", "2026-11-09")).toBe("9 de noviembre");
+    expect(formatDate("en", "2026-11-09")).toBe("9 November");
+    expect(formatDate("es", "1990-06-15", "longYear")).toBe("15 de junio de 1990");
+    expect(formatDate("es", "1990-06-15", "numeric")).toBe("15/06/1990");
+    expect(formatDate("es", "2026-11-09", "weekday")).toBe("lunes, 9 de noviembre");
+    expect(capitalizeFirst(formatDate("es", "2026-11-09", "weekday"), "es")).toBe("Lunes, 9 de noviembre");
+    expect(formatDate("es", "no es fecha")).toBe("no es fecha");
   });
 });

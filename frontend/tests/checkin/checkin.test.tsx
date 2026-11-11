@@ -165,6 +165,9 @@ describe.each([["es"], ["en"]] as const)("Check-in diario (%s)", (locale) => {
     expect(screen.getByTestId("urgent-call").getAttribute("href")).toBe("tel:112");
     expect(screenEl.textContent).toContain("Habla con tu médico.");
     expect(screen.queryByTestId("checkin-result")).toBeNull();
+    // F22: el inicio es Hoy
+    expect(screenEl.querySelector('a[href="/today"]')).toBeTruthy();
+    expect(screenEl.querySelector('a[href="/dashboard"]')).toBeNull();
   });
 
   it("un aviso que no es de urgencia sale en el resultado con su regla, el profesional y la línea de derivación", async () => {
@@ -194,6 +197,8 @@ describe.each([["es"], ["en"]] as const)("Check-in diario (%s)", (locale) => {
     fireEvent.change(screen.getByTestId("weight"), { target: { value: "71" } });
     submit();
     const box = await screen.findByTestId("trend-insufficient");
+    // F22: «Volver al inicio» lleva a Hoy, no al resumen
+    expect(screen.getByText(CATALOGS[locale].checkin.result.home).closest("a")?.getAttribute("href")).toBe("/today");
     expect(box.textContent).toMatch(/\b7\b/);
     expect(box.textContent).toMatch(/\b4\b/); // faltan 4
     expect(screen.queryByTestId("trend-ok")).toBeNull();

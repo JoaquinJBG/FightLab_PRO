@@ -79,6 +79,12 @@ describe("Hoy", () => {
     renderApp(<TodayPage />);
     const next = await screen.findByTestId("next-meal");
     expect(next.textContent).toContain("Desayuno: Avena con yogur");
+    // F11: «Jueves, 29 de octubre», con la «de» en minúscula
+    expect(screen.getByTestId("today-date").textContent).toBe("Jueves, 29 de octubre");
+    // F19: el tipo de día anuncia cuál está elegido (grupo de opciones con aria-checked)
+    const types = ["gym", "cardio", "rest"].map((d) => screen.getByTestId(`day-type-${d}`));
+    expect(types.every((b) => b.getAttribute("role") === "radio" && b.hasAttribute("aria-checked"))).toBe(true);
+    expect(types.filter((b) => b.getAttribute("aria-checked") === "true").length).toBeLessThanOrEqual(1);
     const plan = screen.getByTestId("day-plan");
     expect(plan.textContent).toContain("Gimnasio, sesión A");
     expect(plan.textContent).toContain("a las 18:00");

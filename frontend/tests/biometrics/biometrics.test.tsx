@@ -134,7 +134,9 @@ describe.each([
     const { container, errors } = renderIn(locale, messages, <BiometricsPage />);
     fireEvent.click(screen.getAllByRole("button", { name: /.+/ })[0]);
     expectClean(container, errors, locale);
-    expect(container.textContent).toContain("80.0");
+    // F12 / R3-10: coma decimal en español («80,0», «IMC 25,4»), punto en inglés
+    expect(container.textContent).toContain(locale === "es" ? "80,0" : "80.0");
+    if (locale === "es") expect(container.textContent).not.toMatch(/\d+\.\d/);
     expect(container.textContent).toContain("bpm");
     if (locale === "en") {
       expect(container.textContent).toContain("Weight trend");
@@ -159,6 +161,9 @@ describe.each([
     const { container, errors } = renderIn(locale, messages, <BiometricsPage />);
     expectClean(container, errors, locale);
     if (locale === "en") expect(container.textContent).toContain("No weight data");
+    // F28: «← Inicio» lleva a Hoy, que es el inicio
+    expect(container.querySelector('a[href="/today"]')).toBeTruthy();
+    expect(container.querySelector('a[href="/dashboard"]')).toBeNull();
   });
 
   it("rango sin datos pero con historial", () => {
@@ -171,7 +176,8 @@ describe.each([
     state.logs = [row(1, 1, { weight_kg: "90.0" }), row(2, 5, { weight_kg: "70.0" }), row(3, 9, { weight_kg: "90.0" })];
     const { container } = renderIn(locale, messages, <BiometricsPage />);
     expect(container.querySelector("[data-testid=trend-ok]")).toBeTruthy();
-    expect(container.textContent).toContain("79.6");
+    // F12 / R3-10: coma decimal en español
+    expect(container.textContent).toContain(locale === "es" ? "79,6" : "79.6");
     expect(container.textContent).toMatch(/0[.,]35/);
   });
 

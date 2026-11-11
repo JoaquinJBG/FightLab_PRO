@@ -75,7 +75,10 @@
     "redo": "Repetir el cribado",
     "loading": "Calculando tus avisos…",
     "error": "No se pudieron cargar tus avisos de seguridad.",
-    "none": "Sin avisos de seguridad con lo que nos has contado."
+    "none": "Sin avisos de seguridad con lo que nos has contado.",
+    "fold": "Plegar",
+    "unfold": "Ver",
+    "folded": "{count, plural, one {# aviso de seguridad} other {# avisos de seguridad}}"
   },
   "onboarding": {
     "step": "Paso {n} de {total}",
@@ -1570,6 +1573,8 @@
       "typing": "El coach está escribiendo…",
       "placeholder": "Pregunta a tu coach…",
       "send": "Enviar",
+      "expand": "Ampliar",
+      "collapse": "Cerrar chat",
       "quick": {
         "how": "¿Cómo voy?",
         "hard": "¿Entreno fuerte hoy?",
@@ -1674,6 +1679,11 @@
       "save": "Guardar cambios"
     },
     "logout": "Cerrar sesión",
+    "roles": {
+      "ATHLETE": "Deportista",
+      "COACH": "Entrenador",
+      "ADMIN": "Administrador"
+    },
     "heightValue": "{cm} cm",
     "options": {
       "gender": {
@@ -2384,6 +2394,12 @@
       "body": "Un cambio no se pudo guardar en tu cuenta (datos no válidos o límite alcanzado). Sigue en este dispositivo.",
       "close": "Cerrar"
     },
+    "offline": {
+      "title": "Sin conexión",
+      "idle": "Lo que cambies ahora se enviará solo al volver la red.",
+      "pending": "{count, plural, one {# cambio pendiente de enviar} other {# cambios pendientes de enviar}}: se envía solo al volver la red.",
+      "sending": "{count, plural, one {Enviando # cambio pendiente…} other {Enviando # cambios pendientes…}}"
+    },
     "gate": {
       "slow": "El servidor tarda en responder.",
       "error": "No se pudo cargar tu perfil.",
@@ -2837,6 +2853,7 @@
     "done": "Importado",
     "checkFirst": "Revisa los archivos antes de importarlos.",
     "nothing": "No hay nada nuevo que importar: todo lo de los archivos ya estaba.",
+    "unreadable": "No se ha podido leer ninguno de los archivos, así que no hay nada que importar. Abajo tienes el motivo de cada uno.",
     "kinds": {
       "parte_diario_json": "copia de ParteDiario",
       "parte_diario_csv": "CSV de ParteDiario",
@@ -3119,8 +3136,14 @@
       "android": "Android: en Chrome, con la app instalada o abierta en el navegador.",
       "ios": "iPhone y iPad: solo con la app añadida a la pantalla de inicio (Compartir → Añadir a pantalla de inicio), con iOS 16.4 o posterior.",
       "iosNow": "Estás en iPhone o iPad desde el navegador: añade primero la app a la pantalla de inicio (Compartir → Añadir a pantalla de inicio) y ábrela desde ahí.",
-      "unsupported": "Este navegador no admite avisos. En Android usa Chrome; en iPhone, añade la app a la pantalla de inicio (iOS 16.4+).",
-      "denied": "Has bloqueado los avisos para esta web. Actívalos en los ajustes del navegador (permisos del sitio → Notificaciones) y vuelve aquí."
+      "unsupported": "Este navegador no admite avisos. En Android usa Chrome; en iPhone, añade la app a la pantalla de inicio (iOS 16.4+)."
+    },
+    "help": {
+      "titleDefault": "No se han activado los avisos: el navegador no ha dado permiso.",
+      "titleDenied": "Has bloqueado los avisos para esta web.",
+      "android": "Android: toca el candado de la barra de direcciones → Permisos → Notificaciones → Permitir. Si no sale ninguna pregunta, las notificaciones de Chrome están apagadas en el móvil: Ajustes → Aplicaciones → Chrome → Notificaciones, y actívalas. Con la app instalada, mira también Ajustes → Aplicaciones → FightLab → Notificaciones.",
+      "ios": "iPhone y iPad: los avisos solo funcionan con la app en la pantalla de inicio (Compartir → Añadir a pantalla de inicio, iOS 16.4 o posterior) y abierta desde ese icono. Si ya la tienes así, mira Ajustes → Notificaciones → FightLab.",
+      "retry": "Cuando lo cambies, vuelve aquí y toca «Activar los avisos aquí»."
     },
     "device": {
       "title": "Este dispositivo",

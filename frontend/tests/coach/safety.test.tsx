@@ -39,6 +39,7 @@ const injuryReason = (area: string) => ({
 
 beforeEach(() => {
   localStorage.clear();
+  sessionStorage.clear(); // la conversación del coach vive en sessionStorage (R3-9)
   Element.prototype.scrollIntoView = vi.fn();
   state.metrics = metrics;
   state.logs = [];
@@ -86,7 +87,7 @@ describe("Coach con un golpe en la cabeza activo (no_contact)", () => {
 
   it("el chat por reglas nombra el golpe en vez de dar un consejo de carga", async () => {
     renderEn(<CoachPage />);
-    fireEvent.click(screen.getByText("Train hard today?"));
+    fireEvent.click(screen.getByRole("button", { name: "Train hard today?" }));
     const reply = await screen.findByText(/First, the blow to the head you reported/);
     expect(reply.textContent).not.toMatch(/go hard|Quality technique|normal plan day/i);
   });
@@ -105,7 +106,7 @@ describe("Coach con una lesión guardada", () => {
     const reply = await screen.findByText(/You have a saved injury: right knee\./);
     expect(reply.textContent).toMatch(/With new pain or an injury/);
 
-    fireEvent.click(screen.getByText("Train hard today?"));
+    fireEvent.click(screen.getByRole("button", { name: "Train hard today?" }));
     const hard = await screen.findByText(/Mind your injury \(right knee\)/);
     expect(hard.textContent).not.toMatch(/go hard|you have room/i);
     expect(within(container).queryByText(/Contact is blocked/)).toBeNull();

@@ -231,6 +231,19 @@ def password_reset_request(*, email: str) -> None:
 
 
 @transaction.atomic
+def password_reset_email(*, uid: str, token: str) -> str | None:
+    """El email de la cuenta de un enlace de recuperación válido (F27 de la prueba en móvil).
+
+    La pantalla de nueva contraseña lo pone en un campo de usuario oculto para que el gestor de
+    contraseñas del navegador sepa de qué cuenta es. Quien tiene un enlace válido ya ha leído el
+    correo de esa cuenta, así que no descubre nada nuevo; con un enlace malo no se dice nada.
+    """
+    user = get_user_from_password_reset_uid(uid)
+    if user is None or not check_password_reset_token(user, token):
+        return None
+    return user.email
+
+
 def password_reset_confirm(*, uid: str, token: str, password: str) -> None:
     """Validate the uid/token pair and set the new password.
 

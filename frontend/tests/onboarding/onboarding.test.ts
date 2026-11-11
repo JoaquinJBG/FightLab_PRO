@@ -5,6 +5,7 @@ import {
   firstMissingStep,
   isOnboardingComplete,
   scoffOutcome,
+  stepProgress,
   steps,
   triToBool,
   type ScoffAnswer,
@@ -103,5 +104,28 @@ describe("pasos", () => {
 
   it("el PAR-Q+ no bloquea: 'no lo sé' deja el onboarding completo", () => {
     expect(isOnboardingComplete(complete.profile, { ...complete.screening })).toBe(true);
+  });
+});
+
+describe("numeración del alta (F10)", () => {
+  it("cada pantalla tiene su número, sin repetir: los datos básicos y el peso son dos", () => {
+    const flow = steps({ female: false, hypertension: false });
+    const seen = [
+      stepProgress(flow, "language", false),
+      stepProgress(flow, "scoff", false),
+      stepProgress(flow, "basics", false),
+      stepProgress(flow, "basics", true),
+      stepProgress(flow, "parq", false),
+      stepProgress(flow, "cardiac", false),
+      stepProgress(flow, "medical", false),
+      stepProgress(flow, "goals", false),
+    ];
+    expect(seen.map((p) => p.n)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(new Set(seen.map((p) => p.total))).toEqual(new Set([8]));
+  });
+
+  it("con tensión y ciclo, el total cuenta también esas pantallas", () => {
+    const flow = steps({ female: true, hypertension: true });
+    expect(stepProgress(flow, "goals", false)).toEqual({ n: 10, total: 10 });
   });
 });

@@ -6,6 +6,7 @@
 // escritura devuelve el día entero, que sustituye al que había en caché.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { patchField, type OfflineMeta } from "./offline";
 import { z } from "zod";
 import { hydrateUserStatePrefix } from "./user-state";
 import { DAYS } from "./plan";
@@ -153,10 +154,18 @@ export function useToday() {
   });
 }
 
-function useTodayMutation<T>(run: (vars: T) => Promise<TodayState>, invalidate: string[] = []) {
+/* `key` y `field` (F5, sin conexión): sin red la mutación queda en pausa, y otra nueva del mismo
+ * campo sustituye a la que esperaba (ver lib/offline.ts). Sin `field`, todas se envían. */
+function useTodayMutation<T>(
+  run: (vars: T) => Promise<TodayState>,
+  invalidate: string[] = [],
+  offline?: { key: string; field: (vars: unknown) => string | null },
+) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: run,
+    mutationKey: offline ? ["today", offline.key] : undefined,
+    meta: offline ? ({ offlineField: offline.field } satisfies OfflineMeta) : undefined,
     onSuccess: (data) => {
       qc.setQueryData(["today"], data);
       for (const key of invalidate) qc.invalidateQueries({ queryKey: [key] });
@@ -168,17 +177,24 @@ export type DayPatch = Partial<{ day_type: DayType | null; trained: boolean | nu
 
 export function useSaveDay() {
   // El peso y el tipo de día también los leen el Inicio, la tendencia y el check-in.
-  return useTodayMutation((patch: DayPatch) => send(BASE, "POST", patch), ["checkin", "weigh-in", "trend", "biometrics"]);
+  return useTodayMutation((patch: DayPatch) => send(BASE, "POST", patch), ["checkin", "weigh-in", "trend", "biometrics"], {
+    key: "day",
+    field: patchField,
+  });
 }
 
 export function useMarkMeal() {
   // F6: la marca suma o quita la entrada del menú en el diario de Nutrición en el servidor; se trae
   // ese día al móvil para que Nutrición la enseñe sin esperar.
-  return useTodayMutation(async (v: { meal: string; state: MealState | null; change?: string }) => {
-    const data = await send(`${BASE}/meal`, "PUT", v);
-    await hydrateUserStatePrefix("nutri_", data.date, data.date).catch(() => undefined);
-    return data;
-  });
+  return useTodayMutation(
+    async (v: { meal: string; state: MealState | null; change?: string }) => {
+      const data = await send(`${BASE}/meal`, "PUT", v);
+      await hydrateUserStatePrefix("nutri_", data.date, data.date).catch(() => undefined);
+      return data;
+    },
+    [],
+    { key: "meal", field: (v) => (v as { meal?: string } | undefined)?.meal ?? null },
+  );
 }
 
 export function useAddCardio() {

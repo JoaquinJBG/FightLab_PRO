@@ -49,6 +49,8 @@ EXTRA = {
         "storage": {"fridge": "de la nevera", "freezer": "del congelador"},
         "sessions": "Sesiones de batch",
         "session": "Sesión del {date} ({minutes} min)",
+        "months": ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre",
+                   "octubre", "noviembre", "diciembre"],
         "appliances": {"pressure_cooker": "Olla exprés", "pot": "Olla", "wok": "Wok", "frying_pan": "Sartén",
                        "air_fryer": "Air fryer", "oven": "Horno", "microwave": "Microondas", "hands": "Manos libres"},
         "substituted": "en lugar de {what}",
@@ -77,6 +79,8 @@ EXTRA = {
         "storage": {"fridge": "from the fridge", "freezer": "from the freezer"},
         "sessions": "Batch sessions",
         "session": "Session on {date} ({minutes} min)",
+        "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September",
+                   "October", "November", "December"],
         "appliances": {"pressure_cooker": "Pressure cooker", "pot": "Pot", "wok": "Wok", "frying_pan": "Frying pan",
                        "air_fryer": "Air fryer", "oven": "Oven", "microwave": "Microwave", "hands": "Hands free"},
         "substituted": "instead of {what}",
@@ -91,6 +95,19 @@ EXTRA = {
     },
 }
 CHECK_KEYS = ("kcal", "protein_g", "fat_g", "fibre_g")
+
+
+def day_text(lang: str, iso: str, year: bool = False) -> str:
+    """Una fecha como la escribe la app (F12 de la prueba en móvil): «9 de noviembre (de 2026)» o
+    «9 November (2026)», no «2026-11-09»."""
+    try:
+        when = date.fromisoformat(str(iso)[:10])
+    except ValueError:
+        return str(iso)
+    month = EXTRA[lang]["months"][when.month - 1]
+    if lang == "es":
+        return f"{when.day} de {month}" + (f" de {when.year}" if year else "")
+    return f"{when.day} {month}" + (f" {when.year}" if year else "")
 
 
 def filename(menu: dict) -> str:
@@ -124,12 +141,12 @@ def render(menu: dict, lang: str) -> bytes:
 
     days = menu["days"]
     first, last = days[0]["date"], days[-1]["date"]
-    title = menu.get("title") or f"{words['menu']} {first} {words['to']} {last}"
+    title = menu.get("title") or f"{words['menu']} {day_text(lang, first)} {words['to']} {day_text(lang, last, year=True)}"
     story = [Paragraph(export._text(title), sheet["Title"])]
     targets = menu["targets"]
     for day in days:
         when = date.fromisoformat(day["date"])
-        block = [Paragraph(f"{words['days'][when.weekday()]} {when.isoformat()}", day_style)]
+        block = [Paragraph(f"{words['days'][when.weekday()]} {day_text(lang, day['date'])}", day_style)]
         for task in day.get("eve") or []:
             text = task.get("text") or extra["defrost"].format(dish=task.get("dish") or "")
             block.append(Paragraph(f"{extra['eve']}: {export._text(text)}", small))
@@ -199,7 +216,7 @@ def render(menu: dict, lang: str) -> bytes:
         story.append(PageBreak())
         story.append(Paragraph(extra["sessions"], sheet["Title"]))
         for session in sessions:
-            story.append(Paragraph(extra["session"].format(date=session["date"], minutes=session["total_min"]), day_style))
+            story.append(Paragraph(extra["session"].format(date=day_text(lang, session["date"]), minutes=session["total_min"]), day_style))
             for task in session.get("eve") or []:
                 story.append(Paragraph(f"{extra['eve']}: {export._text(task)}", small))
             rows = []

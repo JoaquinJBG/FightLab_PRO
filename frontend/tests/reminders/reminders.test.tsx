@@ -132,6 +132,49 @@ describe("Perfil → Avisos", () => {
     expect(calls.some((c) => c.path === "/me/push/subscribe")).toBe(false);
   });
 
+  it("F8: si el permiso se queda en 'default' (Chrome lo bloquea en silencio), explica cómo activarlo en Android y en iPhone", async () => {
+    pushBrowser({ permission: "default" });
+    const calls: Calls = [];
+    routes({}, calls);
+    renderApp(<RemindersSettings />);
+    const enable = await screen.findByTestId("reminders-enable");
+    await waitFor(() => expect((enable as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.click(enable);
+    const help = await screen.findByTestId("reminders-permission-help");
+    expect(help.getAttribute("role")).toBe("alert");
+    expect(help.textContent).toContain("No se han activado los avisos");
+    // Android: el candado de la barra y los ajustes del sistema
+    expect(help.textContent).toMatch(/candado/);
+    expect(help.textContent).toMatch(/Ajustes → Aplicaciones → Chrome → Notificaciones/);
+    // iPhone: solo con la app en la pantalla de inicio
+    expect(help.textContent).toMatch(/pantalla de inicio/);
+    expect(calls.some((c) => c.path === "/me/push/subscribe")).toBe(false);
+    // Se puede volver a intentar
+    expect((screen.getByTestId("reminders-enable") as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it("F8: con el permiso ya bloqueado al entrar, enseña los pasos sin tener que tocar nada", async () => {
+    const { notification } = pushBrowser();
+    notification.permission = "denied";
+    routes();
+    renderApp(<RemindersSettings />);
+    const help = await screen.findByTestId("reminders-permission-help");
+    expect(help.textContent).toContain("Has bloqueado los avisos");
+    expect(help.textContent).toMatch(/Ajustes → Aplicaciones → Chrome → Notificaciones/);
+  });
+
+  it("F8: los pasos también en inglés", async () => {
+    pushBrowser({ permission: "default" });
+    routes();
+    renderApp(<RemindersSettings />, "en");
+    const enable = await screen.findByTestId("reminders-enable");
+    await waitFor(() => expect((enable as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.click(enable);
+    const help = await screen.findByTestId("reminders-permission-help");
+    expect(help.textContent).toMatch(/Settings → Apps → Chrome → Notifications/);
+    expect(help.textContent).toMatch(/Home Screen/);
+  });
+
   it("ya suscrito: se resincroniza, manda uno de prueba y se puede desactivar", async () => {
     pushBrowser({ subscribed: true });
     const calls: Calls = [];

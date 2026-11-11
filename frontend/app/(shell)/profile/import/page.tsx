@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { intlLocale } from "@/lib/locale";
 import {
-  CONFLICT_MODES, HISTORY_ACCEPT, HistoryImportError, MAX_FILE_MB, MAX_HISTORY_FILES, useImportHistory,
+  CONFLICT_MODES, HISTORY_ACCEPT, HistoryImportError, MAX_FILE_MB, MAX_HISTORY_FILES, allFilesUnreadable, nothingToImport, useImportHistory,
   type ConflictMode, type HistoryResult,
 } from "@/lib/history-import";
 
@@ -58,8 +58,8 @@ function Summary({ result }: { result: HistoryResult }) {
   const sets = result.sets.filter((s) => s.result);
   const menus = result.menus;
   const menuLines = menus ? (["new", "replaced", "kept", "invalid", "checks"] as const).filter((k) => menus[k] > 0) : [];
-  const nothing = d.written === 0 && d.conflict === 0 && result.reviews.written === 0 && result.reviews.conflict === 0 && sets.every((s) => s.result!.sets.imported === 0)
-    && !(menus && (menus.new > 0 || menus.replaced > 0));
+  const nothing = nothingToImport(result);
+  const unreadable = allFilesUnreadable(result);
   const read = result.files.filter((f) => f.kind);
   return (
     <section data-testid="history-summary" data-dry-run={result.dry_run} className="glass neon-edge mt-4 p-4">
@@ -75,7 +75,9 @@ function Summary({ result }: { result: HistoryResult }) {
         </ul>
       )}
 
-      {nothing ? (
+      {unreadable ? (
+        <p data-testid="history-unreadable" role="alert" className="t-body mt-2 text-sm text-ink">{t("unreadable")}</p>
+      ) : nothing ? (
         <p data-testid="history-nothing" className="t-body mt-2 text-sm text-ink">{t("nothing")}</p>
       ) : (
         <p data-testid="history-written" className="stat mt-2 text-2xl neon-text">
@@ -245,9 +247,12 @@ export default function HistoryImportPage() {
         <>
           <Summary result={preview} />
           {preview.days.conflict > 0 && <Conflicts result={preview} mode={mode} onMode={setMode} />}
-          <button type="button" data-testid="history-import" onClick={run} disabled={busy} className="btn btn-primary mt-3 w-full disabled:opacity-60">
-            {busy ? t("importing") : t("import")}
-          </button>
+          {/* Sin nada que escribir (o sin ningún archivo legible) no se ofrece importar (F17) */}
+          {!nothingToImport(preview) && (
+            <button type="button" data-testid="history-import" onClick={run} disabled={busy} className="btn btn-primary mt-3 w-full disabled:opacity-60">
+              {busy ? t("importing") : t("import")}
+            </button>
+          )}
         </>
       )}
       {!preview && !result && files.length > 0 && !error && <p className="t-body mt-2 text-[11px] text-muted">{t("checkFirst")}</p>}

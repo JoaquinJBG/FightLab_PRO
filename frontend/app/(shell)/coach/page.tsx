@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useBiometrics, useSafety, useWeighIn } from "@/lib/hooks";
-import { CitedText, type Citation } from "@/components/evidence/CitedText";
+import { type Citation } from "@/components/evidence/CitedText";
+import { ChatPanel, type ChatMsg } from "@/components/coach/ChatPanel";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { comparisonRule, loadBadge, ruleCitations } from "@/lib/load-texts";
 import { computeRecovery } from "@/lib/recovery";
@@ -13,6 +14,8 @@ import { loadMetrics, type LoadMetrics } from "@/lib/load";
 import { buildBriefing, buildRecs, coachReply, injuryAreas, num, recoveryText, type CoachTr, type Ctx } from "@/lib/coach-rules";
 import { fetchServerMetrics } from "@/lib/activities";
 import { useUserState } from "@/lib/user-state";
+import { useSessionState } from "@/lib/session-state";
+import { formatDate, formatNumber } from "@/lib/locale";
 import {
   type CoachMemory,
   type CoachMemoryDraft,
@@ -43,8 +46,8 @@ const dismissKey = () => `flp_${bareDismissKey()}`;
 
 /* --------------------------------- chat ----------------------------------- */
 
-type Msg = { role: "coach" | "user"; text: string; citations?: Citation[] };
-const QUICK_KEYS = ["how", "hard", "weight"] as const;
+type Msg = ChatMsg;
+const keepLastMsgs = (m: Msg[]) => m.slice(-40);
 
 /* --------------------------------- página --------------------------------- */
 
@@ -60,7 +63,7 @@ export default function CoachPage() {
   const { value: dismissed, setValue: setDismissed } = useUserState<string[]>(bareDismissKey(), []);
   const { value: fb, setValue: setFb } = useUserState<FbEntry[]>("coach_fb", []);
   const [feedback, setFeedback] = useState<Record<string, boolean>>({});
-  const tr: CoachTr = { t, tl, tc };
+  const tr: CoachTr = { t, tl, tc, locale };
 
   /* Memoria persistente del coach (P0.3): lo que el atleta cuenta de sí mismo */
   const { value: memory, setValue: setMemory, hydrated: memoryHydrated } = useUserState<CoachMemory>("coach_memory", {});
@@ -146,15 +149,12 @@ export default function CoachPage() {
   }
 
   /* chat */
-  const [chatMsgs, setChatMsgs] = useState<Msg[]>([
-    { role: "coach", text: t("chat.greeting") },
-  ]);
+  // En sessionStorage: guardar la memoria o salir de la vista y volver no vacía la conversación (R3-9)
+  const [chatMsgs, setChatMsgs] = useSessionState<Msg[]>("flp_coach_chat", [{ role: "coach", text: t("chat.greeting") }], keepLastMsgs);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
   const [aiMode, setAiMode] = useState<"ia" | "reglas" | null>(null);
-  const endRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chatMsgs, typing]);
   useEffect(() => () => abortRef.current?.abort(), []); // corta la petición al salir de la vista
 
   async function send(text: string) {
@@ -216,7 +216,7 @@ export default function CoachPage() {
         <span className="badge" data-testid="coach-load-badge">{loadBadge(metrics, tl)}</span>
         {comparisonRule(metrics) && <EvidenceChip ruleKey={comparisonRule(metrics)!.key} grade={comparisonRule(metrics)!.grade} />}
         <span className="badge">{t("badges.week", { au: metrics?.weekAU ?? 0 })}</span>
-        {weight != null && <span className="badge">{weight.toFixed(1)} kg</span>}
+        {weight != null && <span className="badge">{formatNumber(locale, weight, { digits: 1 })} kg</span>}
         {weighDays != null && <span className="badge">{t("badges.weighIn", { days: weighDays })}</span>}
         {/* R3-3: la cabecera sale del mismo estado de seguridad que el briefing: con un golpe en la
             cabeza activo no dice «Listo para entrenar» */}
@@ -381,9 +381,9 @@ export default function CoachPage() {
           <div className="mt-2 flex flex-wrap gap-2">
             {memory.lesion && <span className="badge">{t("memory.chips.injury", { value: memory.lesion })}</span>}
             {memory.fase && <span className="badge">{t("memory.chips.phase", { value: memory.fase })}</span>}
-            {memory.fecha_pelea && <span className="badge">{t("memory.chips.fight", { value: memory.fecha_pelea })}</span>}
+            {memory.fecha_pelea && <span className="badge">{t("memory.chips.fight", { value: formatDate(locale, memory.fecha_pelea, "longYear") })}</span>}
             {memory.objetivo_peso_kg != null && !memoryWeightHidden && (
-              <span className="badge">{t("memory.chips.weightGoal", { kg: memory.objetivo_peso_kg })}</span>
+              <span className="badge">{t("memory.chips.weightGoal", { kg: formatNumber(locale, memory.objetivo_peso_kg, { max: 1 }) })}</span>
             )}
             {memory.tono && <span className="badge">{t("memory.chips.tone", { value: t(`memory.tones.${memory.tono}`) })}</span>}
             {memory.frecuencia_avisos && (
@@ -399,34 +399,14 @@ export default function CoachPage() {
           <p className="t-eyebrow text-muted">{t("chat.heading")}</p>
           <span className="badge badge-neon">{aiMode === "ia" ? t("chat.modeAi") : aiMode === "reglas" ? t("chat.modeRules") : t("chat.modeDefault")}</span>
         </div>
-        <div className="glass mt-2 flex h-[42dvh] flex-col overflow-hidden p-3">
-          <div className="flex-1 space-y-3 overflow-y-auto pr-1">
-            {chatMsgs.map((m, i) => (
-              <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${m.role === "user" ? "text-[#03101c]" : "text-ink"}`}
-                  style={m.role === "user" ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)" } : { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(150,190,255,0.14)" }}>
-                  <CitedText text={m.text} citations={m.citations} />
-                </div>
-              </div>
-            ))}
-            {typing && (
-              <div className="flex justify-start">
-                <div className="rounded-2xl border border-[rgba(150,190,255,0.14)] bg-[rgba(255,255,255,0.06)] px-3.5 py-2.5">
-                  <span className="pulse text-sm text-muted">{t("chat.typing")}</span>
-                </div>
-              </div>
-            )}
-            <div ref={endRef} />
-          </div>
-
-          <div className="mt-2 flex flex-wrap gap-2">
-            {QUICK_KEYS.map((k) => <button key={k} onClick={() => send(t(`chat.quick.${k}`))} disabled={typing} className="badge disabled:opacity-50">{t(`chat.quick.${k}`)}</button>)}
-          </div>
-          <form className="mt-2 flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); send(input); }}>
-            <input value={input} onChange={(e) => setInput(e.target.value)} placeholder={t("chat.placeholder")} className="field flex-1 px-3.5 py-2.5 text-sm" />
-            <button type="submit" className="btn btn-primary btn-sm shrink-0">{t("chat.send")}</button>
-          </form>
-        </div>
+        <ChatPanel
+          msgs={chatMsgs}
+          typing={typing}
+          input={input}
+          onInput={setInput}
+          onSend={send}
+          modeLabel={aiMode === "ia" ? t("chat.modeAi") : aiMode === "reglas" ? t("chat.modeRules") : t("chat.modeDefault")}
+        />
         <p className="t-body mt-2 text-center text-[11px] text-muted">
           {aiMode === "reglas" ? `${t("chat.rulesNotice")} ` : ""}
           {recovery == null && metrics?.weekAU === 0 ? `${t("chat.moreData")} ` : ""}
@@ -438,8 +418,8 @@ export default function CoachPage() {
             <summary className="t-label cursor-pointer text-muted">{t("advanced.title")}</summary>
             <p className="t-body mt-1 text-[11px] text-muted">
               {[
-                metrics.acwr != null ? tl("ratio", { value: metrics.acwr.toFixed(2) }) : null,
-                metrics.monotonia != null ? `${tl("monotony")} ${metrics.monotonia.toFixed(1)}` : null,
+                metrics.acwr != null ? tl("ratio", { value: formatNumber(locale, metrics.acwr, { digits: 2 }) }) : null,
+                metrics.monotonia != null ? `${tl("monotony")} ${formatNumber(locale, metrics.monotonia, { digits: 1 })}` : null,
               ].filter(Boolean).join(" · ")}
             </p>
           </details>

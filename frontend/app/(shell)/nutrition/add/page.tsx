@@ -3,7 +3,8 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { formatNumber } from "@/lib/locale";
 import { useFoodSearch, type Food } from "@/lib/menu";
 import {
   MEALS,
@@ -35,6 +36,10 @@ type Mode = "recientes" | "buscar" | "rapido";
 
 function AddInner() {
   const t = useTranslations("nutrition.add");
+  const locale = useLocale();
+  // Macros con el formato del idioma (F12): un número suelto en el mensaje sale con punto
+  const macros = (m: { kcal: number; p: number; c: number; f: number }) =>
+    t("macros", { kcal: formatNumber(locale, m.kcal, { max: 0 }), p: formatNumber(locale, m.p, { max: 1 }), c: formatNumber(locale, m.c, { max: 1 }), f: formatNumber(locale, m.f, { max: 1 }) });
   const tm = useTranslations("nutrition.meals");
   const router = useRouter();
   const qpMeal = useSearchParams().get("meal");
@@ -247,7 +252,7 @@ function AddInner() {
                 <div key={`${it.name}-${i}`} className="flex items-center gap-2">
                   <div className="min-w-0 flex-1">
                     <p className="t-body text-sm text-ink">{it.name}</p>
-                    <p className="t-body text-[11px] text-muted">{t("macros", { kcal: it.kcal, p: it.p, c: it.c, f: it.f })}</p>
+                    <p className="t-body text-[11px] text-muted">{macros(it)}</p>
                   </div>
                   {it.grams !== null && (
                     <span className="flex items-center gap-1.5">
@@ -264,7 +269,7 @@ function AddInner() {
             </div>
             {detected.items.length > 0 ? (
               <button onClick={addAllDetected} disabled={saving} className="btn btn-primary mt-3 w-full disabled:opacity-60">
-                {t("photo.addAll", { kcal: detTotal })}
+                {t("photo.addAll", { kcal: formatNumber(locale, detTotal, { max: 0 }) })}
               </button>
             ) : (
               <p className="t-body mt-3 text-center text-xs text-muted">{t("photo.empty")}</p>
@@ -309,7 +314,7 @@ function AddInner() {
                 className="glass flex items-center justify-between p-3.5 text-left">
                 <span className="min-w-0">
                   <span className="t-body block text-sm text-ink">{r.name}{r.grams ? ` · ${r.grams} g` : ""}</span>
-                  <span className="t-body text-[11px] text-muted">{t("macros", { kcal: r.kcal, p: r.p, c: r.c, f: r.f })}</span>
+                  <span className="t-body text-[11px] text-muted">{macros(r)}</span>
                 </span>
                 <span className={`shrink-0 text-lg ${addedFlash === r.name ? "text-good" : "text-neon"}`}>
                   {addedFlash === r.name ? "✓" : "+"}
@@ -353,7 +358,7 @@ function AddInner() {
                   <button onClick={() => setGrams((g) => Math.min(1000, g + 10))} aria-label={t("search.more")} className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">+</button>
                 </div>
               </div>
-              <p className="t-body mt-3 text-center text-sm text-neon">{scaled ? t("macros", { kcal: scaled.kcal, p: scaled.p, c: scaled.c, f: scaled.f }) : t("search.noData")}</p>
+              <p className="t-body mt-3 text-center text-sm text-neon">{scaled ? macros(scaled) : t("search.noData")}</p>
               <div className="mt-3 flex gap-2">
                 <button onClick={() => setSel(null)} className="btn btn-outline btn-sm flex-1">{t("search.back")}</button>
                 <button onClick={addFood} disabled={saving || !scaled} className="btn btn-primary btn-sm flex-1 disabled:opacity-60">{t("addTo", { meal: tm(meal) })}</button>

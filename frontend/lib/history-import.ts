@@ -56,6 +56,22 @@ export const historyResult = z.object({
 });
 export type HistoryResult = z.infer<typeof historyResult>;
 
+/** ¿No hay nada que escribir? Ni días, ni revisiones, ni series, ni menús nuevos. */
+export function nothingToImport(r: HistoryResult): boolean {
+  const sets = r.sets.filter((s) => s.result);
+  return r.days.written === 0 && r.days.conflict === 0 && r.reviews.written === 0 && r.reviews.conflict === 0
+    && sets.every((s) => s.result!.sets.imported === 0)
+    && !(r.menus && (r.menus.new > 0 || r.menus.replaced > 0));
+}
+
+/** F17 de la prueba en móvil: ¿no se ha podido leer ningún archivo? (formato desconocido, o un CSV
+ * de series con error). Entonces no es «todo ya estaba»: es que no se entendió nada. */
+export function allFilesUnreadable(r: HistoryResult): boolean {
+  const readable = (f: HistoryResult["files"][number]) =>
+    !!f.kind && !f.error && (f.kind !== "sets" || r.sets.some((s) => s.name === f.name && s.result));
+  return r.files.length > 0 && !r.files.some(readable);
+}
+
 /** Un error de toda la subida (no de un archivo): `code` se traduce. */
 export class HistoryImportError extends Error {
   constructor(public code: string, public params: Record<string, string | number> = {}) {

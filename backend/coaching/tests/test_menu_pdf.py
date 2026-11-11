@@ -14,6 +14,7 @@ from unittest import mock
 import pytest
 from rest_framework.test import APIClient
 
+from coaching.menu_pdf import day_text
 from coaching.models import MealPlan
 
 from .helpers import TODAY, client_for, make_user, today_fixed  # noqa: F401
@@ -68,6 +69,9 @@ def test_pdf_is_valid_and_has_the_menu_and_the_shopping_list(today_fixed):
     for credit in ("USDA", "Open Food Facts", "ODbL", "ai-personal-coach"):  # la línea se parte al ajustar
         assert credit in text, credit
     assert "Plato de ejemplo de FightLab" in text
+    # F12: fechas como en la app («9 de noviembre»), no en ISO
+    assert TODAY.isoformat() not in text
+    assert day_text("es", TODAY.isoformat()) in text
 
 
 def test_pdf_in_english(today_fixed):
@@ -76,6 +80,8 @@ def test_pdf_in_english(today_fixed):
     text = pdf_text(get_pdf(user, menu["id"], lang="en").content)
     assert "Shopping list" in text and "Breakfast" in text
     assert "Lista de la compra" not in text
+    assert TODAY.isoformat() not in text
+    assert day_text("en", TODAY.isoformat()) in text
     # Los ingredientes con el nombre de la tabla del motor en inglés.
     item = menu["days"][0]["meals"][0]["dishes"][0]["items"][0]["name"]
     assert item in text
@@ -139,3 +145,11 @@ def test_positive_screen_pdf_has_no_weight(today_fixed):
     text = pdf_text(get_pdf(user, menu["id"]).content)
     assert not re.search(r"\d\s?kg\b", text)
     assert "Lista de la compra" in text
+
+
+def test_day_text_writes_dates_like_the_app():
+    # F12 de la prueba en móvil: «9 de noviembre», no «2026-11-09»
+    assert day_text("es", "2026-11-09") == "9 de noviembre"
+    assert day_text("es", "2026-11-09", year=True) == "9 de noviembre de 2026"
+    assert day_text("en", "2026-11-09", year=True) == "9 November 2026"
+    assert day_text("es", "no es fecha") == "no es fecha"

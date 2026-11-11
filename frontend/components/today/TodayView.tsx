@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { capitalizeFirst, formatDate } from "@/lib/locale";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { SafetyBanner } from "@/components/safety/SafetyBanner";
 import { ChevronRight } from "@/components/icons";
@@ -535,22 +536,22 @@ function Tonight({ state }: { state: TodayState }) {
 
 export function TodayView({ state }: { state: TodayState }) {
   const t = useTranslations("today");
-  const format = useFormatter();
   // La fecha es la del perfil (la decide el servidor): se pinta tal cual, sin la zona del móvil.
-  const date = new Date(`${state.date}T12:00:00Z`);
+  const locale = useLocale();
   return (
     <div className="pt-4">
       <header className="flex items-center justify-between gap-3">
         <div>
           <h1 className="t-display text-2xl text-ink">{t("title")}</h1>
-          <p className="t-body text-sm capitalize text-muted">{format.dateTime(date, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" })}</p>
+          {/* F11: «Lunes, 9 de noviembre», con mayúscula solo al empezar (no «9 De Noviembre») */}
+          <p className="t-body text-sm text-muted" data-testid="today-date">{capitalizeFirst(formatDate(locale, state.date, "weekday"), locale)}</p>
         </div>
         <Link href="/dashboard" aria-label={t("summaryAria")} className="btn btn-outline btn-sm">
           {t("summaryLink")}
         </Link>
       </header>
       {/* Hoy es la pantalla de inicio: los avisos de seguridad del motor van arriba, como en el resumen. */}
-      <SafetyBanner />
+      <SafetyBanner foldDay={state.date} />
       <NextMeal state={state} />
       <DayPlan state={state} />
       <DayStatus state={state} />

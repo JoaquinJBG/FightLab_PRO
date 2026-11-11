@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { userFacingRuleText } from "@/lib/evidence";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -36,9 +37,9 @@ describe("Reglas traducidas desde los archivos del repo", () => {
       openSheet("es", rule);
       expect(await screen.findByText(tr.heading)).toBeTruthy();
       const sheet = screen.getByTestId("evidence-sheet");
-      expect(sheet.textContent).toContain(tr.rule_text);
+      expect(sheet.textContent).toContain(userFacingRuleText(tr.rule_text)); // F20: lo de cara al usuario
       expect(sheet.textContent).toContain(tr.applies_to);
-      expect(sheet.textContent).toContain(tr.conflicts);
+      expect(sheet.textContent).toContain(userFacingRuleText(tr.conflicts));
       expect(sheet.textContent).not.toContain(rule.rule_text); // nada del original en inglés
       expect(screen.getByTestId("translation-label").textContent).toBe("Traducción automática, sin revisar");
       // Las fuentes no se traducen: siguen sus identificadores.
@@ -58,7 +59,7 @@ describe("Reglas traducidas desde los archivos del repo", () => {
     const rule = RULES[0];
     openSheet("en", rule);
     expect(await screen.findByText(rule.heading)).toBeTruthy();
-    expect(screen.getByTestId("evidence-sheet").textContent).toContain(rule.rule_text);
+    expect(screen.getByTestId("evidence-sheet").textContent).toContain(userFacingRuleText(rule.rule_text));
     expect(screen.queryByTestId("translation-label")).toBeNull();
   });
 });
