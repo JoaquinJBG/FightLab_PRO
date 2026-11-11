@@ -248,8 +248,9 @@ def test_adherence_counters_and_list_follow_the_same_criterion(today_fixed):
     entries = adherence["entries"]
     assert [e["date"] for e in entries] == sorted(e["date"] for e in entries)  # en orden de fecha
     gym = [e for e in entries if e["kind"] == "gym"]
-    assert [(e["date"], e["done"], e["done_date"]) for e in gym] == [
-        ("2026-10-26", True, "2026-10-23"), ("2026-10-29", True, "2026-10-27"),
+    # La sesión más cercana cumple la del plan, y la lista dice si se adelantó o se recuperó (R3-11)
+    assert [(e["date"], e["done"], e["done_date"], e["moved"]) for e in gym] == [
+        ("2026-10-26", True, "2026-10-27", "later"), ("2026-10-29", True, "2026-10-23", "earlier"),
     ]
     assert adherence["sessions"]["gym"] == {"planned": 2, "done": 2}
     # Las MMA fuera del plan cuentan y se ven

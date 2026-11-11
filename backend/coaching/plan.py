@@ -364,7 +364,7 @@ def cardio_split(needed: int, days: list[str]) -> tuple[list[str], int]:
     return chosen, per_day
 
 
-def _cardio(user, flags, today: date, days: list[str], mma_minutes: int, lang: str) -> dict:
+def _cardio(user, flags, today: date, days: list[str], mma_minutes: int, lang: str, no_contact: bool = False) -> dict:
     needed = max(0, CARDIO_MODERATE_MIN - mma_minutes)
     days, per_day = cardio_split(needed, days)
     try:
@@ -373,10 +373,10 @@ def _cardio(user, flags, today: date, days: list[str], mma_minutes: int, lang: s
         zone = None
     options, excluded = [], []
     for key in CARDIO_OFFERED:
-        item = _modality(key, flags, False)
+        item = _modality(key, flags, no_contact)
         (excluded if item["blocked_by"] else options).append(item)
     for key in ALL_OUT:
-        item = _modality(key, flags, False)
+        item = _modality(key, flags, no_contact)
         item["blocked_by"] = item["blocked_by"] or ["prerequisites"]
         excluded.append(item)
     return {
@@ -599,7 +599,7 @@ def build(user, today: date, request: PlanRequest) -> dict:
     if cardio_days is None:
         cardio_days = [d for d in DAYS if d not in gym_days and d not in mma_days] or gym_days
     cardio_days = _validate_days(cardio_days, "cardio_days")
-    cardio = _cardio(user, flags, today, cardio_days, mma_minutes_per_week(user, today), "en")
+    cardio = _cardio(user, flags, today, cardio_days, mma_minutes_per_week(user, today), "en", fight.no_contact)
     for day in cardio["days"]:
         schedule.append({"day": day, "time": times.get(day), "kind": "cardio",
                          "minutes": cardio["minutes_per_day"], "rule_key": cardio["rule_key"]})
@@ -703,6 +703,24 @@ def live_safety(plan: WeeklyPlan, today: date) -> dict | None:
             entry = {**entry, "allowed": fresh["allowed"], "excluded": fresh["excluded"]}
         schedule.append(entry)
 
+    # R3-3: las opciones de cardio también siguen el bloqueo de hoy (nada vigoroso tras el golpe)
+    cardio = dict(plan.cardio or {})
+    if cardio.get("options") is not None:
+        offered = [*cardio.get("options", []), *[w for w in cardio.get("excluded", []) if w.get("key") in CARDIO_OFFERED]]
+        before = {w["key"]: w.get("blocked_by") for w in cardio.get("excluded", [])}
+        options, excluded = [], []
+        for w in offered:
+            fresh = _modality(w["key"], flags, fight.no_contact)
+            (excluded if fresh["blocked_by"] else options).append(fresh)
+        for w in cardio.get("excluded", []):
+            if w.get("key") in ALL_OUT:
+                fresh = _modality(w["key"], flags, fight.no_contact)
+                fresh["blocked_by"] = fresh["blocked_by"] or ["prerequisites"]
+                excluded.append(fresh)
+        if before != {w["key"]: w["blocked_by"] for w in excluded}:
+            changed = True
+        cardio = {**cardio, "options": options, "excluded": excluded}
+
     mapped = muscle_map()
     sessions = []
     for session in plan.sessions or []:
@@ -739,6 +757,7 @@ def live_safety(plan: WeeklyPlan, today: date) -> dict | None:
     return {
         "training_schedule": schedule,
         "sessions": sessions,
+        "cardio": cardio,
         "safety_reasons": new_reasons + list(plan.safety_reasons or []),
         "rules": sorted(k for k in keys if k),
         "status": {
@@ -779,7 +798,7 @@ def plan_data(plan: WeeklyPlan, lang: str, today: date | None = None) -> dict:
         "in_deficit": plan.in_deficit,
         "training_schedule": live["training_schedule"] if live else plan.training_schedule,
         "sessions": sessions,
-        "cardio": plan.cardio,
+        "cardio": live["cardio"] if live else plan.cardio,
         "nutrition": nutrition,
         "safety_reasons": _reasons_out(live["safety_reasons"] if live else plan.safety_reasons, lang),
         "rules": rule_refs(sorted(set(plan.rules_used) | set(live["rules"] if live else [])), lang),

@@ -163,12 +163,18 @@ export function ReviewView({ review, onAccept, accepting, acceptError }: {
                     : !e.done
                       ? t("adherence.missed")
                       : e.done_date && e.done_date !== e.date
-                        ? t("adherence.doneOn", { date: f.date(e.done_date) })
+                        ? t(e.done_date < e.date ? "adherence.doneEarlier" : "adherence.doneLater", { date: f.date(e.done_date) })
                         : t("adherence.done")}
                 </span>
               </li>
             ))}
           </ul>
+        )}
+        {adherence.entries.some((e) => e.planned && e.done && e.done_date && e.done_date !== e.date) && (
+          <p data-testid="adherence-moved-note" className="t-body flex flex-wrap items-center gap-2 text-[11px] text-muted">
+            {t("adherence.movedNote")}
+            <LineChip ruleKey={null} grades={grades} convention="fightlab" />
+          </p>
         )}
         {adherence.entries.some((e) => !e.done && e.kind === "gym") && (
           <p className="t-body flex flex-wrap items-center gap-2 text-[11px] text-muted">

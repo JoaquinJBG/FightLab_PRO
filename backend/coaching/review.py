@@ -132,8 +132,13 @@ def _match(entries: list[dict], done: list[tuple[date, str]]) -> list[dict]:
     """Junta lo planeado con lo registrado, con el mismo criterio que los contadores (F7).
 
     Cada sesión registrada de un tipo cumple una del plan de ese tipo: primero la del mismo día y,
-    si no, la primera que quede sin hacer de la semana (una sesión de gimnasio hecha en un día de
-    cardio cuenta). Lo registrado que sobra sale como «fuera del plan». La lista va por fecha."""
+    si no, la más cercana de la semana (una sesión de gimnasio hecha en un día de cardio cuenta). Lo
+    registrado que sobra sale como «fuera del plan». La lista va por fecha.
+
+    R3-11, criterio de entrenador: el plan pide una dosis semanal ("Weekly baseline dose": 150 min y
+    2 sesiones de fuerza a la semana), así que una sesión movida de día dentro de la semana cumple la
+    del plan. Pero la lista lo dice claro: `moved` es "earlier" (adelantada: hecha antes del día
+    previsto) o "later" (recuperada: hecha después), y nunca sale como hecha «ese día»."""
     left: dict[str, list[date]] = {}
     for day, kind in sorted(done):
         left.setdefault(kind, []).append(day)
@@ -142,15 +147,20 @@ def _match(entries: list[dict], done: list[tuple[date, str]]) -> list[dict]:
         planned_day = date.fromisoformat(e["date"])
         if planned_day in days:
             days.remove(planned_day)
-            e["done"], e["done_date"] = True, e["date"]
-    for e in entries:  # otro día de la semana
+            e["done"], e["done_date"], e["moved"] = True, e["date"], None
+    for e in entries:  # otro día de la semana: la sesión más cercana (a igual distancia, la de después)
         days = left.get(DONE_KIND[e["kind"]], [])
-        if not e["done"] and days:
-            e["done"], e["done_date"] = True, days.pop(0).isoformat()
+        if e["done"] or not days:
+            continue
+        planned_day = date.fromisoformat(e["date"])
+        nearest = min(days, key=lambda d: (abs((d - planned_day).days), d < planned_day))
+        days.remove(nearest)
+        e["done"], e["done_date"] = True, nearest.isoformat()
+        e["moved"] = "earlier" if nearest < planned_day else "later"
     kind_of = {v: k for k, v in DONE_KIND.items()}
     extras = [
         {"day": plans.DAYS[day.weekday()], "date": day.isoformat(), "kind": kind_of[kind], "session": None,
-         "done": True, "done_date": day.isoformat(), "planned": False}
+         "done": True, "done_date": day.isoformat(), "planned": False, "moved": None}
         for kind, days in left.items() if kind in kind_of for day in days
     ]
     order = tuple(DONE_KIND)
@@ -174,6 +184,7 @@ def adherence_data(user, start: date, end: date, plan: WeeklyPlan | None, target
                 "done": False,
                 "done_date": None,
                 "planned": True,
+                "moved": None,
             })
         entries = _match(entries, done)
     planned = Counter(e["kind"] for e in entries if e["planned"])

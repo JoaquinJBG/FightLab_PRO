@@ -1486,7 +1486,8 @@
     "title": "Coach",
     "badges": {
       "week": "Semana {au} AU",
-      "weighIn": "Pesaje en {days} d"
+      "weighIn": "Pesaje en {days} d",
+      "headBlow": "Golpe en la cabeza: sin contacto ni entreno duro"
     },
     "recovery": {
       "cuidado": {
@@ -2171,7 +2172,8 @@
       "no_all_out_sprints": "SIT y REHIT piden todas las respuestas del PAR-Q+ en NO",
       "no_contact": "sin contacto hasta el alta de un clínico",
       "no_training": "sin entrenar hasta la revisión médica",
-      "prerequisites": "piden 4 semanas de cardio moderado regular sin síntomas"
+      "prerequisites": "piden 4 semanas de cardio moderado regular sin síntomas",
+      "head_blow_return": "nada vigoroso tras el golpe en la cabeza hasta el alta de un clínico"
     },
     "cardio": {
       "dose": "{minutes} min a la semana de cardio moderado",
@@ -2298,8 +2300,10 @@
       "intakeNoTarget": "Comiste de media {mean} kcal en {days, plural, one {# día registrado} other {# días registrados}}.",
       "intakeNone": "Sin ingesta registrada esta semana: anótala en el check-in para comparar con tu objetivo.",
       "intakeBlocked": "Por seguridad no comparamos lo que comes con un objetivo de calorías.",
-      "doneOn": "Hecha el {date}",
-      "extra": "Fuera del plan"
+      "extra": "Fuera del plan",
+      "doneEarlier": "Adelantada: hecha el {date}",
+      "doneLater": "Recuperada: hecha el {date}",
+      "movedNote": "Una sesión movida de día dentro de la semana cuenta para la del plan: lo que pide el plan es la dosis de la semana."
     },
     "weight": {
       "ok": "Tendencia: {kg} kg de media la última semana; {rate} kg por semana ({pct} % por semana) en {days} días.",
