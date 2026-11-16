@@ -543,6 +543,7 @@ def save(user, parsed: ParsedMenu, today: date, *, replace_start: bool = False, 
     _refuse_free_meal(user, parsed, today)
     checks, result = _checks(user, today, parsed.days)
     rejected: list[dict] = []
+    sent_days = len(parsed.days)  # R5-2: el total que se enseña es el de días enviados
     if parsed.source == MealPlan.Source.USER_AI and checks:
         by_date = {c["date"]: c for c in checks}
         failing = [c for c in checks if not c["ok"]]
@@ -561,14 +562,18 @@ def save(user, parsed: ParsedMenu, today: date, *, replace_start: bool = False, 
         clash = MealPlan.objects.filter(profile=profile, start_date=parsed.start)
         if existing:
             clash = clash.exclude(pk=existing.pk)
+        new_ok = sum(1 for c in checks if c.get("ok"))
+        # R5-1: mismo id con menos días válidos que el guardado también pregunta (si no, con el
+        # mismo id o más días válidos, sustituye sin preguntar).
+        worse = bool(existing) and bool(existing.checks) and new_ok < _ok_days(existing)
+        if (clash.exists() or worse) and not replace_start:
+            old = clash.first() if clash.exists() else existing
+            raise ImportInvalid(
+                "start_taken", parsed.start.isoformat(),
+                old_ok=_ok_days(old), old_days=len(old.days or []), old_checked=bool(old.checks),
+                new_ok=new_ok, new_days=sent_days, new_checked=bool(checks),
+            )
         if clash.exists():
-            if not replace_start:
-                old = clash.first()
-                raise ImportInvalid(
-                    "start_taken", parsed.start.isoformat(),
-                    old_ok=_ok_days(old), old_days=len(old.days or []), old_checked=bool(old.checks),
-                    new_ok=sum(1 for c in checks if c.get("ok")), new_days=len(parsed.days), new_checked=bool(checks),
-                )
             clash.delete()
         values = {
             "start_date": parsed.start,

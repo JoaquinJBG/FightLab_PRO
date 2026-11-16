@@ -100,3 +100,32 @@ def test_unknown_food_is_marked_in_an_imported_menu():
     items = [i for m in day["meals"] for d in m["dishes"] for i in d["items"]]
     assert [i["known"] for i in items if i["name"] == UNKNOWN_FOOD] == [False]
     assert day["check"]["ok"] is False and day["check"]["totals"]["unknown"] == [UNKNOWN_FOOD]
+
+
+def test_r5_same_id_worse_menu_asks_with_sent_days_total():
+    """R5-1/R5-2: mismo id y menos días válidos pregunta; el total es el de días enviados."""
+    user = make_user()
+    client = client_for(user)
+    # (el generador automático borra los menús de esas fechas: se prepara todo antes de guardar)
+    first, worse = passing_ai_menu(user), _with_unknown(passing_ai_menu(user), 1)
+    good = client.post(PASTE, {"menu": first}, format="json")
+    assert good.status_code == 201, good.json()
+    assert worse["id"] == good.json()["summary"]["menu_id"]
+    resp = client.post(PASTE, {"menu": worse}, format="json")
+    assert resp.status_code == 409, resp.json()
+    params = resp.json()["params"]
+    assert {k: params[k] for k in ("old_ok", "old_days", "new_ok", "new_days")} == {
+        "old_ok": 2, "old_days": 2, "new_ok": 1, "new_days": 2}
+    assert len(MealPlan.objects.get(profile=user.profile).days) == 2
+    ok = client.post(PASTE, {"menu": worse, "replace_start": True}, format="json")
+    assert ok.status_code in (200, 201), ok.json()
+    assert len(MealPlan.objects.get(profile=user.profile).days) == 1
+
+
+def test_r5_same_id_equal_menu_replaces_without_asking():
+    user = make_user()
+    client = client_for(user)
+    first, second = passing_ai_menu(user), passing_ai_menu(user)
+    assert client.post(PASTE, {"menu": first}, format="json").status_code == 201
+    again = client.post(PASTE, {"menu": second}, format="json")
+    assert again.status_code == 200 and again.json()["replaced"] is True, again.json()
