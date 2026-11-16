@@ -457,3 +457,94 @@ plan y Hoy ya dicen que no hay contacto ni entreno duro. Captura
 **Nota:** al abrir `/training/gym/session` volvió un borrador de «Torso prueba» de la ronda 4, que
 llevaba 6 min abierto (salía de visitar `?routine=1`). Se descartó con «Terminar → Descartar entreno».
 Abrir una rutina para mirarla deja un entreno en marcha sin avisar: menor (R4-14).
+
+---
+
+## Ronda 5 (16-nov-2026): `feat/beta-coach` adad2a2 (79e8793 + D1 + D2)
+
+La pidió el jefe de FightLab. El montaje es el de siempre, con una base de datos nueva (`fightlab5`) y
+`seed_demo`. No había ningún lock, ni `reverse` ni `forward` de otras sesiones. El móvil se vio por
+mDNS en el puerto 33641. Hoja de contacto:
+[`capturas/00-hoja-de-contacto-r5.jpg`](capturas/00-hoja-de-contacto-r5.jpg).
+
+### 1. Cámara: lee un código real ✅ (con matices)
+- Cámara trasera («camera 0, facing back»), 720×1280, enfoque continuo. `BarcodeDetector` admite
+  `ean_13`, `ean_8`, `upc_a`, `upc_e`, `code_128` y otros. Permiso «Allow this time».
+- En tres esperas (120 s, 180 s y 150 s) con el usuario avisado, no se leyó nada.
+- Más tarde, con el escáner aún abierto, la cámara **leyó un EAN-13 real del envase del usuario**
+  (`848…826`, prefijo de España; el backend recibió `GET /coach/barcode/…` → 404). La app respondió
+  «No está en tu catálogo y la búsqueda en Open Food Facts no está configurada en este servidor» y
+  ofreció «Crear el alimento con este código». No hay captura: la cámara enseñaría la casa del
+  usuario.
+- Comprobación aparte de la cadena de lectura: un EAN-13 dibujado en un lienzo y puesto como vídeo se
+  lee en **1 s** y busca el producto. La linterna ya se probó en la ronda 4.
+
+### 2. D1, menús
+| Qué | Resultado |
+|---|---|
+| **R4-1** | Con un menú bueno guardado, pegar uno con 0 de 2 días válidos → «Ninguno de los 2 días cuadra con tus objetivos: **no se ha guardado nada y tu menú no se ha tocado**». Luego «Por qué no cuadra cada día» y el alimento desconocido marcado: «**no están en la tabla, no cuentan en las kcal: chuletón de buey a la brasa**» ✅ Captura 60. |
+| 1 de 2 días válidos (otro `id`) | «Ya hay otro menú que empieza ese día, con 2 de 2 días válidos. El nuevo tiene 1 de 1 días válidos. ¿Lo sustituyes?» → Sustituir → «1 de 2 días cuadran. No se han guardado los que no cuadran (2026-11-24)». Solo se guarda el día bueno ✅ (ver R5-2) |
+| **R4-2** | «Preparar otro menú» enseña el menú nuevo (16-18 nov, AUTOMÁTICO, 3 comprobados) y lo deja seleccionado ✅ |
+
+### 3. D1, sin conexión y nutrición
+| Qué | Resultado |
+|---|---|
+| **R4-3** | Página sin conexión **en español**: «Sin conexión… Reintentar · Ir a Hoy» ✅ Captura 63. |
+| **R4-6** | Sin red, al tocar Movilidad pasa al momento a «✓ Sí · pendiente de enviar», con «1 cambio pendiente de enviar». Al volver la red queda «✓ Sí» ✅ Captura 62. |
+| **R4-9** | Escaneado (con el código a mano o por la cámara) → «**Escaneado**». Un producto tuyo encontrado al buscar («Barrita proteica inventada», creada con «Crear el alimento con este código») → «**De tu catálogo**» ✅ Captura 64. |
+
+### 4. D1, seguridad (R4-10 y R4-13)
+**El check-in no tiene opción de golpe en la cabeza:** el golpe se apunta en Entreno → MMA (ver R5-4).
+
+| Pantalla | Golpe en la cabeza con síntomas | Lesión sin valorar (check-in → «Dolor nuevo o una lesión», Rodilla izquierda) |
+|---|---|---|
+| Hoy | «Plan del día: Golpe en la cabeza: el día del golpe no entrenes…» | Tarjeta de seguridad; sin «Listo» |
+| Coach, cabecera | «GOLPE EN LA CABEZA: SIN CONTACTO NI ENTRENO DURO» | «PRECAUCIÓN» · «Hoy, con precaución: nada vigoroso…» |
+| Coach, chat «¿Entreno fuerte hoy?» | «Lo primero es el golpe en la cabeza…» | «Hoy nada duro… tienes un aviso activo… Ojo con tu lesión…» |
+| Carga y estado | «**Con precaución** · Hoy nada vigoroso» (arregla R4-13) | igual |
+| Plan y Mi rutina | sin «Vigorosa» en «Puedes hacer» | igual |
+| Deportes | «Intenso» **desactivado**: «no está disponible hoy: nada vigoroso tras el golpe…» (arregla R4-10) | «…con una lesión sin valorar, hasta que la vea un médico o fisio» |
+
+En Hoy, un cardio «Vigoroso» ya hecho se puede apuntar, con el aviso «Marcas «Vigorosa» con un aviso
+activo… Se apunta igual, porque ya está hecho» → «Trote 20 min · Vigoroso» ✅ Capturas 65, 66 y 67.
+El alta de un clínico quita el bloqueo.
+
+### 5. D2, gimnasio
+| Qué | Resultado |
+|---|---|
+| **R4-4** | Cabecera de la sesión con coma: «Última vez: 4×8 · 72,5 kg · PR 75 kg · e1RM ≈ 96,7 kg». Récords: «e1RM 91,8 kg» ✅ Captura 69. |
+| **R4-5** | El CSV de Hevy inventado da «Empuje inventado: **Press banca, Press militar, Elevaciones laterales**» y «Tirón inventado: Remo con barra, **Dominadas**, Plancha». Nombres en español, «Pull Up» pasa a «Dominadas» y la rutina lleva lo de todas las sesiones ✅ Captura 68. |
+| **R4-7** | El editor sale con 2:00 por defecto. «Sin temporizador» se guarda como `rest_s: 0` y en la sesión sale «Sin descanso»; 1:30 se guarda como 90 y sale «01:30». Una rutina con RIR abre en **RIR** (`RIR:true`) con las columnas «RIR, serie N» ✅ |
+| **R4-8** | Discos → «Usar 72,5 kg en la serie» lo pone en la **serie 2** (la serie 1 es de calentamiento) ✅ |
+| **R4-11** | Insignias «RÉCORD DE PESO» y «RÉCORD DE VOLUMEN» (2) = «2 récords batidos» ✅ (ver R5-3) Captura 70. |
+| **R4-12** | Arias del editor: «Repeticiones de la serie 1 de Press banca», «RIR de la serie 2 de Press banca»… ✅ |
+| **R4-14** | Abrir una rutina (`?routine=4`) enseña la vista previa con «Empezar» y no deja nada en marcha. Con un entreno a medias, al abrir otra rutina sale «Ya tienes un entreno en marcha… **Descartar** · **Seguir**» ✅ Captura 71. |
+
+### 6. Repaso
+- **Fix C:** las barras de «Carga semanal» miden de 4 a 80 px. Foco «Pierna» → «Sentadilla · Última
+  vez: 4×6 · 92,5 kg · PR 95 kg» ✅
+- **F14 con un menú bueno:** «Guardado: Menú inventado por mi IA (prueba), 2 días. Los 2 días cuadran
+  con tus objetivos» ✅
+
+### Fallos de la ronda 5, por gravedad
+| # | Gravedad | Qué pasa |
+|---|---|---|
+| R5-1 | **molesta** | Pegar en «Con tu IA» un menú **con el mismo `id`** (el que manda el texto copiado, `ia-2026-11-23`) sustituye **sin preguntar** al guardado, aunque sea peor: el bueno tenía 2 de 2 días válidos y el nuevo 1 de 2. Respuesta 200 directa, «Sustituido: Menú medio inventado, 1 día». Solo pregunta si el `id` es distinto. Como el `id` lo fija la propia app, es el caso normal. |
+| R5-2 | menor | La pregunta dice «El nuevo tiene **1 de 1** días válidos» cuando el pegado traía 2 días y solo 1 valía. Debería decir «1 de 2». Captura 61. |
+| R5-3 | menor | En modo RIR, 80 × 8 con RIR 2 sube el e1RM (Récords: de 96,7 a **106,7 kg**), pero en la sesión no sale «RÉCORD DE E1RM» y el resumen cuenta 2. En la ronda 4, en modo RPE, sí salía. Captura 70. |
+| R5-4 | menor | El check-in no tiene la opción de golpe en la cabeza; solo está en Entreno → MMA. |
+| R5-5 | menor | En el editor de rutinas, el selector de descanso no tiene `aria-label`. |
+
+### Notas del montaje (no son fallos de la app)
+- La base de datos nueva vuelve a dar el **id 1** al usuario demo. La app guarda datos en el
+  `localStorage` del móvil por id de usuario, así que trajo cosas de rondas anteriores: la memoria del
+  coach («Rodilla derecha tras sparring») y el «PR 75 kg» / «PR 95 kg» de la cabecera, mientras
+  Récords (del servidor) dice 72,5 / 92,5. En producción los ids no se repiten, pero lo que solo está
+  en el móvil puede no cuadrar con el servidor.
+- Abrir `/training/gym/session` sin rutina empieza un entreno vacío (es lo que hace «Empezar
+  entreno»).
+
+### Sin probar en esta ronda
+- Que se vea en pantalla la lectura de un código real: la lectura se ve en el log del backend, no en
+  captura. Open Food Facts sigue apagado en local.
+- La IA real, los avisos push y la rotación real, como en las rondas anteriores.
