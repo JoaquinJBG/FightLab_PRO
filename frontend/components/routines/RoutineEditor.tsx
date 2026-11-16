@@ -159,6 +159,7 @@ export function RoutineEditor({ id, initial, folderId }: { id: number | null; in
           {te("folder")}
           <select
             data-testid="routine-folder-select"
+            aria-label={te("folderAria")}
             className="field max-w-[60%] px-3 py-2 text-sm"
             value={draft.folder ?? ""}
             onChange={(e) => update({ folder: e.target.value === "" ? null : Number(e.target.value) })}

@@ -184,6 +184,12 @@ describe("editor", () => {
     expect(lastBody(fetchMock, "/api/proxy/gym/routines/7").exercises[0].rest_s).toBeNull();
   });
 
+  it("R6-3: el selector de carpeta lleva aria-label", async () => {
+    api();
+    renderApp(<RoutineEditor id={null} />);
+    expect(screen.getByTestId("routine-folder-select").getAttribute("aria-label")).toBe("Carpeta de la rutina");
+  });
+
   it("R4-12: las etiquetas de cada serie llevan el nombre del ejercicio", () => {
     api();
     renderApp(<RoutineEditor id={7} initial={initial()} />);
