@@ -82,6 +82,7 @@ export function ExerciseBlock(props: Props) {
           {t("rest")}
           <select
             data-testid="exercise-rest"
+            aria-label={t("restFor", { name: exercise.name })}
             className="field w-28 min-w-0 px-2 py-1.5 text-sm"
             value={exercise.rest_s ?? ""}
             onChange={(e) => onChange({ ...exercise, rest_s: e.target.value === "" ? null : Number(e.target.value) })}

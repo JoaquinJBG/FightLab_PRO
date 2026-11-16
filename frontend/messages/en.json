@@ -1845,7 +1845,7 @@
       "error": "The report could not be saved. Please try again.",
       "emergencyNow": "Get emergency care now. Do not stay alone, do not drive and do not go home alone.",
       "call": "Call {number}",
-      "noSymptoms": "Saved. Feeling fine after sparring does not rule out a head injury: if any symptom shows up in the next hours or days, stop training and report it here.",
+      "noSymptoms": "Saved. Feeling fine after the blow does not rule out a head injury: if any symptom shows up in the next hours or days, stop training and report it here.",
       "crt6": "Full list of warning signs: Concussion Recognition Tool 6 (CRT6), official document",
       "blockedTitle": "Contact blocked",
       "blockedBody": "You reported a blow to the head with symptoms. A doctor needs to check it and decides whether it is a concussion. Until a clinician clears you: no sparring, clinch, partner drills or live grappling. Walking and everyday activity are fine if they do not clearly worsen your symptoms.",
@@ -2768,7 +2768,7 @@
         "generic": "That did not work. Try again.",
         "no_valid_days": "None of the {days} days fits your targets: nothing was saved and your menu was left as it was."
       },
-      "startTakenCounts": "Another menu starts on that day, with {old} of {oldDays} valid days. The new one has {new} of {newDays} valid days. Replace it?",
+      "startTakenCounts": "A saved menu starts on that day, with {old} of {oldDays} valid days. The new one has {new} of {newDays} valid days. Replace it?",
       "rejectedTitle": "Why each day doesn't fit:"
     },
     "unknownFood": "not in the food table, doesn't count towards kcal"
@@ -3584,6 +3584,7 @@
       "notesPlaceholder": "Exercise notes",
       "notesFor": "Notes for {name}",
       "rest": "Rest",
+      "restFor": "Rest for {name}",
       "restOff": "No timer",
       "restDefault": "Default",
       "effortToggle": "Plan effort as {mode}",

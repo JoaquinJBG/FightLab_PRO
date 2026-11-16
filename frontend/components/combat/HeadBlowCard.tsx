@@ -44,7 +44,7 @@ function YesNo({ label, hint, value, onChange, name }: {
 /** Golpe en la cabeza (E.5): aviso estructurado, urgencias con señales de alarma, bloqueo del
  * contacto hasta el alta de un clínico y la vuelta graduada como información. El CRT6 se enlaza,
  * nunca se copia. Los textos son de FightLab y están pendientes de revisión clínica. */
-export function HeadBlowCard() {
+export function HeadBlowCard({ origin = "mma_session" }: { origin?: "mma_session" | "checkin" }) {
   const tc = useTranslations("combat.head");
   const { data: safety } = useSafety();
   const blocked = noContact(safety);
@@ -65,7 +65,7 @@ export function HeadBlowCard() {
   function submit() {
     if (symptoms == null || redFlags == null) return;
     report.mutate(
-      { symptoms, red_flags: redFlags, origin: "mma_session" },
+      { symptoms, red_flags: redFlags, origin },
       {
         onSuccess: () => {
           setSavedNoSymptoms(!symptoms && !redFlags);

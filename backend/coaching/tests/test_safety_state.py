@@ -121,3 +121,18 @@ def test_clearance_brings_everything_back(today_fixed):
     HeadImpact.objects.filter(profile=user.profile).update(cleared_on=TODAY, cleared_by="Dra. Prueba")
     state = client_for(user).get(SAFETY).json()["state"]
     assert state["level"] == "ok" and state["vigorous"]["allowed"] is True
+
+
+def test_r5_head_blow_from_the_checkin_feeds_the_same_safety_state(today_fixed):
+    """R5-4: el golpe apuntado desde el check-in (origin `checkin`) sube el mismo flag que el de MMA."""
+    states = {}
+    for origin in ("mma_session", "checkin"):
+        user = make_user()
+        client = client_for(user)
+        resp = client.post("/api/v1/coach/head-impacts", {"symptoms": True, "red_flags": False, "origin": origin}, format="json")
+        assert resp.status_code == 201, resp.json()
+        assert resp.json()["origin"] == origin
+        states[origin] = client.get(SAFETY).json()["state"]
+    assert states["checkin"]["level"] in ("stop", "caution")
+    assert states["checkin"]["no_contact"] is True
+    assert states["checkin"] == states["mma_session"]

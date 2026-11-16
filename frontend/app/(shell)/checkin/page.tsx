@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { CheckinResultView } from "@/components/checkin/CheckinResultView";
 import { SignsSection, WeeklySection, WellnessSection } from "@/components/checkin/Sections";
+import { HeadBlowCard } from "@/components/combat/HeadBlowCard";
 import { UrgentScreen } from "@/components/checkin/UrgentScreen";
 import { ChevronDown } from "@/components/icons";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
@@ -153,6 +154,8 @@ export default function CheckinPage() {
         </section>
 
         <SignsSection form={form} patch={patch} />
+        {/* R5-4: el mismo aviso y el mismo flag (`no_contact`) que el registro de MMA */}
+        <HeadBlowCard origin="checkin" />
         <WeeklySection form={form} patch={patch} questions={state.weekly_questions} />
 
         <label className="glass flex flex-col gap-2 p-4">

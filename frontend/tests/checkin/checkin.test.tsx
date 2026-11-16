@@ -300,3 +300,26 @@ function within(testId: string) {
     return found;
   } };
 }
+
+
+describe("R5-4: golpe en la cabeza desde el check-in", () => {
+  it("avisa por el mismo camino (/coach/head-impacts) con origen checkin", async () => {
+    const impact = { id: 1, occurred_on: "2026-10-29", symptoms: true, red_flags: false, origin: "checkin", cleared_on: null, cleared_by: null };
+    const calls = mockApi({
+      ...routes(),
+      "/api/proxy/coach/head-impacts": () => ({ body: impact, status: 201 }),
+    });
+    renderIn("es");
+    await screen.findByTestId("wellness-section");
+    fireEvent.click(screen.getByTestId("head-report"));
+    fireEvent.click(screen.getByTestId("head-symptoms-yes"));
+    fireEvent.click(screen.getByTestId("head-red-flags-no"));
+    fireEvent.click(screen.getByTestId("head-send"));
+    const isImpact = ([u, i]: [RequestInfo | URL, RequestInit?]) => String(u).endsWith("/coach/head-impacts") && i?.method === "POST";
+    await waitFor(() => expect(calls.mock.calls.some(isImpact)).toBe(true));
+    const call = calls.mock.calls.find(isImpact)!;
+    expect(JSON.parse(String(call[1]!.body))).toEqual({ symptoms: true, red_flags: false, origin: "checkin" });
+    // los botones de la tarjeta no envían el check-in
+    expect(calls.mock.calls.some(([u, i]) => String(u).endsWith("/coach/checkin") && i?.method === "POST")).toBe(false);
+  });
+});

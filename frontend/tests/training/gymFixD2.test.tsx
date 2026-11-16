@@ -84,7 +84,9 @@ describe("funciones puras", () => {
   });
 
   it("R4-11: de los récords que bate una serie cuenta el mejor", () => {
-    expect(bestRecord(["reps", "volume", "e1rm", "weight"])).toEqual(["weight"]);
+    // R5-3: el e1RM manda sobre el peso (si el e1RM sube en Récords, la sesión lo dice)
+    expect(bestRecord(["reps", "volume", "e1rm", "weight"])).toEqual(["e1rm"]);
+    expect(bestRecord(["weight", "volume"])).toEqual(["weight"]);
     expect(bestRecord(["reps", "volume"])).toEqual(["volume"]);
     expect(bestRecord([])).toEqual([]);
   });
@@ -136,9 +138,9 @@ describe("récords (R4-11)", () => {
       fireEvent.click(screen.getByLabelText("Serie 2 hecha"));
       expect(screen.getByTestId("set-records")).toBeTruthy();
     });
-    // 82,5 × 6 bate peso, e1RM y volumen, pero se pinta y se cuenta uno: el de peso
+    // 82,5 × 6 (RIR 2) bate peso, e1RM y volumen, pero se pinta y se cuenta uno: el de e1RM (R5-3)
     expect(screen.getByTestId("set-records").querySelectorAll(".badge")).toHaveLength(1);
-    expect(screen.getByTestId("set-records").textContent).toBe("Récord de peso");
+    expect(screen.getByTestId("set-records").textContent).toBe("Récord de e1RM");
     fireEvent.click(screen.getByText("Terminar entreno"));
     fireEvent.click(screen.getByText("Terminar igualmente"));
     expect(screen.getByText("1 récord batido")).toBeTruthy();

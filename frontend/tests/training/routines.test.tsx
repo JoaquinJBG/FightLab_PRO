@@ -163,6 +163,8 @@ describe("editor", () => {
     // Se ve lo que se guarda: 2:00 con barra y 1:30 con mancuernas, no «Sin temporizador».
     expect((within(row).getByTestId("exercise-rest") as HTMLSelectElement).value).toBe("120");
     expect(within(row).getByDisplayValue("2:00")).toBeTruthy();
+    // R5-5: el selector lleva el nombre del ejercicio
+    expect(within(row).getByTestId("exercise-rest").getAttribute("aria-label")).toMatch(/^Descanso de .+/);
     expect(within(curl).getByDisplayValue("1:30")).toBeTruthy();
     // Sin temporizador: se guarda 0 (la sesión no arranca el descanso), no null (= el de por defecto).
     fireEvent.change(within(curl).getByTestId("exercise-rest"), { target: { value: "0" } });

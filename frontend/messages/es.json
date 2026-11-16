@@ -1845,7 +1845,7 @@
       "error": "No se pudo guardar el aviso. Inténtalo de nuevo.",
       "emergencyNow": "Ve a urgencias ya. No te quedes solo, no conduzcas y no vuelvas solo a casa.",
       "call": "Llamar al {number}",
-      "noSymptoms": "Guardado. Sentirte bien después del sparring no descarta una lesión en la cabeza: si en las próximas horas o días notas algún síntoma, para de entrenar y avísalo aquí.",
+      "noSymptoms": "Guardado. Sentirte bien después del golpe no descarta una lesión en la cabeza: si en las próximas horas o días notas algún síntoma, para de entrenar y avísalo aquí.",
       "crt6": "Lista completa de señales de alarma: Concussion Recognition Tool 6 (CRT6), documento oficial",
       "blockedTitle": "Contacto bloqueado",
       "blockedBody": "Avisaste de un golpe en la cabeza con síntomas. Lo tiene que valorar un médico, que es quien decide si es una conmoción. Hasta que un clínico te dé el alta: nada de sparring, clinch, drills con compañero ni grappling en vivo. Caminar y la actividad diaria están bien si no empeoran claramente los síntomas.",
@@ -2768,7 +2768,7 @@
         "generic": "No se ha podido. Inténtalo de nuevo.",
         "no_valid_days": "Ninguno de los {days} días cuadra con tus objetivos: no se ha guardado nada y tu menú no se ha tocado."
       },
-      "startTakenCounts": "Ya hay otro menú que empieza ese día, con {old} de {oldDays} días válidos. El nuevo tiene {new} de {newDays} días válidos. ¿Lo sustituyes?",
+      "startTakenCounts": "Ya hay un menú guardado que empieza ese día, con {old} de {oldDays} días válidos. El nuevo tiene {new} de {newDays} días válidos. ¿Lo sustituyes?",
       "rejectedTitle": "Por qué no cuadra cada día:"
     },
     "unknownFood": "no está en la tabla, no cuenta en las kcal"
@@ -3584,6 +3584,7 @@
       "notesPlaceholder": "Notas del ejercicio",
       "notesFor": "Notas de {name}",
       "rest": "Descanso",
+      "restFor": "Descanso de {name}",
       "restOff": "Sin temporizador",
       "restDefault": "Por defecto",
       "effortToggle": "Planificar el esfuerzo en {mode}",
