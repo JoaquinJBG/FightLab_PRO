@@ -548,3 +548,31 @@ El alta de un clínico quita el bloqueo.
 - Que se vea en pantalla la lectura de un código real: la lectura se ve en el log del backend, no en
   captura. Open Food Facts sigue apagado en local.
 - La IA real, los avisos push y la rotación real, como en las rondas anteriores.
+
+---
+
+## Ronda 6 (16-nov-2026): `feat/beta-coach` f47a6e0, R5-1 a R5-5
+
+Pasada corta que pidió el jefe de FightLab. El montaje es el de siempre, con la base de datos nueva
+`fightlab6` y `seed_demo`. No había ningún lock, ni `reverse` ni `forward` de otras sesiones. Antes de
+entrar se borraron los datos del sitio `http://localhost:3456` en el Chrome del móvil (CDP
+`Storage.clearDataForOrigin`, `storageTypes: all`; antes había 22 claves en `localStorage` y 1 service
+worker). Así no se cuela el estado de rondas anteriores. Sin sesión, la pantalla de entrada sale en el
+idioma del navegador (inglés); al entrar, la cuenta pasa a español.
+
+| Qué | Resultado |
+|---|---|
+| **R5-1** | Menú bueno guardado (`ia-2026-11-23`, 2 de 2 días válidos) → pegar otro con **el mismo id** y 1 de 2 días válidos → **pregunta**: «Ya hay un menú guardado que empieza ese día, con 2 de 2 días válidos. El nuevo tiene 1 de 2 días válidos. ¿Lo sustituyes?» (409). Sin tocar nada se queda el bueno (23-24 nov). Con «Sustituir»: «Sustituido: Menú medio inventado, 1 día. 1 de 2 días cuadran. No se han guardado los que no cuadran (2026-11-24)». Con el mismo id y los mismos días válidos (2 de 2 frente a 2 de 2), o con más, sustituye sin preguntar ✅ Captura [`80-r6-menu-mismo-id-pregunta.jpg`](capturas/80-r6-menu-mismo-id-pregunta.jpg). |
+| **R5-2** | El texto dice «el nuevo tiene **1 de 2** días válidos» ✅ |
+| **R5-3** | Rutina en modo RIR (`RIR:true`). Press banca 80 × 8 con RIR 2 (antes PR 72,5 kg, e1RM 91,8) → «**RÉCORD DE E1RM**» y aviso «Nuevo récord en Press banca: Récord de e1RM». El resumen dice «**1 récord batido**», la misma cifra. Récords: «Peso 80 kg · e1RM 106,7 kg · mejor serie 640 kg» ✅ Capturas [`81`](capturas/81-r6-record-e1rm-rir.jpg) y [`82`](capturas/82-r6-resumen-1-record.jpg). |
+| **R5-4** | El check-in tiene la tarjeta «GOLPE EN LA CABEZA» → síntomas: Sí → «CONTACTO BLOQUEADO». Hoy: «Plan del día: Golpe en la cabeza: el día del golpe no entrenes…». Coach: cabecera «GOLPE EN LA CABEZA: SIN CONTACTO NI ENTRENO DURO» y chat «Lo primero es el golpe…». Carga y estado: «**Con precaución** · Hoy nada vigoroso». Plan y Mi rutina sin «Vigorosa». Deportes con «Intenso» **desactivado** («no está disponible hoy…»). En ningún sitio sale «Listo para entrenar» ✅ Capturas [`83`](capturas/83-r6-checkin-golpe.jpg), [`84`](capturas/84-r6-carga-precaucion.jpg) y [`85`](capturas/85-r6-deportes-sin-intenso.jpg). |
+| **R5-5** | Selectores de descanso del editor: aria-label «Descanso de Press banca», «Descanso de Remo con barra» ✅ |
+
+**Notas (menores, no son fallos de lo pedido):**
+- R6-1: el aviso de «¿Lo sustituyes?» no tiene botón «Cancelar». Si no tocas «Sustituir», el menú
+  bueno se queda, pero la pregunta sigue en pantalla.
+- R6-2: por diseño (commit: «el e1RM manda sobre el peso en el criterio de récord por serie»), cada
+  serie enseña **una sola** insignia. Con 80 × 8 se batieron peso (72,5 → 80), e1RM y volumen de la
+  serie (580 → 640), y solo sale «RÉCORD DE E1RM» y «1 récord batido». Récords guarda los tres. En la
+  ronda 4 (modo RPE) una serie enseñaba 3 insignias. Hay que decidir si es lo que se quiere.
+- R6-3: el selector «Carpeta» del editor de rutinas sigue sin aria-label.
