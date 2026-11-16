@@ -140,12 +140,27 @@ describe.each(["es", "en"] as const)("menú importado (%s)", (locale) => {
     fireEvent.change(input, { target: { files: [file] } });
     const confirm = await screen.findByTestId("menu-import-confirm");
     expect(confirm.textContent).toContain(cat.import.startTaken);
-    fireEvent.click(within(confirm).getByRole("button"));
+    fireEvent.click(within(confirm).getByText(cat.import.replace));
     const done = await screen.findByTestId("menu-import-done");
     expect(done.textContent).toContain("Menú de prueba");
     const posts = fetch.mock.calls.filter(([u]) => String(u).endsWith("/menu/import"));
     expect(posts).toHaveLength(2);
     expect((posts[1][1]!.body as FormData).get("replace_start")).toBe("true");
+  });
+
+  it("R6-1: importar, «Cancelar» cierra la pregunta y no envía nada", async () => {
+    const fetch = mockApi({
+      "/api/proxy/coach/menu": { body: importedState({ menu: null, menus: [] }) },
+      "/api/proxy/coach/products": { body: { products: [] } },
+      "/api/proxy/coach/menu/import": { status: 409, body: { code: "start_taken", detail: "x" } },
+    });
+    renderApp(<MenuPage />, locale);
+    const input = (await screen.findByTestId("menu-import-input")) as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [new File(['{"schema": 1}'], "menu.json", { type: "application/json" })] } });
+    const confirm = await screen.findByTestId("menu-import-confirm");
+    fireEvent.click(within(confirm).getByText(cat.import.cancel));
+    expect(screen.queryByTestId("menu-import-confirm")).toBeNull();
+    expect(fetch.mock.calls.filter(([u]) => String(u).endsWith("/menu/import"))).toHaveLength(1);
   });
 
   it("la sesión de batch a pantalla completa: carriles por aparato, reloj y temporizador por paso", async () => {

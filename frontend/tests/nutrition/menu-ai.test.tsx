@@ -167,10 +167,24 @@ describe.each(["es", "en"] as const)("Prepararlo con mi IA (%s)", (locale) => {
     fireEvent.click(screen.getByTestId("menu-ai-save"));
     const confirm = await screen.findByTestId("menu-ai-confirm");
     expect(confirm.textContent).toContain(cat.startTaken);
-    fireEvent.click(within(confirm).getByRole("button"));
+    fireEvent.click(within(confirm).getByText(cat.replace));
     await screen.findByTestId("menu-ai-done");
     const posts = fetch.mock.calls.filter(([u]) => String(u) === "/api/proxy/coach/menu/paste");
     expect(JSON.parse(String(posts[1][1]!.body))).toEqual({ menu: AI_REPLY, replace_start: true });
+  });
+
+  it("R6-1: «Cancelar» cierra la pregunta, no envía nada y deja el texto pegado", async () => {
+    const fetch = mockApi(routes({
+      "/api/proxy/coach/menu/paste": { status: 409, body: { code: "start_taken", detail: "x", info: "2026-11-02", params: {} } },
+    }));
+    renderApp(<MenuPage />, locale);
+    fireEvent.change(await screen.findByTestId("menu-ai-paste"), { target: { value: AI_REPLY } });
+    fireEvent.click(screen.getByTestId("menu-ai-save"));
+    const confirm = await screen.findByTestId("menu-ai-confirm");
+    fireEvent.click(within(confirm).getByText(cat.cancel));
+    expect(screen.queryByTestId("menu-ai-confirm")).toBeNull();
+    expect((screen.getByTestId("menu-ai-paste") as HTMLTextAreaElement).value).toBe(AI_REPLY);
+    expect(fetch.mock.calls.filter(([u]) => String(u) === "/api/proxy/coach/menu/paste")).toHaveLength(1);
   });
 
   it("la cabecera dice el origen del menú", async () => {

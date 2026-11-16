@@ -40,6 +40,7 @@ export function ImportMenuCard({ onImported }: { onImported?: (id: number) => vo
         <div data-testid="menu-import-confirm" className="mt-3">
           <p role="alert" className="t-body text-xs text-warn">{t("startTaken")}</p>
           <button type="button" className="btn btn-primary btn-sm mt-2" onClick={() => send(pending, true)}>{t("replace")}</button>
+          <button type="button" data-testid="menu-import-cancel" className="btn btn-tonal btn-sm ml-2 mt-2" onClick={() => { setPending(null); importMenu.reset(); }}>{t("cancel")}</button>
         </div>
       )}
       {code && code !== "start_taken" && (

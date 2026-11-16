@@ -100,6 +100,7 @@ export function AiMenuCard({ days, meals, tupper, onSaved }: {
               : t("startTaken")}
           </p>
           <button type="button" className="btn btn-primary btn-sm mt-2" onClick={() => save(pending, true)}>{t("replace")}</button>
+          <button type="button" data-testid="menu-ai-cancel" className="btn btn-tonal btn-sm ml-2 mt-2" onClick={() => { setPending(null); paste.reset(); }}>{t("cancel")}</button>
         </div>
       )}
       {code && code !== "start_taken" && (
