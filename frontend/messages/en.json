@@ -1281,8 +1281,15 @@
         "volume": "Volume record",
         "reps": "Rep record at that weight"
       },
+      "recordKinds": {
+        "weight": "weight",
+        "e1rm": "e1RM",
+        "volume": "volume",
+        "reps": "reps"
+      },
+      "recordBadge": "Record: {kinds}",
       "newRecord": "New record on {name}: {what}",
-      "recordsBroken": "{n, plural, one {# record broken} other {# records broken}}",
+      "recordsSummary": "{n, plural, one {# record} other {# records}} in {m, plural, one {# set} other {# sets}}",
       "restOver": "Rest over: next set",
       "saving": "Saving…",
       "saveRejected": "The server didn't accept the workout.",
@@ -2726,6 +2733,7 @@
       "replaced": "Replaced: {title}, {days} days; {kept} ticked items kept.",
       "startTaken": "Another menu starts on that day. Replace it?",
       "replace": "Replace",
+      "cancel": "Cancel",
       "errors": {
         "import_invalid": "The file is not a menu that can be imported.",
         "import_too_long": "An imported menu covers 1 to 35 days.",
@@ -2753,6 +2761,7 @@
       "failing": "{ok} of {days} days fit. The ones that don't ({dates}) were not saved: ask your AI to adjust them and paste it again.",
       "startTaken": "Another menu starts on that day. Replace it?",
       "replace": "Replace",
+      "cancel": "Cancel",
       "where": "Where: {info}",
       "askAgain": "Ask your AI to fix it following the format in the text you copied, and paste it again.",
       "skillLink": "Have Claude Code on your PC? Prepare it with the skill (Profile → My AI)",
@@ -3575,6 +3584,7 @@
       "titleRequired": "Give the routine a name.",
       "routineNotes": "Routine notes",
       "folder": "Folder",
+      "folderAria": "Routine folder",
       "noExercises": "Add exercises to plan their sets.",
       "addExercise": "Add exercise",
       "addSet": "Add set",

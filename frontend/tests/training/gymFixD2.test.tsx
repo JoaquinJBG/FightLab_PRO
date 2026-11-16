@@ -83,11 +83,10 @@ describe("funciones puras", () => {
     expect(nextWorkSetIndex([{ done: true }])).toBe(-1);
   });
 
-  it("R4-11: de los récords que bate una serie cuenta el mejor", () => {
-    // R5-3: el e1RM manda sobre el peso (si el e1RM sube en Récords, la sesión lo dice)
-    expect(bestRecord(["reps", "volume", "e1rm", "weight"])).toEqual(["e1rm"]);
-    expect(bestRecord(["weight", "volume"])).toEqual(["weight"]);
-    expect(bestRecord(["reps", "volume"])).toEqual(["volume"]);
+  it("R6-2: devuelve todos los récords que bate la serie, en orden e1RM > peso > volumen > reps", () => {
+    expect(bestRecord(["reps", "volume", "e1rm", "weight"])).toEqual(["e1rm", "weight", "volume", "reps"]);
+    expect(bestRecord(["volume", "weight"])).toEqual(["weight", "volume"]);
+    expect(bestRecord(["reps", "volume"])).toEqual(["volume", "reps"]);
     expect(bestRecord([])).toEqual([]);
   });
 
@@ -128,8 +127,8 @@ describe("calculadora de discos (R4-8)", () => {
   });
 });
 
-describe("récords (R4-11)", () => {
-  it("la insignia de la serie y «N récords batidos» cuentan lo mismo: una serie, un récord", async () => {
+describe("récords (R4-11, R6-2)", () => {
+  it("R6-2: la insignia enseña todos los tipos y el resumen cuenta tipos y series", async () => {
     await openRoutine();
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/gym/records"), expect.anything()));
     fireEvent.click(screen.getByTestId("start-now"));
@@ -138,12 +137,13 @@ describe("récords (R4-11)", () => {
       fireEvent.click(screen.getByLabelText("Serie 2 hecha"));
       expect(screen.getByTestId("set-records")).toBeTruthy();
     });
-    // 82,5 × 6 (RIR 2) bate peso, e1RM y volumen, pero se pinta y se cuenta uno: el de e1RM (R5-3)
+    // 82,5 × 6 (RIR 2) bate e1RM, peso y volumen: salen los tres, e1RM primero
     expect(screen.getByTestId("set-records").querySelectorAll(".badge")).toHaveLength(1);
-    expect(screen.getByTestId("set-records").textContent).toBe("Récord de e1RM");
+    expect(screen.getByTestId("set-records").textContent).toBe("Récord: e1RM · peso · volumen");
+    expect(screen.getByTestId("record-toast").textContent).toContain("e1RM · peso · volumen");
     fireEvent.click(screen.getByText("Terminar entreno"));
     fireEvent.click(screen.getByText("Terminar igualmente"));
-    expect(screen.getByText("1 récord batido")).toBeTruthy();
+    expect(screen.getByText("3 récords en 1 serie")).toBeTruthy();
   });
 });
 

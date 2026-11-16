@@ -199,12 +199,9 @@ export function nextWorkSetIndex(sets: Pick<SetEntry, "done" | "type">[]): numbe
 
 /* --------- un único criterio de récord en la sesión y en el resumen (R4-11) --------- */
 
-/** Criterio: por serie, cuenta el MEJOR tipo de récord que bate (e1RM > peso > volumen > reps a
-    ese peso). El e1RM va primero (R5-3): es la cifra de Récords y suma carga, repeticiones y RIR/RPE;
-    si sube en Récords, la sesión tiene que decirlo aunque la serie también bata el peso. La insignia de la serie, el aviso y
-    «N récords batidos» del resumen cuentan lo mismo:
-    una serie con récord = un récord. */
+/** Criterio (R6-2, como Hevy): una serie enseña TODOS los tipos de récord que bate, ordenados
+    e1RM > peso > volumen > reps a ese peso. La insignia de la serie y el aviso los listan; el resumen
+    cuenta tipos y series («3 récords en 1 serie»). */
 export function bestRecord(kinds: RecordKind[]): RecordKind[] {
-  for (const k of ["e1rm", "weight", "volume", "reps"] as RecordKind[]) if (kinds.includes(k)) return [k];
-  return [];
+  return (["e1rm", "weight", "volume", "reps"] as RecordKind[]).filter((k) => kinds.includes(k));
 }

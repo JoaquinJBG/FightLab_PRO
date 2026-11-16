@@ -1281,8 +1281,15 @@
         "volume": "Récord de volumen",
         "reps": "Récord de reps a ese peso"
       },
+      "recordKinds": {
+        "weight": "peso",
+        "e1rm": "e1RM",
+        "volume": "volumen",
+        "reps": "reps"
+      },
+      "recordBadge": "Récord: {kinds}",
       "newRecord": "Nuevo récord en {name}: {what}",
-      "recordsBroken": "{n, plural, one {# récord batido} other {# récords batidos}}",
+      "recordsSummary": "{n, plural, one {# récord} other {# récords}} en {m, plural, one {# serie} other {# series}}",
       "restOver": "Descanso terminado: a por la siguiente serie",
       "saving": "Guardando…",
       "saveRejected": "El servidor no ha aceptado el entreno.",
@@ -2726,6 +2733,7 @@
       "replaced": "Sustituido: {title}, {days} días; se mantienen {kept} cosas tachadas.",
       "startTaken": "Ya hay otro menú que empieza ese día. ¿Lo sustituyes?",
       "replace": "Sustituir",
+      "cancel": "Cancelar",
       "errors": {
         "import_invalid": "El archivo no es un menú que se pueda importar.",
         "import_too_long": "Un menú importado es de 1 a 35 días.",
@@ -2753,6 +2761,7 @@
       "failing": "{ok} de {days} días cuadran. No se han guardado los que no cuadran ({dates}): pídele a tu IA que los ajuste y vuelve a pegarlo.",
       "startTaken": "Ya hay otro menú que empieza ese día. ¿Lo sustituyes?",
       "replace": "Sustituir",
+      "cancel": "Cancelar",
       "where": "Dónde: {info}",
       "askAgain": "Pídele a tu IA que lo corrija siguiendo el formato del texto que copiaste, y vuelve a pegarlo.",
       "skillLink": "¿Tienes Claude Code en el PC? Prepáralo con la skill (Perfil → Mi IA)",
@@ -3575,6 +3584,7 @@
       "titleRequired": "Ponle un nombre a la rutina.",
       "routineNotes": "Notas de la rutina",
       "folder": "Carpeta",
+      "folderAria": "Carpeta de la rutina",
       "noExercises": "Añade ejercicios para planificar sus series.",
       "addExercise": "Añadir ejercicio",
       "addSet": "Añadir serie",

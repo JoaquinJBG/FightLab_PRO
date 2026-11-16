@@ -185,7 +185,7 @@ describe("Registrar", () => {
       fireEvent.click(screen.getAllByLabelText("Set 2 done")[0]);
       expect(screen.getByTestId("record-toast").textContent).toContain("New record on Bench press");
     });
-    expect(screen.getByTestId("set-records").textContent).toContain("e1RM record");
+    expect(screen.getByTestId("set-records").textContent).toContain("Record: e1RM");
   });
 
   it("calculadora de discos con barra configurable", async () => {

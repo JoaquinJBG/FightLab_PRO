@@ -66,9 +66,7 @@ export function SetRow({
       )}
       {records && records.length > 0 && (
         <p data-testid="set-records" className="t-body col-span-5 -mt-1 flex flex-wrap gap-1 text-[11px]">
-          {records.map((r) => (
-            <span key={r} className="badge badge-neon">{t(`records.${r}`)}</span>
-          ))}
+          <span className="badge badge-neon">{t("recordBadge", { kinds: records.map((r) => t(`recordKinds.${r}`)).join(" · ") })}</span>
         </p>
       )}
       {preview && !set.done && (

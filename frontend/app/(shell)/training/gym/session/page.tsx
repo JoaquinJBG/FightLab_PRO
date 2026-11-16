@@ -384,7 +384,7 @@ function SessionInner() {
         .filter((s, j) => j !== si && s.done)
         .map((s) => ({ kg: parseNum(s.kg) ?? 0, reps: parseNum(s.reps) ?? 0, type: s.type, rpe: parseNum(s.rpe), rir: parseNum(s.rir) }));
       pr = bestRecord(detectRecords({ kg, reps, type: set.type, rpe: parseNum(set.rpe), rir: parseNum(set.rir) }, recordFor(records, x), today));
-      if (pr.length > 0) showToast(t("newRecord", { name: exLabel(x.name), what: pr.map((r) => t(`records.${r}`)).join(" · ") }));
+      if (pr.length > 0) showToast(t("newRecord", { name: exLabel(x.name), what: pr.map((r) => t(`recordKinds.${r}`)).join(" · ") }));
     }
     patchSet(ei, si, { done: willComplete, pr: willComplete && pr.length ? pr : undefined });
     if (!willComplete) return;
@@ -473,7 +473,8 @@ function SessionInner() {
   };
   const detailMax = MAX_DETAIL_CHARS - (Object.keys(planned).length > 0 ? JSON.stringify(planned).length : 0);
   const breakdownFits = buildActivityDetail(focus, volume, parsedExercises, detailMax).breakdown;
-  const recordsBroken = exercises.reduce((a, x) => a + x.sets.filter((s) => s.done && s.pr?.length).length, 0);
+  const recordSets = exercises.reduce((a, x) => a + x.sets.filter((s) => s.done && s.pr?.length).length, 0);
+  const recordsBroken = exercises.reduce((a, x) => a + x.sets.reduce((b, s) => b + (s.done ? s.pr?.length ?? 0 : 0), 0), 0);
   const title = focus ? t("workoutFocus", { focus: focusLabel(focus) }) : routine ? routine.title : planSession ? tp("session", { key: planSession }) : t("workout");
 
   function finish() {
@@ -561,7 +562,7 @@ function SessionInner() {
             <div><p data-testid="summary-sets" className="stat text-xl text-ink">{totalSets}</p><p className="t-label text-muted">{t("setsLabel", { n: totalSets })}</p></div>
             <div><p data-testid="summary-volume" className="stat text-xl neon-text">{volume.toLocaleString(locale)}</p><p className="t-label text-muted">{t("totalKg")}</p></div>
           </div>
-          {recordsBroken > 0 && <p className="t-body mt-2 text-center text-xs text-neon">{t("recordsBroken", { n: recordsBroken })}</p>}
+          {recordsBroken > 0 && <p className="t-body mt-2 text-center text-xs text-neon">{t("recordsSummary", { n: recordsBroken, m: recordSets })}</p>}
           {parsedExercises.length > 0 && (
             <ul data-testid="summary-list" className="mt-3 flex flex-col gap-2 border-t border-[rgba(150,190,255,0.1)] pt-3">
               {parsedExercises.map((x, i) => (
