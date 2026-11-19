@@ -37,5 +37,6 @@ EXPOSE 8000
 # `manage.py boot` (users/management/commands/boot.py), en un solo proceso: migrate, createcachetable,
 # sync_knowledge --on-start (la base de evidencia, solo si cambió) y, con DEMO_USER_EMAIL, seed_demo
 # (entorno de prueba; con DEBUG=False exige DEMO_SEED_ALLOWED=true). Si sync_knowledge o seed_demo
-# fallan se registra y gunicorn arranca igual; si falla migrate, no.
-CMD ["sh", "-c", "python manage.py boot && exec gunicorn core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 90"]
+# fallan se registra y gunicorn arranca igual; si falla migrate, no. --max-requests recicla cada
+# worker tras ~500 peticiones (con jitter, no los dos a la vez) para que la RAM no crezca sin fin.
+CMD ["sh", "-c", "python manage.py boot && exec gunicorn core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 90 --max-requests 500 --max-requests-jitter 50"]
