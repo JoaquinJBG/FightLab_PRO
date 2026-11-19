@@ -1,0 +1,1366 @@
+# Traducción al español de knowledge/recovery-habits.md de AI personal coach, de matgarfer499
+# (https://github.com/matgarfer499/ai-personal-coach), CC BY 4.0.
+# Cambios: FightLab Pro (Joaquín J Beltrán García) ha traducido las reglas al español; la
+# traducción se publica también bajo CC BY 4.0. Ver LICENSE-CONTENT.md.
+# Formato y cómo se actualiza: backend/knowledge_translations/README.md.
+# status: machine = traducción sin revisar por una persona.
+
+lang: es
+origin: upstream
+file: recovery-habits
+rules:
+- key: recovery-habits/sleep-duration-target
+  source_hash: 60302a5b8d543ac5a1c54297d87036f66afcbae5e8a6a8a4065081725decb3af
+  status: machine
+  heading: Objetivo de duración del sueño
+  rule_text: |-
+    Fija por defecto un objetivo de 7 h o más de sueño real (es decir, unas 7.5-8.5 h en la cama) la mayoría de las noches; para clientes de 65 años o más, apunta a 7-8 h. Pregunta por el sueño habitual en la entrevista inicial y trata dormir menos de 7 h como una barrera modificable para perder grasa y recuperarse, no como una medalla de disciplina. No presiones a quien duerme 9 h de forma natural para que duerma menos.
+  applies_to: |-
+    Adultos sanos sin trastorno del sueño. Recomendaciones de consenso (método de idoneidad RAND/UCLA), basadas sobre todo en asociaciones observacionales con resultados de salud y no en ECA.
+  conflicts: |-
+    La necesidad de sueño varía de una persona a otra; las cifras son poblacionales. Las asociaciones entre dormir poco y enfermedad son en gran parte observacionales. AASM/SRS da un mínimo (7 h o más), mientras que la NSF da rangos (7-9 h; 7-8 h para 65 años o más).
+- key: recovery-habits/protect-sleep-during-a-calorie-deficit
+  source_hash: 8a7af17b56e57e95bfaa693ece5ac46ee31f688560a66d6735619c64ac844347
+  status: machine
+  heading: Protege el sueño durante un déficit calórico
+  rule_text: |-
+    Durante una fase de pérdida de grasa, trata el sueño como parte del plan: pide a los clientes que protejan 7 h o más y, si duermen poco de forma crónica, arregla el sueño antes de hacer el déficit más agresivo. No confíes en recuperar sueño el fin de semana para compensar la restricción entre semana. Haz seguimiento de la composición corporal o la cintura, no solo del peso en la báscula.
+  applies_to: |-
+    Adultos con sobrepeso/obesidad con dieta hipocalórica y sin entrenamiento de fuerza estructurado; 10 participantes durante 2 semanas en laboratorio y 36 participantes durante 8 semanas. No se ha probado si el entrenamiento de fuerza junto con mucha proteína contrarresta el efecto.
+  conflicts: |-
+    Los dos ECA pequeños coinciden en la dirección pero difieren en la magnitud: el estudio de laboratorio encontró grandes pérdidas de masa libre de grasa, mientras que el ensayo de 8 semanas encontró pérdidas absolutas similares de masa magra y de grasa, y solo difería la proporción de la pérdida que era grasa. Se desconoce el tamaño del efecto en personas que entrenan fuerza y comen suficiente proteína.
+- key: recovery-habits/short-sleep-raises-intake
+  source_hash: cfda0abc1a887af8f02fd9e07a99e85a77c2cf8cdd72195bc1e80777ead03690
+  status: machine
+  heading: Dormir poco aumenta la ingesta
+  rule_text: |-
+    Cuando un cliente cuente que lleva una racha de noches cortas, espera más hambre y comer de más (de media, aproximadamente 250-400 kcal/día en estudios de laboratorio). Planifícalo: ten a mano la proteína y los alimentos de mucho volumen, deja los picoteos tentadores fuera de su alcance esos días y no interpretes un día con hambre y fuera del plan tras dormir mal como un fallo de fuerza de voluntad.
+  applies_to: |-
+    Adultos sanos en estudios cortos (de días a semanas), a menudo de laboratorio, con acceso libre a la comida y muestras agrupadas pequeñas. Los efectos a largo plazo en vida libre, y los efectos en personas con obesidad o en personas mayores, son menos seguros.
+  conflicts: |-
+    Los metaanálisis coinciden en la dirección, pero el tamaño varía (unas 250 a 385 kcal/día). Capers 2015 encontró que la restricción de sueño también aumentaba el gasto energético total y tenía efectos inconsistentes sobre el peso, mientras que Al Khatib no encontró cambios en el gasto. Las respuestas individuales varían.
+- key: recovery-habits/do-not-blame-hormone-imbalance-for-post-short-sleep-hunger
+  source_hash: 0662f99a82d665e913260c3e0a055958faf2be2419e62fa058b89f53a88d6fc6
+  status: machine
+  heading: No culpes a un "desequilibrio hormonal" del hambre tras dormir poco
+  rule_text: |-
+    Explica que el hambre tras dormir poco es real y esperable, pero no digas a los clientes que la causa un "desequilibrio hormonal" que haya que corregir con suplementos o alimentos especiales. La solución práctica es dormir más y planificar el entorno de comida.
+  applies_to: |-
+    Adultos sanos en ECA de restricción de sueño a corto plazo (Zhu). Lin 2020 agrupó estudios experimentales y transversales y no especifica el rango de edad en su resumen (puede incluir muestras no adultas).
+  conflicts: |-
+    Los dos metaanálisis discrepan sobre si cambian los niveles hormonales, y la dirección de la leptina va en contra de la versión popular. Las respuestas cerebrales de recompensa y a los estímulos de comida pueden importar más que las hormonas circulantes.
+- key: recovery-habits/sleep-extension-as-a-fat-loss-lever-for-short-sleepers
+  source_hash: 0b39ea14d3b930789bbbed4564fa9ed752cd687b4205d9da2203cb4c8b59d17f
+  status: machine
+  heading: Alargar el sueño como palanca para perder grasa en quienes duermen poco
+  rule_text: |-
+    A los clientes que duermen habitualmente menos de 6.5 h y quieren perder grasa, ofréceles alargar el tiempo en la cama (una hora de acostarse más temprana y constante, apuntando a unas 8-8.5 h en la cama) como intervención temprana y de bajo coste junto con el trabajo de nutrición.
+  applies_to: |-
+    Adultos jóvenes (21-40) con sobrepeso que duermen poco de forma habitual; un único ECA de un solo centro con una intervención de 2 semanas. Se desconoce en quienes duermen lo normal, en personas con obesidad, en personas mayores y a largo plazo.
+  conflicts: |-
+    Un único ECA corto. Una revisión sistemática anterior (Capers 2015) encontró pocos ensayos controlados sobre aumentar el sueño y pedía más. Es probable que el beneficio se limite a quienes realmente duermen poco.
+- key: recovery-habits/sleep-hygiene-is-advice-cbt-i-is-treatment
+  source_hash: 75d4c1acab5a2018c63d118f2293866c5e0546a2c4647abb7e4eae149bace4e3
+  status: machine
+  heading: La higiene del sueño es un consejo; la TCC-I es un tratamiento
+  rule_text: |-
+    Da consejos de higiene del sueño (horario regular, límites de cafeína y alcohol, dormitorio oscuro y silencioso) solo como recomendaciones generales. Si un cliente cuenta que le cuesta dormirse o mantener el sueño 3 o más noches/semana durante meses, o que le afecta durante el día, dile que una lista de higiene del sueño no es un tratamiento y derívalo a su médico de cabecera o a un clínico especialista en sueño para TCC-I (incluida la TCC-I digital). No diagnostiques insomnio ni recomiendes medicación para dormir.
+  applies_to: |-
+    Adultos con trastorno de insomnio crónico (guías); la evidencia sobre higiene del sueño en la población general no clínica es limitada.
+  conflicts: |-
+    La higiene del sueño puede ayudar aun así a personas sin insomnio cuyo poco sueño se debe a hábitos u horarios, pero esto apenas se ha probado. La recomendación de la AASM en contra de la higiene del sueño como único tratamiento es condicional.
+- key: recovery-habits/possible-sleep-apnoea-suggest-a-doctor
+  source_hash: 6a4a1e61c1176daa99350f9965c894636d935c3182929694667e362e5d9829cc
+  status: machine
+  heading: 'Posible apnea del sueño: sugiere ir al médico'
+  rule_text: |-
+    No hagas cribado ni diagnóstico de apnea del sueño. Si un cliente cuenta somnolencia diurna excesiva junto con al menos dos de estos: ronquido fuerte habitual, pausas respiratorias observadas por otros o despertarse jadeando o ahogándose por la noche, o hipertensión diagnosticada, sugiérele que vaya al médico y le mencione estos síntomas, porque esa combinación es la que, según las guías, justifica un estudio del sueño. El ronquido o la somnolencia por sí solos también merece la pena comentarlos con el médico de cabecera (una convención de coaching). No trates la puntuación de un cuestionario online como un veredicto.
+  applies_to: |-
+    Adultos; guías clínicas de diagnóstico y cribado, no específicas de quienes van al gimnasio.
+  conflicts: |-
+    La declaración de la USPSTF trata el cribado de adultos sin síntomas reconocidos, mientras que la AASM trata las pruebas en personas que ya tienen síntomas; no se contradicen.
+- key: recovery-habits/training-improves-sleep
+  source_hash: aa706723d0545df39d534e442c2d43a49dc7484585dc91588a18ec4890c0cfbe
+  status: machine
+  heading: Entrenar mejora el sueño
+  rule_text: |-
+    Presenta el entrenamiento regular (entrenamiento de fuerza, idealmente con algo de trabajo aeróbico) como una forma eficaz y basada en la evidencia de mejorar la calidad del sueño, sobre todo en quienes duermen mal. Para quienes duermen mal y tienen 50 años o más, prioriza el entrenamiento aeróbico y de fuerza combinado, con frecuencia (el beneficio fue mayor con sesiones diarias).
+  applies_to: |-
+    Adultos en general, con los efectos más fuertes en quienes duermen mal; el NMA de 2026 incluyó solo adultos de 50 años o más con PSQI de 5 o más, con el beneficio máximo en torno a un PSQI de 16. Los efectos dependen del sexo, la edad, la actividad de partida, el tipo de ejercicio, la hora del día, la duración y la adherencia.
+  conflicts: |-
+    Los efectos son pequeños en quienes duermen bien. Los efectos agudos de una sola sesión de fuerza son inconsistentes. Kovacevic encontró que el beneficio del entrenamiento de fuerza solo era menor que el del entrenamiento aeróbico o combinado. Los tamaños del efecto del NMA pueden estar inflados por ensayos pequeños.
+- key: recovery-habits/evening-training-is-fine-for-most-people
+  source_hash: 8b05a24f80dac43e0b69e170db5a85aefa494a61198065ea8887e273757abd5c
+  status: machine
+  heading: Entrenar por la tarde-noche está bien para la mayoría
+  rule_text: |-
+    No digas a los clientes que eviten entrenar por la tarde-noche; la adherencia importa más. Si alguien entrena tarde y duerme mal, que termine las sesiones duras al menos alrededor de 1 h antes de acostarse (idealmente antes) o que baje la intensidad de las sesiones tardías, y comprueba si la cafeína del pre-entreno es la causa real.
+  applies_to: |-
+    Adultos sanos; el metaanálisis de Stutz cubre solo sesiones aisladas. El cronotipo y la sensibilidad varían.
+  conflicts: |-
+    Conflicto parcial: Stutz 2019 no encontró perjuicio o encontró un ligero beneficio, mientras que el metaanálisis de 2026 encontró una continuidad del sueño algo peor con ejercicio de moderado a vigoroso por la tarde-noche. En Stutz, todos los efectos moderadores significativos desaparecieron al eliminar un estudio. Guíate por lo que cuente el propio cliente sobre su sueño.
+- key: recovery-habits/caffeine-curfew
+  source_hash: b2923821b00b6e21fb3f6ca6c381557eb5a90f00468e8d6629f8ed42b361367b
+  status: machine
+  heading: Hora límite para la cafeína
+  rule_text: |-
+    Pon por defecto una hora límite para la cafeína: nada de café en las unas 9 h previas a acostarse y nada de pre-entreno con dosis alta en las unas 13 h previas (si se acuesta a las 11 pm, café antes de las 2 pm aproximadamente y nada de pre-entreno para las sesiones de tarde-noche). Pregunta por el pre-entreno y las bebidas energéticas siempre que un cliente cuente que duerme mal.
+  applies_to: Adultos sanos; las horas de corte son medias derivadas de modelos.
+  conflicts: |-
+    El metabolismo de la cafeína y la sensibilidad a ella varían mucho (genética, consumo habitual, anticonceptivos orales, tabaco); algunas personas toleran tomarla más tarde.
+- key: recovery-habits/alcohol-is-not-a-sleep-aid
+  source_hash: 153b07817203ab35ec2a4526a8755d7b813d52737dce16b5ed38b013b8b431f9
+  status: machine
+  heading: El alcohol no ayuda a dormir
+  rule_text: |-
+    Corrige la creencia de que "una copa antes de dormir me ayuda a dormir": incluso una dosis baja (0.50 g/kg o menos; unas 3.5 unidades de bebida estándar españolas, UBE de 10 g, con 70 kg, menos en personas más ligeras) altera el sueño REM. Si el cliente bebe, sugiérele cantidades menores, beber más pronto por la tarde-noche y no usar el alcohol para conciliar el sueño, sobre todo en fases de entrenamiento duro o de pérdida de grasa.
+  applies_to: Adultos sanos en estudios de laboratorio.
+  conflicts: |-
+    Gran incertidumbre en el tiempo total de sueño y la eficiencia; las diferencias por sexo y el metabolismo individual del alcohol no se han estudiado.
+- key: recovery-habits/train-after-a-short-night-but-auto-regulate
+  source_hash: b8cee4e860cba34dd130fe9d76686988315ababa7f5c139c830586475a494e0f
+  status: machine
+  heading: Entrena tras una noche corta, pero autorregula
+  rule_text: |-
+    Tras una noche corta, no canceles el entrenamiento. Si es posible, adelanta la sesión, mantén los ejercicios previstos y autorregula la carga (usa RPE/RIR y acepta series máximas más bajas). No pruebes el 1RM ni busques marcas personales tras una mala noche.
+  applies_to: |-
+    Sobre todo participantes varones con nivel de entrenamiento variado, en protocolos de laboratorio agudos (de una a unas pocas noches). La generalización a mujeres, personas mayores y restricción crónica es limitada.
+  conflicts: |-
+    Heterogeneidad muy alta (I2=98%). Una revisión sistemática de estudios con ejercicio de fuerza encontró que la privación total tenía poco efecto sobre la fuerza, mientras que varias noches seguidas de restricción reducían la fuerza en los ejercicios multiarticulares (siguiente regla), así que importan la tarea y el patrón de pérdida de sueño.
+- key: recovery-habits/several-short-nights-lighten-lower-body-compound-lifts
+  source_hash: d7ec5b3a619f04a64e5c0490fef20c4b4eca215f829dba9902f6219706385c20
+  status: machine
+  heading: 'Varias noches cortas: aligera los ejercicios multiarticulares de tren inferior'
+  rule_text: |-
+    Cuando un cliente lleve varias noches cortas, espera que las sentadillas y los pesos muertos se sientan más pesados y se muevan más lentos aunque todavía pueda completar el volumen. Baja los objetivos de carga en los ejercicios multiarticulares de tren inferior, usa RPE/RIR en lugar de porcentajes fijos y mantén el trabajo accesorio según lo previsto.
+  applies_to: |-
+    Adultos jóvenes entrenados; los datos de mujeres proceden de un único estudio cruzado pequeño (n=10, de 18-35 años, eumenorreicas). Se aplica a la restricción repetida más que a una sola mala noche.
+  conflicts: |-
+    Choca en parte con el metaanálisis de Craven 2022, que encontró una reducción global de la fuerza tras la pérdida aguda de sueño. Los estudios son pequeños y de calidad débil/moderada, y los hallazgos hormonales fueron contradictorios. La motivación, la cafeína y la hora del día modifican el efecto.
+- key: recovery-habits/poor-sleep-blunts-the-muscle-building-response
+  source_hash: a59c52f86566088c2c06e01100ccc0f4db2bf3d51960edb9e8f27a9f85d19a0e
+  status: machine
+  heading: Dormir mal atenúa la respuesta de ganancia muscular
+  rule_text: |-
+    Explica a los clientes que dormir mal atenúa la respuesta de ganancia muscular, como un motivo más para proteger el sueño en una fase de ganancia muscular o de pérdida de grasa. En los periodos inevitables de poco sueño, sigue entrenando (el ejercicio parece proteger la síntesis de proteínas) en lugar de saltarte sesiones.
+  applies_to: |-
+    Adultos jóvenes sanos en estudios cortos de laboratorio; el ejercicio protector fue HIIT, no entrenamiento de fuerza. Son marcadores mecanísticos, no masa muscular ni fuerza medidas.
+  conflicts: |-
+    Dos estudios pequeños; no está demostrado que se traduzca en hipertrofia a largo plazo, y no se ha probado si el entrenamiento de fuerza da la misma protección. El estudio de Saner asignó a los participantes a grupos emparejados y su resumen no indica que hubiera aleatorización.
+- key: recovery-habits/extra-sleep-before-a-test-low-risk-unproven
+  source_hash: aea0473e5a2ddc29e2c9534a5fad52a829ca753b0761c2134b43f72435530d56
+  status: machine
+  heading: 'Dormir más antes de una prueba: poco riesgo, sin demostrar'
+  rule_text: |-
+    Puedes sugerir dormir un poco más (30-60 min) antes de sesiones o pruebas importantes como consejo de poco riesgo, pero no prometas mejoras de rendimiento ni vendas la "acumulación de sueño" (sleep banking) como algo demostrado.
+  applies_to: Solo deportistas; no hay datos en quienes entrenan fuerza por ocio.
+  conflicts: Muy pocos estudios y alto riesgo de sesgo; la magnitud depende de la medida.
+- key: recovery-habits/life-stress-slows-recovery
+  source_hash: 179c5356dec37c03a365ffa42768b0b2ff25295e637773cebb566546e73d5d18
+  status: machine
+  heading: El estrés vital ralentiza la recuperación
+  rule_text: |-
+    Pregunta por el estrés vital (trabajo, familia, exámenes, dinero) en las revisiones periódicas. En semanas de mucho estrés, mantén o reduce el volumen y la intensidad, deja más tiempo entre sesiones duras para los mismos músculos y no subas la carga. Trata el entrenamiento como una vía de escape del estrés y no como una exigencia más.
+  applies_to: |-
+    Estudiantes universitarios de unos 20 años; diseños observacionales. No se encontró ninguna revisión sistemática ni metaanálisis.
+  conflicts: |-
+    Estudios observacionales pequeños de un solo grupo, y los dos artículos sobre recuperación parecen compartir la misma muestra. El resumen no da tamaños del efecto para las ganancias de fuerza. El estrés también reduce la adherencia, lo que confunde los hallazgos.
+- key: recovery-habits/overreaching-vs-overtraining
+  source_hash: 13350d7b620b09cd1ac2d63aaf356c529facab971d03e3e282051e2019aed007
+  status: machine
+  heading: Sobrealcance frente a sobreentrenamiento
+  rule_text: |-
+    Trata las semanas duras planificadas (sobrealcance funcional) como normales solo si el rendimiento y el estado de ánimo se recuperan en unas 2 semanas con la carga reducida. Si el rendimiento sigue estancado o empeora durante más de unas 2 semanas pese a entrenar más suave, señala un posible sobrealcance no funcional: recorta sustancialmente el volumen y la intensidad y recomienda ir al médico de cabecera para descartar enfermedad, anemia o falta de energía por comer poco. Nunca etiquetes tú a alguien como "sobreentrenado"; es un diagnóstico de exclusión. El umbral de 2 semanas es una lectura pragmática del consenso, no un punto de corte validado.
+  applies_to: |-
+    Consenso escrito sobre todo para deportistas de resistencia. En quienes van al gimnasio por ocio, el OTS verdadero es raro; los estados relevantes son FOR y NFOR, a menudo provocados por el estrés vital, el mal sueño o la dieta más que solo por el volumen de entrenamiento.
+  conflicts: |-
+    El consenso dice que no hay evidencia de que los síntomas del OTS sean más graves que los del NFOR. Bellinger (2020) señala que algunos estudios encontraron adaptaciones atenuadas en deportistas con sobrealcance y otros una supercompensación sustancial, así que no está claro que el sobrealcance planificado sea necesario.
+- key: recovery-habits/overreaching-warning-signs-and-the-response
+  source_hash: 8a2ef12486f72b1271ce1bcc7a06574f2f9f41bc40c8b0cf60574da8502f7988
+  status: machine
+  heading: Señales de alerta del sobrealcance y cómo responder
+  rule_text: |-
+    Activa una descarga cuando 2 o más de estas señales persistan más de 1 semana: rendimiento que cae al mismo RPE, empeoramiento del ánimo o irritabilidad, sueño alterado, fatiga persistente inusual o una FC en reposo claramente por encima de la línea base de la propia persona. La respuesta es la descarga reactiva estándar (una semana con el volumen recortado en un 30-50% aproximadamente, manteniendo las cargas) más 1-3 días extra de descanso completo (el tamaño y los desencadenantes son decisiones pragmáticas de coaching, no salen de las fuentes). Revisa siempre la ingesta calórica y el estrés vital reciente, sobre todo en personas que están a dieta. Si los síntomas persisten tras 2 semanas de carga reducida, deriva al médico de cabecera.
+  applies_to: |-
+    Sobre todo deportistas entrenados. En adultos corrientes, las mismas señales suelen venir más del estrés vital, la falta de sueño o una dieta agresiva. Umbrales como una FC en reposo unos 5 bpm por encima de la línea base son pragmáticos, no validados.
+  conflicts: |-
+    Los cambios de la FC en reposo y de la HRV son inconsistentes. Las señales son inespecíficas e individuales. Stellingwerff (2021) sostiene que muchos casos aparentes de sobrecarga u OTS pueden ser una falta de energía por comer poco (RED-S) mal diagnosticada; Grandou (2020) señala una escasa estandarización metodológica en los estudios de entrenamiento de fuerza.
+- key: recovery-habits/deloads-are-optional-and-reactive
+  source_hash: 7e8addee021134e7cf2b8e7f9312fdfb57e033866397ae3a807faf0982890207
+  status: machine
+  heading: Las descargas son opcionales y reactivas
+  rule_text: |-
+    Trata las descargas como una herramienta opcional de gestión de la fatiga, no como un requisito para progresar. Para principiantes y quienes vuelven a entrenar fuerza con un volumen moderado, no programes descargas fijas. Usa una descarga reactiva de alrededor de una semana cuando el rendimiento se estanque de una sesión a otra, se acumulen molestias articulares o agujetas, o se dispare el estrés vital: mantén los mismos ejercicios, frecuencia y cargas, recorta el volumen (series) en un 30-50% aproximadamente y termina las series bastante lejos del fallo. Las señales de sobrealcance reciben la misma descarga más 1-3 días extra de descanso (véase "Señales de alerta del sobrealcance y cómo responder"). La cifra del 30-50% es una convención de coaching coherente con los datos de encuestas que se citan abajo, no una dosis probada. No prometas que una descarga vaya a "resensibilizar" el músculo ni a acelerar las ganancias.
+  applies_to: |-
+    Adultos jóvenes entrenados en fuerza (sobre todo hombres) y deportistas de competición de fuerza/físico. La frecuencia y la estructura salen de encuestas autodeclaradas y de opinión de expertos, y puede que no encajen con principiantes.
+  conflicts: |-
+    Un único ECA, que probó el cese total, no una descarga con carga reducida. La práctica de "cada 4-6 semanas" sale de encuestas y consensos. La necesidad depende del volumen, la cercanía al fallo, la edad, el sueño y el estrés vital.
+- key: recovery-habits/short-breaks-do-not-erase-progress
+  source_hash: a28b10aa328eecb1848980294e0490b5741aa51431c9d48f9055b36f3216595e
+  status: machine
+  heading: Las pausas cortas no borran el progreso
+  rule_text: |-
+    Tranquiliza a los clientes: una pausa de 1-3 semanas (vacaciones, enfermedad, una época de mucho lío) no va a borrar su progreso. Cuando vuelvan tras menos de unas 2 semanas sin entrenar, que retomen con alrededor del 90% de las cargas previas; tras pausas más largas, que empiecen un 10-20% por debajo de las cargas previas y vayan recuperando durante 1-3 semanas (estas cifras de reinicio son convenciones de coaching, no se probaron en las fuentes citadas abajo). En personas mayores, minimiza los parones totales: sugiere una rutina corta en casa o con el peso corporal durante las pausas, porque el desentrenamiento les afecta más. Una pausa larga o un patrón de parones repetidos debe activar un plan para recuperar la constancia.
+  applies_to: |-
+    El metaanálisis abarca edades y niveles de entrenamiento variados. El ECA de entrenamiento periódico es pequeño (n=14 hombres jóvenes) y solo probó el press de banca.
+  conflicts: |-
+    El ritmo de pérdida depende de la edad, el nivel de entrenamiento y la duración de la pausa. El único ECA pequeño no debe leerse como "las pausas son tan buenas como entrenar" en personas entrenadas ni en los músculos del tren inferior.
+- key: recovery-habits/tapering-only-for-a-max-test
+  source_hash: 888d7923cecf6a1a20707356ac51979e8d7896bff3c5be039b8f5c5b6c0131b8
+  status: machine
+  heading: Tapering solo para una prueba máxima
+  rule_text: |-
+    El tapering solo importa si un cliente que entrena por ocio quiere probar su 1RM o competir. En ese caso, recorta el volumen alrededor de un 40% en la última semana manteniendo algunos singles o dobles pesados, deja unos 2-4 días entre la última sesión dura y la prueba, y haz los tirones de tren inferior más pesados lo antes posible. Preséntalo como una práctica razonable, no como un protocolo demostrado. Los clientes de composición corporal general no necesitan tapering.
+  applies_to: |-
+    Deportistas de competición de powerlifting, halterofilia, strongman, Highland Games y CrossFit (autodeclarado). Generalizarlo a quienes entrenan fuerza por ocio es una extrapolación.
+  conflicts: |-
+    Los datos describen lo que hacen los deportistas, no lo que funciona; los ensayos con resultados son escasos.
+- key: recovery-habits/simple-readiness-monitoring
+  source_hash: d453b2aa134f1eed598cfb524c832f5e164a1ff781d1dad7b7ccf1e88db482f2
+  status: machine
+  heading: Control sencillo del estado de forma diario
+  rule_text: |-
+    Control por defecto para todos los clientes: (1) RPE de sesión (0-10) por duración, registrado cada semana (recogerlo unos 30 min después de la sesión es una convención habitual que no aparece en estas fuentes); (2) un cuestionario de bienestar de 4-5 ítems antes de la sesión, puntuado de 1-5 (calidad del sueño, fatiga, agujetas, estrés, ánimo). Compara a cada persona con su propia línea base móvil. Una bajada en 2 o más ítems durante 3 o más días, o un gran salto de carga semanal, significa mantener o reducir la carga. Estos umbrales son pragmáticos, no validados.
+  applies_to: |-
+    Deportistas de muchos deportes, edades y niveles; plausible pero no demostrado en quienes van al gimnasio por ocio. Depende de que respondan con sinceridad.
+  conflicts: |-
+    La mayor parte de la validación del sRPE se ha hecho en deportes de equipo y de resistencia, no en entrenamiento de hipertrofia. Las tendencias de cada persona importan más que los umbrales absolutos. La distorsión de las respuestas ("fingir que se está bien o mal") es una limitación.
+- key: recovery-habits/rir-rpe-accuracy
+  source_hash: a586e2d725614920755466dc1baa02fb755c20c193db574813805a3cbc967f14
+  status: machine
+  heading: Precisión del RIR/RPE
+  rule_text: |-
+    Usa el RIR o el RPE para regular el esfuerzo, pero espera que la gente se equivoque en alrededor de 1 repetición o más. Usa objetivos de RIR sobre todo en series de 12 repeticiones o menos. A los principiantes, pauta unas 2-3 RIR para que un error de cálculo de 1-2 repeticiones aún deje margen antes del fallo, y calibra de vez en cuando con una serie segura al fallo en máquina.
+  applies_to: Adultos sanos, entrenados y no entrenados; pocos datos en personas mayores.
+  conflicts: |-
+    Heterogeneidad extrema. La SD entre participantes fue de unas 1.45 repeticiones. Los autores dicen que no está resuelto si esta imprecisión es "aceptable", y las definiciones de fallo variaban.
+- key: recovery-habits/hrv-is-optional
+  source_hash: d5ba57da7527fbd5e32528401c51631477e0e1b3c8a22286d23cf443c4b4b5b0
+  status: machine
+  heading: La HRV es opcional
+  rule_text: |-
+    No exijas la HRV. Si un cliente ya registra la HRV nocturna o la FC en reposo con un wearable, usa solo su propia tendencia móvil de 7 días, nunca lecturas aisladas ni comparaciones con otras personas. Trata una bajada sostenida por debajo de su rango normal, junto con un bienestar subjetivo malo, como motivo para que la sesión sea suave, no como un diagnóstico. El bienestar subjetivo y el rendimiento tienen prioridad.
+  applies_to: |-
+    Personas que hacen ejercicio de resistencia, de nivel recreativo a entrenado; prácticamente no hay evidencia sobre entrenamiento de fuerza guiado por HRV ni en principiantes sedentarios. La validación de dispositivos es un único estudio pequeño.
+  conflicts: |-
+    Meeusen 2013 recoge pocos estudios de HRV en deportistas con sobrealcance, y con resultados inconsistentes. La HRV es muy individual y le afectan el alcohol, la enfermedad, el estrés y la postura; el firmware de los dispositivos cambia con el tiempo.
+- key: recovery-habits/doms-and-the-repeated-bout-effect
+  source_hash: dae4e625e54bbac1c528c31f85f1cd890678f2e79966174d83128b3c32468233
+  status: machine
+  heading: Agujetas (DOMS) y el efecto de la sesión repetida
+  rule_text: |-
+    Avisa a todo cliente nuevo o que vuelve de que es esperable que las agujetas alcancen su pico 1-3 días después de las primeras sesiones y que van a menos con la repetición. Mantén las primeras 1-2 semanas con poco volumen y poca carga excéntrica para que el efecto de la sesión repetida se desarrolle antes de subir la carga. Tras un parón de más de unos 6-9 meses, trata al cliente de nuevo como principiante en lo que respecta a las agujetas. Unas agujetas que no paran de empeorar, o que duran más de 5-7 días, no son DOMS normales (véase Rabdomiólisis).
+  applies_to: |-
+    Adultos sanos. La evolución temporal procede de una guía de práctica clínica militar; la duración del efecto de la sesión repetida, de hombres jóvenes haciendo excéntricos de flexores del codo (n=10-14 por grupo).
+  conflicts: |-
+    La duración se basa en un único estudio pequeño sin grupo control. La magnitud de las agujetas varía mucho y es un mal indicador de la calidad del entrenamiento o del crecimiento muscular.
+- key: recovery-habits/training-while-sore-is-not-harmful
+  source_hash: 769ee5314f31983791c43e377aea741443c2f5b1d15526e16eba5cc5168269d1
+  status: machine
+  heading: Entrenar con agujetas no es perjudicial
+  rule_text: |-
+    Unas agujetas moderadas no son motivo para saltarse una sesión. Entrena la zona dolorida con menos carga o volumen, o entrena otros grupos musculares, con un buen calentamiento; espera cierta pérdida temporal de fuerza. No programes esfuerzos máximos ni pruebas sobre músculos con muchas agujetas. Se puede ofrecer movimiento suave como alivio del dolor a corto plazo, no como una recuperación más rápida.
+  applies_to: |-
+    Adultos jóvenes sanos en modelos pequeños intrasujeto de flexores del codo. No se aplica si hay señales de alerta de rabdomiólisis.
+  conflicts: |-
+    No hay metaanálisis; las sesiones repetidas fueron submáximas. La calidad de la sesión con músculos con agujetas se reduce aunque el daño no empeore.
+- key: recovery-habits/recovery-modalities-are-optional-comfort-tools
+  source_hash: 9838120c90db4ecb873940e0fa31c2b3ed17f929d07e18d2b071d9b1fd419490
+  status: machine
+  heading: Los métodos de recuperación son herramientas de confort opcionales
+  rule_text: |-
+    Si un cliente quiere usar algún método de recuperación, las opciones con más respaldo son el masaje (incluido el automasaje) y las prendas de compresión, con el foam roller como opción barata y de poco rendimiento, idealmente antes de entrenar. No recomiendes estirar para las agujetas. Antepón el sueño, la nutrición y una progresión de carga sensata a cualquier aparato.
+  applies_to: |-
+    Sobre todo adultos jóvenes y activos; los resultados son las agujetas y la recuperación percibida a corto plazo.
+  conflicts: |-
+    Los tamaños del efecto varían mucho y la calidad es baja. Los métodos de frío que reducen las agujetas pueden perjudicar la hipertrofia si se usan de forma rutinaria después de entrenar fuerza (siguiente regla). Las respuestas dependen en parte de las expectativas.
+- key: recovery-habits/no-cold-water-immersion-right-after-lifting-for-muscle-gain
+  source_hash: 118822aa41d5cde3db7c11c0f0d96c006b906e072cf14b00412234dca5f70e89
+  status: machine
+  heading: |-
+    Nada de inmersión en agua fría justo después de entrenar fuerza si buscas ganar músculo
+  rule_text: |-
+    A los clientes cuyo objetivo es ganar músculo, desaconséjales los baños de hielo o la inmersión en agua fría en las horas posteriores a las sesiones de fuerza. Si les gusta exponerse al frío, prográmalo en días sin entrenamiento de fuerza o bien separado de él, y reserva el frío después de la sesión para periodos cortos de tipo competición en los que las agujetas del día siguiente importen más que la adaptación.
+  applies_to: |-
+    Adultos jóvenes, sobre todo hombres, entrenados y no entrenados. No cubre la CWI diferida u ocasional, ni a personas mayores ni a mujeres.
+  conflicts: |-
+    Compromiso con la evidencia sobre recuperación (el frío reduce las agujetas). El intervalo creíble incluye el cero.
+- key: recovery-habits/nsaids-are-not-for-training-soreness
+  source_hash: a1c8c716ebb804627a19e610ef664f9dd583c9513e2d8f48a5b5f70c74ce0b9a
+  status: machine
+  heading: Los AINE no son para las agujetas del entrenamiento
+  rule_text: |-
+    No sugieras AINE para manejar las agujetas normales del entrenamiento. Nunca sugieras tomarlos antes de entrenar ni para "entrenar a pesar del" dolor, sobre todo con calor, con deshidratación o en principiantes que empiezan programas duros. Las decisiones sobre medicación corresponden al médico o al farmacéutico del cliente; el coach solo señala el problema.
+  applies_to: |-
+    Adultos jóvenes (Lilja), adultos de unos 64-67 años (Trappe), ensayos agudos agrupados (de Oliveira); dosis iguales o cercanas al máximo sin receta, tomadas a diario. CHAMP es un consenso de expertos militares.
+  conflicts: |-
+    Conflicto directo según la edad: el ibuprofeno a dosis altas perjudicó la hipertrofia en adultos jóvenes pero la potenció en adultos mayores. Los efectos de dosis más bajas u ocasionales no están claros, y el perjuicio a las 48 h es estadísticamente ambiguo.
+- key: recovery-habits/brief-warm-up-before-every-session
+  source_hash: f9f709b43789e18b3f00e461d24ead507b69903e5da9bc01ce7eefde928256d7
+  status: machine
+  heading: Calentamiento breve antes de cada sesión
+  rule_text: |-
+    Empieza cada sesión con un calentamiento general breve (cardio suave y movimiento dinámico de las articulaciones que se van a entrenar) y después series de aproximación cada vez más pesadas del primer ejercicio principal antes de las series efectivas. Que sea corto para que no se coma tiempo de entrenamiento ni adherencia. Las duraciones concretas y los esquemas de series de aproximación son convenciones prácticas, no salen de la evidencia.
+  applies_to: |-
+    Personas sanas y activas en muchas tareas de rendimiento; pocos estudios midieron resultados de entrenamiento de fuerza.
+  conflicts: |-
+    Pocos ECA bien hechos. No se ha establecido el tipo ni la duración óptimos, y falta evidencia de que el calentamiento prevenga lesiones en el gimnasio.
+- key: recovery-habits/static-stretching-before-lifting-keep-it-short
+  source_hash: 82be5ea6a53a514c032d069649dc0de23ef0920cf111eb50195c89b19b879b87
+  status: machine
+  heading: 'Estiramiento estático antes de entrenar fuerza: que sea corto'
+  rule_text: |-
+    Estirar de forma estática antes de entrenar fuerza está bien si al cliente le gusta. Que sea de menos de unos 30-45 s por grupo muscular, y después calentamiento dinámico y series de aproximación. Evita los estiramientos estáticos largos (60 s o más por músculo) justo antes de una prueba de fuerza o de una serie máxima pesada. No uses el estiramiento estático como todo el calentamiento.
+  applies_to: |-
+    Adultos sanos y activos, sobre todo jóvenes; en Simic los efectos no dependían de la edad, el sexo ni la forma física. Muchas pruebas fueron isométricas o saltos, normalmente 3-5 min después de estirar.
+  conflicts: |-
+    Afirmar que "el estiramiento estático te arruina el entrenamiento de fuerza" exagera la evidencia: los efectos son pequeños, se dan sobre todo con estiramientos largos y en gran parte desaparecen cuando después se hace actividad dinámica. Behm señala un beneficio pequeño (+2.2%) en longitudes musculares largas.
+- key: recovery-habits/lifting-through-full-rom-is-mobility-work
+  source_hash: 486abdeb318ba36f66b19e4355475d0cbe03c85601eeed0735b0ffa16166ea67
+  status: machine
+  heading: Entrenar fuerza con el ROM completo es trabajo de movilidad
+  rule_text: |-
+    Haz que los clientes entrenen fuerza con el ROM más amplio que puedan controlar con carga externa; para la mayoría, ese es su trabajo de movilidad. Añade estiramientos específicos solo para un objetivo o una limitación concretos de ROM (una sentadilla profunda a la que no llegan, una posición por encima de la cabeza para un deporte), o porque les guste. No hagas obligatorias las rutinas de movilidad aparte para los clientes generales.
+  applies_to: |-
+    Participantes sanos (en Alizadeh no influyeron la edad, la duración, la frecuencia, el sexo ni el tipo de contracción); Afonso incluyó ECA en humanos con cualquier condición. No se ha estudiado específicamente en patología articular clínica.
+  conflicts: |-
+    Dos metaanálisis con estudios muy heterogéneos. Quienes bailan o hacen gimnasia y necesitan un ROM extremo pueden seguir necesitando estiramientos específicos.
+- key: recovery-habits/stretching-does-not-meaningfully-build-muscle
+  source_hash: d827dfcc3d32513b295c4626c263a32994cb221b3de14faa81a4d4743ca489fd
+  status: machine
+  heading: Estirar no desarrolla músculo de forma significativa
+  rule_text: |-
+    No vendas los estiramientos como forma de ganar músculo a los clientes generales; el entrenamiento de fuerza con carga es mucho más eficaz y eficiente en tiempo. Si un cliente no puede o no quiere entrenar fuerza en una parte del cuerpo, estirar a diario durante mucho tiempo puede sumar un poco, pero trátalo como algo experimental.
+  applies_to: |-
+    Personas sanas con nivel de entrenamiento variado. La dosis eficaz a menudo es poco práctica.
+  conflicts: |-
+    Los dos metaanálisis de 2024 discrepan sobre si el efecto es fiable; ambos apuntan a una relación dosis-respuesta.
+- key: recovery-habits/foam-rolling-before-training-optional
+  source_hash: 9eea54b84cf10c248d8ab6aedb0c4b6c77512315d9e371c70cb7281cf7c54984
+  status: machine
+  heading: 'Foam roller antes de entrenar: opcional'
+  rule_text: |-
+    Pasar el foam roller por los músculos que se van a entrenar es una parte opcional aceptable del calentamiento si al cliente le gusta: da una mejora inmediata del rango de movimiento parecida a la de estirar y no reduce de forma significativa la fuerza ni el salto. No lo presentes como obligatorio ni como algo que mejora el rendimiento, porque otras actividades de calentamiento dan mejoras similares del rango de movimiento. Que sea breve (una convención de coaching) y sigue después con las series de aproximación habituales.
+  applies_to: |-
+    Adultos sanos, sobre todo jóvenes y activos, algunos deportistas; pocos estudios en adultos mayores o no entrenados. Los efectos son inmediatos, tras una sola sesión.
+  conflicts: |-
+    El efecto sobre el rango de movimiento puede ser menor en hombres. La certeza es de baja a moderada y la calidad de los estudios, aceptable. No se ha cuantificado cuánto dura la mejora y se desconoce la duración óptima del rodillo.
+- key: recovery-habits/gym-strength-training-is-relatively-safe
+  source_hash: bab1d614ba9e2eb47eb7a425803d00a5b0d7abbe0844fadb1465ae8e48302a8f
+  status: machine
+  heading: El entrenamiento de fuerza en el gimnasio es relativamente seguro
+  rule_text: |-
+    Di a los principiantes con miedo y a las personas mayores que el entrenamiento de fuerza en el gimnasio es de las formas de ejercicio más seguras. Dedica el esfuerzo en seguridad a una progresión gradual de la carga y a la recuperación, porque los problemas más comunes son distensiones, esguinces y dolor tendinoso. Vigila hombros, zona lumbar, rodillas y codos. Progresa con más prudencia en los formatos de tipo deportivo (CrossFit, strongman, levantamientos olímpicos).
+  applies_to: |-
+    Sobre todo deportistas de competición en deportes de levantamiento de peso, a partir de estudios mayoritariamente retrospectivos con definiciones de lesión inconsistentes. Las tasas en quienes van al gimnasio por ocio están mal medidas.
+  conflicts: |-
+    Solo 4 de 20 estudios eran prospectivos en Keogh 2017; Serafim 2023 tenía solo 3 estudios sobre entrenamiento de fuerza tradicional y 1 sobre strongman. La prevalencia puede parecer alta (70% de prevalencia puntual en powerlifting) cuando "lesión" incluye cualquier dolor que afecte al entrenamiento. En mujeres que hacen halterofilia y powerlifting se registró disfunción del suelo pélvico (por ejemplo, incontinencia urinaria) en alrededor del 50%, frente al 9.3% en hombres.
+- key: recovery-habits/strength-training-prevents-injuries-stretching-does-not
+  source_hash: 460eecdaf0a8c8779caebe8bab6be62a232ea03e8c3c4649d52b8029e330aea5
+  status: machine
+  heading: El entrenamiento de fuerza previene lesiones; los estiramientos no
+  rule_text: |-
+    Presenta el entrenamiento de fuerza como la herramienta principal para resistir lesiones en los clientes que además hacen deporte o corren. No pautes estiramientos previos al ejercicio para prevenir lesiones. Si a un cliente le gusta estirar, que lo haga por el ROM o porque lo disfruta, no como protección.
+  applies_to: |-
+    Participantes en deportes dentro de ECA de prevención de lesiones; extrapolarlo a quienes van al gimnasio en general es razonable pero no se ha probado.
+  conflicts: |-
+    Behm 2016 recomienda estirar dentro de un calentamiento con actividad dinámica para reducir en concreto las lesiones musculares, pero sus datos de lesiones en conjunto no muestran un efecto claro. La estimación de Lauersen era heterogénea y la del entrenamiento de fuerza procede de pocos ensayos.
+- key: recovery-habits/tendinopathy-load-it-do-not-rest-it
+  source_hash: b55eb42f2c15b5696db489d2fe12e2d8269acf9dcbb22d477b7337ff287672a7
+  status: machine
+  heading: 'Tendinopatía: cárgala, no la dejes en reposo'
+  rule_text: |-
+    Si un cliente cuenta un dolor de tendón localizado y ligado a la carga (Aquiles o rotuliano), sugiérele que lo valore un fisio o un médico para confirmar el diagnóstico. Mientras tanto, no pautes reposo total: cambia o reduce los ejercicios que lo provocan y añade carga tendinosa progresiva (elevaciones de talón pesadas y lentas o excéntricos para el Aquiles; resistencia pesada y lenta, como prensa o trabajo tipo sentadilla, para el tendón rotuliano) al menos 2-3 veces por semana, progresando durante 12 semanas o más. Elige entre las opciones de carga pesada según la tolerancia y la adherencia; evita los programas solo concéntricos como enfoque principal.
+  applies_to: |-
+    Adultos con tendinopatía de la porción media del Aquiles o tendinopatía rotuliana, a menudo activos. No cubre la tendinopatía insercional del Aquiles ni otras tendinopatías (por ejemplo, de codo). Los ensayos sobre el Aquiles tienen en su mayoría alto riesgo de sesgo.
+  conflicts: |-
+    Certeza de baja a muy baja (76% de los ensayos con alto riesgo de sesgo en van der Vlist); la red de comparaciones del tendón rotuliano es escasa. La frecuencia y la duración son las típicas de los ensayos, no óptimos probados. Algunos casos necesitan manejo médico.
+- key: recovery-habits/some-pain-during-exercise-is-acceptable-in-chronic-assessed-pain
+  source_hash: 143bee0bc73f351dbcc94fcc4a00251c3cd4c4256f99e406923e1faea21b5579
+  status: machine
+  heading: Algo de dolor durante el ejercicio es aceptable en el dolor crónico ya valorado
+  rule_text: |-
+    Con dolor musculoesquelético crónico y estable (más de 3 meses, sin señales de alarma, ya valorado), el objetivo no es el dolor cero. Permite un dolor leve y tolerable durante el ejercicio siempre que se calme bastante rápido y no empeore progresivamente de una sesión a otra. Si el dolor se dispara y se mantiene alto, reduce la carga o el volumen; mantén al cliente activo de forma adaptada en lugar de parar. Los enfoques sin dolor y con dolor dan resultados similares a largo plazo, así que deja que el cliente elija el que vaya a mantener. Ante lesiones agudas, dolor punzante o que empeora, o síntomas neurológicos, para y deriva.
+  applies_to: |-
+    Adultos (edad media de unos 40-55 años) con dolor crónico de hombro, tendinopatía del Aquiles, fascitis plantar o lumbalgia crónica, ya diagnosticados. No traumatismos agudos; no hay representación de problemas de rodilla.
+  conflicts: |-
+    El beneficio es pequeño y a corto plazo, y procede de pocos ensayos pequeños. Los umbrales que se citan a menudo no se confirmaron en el metaanálisis (véase el modelo de control del dolor más abajo). La tolerancia al dolor y el miedo al movimiento varían mucho.
+- key: recovery-habits/pain-monitoring-traffic-light-for-tendon-problems
+  source_hash: 59d454c69e2fe869ba63c445ee64c74b8d27b87fbe1244694e0903837ff52f68
+  status: machine
+  heading: Semáforo de control del dolor para los problemas de tendón
+  rule_text: |-
+    Ante un problema de tendón ya valorado (sin rotura), sigue entrenando y usa un semáforo. Verde: dolor 0-2/10. Ámbar: 3-5/10 durante la sesión o justo después, aceptable si a la mañana siguiente ha vuelto a la línea base. Rojo: más de 5/10, dolor todavía aumentado a la mañana siguiente, o dolor o rigidez que empeoran de una semana a otra. En rojo, recorta la carga o el volumen de ese movimiento en la siguiente sesión (no pares todo el entrenamiento) y vuelve a comprobar. Si sigue en rojo 2 semanas o más, deriva a un fisio.
+  applies_to: |-
+    Adultos con tendinopatía del Aquiles o rotuliana, sobre todo en deportes de carrera y salto. No se ha probado en roturas, distensiones agudas ni tras cirugía. La separación verde/ámbar y el punto de derivación de 2 semanas son convenciones de coaching.
+  conflicts: |-
+    El techo de 5/10 y la regla de la mañana siguiente son convenciones pragmáticas sacadas de ensayos pequeños. La revisión de Silbernagel de 2020 clasifica como "altas" las actividades con 4-5/10 durante y 5-6/10 después, así que el techo se aplica con flexibilidad. Una revisión de alcance de 2025 sitúa el origen del esquema de zonas (por debajo de 2 seguro, 2-5 aceptable, por encima de 5 riesgo alto, calmándose a la mañana siguiente) en el sistema de Thomee para el dolor femororrotuliano, señala que los límites se eligieron por experiencia clínica y no encontró ningún estudio que los comparara con otros límites. Registra tendencias, no lecturas aisladas.
+- key: recovery-habits/recovery-days-for-painful-tendon-loading-activities
+  source_hash: 124acd071d719cdd6e472438b89b6a505ba71c2127488cb8e194b1a9f9de65b5
+  status: machine
+  heading: Días de recuperación tras actividades dolorosas de carga tendinosa
+  rule_text: |-
+    Programa las sesiones dolorosas de carga tendinosa (saltos, sprints, carga pesada de gemelos o cuádriceps) según la categoría de dolor: como mucho a diario para la ligera, cada tres días para la media y cada cuatro días para la alta. Rellena los huecos con entrenamiento que no provoque dolor. No vuelvas a introducir la carrera hasta que el dolor al caminar sea de 2/10 o menos y 20 saltitos provoquen 2/10 o menos. Vuelve a clasificar cada 3-4 semanas.
+  applies_to: |-
+    Adultos con tendinopatía de la porción media del Aquiles en deportes de carrera y salto; la extrapolación a la tendinopatía rotuliana no se ha probado.
+  conflicts: |-
+    Marco clínico de expertos sin grado de recomendación. La categoría "alta" tolera 5-6/10 después de la actividad, algo por encima del techo de 5/10 que se cita a menudo.
+- key: recovery-habits/muscle-strain-early-pain-guided-loading
+  source_hash: d0b009c59bc335135046573deea21049292ab6caedcd30a22539d9a3b6781f81
+  status: machine
+  heading: 'Lesión muscular: carga temprana guiada por el dolor'
+  rule_text: |-
+    Tras una lesión muscular leve-moderada sin señales de alarma, empieza en los primeros días una carga suave guiada por el dolor (isométricos y después rangos ligeros) en lugar de reposar durante semanas. Permite una molestia leve que se calme rápido y progresa cuando el paso anterior se tolere. Vuelve a los levantamientos pesados o explosivos de ese músculo solo cuando la palpación, la fuerza en todo el rango y las pruebas funcionales o de sprint no den dolor y la fuerza sea más o menos simétrica. Una lesión muscular grave (hematoma grande, hueco palpable, no poder caminar con normalidad) necesita primero valoración médica.
+  applies_to: |-
+    Hombres con lesión aguda de isquiotibiales, deportistas recreativos con lesiones musculares graves de muslo o gemelo, expertos de fútbol (Delphi). No se ha probado la generalización a personas mayores ni a mujeres en el gimnasio.
+  conflicts: |-
+    Los criterios de vuelta a la competición siguen favoreciendo las pruebas sin dolor, mientras que un ECA respalda una rehabilitación hasta el umbral de dolor durante la carga. Los ensayos son pequeños y los datos de recaída tienen poca potencia estadística.
+- key: recovery-habits/acute-sprains-and-strains-protect-briefly-then-load
+  source_hash: fd968cb7851729113910aaa23a19d18a944f172788791c249edaf02777f82754
+  status: machine
+  heading: 'Esguinces y distensiones agudos: protege poco tiempo y luego carga'
+  rule_text: |-
+    Ante un esguince o una distensión sin señales de alarma: protégelo durante 1-3 días (reduce la carga, sin inmovilización prolongada), comprime y eleva, y explica la recuperación esperada. Después vuelve a introducir carga guiada por el dolor y mantén el cardio con otras partes del cuerpo. No prohíbas el hielo si alivia el dolor, pero no lo presentes como algo que ayude a curar. Prioriza el ejercicio progresivo sobre los tratamientos pasivos.
+  applies_to: |-
+    Adultos con esguinces de ligamento y distensiones musculares agudos, sobre todo a partir de esguinces de tobillo y poblaciones de adultos activos.
+  conflicts: |-
+    PEACE & LOVE es un editorial de expertos (Dubois & Esculier 2020), no un protocolo probado. El elemento de "evitar el hielo" es discutido; el primer ECA controlado con simulación sobre el hielo dentro de PEACE & LOVE publicó su protocolo en 2026 y aún no tiene resultados.
+- key: recovery-habits/abdominal-wall-strain-symptom-guided-return
+  source_hash: ae12082afc7bd7d538cce7ae1f70f97a4fee47f4e931a0b5532e64ee58b5577a
+  status: machine
+  heading: 'Distensión de la pared abdominal: vuelta guiada por los síntomas'
+  rule_text: |-
+    Una distensión de la pared abdominal afecta al recto abdominal o a los oblicuos y se produce por un golpe directo o por un giro, una flexión o una extensión del tronco bruscos o repetitivos. Normalmente se maneja sin cirugía, con los síntomas guiando la vuelta al entrenamiento; aplícale "Lesión muscular: carga temprana guiada por el dolor" (una extrapolación de los datos del muslo). Deriva para valoración médica cuando el dolor abdominal siga a un golpe directo y no se esté calmando, sobre todo en un cliente que toma anticoagulantes: el raro hematoma de la vaina del recto puede necesitar algo más que un manejo guiado por los síntomas. Deriva también ante dolor inguinal y en la parte baja del abdomen que se reproduce con un abdominal contra resistencia o con una tos o un estornudo forzados, o que sigue obligando a parar el entrenamiento pese al reposo y la rehabilitación: puede ser una pubalgia del deportista (hernia del deportista) y no una simple distensión. La evidencia es escasa: solo revisiones narrativas.
+  applies_to: |-
+    Deportistas (revisiones narrativas); Liao trata el hematoma de la vaina del recto en pacientes en general. No hay ensayos en quienes entrenan fuerza por ocio.
+  conflicts: |-
+    No se encontró ningún ECA, metaanálisis ni declaración de consenso sobre la rehabilitación de la distensión de la pared abdominal ni sobre los plazos de vuelta, y ninguna fuente dio criterios de imagen. Los pasos de carga se extrapolan de los datos de isquiotibiales y muslo en los que se basa "Lesión muscular: carga temprana guiada por el dolor". Una simple distensión del recto también puede doler con un abdominal contra resistencia (razonamiento, no un hallazgo de las fuentes), así que el aviso de pubalgia se basa sobre todo en la localización inguinal y la persistencia.
+- key: recovery-habits/balance-work-for-ankle-sprain-prevention
+  source_hash: 581aab249aea247183ce05bf22a8b50343901405dcc4798656a24753067f8bd5
+  status: machine
+  heading: Trabajo de equilibrio para prevenir esguinces de tobillo
+  rule_text: |-
+    A los clientes que practican deportes con pivotes o saltos, y sobre todo a quienes ya han tenido un esguince de tobillo, añádeles ejercicios de equilibrio o propiocepción (por ejemplo, trabajo progresivo de equilibrio a una pierna) junto con el trabajo de fuerza, como parte de un calentamiento o programa de varios componentes. Preséntalo como algo que reduce el riesgo de esguince de tobillo, no como un sustituto del entrenamiento de fuerza.
+  applies_to: |-
+    Sobre todo deportistas adolescentes y adultos, a menudo de deportes con pivotes; Wang 2023 abarcó la población general. El beneficio es más claro en personas con un esguince de tobillo previo e importa poco en clientes que solo van al gimnasio y no hacen deporte.
+  conflicts: |-
+    La prevención primaria en personas sin esguince previo no es concluyente: el RR agrupado de 0.57 de Schiftan salió de dos ensayos no significativos. Lauersen encontró que el entrenamiento de fuerza protegía más que la propiocepción, así que la fuerza sigue siendo la herramienta principal (véase "El entrenamiento de fuerza previene lesiones; los estiramientos no"). Probablemente los metaanálisis comparten muchos ensayos.
+- key: recovery-habits/nsaids-after-acute-injury-no-clear-advantage
+  source_hash: 88a9fbd16e3e27d4453683a4fd669ad6a470ba1a3ac6b58c03fd1be08fc15d1f
+  status: machine
+  heading: 'AINE tras una lesión aguda: sin ventaja clara'
+  rule_text: |-
+    No pautes ni recomiendes medicamentos concretos. Si un cliente pregunta, dile que la evidencia sugiere que los AINE no ofrecen una ventaja clara contra el dolor frente al paracetamol en esguinces y distensiones, que los geles tópicos tienen el mejor perfil beneficio-perjuicio y que debe consultarlo con un farmacéutico o un médico, sobre todo si tiene más de 65 años, problemas de estómago, riñón o corazón, o toma otros medicamentos. Nunca uses analgésicos para entrenar a pesar de una señal de alarma o de un dolor punzante por lesión.
+  applies_to: |-
+    Adultos con esguinces, distensiones y contusiones agudos, sobre todo jóvenes (alrededor del 60% varones en Cochrane); evidencia escasa por encima de 65 años.
+  conflicts: |-
+    La advertencia de que perjudican la curación no tiene en la guía datos cuantificados de resultados en humanos, mientras que el NMA sitúa los AINE como los mejores analgésicos. Predomina el riesgo individual gastrointestinal, renal y cardiovascular.
+- key: recovery-habits/chronic-non-specific-low-back-pain-keep-training
+  source_hash: 566fc05dcb62d871122e649f436f7e1abc9a5731275f4e8329d2bbff33a860e5
+  status: machine
+  heading: 'Lumbalgia crónica inespecífica: sigue entrenando'
+  rule_text: |-
+    A un cliente con dolor de espalda crónico inespecífico que tiene el visto bueno médico, mantenlo entrenando: elige movimientos y cargas que tolere (incluidos el peso muerto y la sentadilla si los tolera), progresa de forma gradual y tranquilízalo. Evita pautar reposo. No hace falta favorecer ningún tipo de ejercicio, así que usa lo que disfrute. No recomiendes fajas ni soportes lumbares como tratamiento del dolor de espalda. Deriva si el dolor es nuevo e intenso, aparece tras un traumatismo o viene con señales de alarma.
+  applies_to: |-
+    Adultos con lumbalgia (LBP) crónica primaria (inespecífica); los participantes de Cochrane tenían una edad media de 43.7 años y el 59% eran mujeres. No la lumbalgia específica ni la aguda.
+  conflicts: |-
+    Los efectos son modestos; el ejercicio no fue mejor que la terapia manual (MD 1.0). La recomendación de la OMS es condicional. El consejo de la OMS contra las fajas se refiere al tratamiento, no a los cinturones de levantamiento usados para el rendimiento.
+- key: recovery-habits/back-pain-without-red-flags-stay-active-no-routine-scans
+  source_hash: 1c84cfcc34ec9e65c27a41b783268a5b5891170d93518cba143105ad4a307d2e
+  status: machine
+  heading: |-
+    Dolor de espalda sin señales de alarma: mantente activo, sin pruebas de imagen rutinarias
+  rule_text: |-
+    Ante un dolor de espalda sin señales de alarma, mantén al cliente entrenando: adapta la carga y el rango en lugar de reposar, tranquilízalo y no sugieras pruebas de imagen. Deriva al médico de cabecera o a un fisio si el dolor no mejora tras unas 4 semanas, si los síntomas en la pierna sugieren una radiculopatía o si aparecen síntomas nuevos o distintos.
+  applies_to: Adultos de 16 años o más con lumbalgia, con o sin ciática.
+  conflicts: |-
+    Las guías difieren en cuanto a la medicación. El tipo de ejercicio debe seguir las preferencias.
+- key: recovery-habits/do-not-teach-fear-of-a-rounded-back
+  source_hash: 6d976992f18d122e6af01c98cddabf2638fd73b9f5d533375f5e3267ea435133
+  status: machine
+  heading: No enseñes a temer la espalda redondeada
+  rule_text: |-
+    Enseña una técnica controlada y constante y cargas adecuadas, pero no digas a los clientes que la espalda redondeada les va a lesionar ni que una repetición "mala" les ha dañado la columna; ese mensaje no tiene respaldo y puede alimentar la protección excesiva en personas con dolor de espalda. Frena las cargas casi máximas con mucha flexión lumbar hasta que el cliente haya tolerado un aumento gradual.
+  applies_to: |-
+    Tareas de levantamiento en población general y laboral, no levantamientos pesados con barra cerca de la carga máxima.
+  conflicts: |-
+    Pocos estudios, en su mayoría transversales y de baja calidad, que no abordan la flexión con carga muy pesada o con fatiga. La tolerancia a la carga varía.
+- key: recovery-habits/cauda-equina-red-flags-emergency
+  source_hash: f33b0ce18fc18e6e4e399d8e4203b2b9307f67f6a7b15d6a9c7e52813f15648a
+  status: machine
+  heading: 'Señales de alarma de cauda equina: emergencia'
+  rule_text: |-
+    Para y envía a la persona a urgencias ese mismo día, sin entrenar, si el dolor de espalda o de pierna viene con cualquiera de estos: entumecimiento en la zona de la silla de montar, genital o anal; dificultad nueva para orinar o pérdida del control de la vejiga; pérdida del control intestinal; disfunción sexual nueva; o entumecimiento o debilidad en ambas piernas o que va a peor. Nunca esperes a ver si se calma.
+  applies_to: Todos los adultos con dolor de espalda, con o sin ciática.
+  conflicts: |-
+    La baja sensibilidad implica que un síndrome de cauda equina temprano puede darse sin los signos clásicos, así que cualquier cambio neurológico nuevo necesita revisión urgente. El marco de la IFOMPT señala que la mayoría de las señales de alarma carecen de datos de precisión de alta calidad.
+- key: recovery-habits/back-pain-plus-a-history-of-cancer
+  source_hash: b0b258c5d0082da35a3737a0447890011804e8ddcba972d33249dbf072217d9b
+  status: machine
+  heading: Dolor de espalda con antecedentes de cáncer
+  rule_text: |-
+    Pregunta a todo cliente con dolor de espalda si ha tenido cáncer. Dolor de espalda más antecedentes de cáncer significa dejar de cargar la columna y conseguir una revisión médica sin demora (en unos días, antes si hay signos neurológicos). Ante otros rasgos aislados, como tener más de 50 años o un dolor que dura más de un mes, no alarmes al cliente: deriva al médico de cabecera si se juntan varios rasgos (por ejemplo, pérdida de peso sin explicación más malestar general más dolor constante no mecánico) o si el dolor empeora progresivamente.
+  applies_to: |-
+    Adultos con lumbalgia, sobre todo en atención primaria; la prevalencia es mayor en urgencias.
+  conflicts: |-
+    Las guías siguen enumerando muchas señales de alarma con poca evidencia sobre su precisión; las combinaciones apenas se han estudiado y ninguna revisión pudo agrupar datos.
+- key: recovery-habits/back-pain-after-trauma-in-older-adults-suspect-fracture
+  source_hash: 6ca970c1b0e00b9f5fba9f28bb097dafcd9ba2029f70bc90e243d86426f2754f
+  status: machine
+  heading: 'Dolor de espalda tras un traumatismo en mayores: sospecha de fractura'
+  rule_text: |-
+    Un dolor de espalda nuevo tras una caída u otro traumatismo importante, o tras un traumatismo menor en un cliente mayor (sobre todo una mujer de más de 70 años, o cualquiera que tome corticoides orales a largo plazo o tenga osteoporosis conocida), necesita valoración médica antes de cualquier ejercicio con carga sobre la columna.
+  applies_to: |-
+    Adultos con lumbalgia; el riesgo se da sobre todo en personas mayores, especialmente mujeres, y en quienes toman corticoides a largo plazo.
+  conflicts: |-
+    Sobre todo estudios aislados con CI amplios y sin metaanálisis; usarlas sin criterio produce muchos falsos positivos.
+- key: recovery-habits/isolated-red-flags-are-reasons-to-ask-not-emergencies
+  source_hash: 74171f04c628ec6629662aaaa44aebd16dd758d3562380c118528e952b180c43
+  status: machine
+  heading: Las "señales de alarma" aisladas son motivo para preguntar, no emergencias
+  rule_text: |-
+    Trata el dolor nocturno, tener más de 50 años o "lleva ya un tiempo" por sí solos como motivos para hacer más preguntas, no como emergencias. Escala cuando las señales de alarma se juntan o progresan, cuando hay antecedentes de cáncer, cuando hay enfermedad sistémica (fiebre, malestar general, pérdida de peso sin explicación) o cuando aparecen signos neurológicos. Escalar significa ir al médico de cabecera en unos días, o a urgencias si hay signos de cauda equina.
+  applies_to: Adultos con lumbalgia en atención primaria o en el ámbito comunitario.
+  conflicts: |-
+    Las guías y el marco de la IFOMPT siguen aconsejando cribar estos rasgos, mientras que las revisiones de precisión muestran que la mayoría son débiles por separado; el marco lo resuelve con un razonamiento clínico basado en agrupaciones de señales. La revisión Cochrane de Williams 2013 se actualizó en 2023.
+- key: recovery-habits/ankle-roll-ottawa-ankle-rules
+  source_hash: 6f300dd34ddf3ca7106e7ceff1dbe6689ae9ba30ad703c06706be25bcaeb7a70
+  status: machine
+  heading: 'Torcedura de tobillo: reglas de tobillo de Ottawa'
+  rule_text: |-
+    Tras una torcedura de tobillo, si el cliente no puede dar 4 pasos, o duele al presionar el borde posterior o la punta de cualquiera de los dos maléolos, el escafoides o la base del 5.º metatarsiano, envíalo a valoración médica y radiografía y no entrenes esa extremidad. Si la regla es negativa, manéjalo como un esguince con carga temprana protegida.
+  applies_to: |-
+    Adultos y niños con lesión aguda de tobillo o de mediopié, estudiados sobre todo en urgencias. El coach hace un cribado, no un diagnóstico.
+  conflicts: |-
+    Muchas personas con la regla positiva no tendrán fractura; la regla existe para descartar fracturas. La guía de esguince de tobillo añade que el daño ligamentoso se gradúa mejor 4-5 días después de la lesión.
+- key: recovery-habits/knee-injury-ottawa-knee-rule
+  source_hash: 7286f63bd6aae38b20a270f0d21f73345d92c309d53b8cdfb7f63a00c905d7fb
+  status: machine
+  heading: 'Lesión de rodilla: regla de rodilla de Ottawa'
+  rule_text: |-
+    Tras una lesión de rodilla, para la sesión y deriva para radiografía si el cliente tiene 55 años o más, le duele solo al presionar sobre la rótula o sobre la cabeza del peroné, no puede doblar la rodilla hasta 90 grados, o no puede apoyar peso en la pierna y dar unos pasos, ya sea justo después de la lesión o ahora.
+  applies_to: |-
+    Adultos con lesión aguda de rodilla valorados en urgencias. Un coach que la aplique de manera informal está fuera del contexto validado, así que ante cualquier duda, derivación.
+  conflicts: |-
+    La regla solo descarta fracturas; no detecta lesiones de ligamento ni de menisco. Su baja especificidad implica que muchas personas señaladas no tendrán fractura.
+- key: recovery-habits/knee-injury-signs-of-ligament-or-meniscus-damage
+  source_hash: d416ddff7f027d9c89f16db5fc12161d05dad8243d55ead5d1d42ec41ea846a4
+  status: machine
+  heading: 'Lesión de rodilla: signos de daño de ligamento o menisco'
+  rule_text: |-
+    Tras una lesión aguda de rodilla, deja de cargar esa pierna y aconseja valoración médica (no seguir entrenando a pesar de ello) si hubo un chasquido con hinchazón en 1-2 horas, la rodilla falla o se nota inestable, se bloquea o no puede estirarse del todo, o se cumplen los criterios de Ottawa. Esto es un triaje, no un diagnóstico. Los enganchones de larga duración en una rodilla mayor con artrosis no son una emergencia; tras una revisión clínica, normalmente se manejan con ejercicio.
+  applies_to: |-
+    Adultos con lesión traumática aguda de rodilla atendidos en atención primaria o urgencias; la propia tabla de pistas no tiene grado de evidencia.
+  conflicts: |-
+    Son pistas clínicas, no una regla de decisión validada; la regla de Ottawa solo detecta fracturas. En las fuentes consultadas no aparecían los síntomas neurológicos tras una lesión de rodilla como señal de alarma.
+- key: recovery-habits/suspected-achilles-rupture
+  source_hash: e71b900f4941a0d122e9f8964446f9116bf4d851560bf8313246111f8834bce3
+  status: machine
+  heading: Sospecha de rotura del tendón de Aquiles
+  rule_text: |-
+    Si un cliente nota de repente una "patada" o un "chasquido" en la parte posterior del talón (a menudo durante un salto, una zancada o un sprint), con un impulso débil, un hueco que se ve o se palpa, o si la prueba de apretar el gemelo no mueve el pie, para de inmediato. Envíalo a valoración médica o a urgencias ese mismo día, que no apoye peso en la pierna, y no la estires ni la sigas probando.
+  applies_to: Adultos, normalmente deportistas recreativos de mediana edad.
+  conflicts: |-
+    Una única serie retrospectiva más pequeños estudios ecográficos; las roturas parciales pueden no mostrar todos los signos.
+- key: recovery-habits/intention-is-not-enough
+  source_hash: 397cbbc3449ae6439538c112da1ddea0e48b41e50589a250e4f0c4d860c846c5
+  status: machine
+  heading: La intención no basta
+  rule_text: |-
+    No trates la motivación de un cliente ni un "empiezo el lunes" como un plan. Convierte siempre la intención en un plan concreto de cuándo/dónde/cómo, con un plan para los obstáculos y un método de registro (véase "Planificación de la acción y planes si-entonces").
+  applies_to: |-
+    Adultos en estudios observacionales de actividad física al nivel de las guías; población general, no específica del gimnasio.
+  conflicts: |-
+    El resumen de 2013 da un 46% en sus resultados pero un 48% en su declaración de aportación. Ambos metaanálisis son del mismo grupo y probablemente con muestras solapadas, así que no son confirmaciones independientes. La distancia entre intención y conducta varía mucho entre personas.
+- key: recovery-habits/action-planning-and-if-then-plans
+  source_hash: 2ee876cf2f79e97ae02cf9ca87e338ee5269922e6646023e9e06ef5e83a23db6
+  status: machine
+  heading: Planificación de la acción y planes si-entonces
+  rule_text: |-
+    Para cada sesión prevista, haz que el cliente escriba un plan concreto (día, hora, lugar, entrenamiento) más 1-2 planes del tipo "si [obstáculo], entonces [alternativa]" (por ejemplo, "si salgo tarde de trabajar, entonces hago la versión de 25 min en casa"). Revisa y renueva los planes en las revisiones en lugar de fijarlos una sola vez.
+  applies_to: |-
+    Adultos de unos 18-76 años, incluidos estudiantes y grupos clínicos (enfermedad coronaria, obesidad, diabetes). Evidencia limitada en concreto para el entrenamiento de fuerza en el gimnasio.
+  conflicts: |-
+    Los efectos son modestos y heterogéneos. Un ejercicio de planificación puntual puede perder efecto. Los efectos pueden ser menores en adultos sanos no estudiantes que en pacientes.
+- key: recovery-habits/self-monitoring-tied-to-a-goal-and-a-review
+  source_hash: 6f0575ac908c462b7c60c69a165793d056fe3adc66957c5da4dbc38e3a02c173
+  status: machine
+  heading: Autorregistro ligado a un objetivo y a una revisión
+  rule_text: |-
+    Haz que todos los clientes registren una o dos conductas clave (sesiones hechas, pasos, raciones de proteína o de verdura, y registro de comidas si están dispuestos). Acompaña siempre el registro de un objetivo acordado con el cliente y de una revisión planificada y regular del registro con feedback; registrar sin objetivo ni revisión es menos eficaz. Como las recaídas son frecuentes, ayuda al cliente a preparar planes si-entonces sencillos para los deslices, y mantén el seguimiento y el feedback a intervalos regulares después de que termine un programa. Con clientes de 60 años o más, que el registro y la planificación de recaídas sean ligeros y de apoyo, y vigila si reducen la confianza del cliente.
+  applies_to: |-
+    Adultos en intervenciones comunitarias o clínicas de actividad física y dieta, muchos con sobrepeso u obesidad; los estudios de autorregistro para perder peso incluyeron sobre todo a mujeres blancas. No quienes entrenan fuerza con experiencia. Los efectos sobre la conducta son de pequeños a moderados. NICE PH49 abarca a personas de 16 años o más que cambian conductas relacionadas con el alcohol, la alimentación, la actividad, la salud sexual y el tabaco.
+  conflicts: |-
+    Heterogeneidad alta; las metarregresiones son asociaciones entre estudios. No se ha establecido la dosis necesaria. Burke 2011 calificó como débil la evidencia sobre autorregistro y peso. En adultos de 60 años o más, animar al autorregistro se asoció con menor autoeficacia y menos actividad física (French 2014). A algunas personas registrar la comida les resulta pesado o les dispara malestar, así que ofrece formas más ligeras, como una lista de hábitos. NICE no da tamaños del efecto, y su seguimiento de al menos un año es un consejo para programas financiados, no una dosis probada para el coaching.
+- key: recovery-habits/goal-setting
+  source_hash: 0c104e0a47e80b29147c96c5ce7107af1afaa99e93bbdc916d1fb86629a2777e
+  status: machine
+  heading: Fijación de objetivos
+  rule_text: |-
+    Fija objetivos de conducta concretos y a corto plazo (por ejemplo, 3 sesiones de gimnasio/semana, 8,000 pasos/día) junto con cualquier objetivo de resultado (kg, cintura). Revísalos cada semana y ajústalos. Quédate con objetivos que el cliente acepte, no impuestos. Con clientes de 60 años o más, mantén los objetivos flexibles y céntrate en construir confianza.
+  applies_to: |-
+    Adultos en contextos diversos con la actividad física como resultado; no hay datos directos sobre la adherencia al entrenamiento de fuerza en el gimnasio. No se aplica bien a adultos de 60 años o más.
+  conflicts: |-
+    En adultos de 60 años o más que viven en la comunidad, fijar objetivos de conducta se asoció con menos actividad física y menor autoeficacia (French 2014). Algunas personas reaccionan mal a los objetivos rígidos, así que usa rangos y deja que el cliente elija.
+- key: recovery-habits/older-adults-lead-with-confidence-not-targets
+  source_hash: 31ffc0b9e9faa5b75cd9c0f24875667ad250d39f6287ed16d765e80f659874e5
+  status: machine
+  heading: 'Mayores: empieza por la confianza, no por los objetivos'
+  rule_text: |-
+    Con clientes de 60 años o más, empieza por construir confianza (experiencias graduadas y exitosas, apoyo social, actividades agradables) en lugar de fijar muchos objetivos, registrar y compararse con otros. Introduce los objetivos y el registro con suavidad, y solo si al cliente le resultan útiles.
+  applies_to: |-
+    Adultos de 60 años o más, no clínicos y que viven en la comunidad, en intervenciones de actividad física; no dice nada sobre programas de pérdida de peso ni de entrenamiento de fuerza.
+  conflicts: |-
+    Choca con la evidencia sobre autorregistro y fijación de objetivos procedente de muestras más jóvenes. Son asociaciones entre estudios de una sola revisión, confundidas por otras características de las intervenciones. Algunas personas mayores concretas pueden beneficiarse igualmente del registro.
+- key: recovery-habits/wearables-and-step-counters
+  source_hash: a81a094e6eb125686ce8886ec7c9f232f7be9d4a2593a956ef826a0e01b6ca48
+  status: machine
+  heading: Wearables y podómetros
+  rule_text: |-
+    Anima a usar un podómetro o un wearable a los clientes que quieran uno. Usa sus datos como feedback en las revisiones semanales (tendencia frente a objetivo), no como un juicio. Sube los objetivos de pasos de forma gradual.
+  applies_to: |-
+    Todas las edades y poblaciones clínicas y no clínicas; los efectos son sobre caminar y la actividad física general, no sobre el entrenamiento de fuerza.
+  conflicts: |-
+    Los efectos sobre la TA, los lípidos, la HbA1c y la calidad de vida son pequeños y a menudo no significativos; el efecto sobre el peso es modesto. Algunas personas dejan de llevar los dispositivos.
+- key: recovery-habits/how-long-habits-take
+  source_hash: b027830c7a7ae05cb1b4b3b18649fa4db31564287dc2dcc5c5161de8d8291c20
+  status: machine
+  heading: Cuánto tardan los hábitos
+  rule_text: |-
+    Di a los clientes que cuenten con unos 2 meses, y a menudo 3-5 meses o más, antes de que las conductas de entrenamiento o de dieta les salgan solas; una rutina nueva de gimnasio de 4 o más sesiones a la semana puede empezar a sentirse como un hábito tras unas 6 semanas. Mantén la conducta en un contexto estable (misma señal, hora y lugar). Una sesión perdida no deshace el progreso; retoma en la siguiente oportunidad ("nunca falles dos veces" es una regla práctica, no un hallazgo probado). Nunca prometas "21 días".
+  applies_to: |-
+    Adultos que construyen conductas de salud sencillas (edades medias de 21.5-73.5 años en la revisión); una cohorte de nuevos socios de gimnasio. Las conductas complejas, como entrenamientos completos, probablemente tardan más.
+  conflicts: |-
+    Variación individual muy grande (4-335 días). El hábito se mide como automaticidad autodeclarada; los tiempos proceden de 4 estudios no agrupados, en su mayoría con alto riesgo de sesgo, y los autores califican la evidencia de "emergente". La estimación de 6 semanas en el gimnasio es más corta que la mediana de 2 meses de la revisión. Todas las fuentes apuntan a bastante más de 21 días.
+- key: recovery-habits/what-builds-habit-strength
+  source_hash: 72cd9b849c7b0215c4b199d57cd5d2b55a8da4739bd193eb346f6066a3e3d3dc
+  status: machine
+  heading: Qué refuerza un hábito
+  rule_text: |-
+    Empieza con una rutina sencilla y repetible que elija el cliente, a una hora y en un lugar fijos. Haz que las sesiones sean agradables y sin complicaciones, añade complejidad solo cuando la asistencia sea constante y construye hábitos preparatorios (la bolsa del gimnasio hecha, un hueco reservado en la agenda).
+  applies_to: |-
+    Adultos que forman nuevos hábitos de ejercicio o de dieta; una cohorte de gimnasio (n=111) y un metaanálisis pequeño, en su mayoría con alto riesgo de sesgo.
+  conflicts: |-
+    La ventaja de entrenar por la mañana es una correlación, no una causa; el cronotipo y el horario de trabajo importan. El hábito y la intención predijeron la conducta de forma independiente, así que los hábitos complementan la motivación.
+- key: recovery-habits/autonomy-supportive-coaching
+  source_hash: 55592443b751edffc97a06feda7b51efff1cd1ba5fd144586d81b69e76ce2705
+  status: machine
+  heading: Coaching que apoya la autonomía
+  rule_text: |-
+    Ofrece opciones (elección de ejercicios, horario, enfoque de dieta) y explica el porqué de las recomendaciones. Reconoce el punto de vista del cliente y evita la culpa, la presión y la vergüenza. Desarrolla su competencia con progresiones alcanzables, combínalo con objetivos de conducta y feedback sobre los resultados, y ayuda al cliente a vincular el entrenamiento con valores que le importen, no solo con el aspecto físico.
+  applies_to: |-
+    Adultos en contextos de promoción de la salud y de manejo de enfermedades; la evidencia sobre ejercicio es sobre todo correlacional. La metarregresión de Samdal abarca ECA de 12 semanas o más en adultos con una edad media de 40 años o más y un IMC medio de 30 o más.
+  conflicts: |-
+    Los efectos son "modestos, heterogéneos". La evidencia sobre los motivos de salud o de imagen corporal y sobre el ejercicio impulsado por la culpa es mixta. Algunos clientes quieren un coaching directivo; la estructura y el apoyo a la autonomía son compatibles.
+- key: recovery-habits/make-early-sessions-feel-good
+  source_hash: 6ebdc1a9baf74660e44fdb18ca5b7dba1903fa5ebfe9c8b15a12d6de20253906
+  status: machine
+  heading: Haz que las primeras sesiones resulten agradables
+  rule_text: |-
+    Con principiantes y personas que vuelven a entrenar, mantén las primeras sesiones a una intensidad y un volumen que resulten tolerables o agradables mientras se hacen. Evita las sesiones "machacantes" y las agujetas intensas en las primeras semanas. Pregunta cómo se sintió la sesión mientras la hacía, no solo después, y ajusta la elección de ejercicios y la intensidad para que la disfrute más.
+  applies_to: |-
+    Adultos, con datos sobre todo de ejercicio aeróbico o de intensidad moderada; la evidencia sobre entrenamiento de fuerza es menos directa. La revisión paraguas abarca pacientes con enfermedades crónicas y personas mayores.
+  conflicts: |-
+    Sobre todo observacional; Rhodes & Kates es una síntesis narrativa. A algunas personas les gusta entrenar duro, y la tolerancia a la intensidad es individual.
+- key: recovery-habits/the-first-3-months-are-the-dropout-window
+  source_hash: c055f76f99e70fc906bdecd91472c266ea63ef38b59b99308a5a4b6fa93394eb
+  status: machine
+  heading: Los 3 primeros meses son la ventana de abandono
+  rule_text: |-
+    Trata los 3 primeros meses como la ventana de alto riesgo. Programa revisiones más frecuentes y logros tempranos, y pregunta de forma proactiva por los obstáculos en las semanas 2-12. En la entrevista inicial, pregunta por la edad, la actividad previa y los motivos como marcadores de riesgo; la fuente no dice en qué sentido apunta cada uno, así que vigila de cerca a todos los clientes nuevos. Prefiere un contacto supervisado y que apoye la autonomía a la presión o la culpa.
+  applies_to: |-
+    Un centro de fitness brasileño (registros observacionales 2005-2014) y poblaciones clínicas con ansiedad y estrés. No se encontró ningún metaanálisis sobre abandono en la población general.
+  conflicts: |-
+    El abandono en los ensayos (alrededor del 20%) es muy inferior a las bajas reales de los gimnasios, porque a los participantes de los ensayos se les selecciona y se les apoya. Darse de baja de un gimnasio no es dejar todo el ejercicio. No se indica en qué sentido apuntan los predictores.
+- key: recovery-habits/self-weighing-and-digital-tracking
+  source_hash: a881a8556e5bb2dcf0fe1aa67c4a2430dd785f88979e8d32de8ea7186009411a
+  status: machine
+  heading: Pesarse y registro digital
+  rule_text: |-
+    Usa los pesajes como una parte de un plan más amplio, nunca por sí solos, y nunca los hagas obligatorios. Pesarse a diario es opcional: promediado por semanas, da la tendencia más limpia y es lo que prefiere la herramienta de tendencia del coach; pesarse una vez a la semana es aceptable. Ningún pesaje en absoluto para nadie con un cribado positivo de trastorno de la conducta alimentaria o con señales de alerta (véase "Cribado: preguntas breves como señal de alerta, no un diagnóstico"). Revisa las tendencias con el cliente (rendición de cuentas). Cuenta con que el registro irá decayendo, así que haz que sea lo más cómodo posible (apps, básculas inteligentes).
+  applies_to: |-
+    Adultos con sobrepeso u obesidad en programas conductuales de pérdida de peso; no personas con antecedentes de trastorno de la conducta alimentaria.
+  conflicts: |-
+    Los resultados de pérdida de peso no difirieron entre pesarse a diario y semanalmente, así que preferir las lecturas diarias se debe a una tendencia con menos ruido para la herramienta de tendencia, no a perder más peso. Pesarse puede causar malestar a algunas personas. La evidencia sobre herramientas digitales es un recuento de votos, no un efecto agrupado.
+- key: recovery-habits/plan-the-maintenance-phase
+  source_hash: 29bb8124c34f37dd7b951538981f406e2558596680c0520f40d70fd4f61d3896
+  status: machine
+  heading: Planifica la fase de mantenimiento
+  rule_text: |-
+    Planifica el mantenimiento de forma explícita. Mantén alta la actividad física, sigue con un seguimiento ligero (pesajes periódicos, registro ocasional de comidas) y usa una restricción flexible en lugar de rígida. Acordad una "respuesta ante la recuperación de peso" temprana (por ejemplo, volver a registrar si el peso sube una cantidad acordada, como 2 kg; este umbral es pragmático, no sale de la evidencia). Nunca des por hecho que el mantenimiento ocurre en piloto automático.
+  applies_to: |-
+    Adultos con sobrepeso u obesidad que perdieron peso sin cirugía ni fármacos. Los datos del registro son autoseleccionados y autodeclarados (NWCR: 78% mujeres, edad media de 48 años); los estudios de mediadores, sobre todo de 25-44 años, muchos solo con mujeres.
+  conflicts: |-
+    Datos observacionales; la actividad física puede ser un marcador más que una causa. Las tasas de éxito del NWCR no se generalizan a quienes hacen dieta normalmente. Teixeira calificó la evidencia global como limitada; no está establecido que la restricción rígida perjudique; los mediadores dietéticos fueron inconsistentes.
+- key: recovery-habits/honest-expectations-about-regain
+  source_hash: cfcf980f3476337cc6727c56ca1a98049d11a47ad1bdcdf8717238a93b967b75
+  status: machine
+  heading: Expectativas honestas sobre recuperar el peso
+  rule_text: |-
+    Fija expectativas honestas: recuperar parte del peso es habitual y no es un fracaso, y no recuperar una parte significativa de lo perdido es un éxito realista. Mantén el apoyo para el mantenimiento (revisiones, actividad) más allá del final de la fase de pérdida de peso.
+  applies_to: |-
+    Adultos con obesidad en programas estructurados. Anderson 2001 es antiguo, solo de EE. UU. y basado en quienes completaron el programa; el NWCR es autoseleccionado.
+  conflicts: |-
+    Las medias ocultan una gran variación. En programas de dieta equilibrada como el coaching habitual, el mantenimiento medio a 5 años fue de unos 2 kg. La relación con el ejercicio es observacional.
+- key: recovery-habits/par-q-2023-as-the-default-entry-screen
+  source_hash: 2bf56ce1b6cdd9b7e9ecf7c9976fd068185f8a6be429447213de16d2bdc00fbd
+  status: machine
+  heading: El PAR-Q+ 2023 como cribado de entrada por defecto
+  rule_text: |-
+    En el alta, pasa las 7 preguntas del PAR-Q+ completas y sin modificar (el propio formulario prohíbe cambiarlas). Todo NO: empieza un programa gradual. Algún SÍ: haz las preguntas de seguimiento de esa condición. Algún SÍ en el seguimiento: detén cualquier progresión de intensidad y envía a la persona al ePARmed-X+ o a un profesional del ejercicio cualificado o a un médico. Repite el cribado cada 12 meses y siempre que el usuario comunique un diagnóstico, una medicación, un síntoma o un embarazo nuevos.
+  applies_to: |-
+    Adultos y personas mayores que empiezan o aumentan su actividad. Es autodeclarado, así que depende de que las respuestas sean sinceras. Solo se verificó la versión oficial de 2023.
+  conflicts: |-
+    La evidencia es de consenso más revisiones sistemáticas; los datos prospectivos que muestren que previene eventos son limitados y su sensibilidad para eventos clínicos no está establecida. El ACSM 2015 usa otro algoritmo, así que los dos pueden clasificar de forma distinta a la misma persona.
+- key: recovery-habits/par-q-specific-thresholds
+  source_hash: 696a7a124fe63192d72da6d45ed0b874f67a19bf85af4097f1fb2337c8e3a79f
+  status: machine
+  heading: Umbrales específicos del PAR-Q+
+  rule_text: |-
+    Cualquier persona de más de 45 años, o con algún SÍ en el PAR-Q+, necesita la revisión de un profesional del ejercicio cualificado o de un clínico antes de hacer trabajo vigoroso o máximo (HIIT, test de 1RM, sprints a tope). Los formatos de sprint a tope (SIT, REHIT) exigen además que todas las respuestas del PAR-Q+ sean NO y al menos 4 semanas de cardio moderado regular sin síntomas; son opciones para clientes ya activos con poco tiempo, nunca para principiantes sedentarios. Pide a los usuarios hipertensos una TA en reposo reciente y aplica las franjas de "Umbrales de TA en reposo para aplazar o derivar" (160/90 o más, o desconocida, implica revisión del médico de cabecera antes de empezar o de progresar). Aplaza el entrenamiento durante una enfermedad con fiebre. Los principiantes sedentarios empiezan con paseos de 10-20 min y van subiendo hacia 150 min/semana; 20-60 min de trabajo moderado, 3-5 días/semana, es el objetivo una vez consolidado eso.
+  applies_to: |-
+    Adultos; la regla de los 45 años se dirige a adultos de mediana edad y mayores. Los umbrales son puntos de corte de consenso, no validados con resultados.
+  conflicts: |-
+    El ACSM 2015 usa la actividad actual más la enfermedad más los síntomas, sin punto de corte de edad, así que las herramientas pueden discrepar para una misma persona. El texto del PAR-Q+ sugiere sesiones de 20-60 min desde el principio; los paseos iniciales más cortos para personas sedentarias, el requisito de 4 semanas de cardio moderado para los sprints y la revisión ante cualquier SÍ del PAR-Q+ son decisiones conservadoras del producto basadas en la evidencia sobre la progresión gradual (véase "El riesgo cardiaco agudo se concentra en quienes no están habituados"), no texto del PAR-Q+.
+- key: recovery-habits/acsm-2015-screening-algorithm
+  source_hash: 41d0d64b6c824b99649e7c969eb4014495d3bc0a032771beb7b75e29cebe0186
+  status: machine
+  heading: Algoritmo de cribado del ACSM de 2015
+  rule_text: |-
+    Clasifica a cada usuario en una de las seis casillas del ACSM durante el alta. Los usuarios inactivos sin enfermedad y sin síntomas empiezan a intensidad ligera a moderada sin esperar a un médico. Los usuarios inactivos con enfermedad cardiovascular, metabólica (diabetes tipo 1 o 2) o renal diagnosticada necesitan el visto bueno médico antes de empezar cualquier ejercicio, y luego empiezan a intensidad ligera a moderada. Los usuarios ya activos con esas enfermedades pueden seguir con trabajo moderado, pero necesitan el visto bueno antes del trabajo vigoroso. Cualquiera con síntomas no recibe programa, o deja el actual, hasta que lo haya valorado un clínico.
+  applies_to: |-
+    Adultos; las cifras de NHANES abarcan a adultos de EE. UU. de 40 años o más, con un 70.9% de las personas de más de 70 derivadas antes de cualquier ejercicio.
+  conflicts: |-
+    Los autores dicen que "hace falta más validación"; su capacidad predictiva no está demostrada. Los síntomas autodeclarados en NHANES fueron altos (54.2%, sobre todo falta de aire, probablemente a menudo de origen no cardiaco), así que la derivación en la vida real puede ser menor. Se derivó a más mujeres que hombres (59.8% frente a 48.1%).
+- key: recovery-habits/cardiac-warning-symptoms-stop-and-refer
+  source_hash: 208868fddebb67d85360ad82063b03c75c24acfa4e6d153e69a61f3e145049c6
+  status: machine
+  heading: 'Síntomas cardiacos de alarma: para y deriva'
+  rule_text: |-
+    Si un usuario comunica alguno de los síntomas de abajo, antes o durante una sesión, dile que deje de hacer ejercicio y busque una valoración médica. No retomes ni ajustes el entrenamiento hasta que un clínico le dé el visto bueno. Nunca le hagas seguir entrenando con ellos ni los reinterpretes como la incomodidad normal del entrenamiento. Aparte, como práctica general de primeros auxilios y no como texto del ACSM: dolor en el pecho en reposo, un desmayo, o dolor en el pecho con falta de aire y sudoración implican llamar ya a emergencias.
+  applies_to: Todos los adultos, sea cual sea su nivel de entrenamiento.
+  conflicts: |-
+    Los síntomas pueden ser atípicos, sobre todo en mujeres, personas mayores y personas con diabetes. La lista es un cribado de consenso, no una herramienta diagnóstica validada, y cabe esperar falsos positivos.
+- key: recovery-habits/acute-cardiac-risk-is-concentrated-in-the-unaccustomed
+  source_hash: c69f71340e1c701adeda703c888a3cea51da33c02226cdaae253981034947dd9
+  status: machine
+  heading: El riesgo cardiaco agudo se concentra en quienes no están habituados
+  rule_text: |-
+    Nunca hagas empezar a un usuario sedentario o desentrenado con trabajo vigoroso o máximo, incluidos los protocolos de sprint a tope (SIT, REHIT). Aumenta el volumen y la intensidad a lo largo de semanas, hasta llegar a una actividad moderada regular (al menos 3 días/semana) antes de añadir sesiones vigorosas; los sprints a tope necesitan además los requisitos de "Umbrales específicos del PAR-Q+" (todas las respuestas del PAR-Q+ en NO, al menos 4 semanas de cardio moderado regular sin síntomas y una revisión profesional si tiene más de 45 años). Trata los arrebatos de "guerrero de fin de semana" y los saltos bruscos de intensidad como el patrón de mayor riesgo. Tranquiliza a los usuarios: el riesgo absoluto es mínimo y el beneficio a largo plazo, grande.
+  applies_to: |-
+    Adultos; datos observacionales de casos cruzados en pacientes con infarto de miocardio y en médicos varones de EE. UU., así que la generalización a mujeres es incierta.
+  conflicts: |-
+    CI amplios (67-171 para el RR de 107). La AHA señala posibles malas adaptaciones con volúmenes e intensidades muy altos, lo que afecta a deportistas de resistencia de gran volumen, no a esta población.
+- key: recovery-habits/regular-activity-is-the-main-protection
+  source_hash: 101d83465dc3fdce98be40da73834bd1a46733d355bdc8ca1156a61dfd1601e7
+  status: machine
+  heading: La actividad regular es la principal protección
+  rule_text: |-
+    Al hablar del riesgo cardiaco, plantéalo así: mantenerse activo de forma constante es la principal protección, y el riesgo transitorio se gestiona progresando de forma gradual, no evitando el ejercicio. No uses el lenguaje del riesgo cardiaco para desanimar la actividad en personas que han superado el cribado.
+  applies_to: Poblaciones adultas generales de EE. UU. y Europa; datos observacionales.
+  conflicts: |-
+    Son posibles la causalidad inversa y los factores de confusión; la estimación sobre la forma física se basa en 2 estudios; la forma de la relación dosis-respuesta es imprecisa.
+- key: recovery-habits/over-screening-is-itself-a-harm
+  source_hash: 1786671ecdbf7d895891a1995ddfd14263183f7ab1b1de65f2ed14a94f7853f7
+  status: machine
+  heading: El exceso de cribado es en sí un daño
+  rule_text: |-
+    No digas a todos los usuarios que "vayan primero al médico": los usuarios sanos y asintomáticos sin enfermedad cardiovascular, metabólica o renal conocida no necesitan el visto bueno médico y pueden empezar ya con actividad ligera a moderada. Todos los demás siguen exactamente el algoritmo del ACSM 2015 (véase "Algoritmo de cribado del ACSM de 2015") y las preguntas de seguimiento del PAR-Q+; esta regla nunca los relaja.
+  applies_to: |-
+    Adultos; cifras de derivación de adultos de EE. UU. de 40 años o más; declaraciones sobre DM2 para adultos asintomáticos con DM2.
+  conflicts: |-
+    Los autores de Whitfield ayudaron a desarrollar el algoritmo y señalan que aún necesita validación. Algunos gimnasios, aseguradoras o leyes locales siguen exigiendo el visto bueno. Kanaley 2022 recomienda el visto bueno para personas sedentarias con DM2 antes de una intensidad de moderada a alta, mientras que el ACSM 2015 pide el visto bueno a las personas inactivas con enfermedad metabólica conocida antes de cualquier ejercicio; el coach sigue la regla más conservadora del ACSM 2015.
+- key: recovery-habits/head-cold-optional-light-training
+  source_hash: 044f16cc4c3998ce7b9c2b16442d7bbb30fc0a3dffd8c7ab3e1a946c0ae2e1d3
+  status: machine
+  heading: 'Resfriado de cabeza: entrenamiento ligero opcional'
+  rule_text: |-
+    Con síntomas solo de resfriado de cabeza (nariz que gotea o tapada, dolor de garganta leve) y sin fiebre, permite un entrenamiento ligero a moderado opcional (RPE 5 o menos, sesión más corta, sin esfuerzos máximos ni marcas personales). Para si la persona se encuentra peor. Evita el gimnasio si es contagioso, por cortesía. Cualquier síntoma por debajo del cuello o sistémico (fiebre, escalofríos, dolores musculares, opresión en el pecho, tos con flemas, diarrea, cansancio marcado) implica descanso (regla siguiente).
+  applies_to: |-
+    Adultos jóvenes moderadamente en forma con un resfriado leve inducido; deportistas y reclutas de 15-65 años. No para la gripe, la COVID-19, las personas mayores ni las personas con enfermedad cardiaca o respiratoria.
+  conflicts: |-
+    Los umbrales no están validados; los controles no se aleatorizaron. Snyders et al. no hallaron diferencias de resultados entre la enfermedad respiratoria alta y la general, lo que ni apoya ni refuta la división por el cuello.
+- key: recovery-habits/fever-and-systemic-illness-do-not-train
+  source_hash: ba7960bc5db64eddf9219a35c6d65f3a57788146a1727fa3d7cde8af161b070c
+  status: machine
+  heading: 'Fiebre y enfermedad sistémica: no entrenes'
+  rule_text: |-
+    Fiebre (38.0 °C o más, o sensación febril con escalofríos), dolores musculares o malestar general implican no entrenar hasta llevar al menos 24-48 h sin fiebre sin antitérmicos y con los síntomas claramente mejorando. Después, retoma con una carga claramente reducida (alrededor del 50% de la habitual) y ve subiendo a lo largo de varias sesiones. Dolor u opresión en el pecho, palpitaciones, falta de aire inusual, mareo o desmayo durante o después de la enfermedad implican parar y obtener una valoración médica antes de cualquier ejercicio.
+  applies_to: |-
+    Todos los adultos. Evidencia mecanicista, de revisiones narrativas y de consenso, sin ECA; el plazo del ACC es para la miocarditis por COVID-19 en deportistas.
+  conflicts: |-
+    El umbral de temperatura, la ventana de 24-48 h y la carga del 50% al retomar son convenciones pragmáticas. El principio de no hacer ejercicio intenso con fiebre es coherente entre fuentes.
+- key: recovery-habits/return-after-covid-19-or-flu-like-illness
+  source_hash: d9c5597f48a1c26a89950defb0b3c7b5d6ce7fcf27c1b9f6d84965f502993448
+  status: machine
+  heading: Vuelta tras la COVID-19 o una enfermedad de tipo gripal
+  rule_text: |-
+    Empieza cuando los síntomas se hayan resuelto (o pasados 3 días si es asintomático). Usa unas 3-5 etapas progresivas: caminar y movilidad; trabajo aeróbico ligero a RPE 3-4 durante 15-30 min; aeróbico moderado más fuerza ligera; entrenamiento normal sin esfuerzos máximos; entrenamiento completo. Avanza solo tras 24 h sin síntomas, y retrocede una etapa si vuelven el cansancio o los síntomas. Cualquier síntoma cardiopulmonar implica parar y hacerse una revisión médica. Los clientes con diabetes, enfermedad cardiovascular o renal, un ingreso hospitalario o síntomas de más de 7 días necesitan antes el visto bueno del médico de cabecera.
+  applies_to: |-
+    Adultos que vuelven tras la COVID-19; pautas escritas para deportistas, que el ACC extiende a quienes hacen ejercicio recreativo. Aplicarlas a la gripe es una extrapolación.
+  conflicts: |-
+    Los 10 días de reposo de Elliott son hoy más conservadores que el ACC; usa el ACC, pero ve más despacio si persiste el cansancio (algunos deportistas tardan más de 3 semanas). En las afecciones poscovid con malestar postesfuerzo, el ACC desaconseja el ejercicio graduado en posición erguida. El número de etapas no se deriva de la evidencia.
+- key: recovery-habits/recognise-it-and-send-to-urgent-care
+  source_hash: 4e20ea483b3180dc06bd005938978247982a629f5485182f07c406defe4533b7
+  status: machine
+  heading: Reconócela y envía a urgencias
+  rule_text: |-
+    Dile al cliente que vaya a urgencias ese mismo día si, después de entrenar, tiene orina oscura, de color cola o té; hinchazón o tirantez muscular marcadas; un dolor muy por encima de las agujetas normales o dolor al estirar suavemente; incapacidad para estirar o levantar un miembro con normalidad (los brazos tras curls o dominadas de muchas repeticiones, los muslos tras spinning); entumecimiento u hormigueo; o una cantidad de orina muy reducida. Que busque una revisión médica si las agujetas siguen empeorando pasados unos 3 días o no han remitido a los 5-7 días. Detén todo el entrenamiento hasta que un médico le dé el visto bueno, no sugieras AINE e insiste en la hidratación. El coach nunca "espera a ver qué pasa" con la orina oscura.
+  applies_to: |-
+    Todos los adultos; datos sobre todo de adultos jóvenes en series de casos hospitalizados y de una guía militar dirigida también a la medicina deportiva. Se desconoce la incidencia en usuarios de gimnasio; las personas mayores y quienes toman estatinas no se han estudiado específicamente.
+  conflicts: |-
+    Consenso de expertos más cohortes retrospectivas, sin ECA; una guía de práctica clínica militar señala "una escasez de pautas basadas en la evidencia". Los umbrales de CK difieren (5,000 frente a 10,000 IU/L). Deportistas asintomáticos pueden tener una CK muy alta, así que son los síntomas y la orina los que deciden la derivación. Los episodios recurrentes plantean la posibilidad de miopatías genéticas.
+- key: recovery-habits/prevention-in-novices
+  source_hash: a393400c7e49fa54ac42ec02aa19aaaf5485e585c841b9c2502379d3d9bb9f23
+  status: machine
+  heading: Prevención en principiantes
+  rule_text: |-
+    Con principiantes y con quienes vuelven (también tras más de unos 6-9 meses parados), mantén las 2 primeras semanas claramente submáximas (termina las series con 3 o más RIR); evita las series al fallo, el trabajo de muchas repeticiones con mucha carga excéntrica (negativas de muchas repeticiones, series descendentes, retos de 100 repeticiones) y las clases de spinning o de estilo CrossFit a máxima intensidad en la sesión 1. Limita las primeras sesiones de cualquier modalidad nueva y aumenta el volumen poco a poco en lugar de duplicarlo. No entrenes duro con calor, deshidratado, después de beber alcohol, tras dormir mal, con preentrenos estimulantes, con AINE ni justo después de una enfermedad vírica. Avisa a los recién llegados a las clases de que se autolimiten y de que reconozcan la orina oscura.
+  applies_to: |-
+    Adultos principiantes y que retoman el gimnasio; los reclutas militares y los deportistas están sobrerrepresentados, y los datos del spinning proceden de casos clínicos.
+  conflicts: |-
+    Ninguna guía da topes numéricos de volumen para la primera sesión; las cifras de progresión son pragmáticas. Las miopatías genéticas, el rasgo falciforme y las estatinas cambian mucho el riesgo; una rabdomiólisis tras una carga de trabajo corriente requiere derivar al especialista.
+- key: recovery-habits/return-after-rhabdomyolysis-or-severe-doms
+  source_hash: e847dc522fcf050c6a17f68be505167cf88b280ac0807e523f0c7a182530fab4
+  status: machine
+  heading: Vuelta tras una rabdomiólisis o unas agujetas graves
+  rule_text: |-
+    Tras una rabdomiólisis diagnosticada, el cliente solo vuelve con el visto bueno médico y sigue la fase que indique el médico. Una vez autorizado, las semanas 1-4 usan cargas ligeras muy lejos del fallo, sin esfuerzos máximos ni cronometrados, y suben hacia moderadas cada semana solo si no vuelven el dolor, la hinchazón, la debilidad ni la orina oscura. Evitar el énfasis excéntrico pesado y las condiciones de calor o humedad en este periodo es una extrapolación conservadora a partir de los factores de riesgo enumerados. El entrenamiento completo suele retomarse tras unas 4 semanas o más, cuando la fuerza es casi normal y los síntomas han desaparecido. Hace falta una valoración del especialista (neuromuscular) antes de volver si se produjo tras una carga de trabajo corriente, se repite, la CK o los síntomas no se han normalizado tras 1-2 semanas de reposo, o hay antecedentes personales o familiares de rabdomiólisis, rasgo falciforme o hipertermia maligna. Aplica el mismo enfoque gradual tras unas agujetas (DOMS) graves.
+  applies_to: |-
+    Adultos de bajo riesgo tras una rabdomiólisis por esfuerzo o unas agujetas (DOMS) importantes; escrito para personal militar y basado en la opinión de expertos. Los casos de alto riesgo necesitan un plan médico individual.
+  conflicts: |-
+    Las fases son de consenso; los plazos dependen de los síntomas, la evolución de la CK y la función renal. La CK normal tras el ejercicio varía con la edad, el sexo, la raza y el tipo de ejercicio.
+- key: recovery-habits/what-the-coach-can-and-cannot-do
+  source_hash: 6f74b73041eedfecc27aa98605b8a2bc8120da838fe5478c9e3aa906f7628cfb
+  status: machine
+  heading: Lo que el coach puede y no puede hacer
+  rule_text: |-
+    Con usuarios con diabetes, confirma su medicación y aplica el algoritmo del ACSM 2015: los usuarios actualmente inactivos necesitan el visto bueno médico antes de empezar cualquier programa, y los ya activos lo necesitan antes de progresar a trabajo vigoroso. Con insulina o una sulfonilurea, exige un plan de hipoglucemia del clínico y controles de glucosa en torno a las sesiones, y para ante los síntomas (temblor, sudoración, confusión). Pregunta por complicaciones oculares, renales, de los pies y cardiacas; si hay alguna, consigue el visto bueno del clínico y las restricciones concretas. Los planes de nutrición (déficits, manipulación de hidratos, ayuno) pasan por un dietista-nutricionista y el equipo de diabetes, no solo por el coach. Programa 150 min/semana o más de trabajo aeróbico más 2-3 días de fuerza.
+  applies_to: |-
+    Adultos con DM2 (la ADA también abarca la DM1 y la prediabetes). El manejo de la insulina en la diabetes tipo 1 necesita un especialista.
+  conflicts: |-
+    La prueba de esfuerzo previa al ejercicio sigue siendo controvertida; las recomendaciones sobre el visto bueno se basan en el consenso; el riesgo de hipoglucemia depende de la pauta de fármacos. El ACSM 2022 exime de valoración la actividad baja a moderada en la DM2 asintomática, mientras que el algoritmo del ACSM 2015 pide el visto bueno a las personas inactivas con enfermedad metabólica conocida antes de cualquier ejercicio; el coach sigue la regla más conservadora de 2015.
+- key: recovery-habits/only-some-users-need-pre-exercise-carbohydrate
+  source_hash: 6c9ac4713f04a1c003f04b1b0d5292f20e48db7a886b10c02a33f8d96eb5c736
+  status: machine
+  heading: Solo algunos usuarios necesitan hidratos antes del ejercicio
+  rule_text: |-
+    En el alta, registra el tipo de diabetes y la clase de medicación. Aplica los controles de glucosa previos al entrenamiento y las reglas de hidratos de carbono solo a los clientes con insulina o con sulfonilureas/meglitinidas. Los clientes con DM2 que solo toman metformina, AR GLP-1 o iSGLT2 no necesitan hidratos de carbono rutinarios antes de entrenar "por si acaso". Si un cliente toma un betabloqueante además de insulina o un secretagogo, pídele un control de glucosa antes y después de la sesión en lugar de fiarse de los síntomas.
+  applies_to: |-
+    Adultos con DM1 o DM2 en un gimnasio general; las clases de medicación son autodeclaradas y el coach no cambia la medicación.
+  conflicts: |-
+    Las respuestas glucémicas varían mucho; los ajustes de hidratos y de medicación son individuales y corresponden al equipo de diabetes.
+- key: recovery-habits/low-pre-exercise-glucose-eat-first
+  source_hash: 24d4ec2bed15903714cfbb819f5143dbac388f4d53c4955e30e516b78a854f77
+  status: machine
+  heading: 'Glucosa baja antes del ejercicio: come primero'
+  rule_text: |-
+    Con usuarios de insulina o de secretagogos, pide una lectura de glucosa (glucómetro o MCG) antes de cada sesión. Por debajo de 90 mg/dL (5.0 mmol/L), el cliente toma 15-30 g de hidratos de carbono rápidos y vuelve a medir antes de empezar; una flecha de tendencia descendente en el MCG implica más hidratos o esperar. Empezar con 90-250 mg/dL está bien. Para más de 30-60 min de cardio continuo, planifica hidratos durante la sesión. Las reducciones de la dosis de insulina se derivan al equipo de diabetes.
+  applies_to: |-
+    Adultos con DM1 y, por extensión, con DM2 en tratamiento con insulina o secretagogos. No hace falta en la DM2 con fármacos que no causan hipoglucemia.
+  conflicts: |-
+    Evidencia de nivel de consenso. La EASD/ISPAD fija objetivos más altos para las personas con mayor riesgo de hipoglucemia y para los niños (hasta 145-216 mg/dL). La dosis de hidratos depende del tamaño corporal, la insulina activa, la hora del día y el tipo de sesión.
+- key: recovery-habits/high-glucose-and-ketones
+  source_hash: 29df6eba919239a0de39d89ade658194c9ba351e52c6940bbed0e7793e5cba23
+  status: machine
+  heading: Glucosa alta y cetonas
+  rule_text: |-
+    Por encima de unos 250 mg/dL (13.9 mmol/L), los usuarios de insulina (sobre todo con DM1) se miden las cetonas. Si las cetonas son moderadas o altas (en sangre, 1.5 mmol/L o más), o el cliente se encuentra mal (náuseas, vómitos, dolor abdominal, sed o cansancio inusuales), hoy no hay sesión: remite a su plan de diabetes, o a urgencias si se encuentra mal. Si las cetonas son negativas o indicios y se encuentra bien, solo trabajo aeróbico ligero a moderado, sin HIIT ni fuerza pesada hasta que la glucosa baje de 250. En la DM2 sin insulina, una glucosa de hasta unos 300 mg/dL sin síntomas permite actividad ligera con líquidos.
+  applies_to: |-
+    Adultos con DM1 (los más afectados) y DM2; la medición de cetonas, sobre todo para usuarios de insulina y de iSGLT2.
+  conflicts: |-
+    Los puntos de corte difieren (250, 270, o 250 con cetonas/300 sin ellas), todos de consenso de expertos. Las cetonas rara vez son altas en la DM2, de ahí la regla más laxa para la DM2. Los usuarios de iSGLT2 son una excepción (regla siguiente).
+- key: recovery-habits/sglt2-inhibitors-ketoacidosis-with-near-normal-glucose
+  source_hash: 97f21c4d5807d025efa4f3d47d3d871fca59ac55183f9fb04b3cb6657b0b6590
+  status: machine
+  heading: 'Inhibidores de SGLT2: cetoacidosis con glucosa casi normal'
+  rule_text: |-
+    En clientes con inhibidores de SGLT2 (las "-gliflozinas"), una lectura de glucosa normal no descarta la cetoacidosis. Si el cliente se encuentra mal (náuseas, vómitos, dolor abdominal, falta de aire o cansancio inusuales), sáltate la sesión y derívalo a un clínico ese mismo día. No prescribas dietas cetogénicas ni muy bajas en hidratos de carbono a usuarios de iSGLT2.
+  applies_to: |-
+    Adultos con DM2 (y, fuera de indicación, DM1) en tratamiento con inhibidores de SGLT2.
+  conflicts: |-
+    La CAD euglucémica es rara pero está infradiagnosticada. Los consejos específicos sobre el ejercicio son de consenso de expertos (grado E).
+- key: recovery-habits/hypoglycaemia-mid-session-the-15-g-rule
+  source_hash: be535add463771874266071f5a118cdb5d281ca604ccf269f41680a801f955d2
+  status: machine
+  heading: 'Hipoglucemia a mitad de sesión: la regla de los 15 g'
+  rule_text: |-
+    En cualquier sesión con un usuario de insulina o de secretagogos, ten a mano comprimidos o gel de glucosa. Si el cliente nota temblor, sudoración, confusión o una debilidad inusual, o el MCG marca menos de 70 mg/dL, detén la sesión, dale 15 g de glucosa, espera 15 min y vuelve a medir, y repite si sigue por debajo de 70. Retoma solo trabajo ligero cuando la glucosa esté en 80-90 mg/dL o más y estable o subiendo; si bajó de 54 mg/dL, da por terminada la sesión. Nunca des hidratos de carbono por boca a alguien que no está alerta: llama a emergencias. La taquicardia y la sudoración se solapan con los signos normales del ejercicio, así que mira la cifra en lugar de adivinar.
+  applies_to: |-
+    Adultos con diabetes en tratamiento con insulina o secretagogos; los adultos de 75 años o más tienen el riesgo más alto.
+  conflicts: |-
+    Los umbrales de la EASD/ISPAD para retomar son de nivel D. La grasa del alimento usado para tratarla ralentiza la corrección, y quienes toman acarbosa deben usar glucosa pura.
+- key: recovery-habits/delayed-and-nocturnal-hypoglycaemia
+  source_hash: 502e7dd30ede67cf85413240b9b9d6a3d6ac32ce935f9ccc3cbe8bc4d8c0a276
+  status: machine
+  heading: Hipoglucemia tardía y nocturna
+  rule_text: |-
+    Con usuarios de insulina, prefiere programar las sesiones largas o duras por la mañana o a primera hora de la tarde. Tras una sesión por la tarde-noche, el cliente se mide la glucosa al acostarse, toma un tentempié con hidratos de carbono y proteína si está en el rango normal-bajo, y pone la alarma de hipoglucemia del MCG en unos 80 mg/dL durante la noche. Menciona la ventana de 24-48 h tras una sesión nueva o inusualmente larga. Las reducciones de insulina corresponden al equipo de diabetes.
+  applies_to: |-
+    Sobre todo DM1, y DM2 en tratamiento con insulina o secretagogos. Pautas de nivel de consenso más que resultados de ensayos.
+  conflicts: |-
+    El riesgo depende de la forma física, la percepción de las hipoglucemias, las hipoglucemias recientes y la pauta; las personas que no suelen hacer ejercicio pueden tener más riesgo.
+- key: recovery-habits/complications-that-change-the-session
+  source_hash: fcf3b79ada0d98b7ba9e6a5cffb36de85e65dffa3da4043e216dbab2b140c27b
+  status: machine
+  heading: Complicaciones que cambian la sesión
+  rule_text: |-
+    En el alta, pregunta a los clientes diabéticos por enfermedad ocular (grado de retinopatía, láser o cirugía ocular recientes) y por problemas de pies y nervios. Si hay retinopatía proliferativa o no proliferativa grave, o se desconoce, evita las cargas pesadas o máximas, levantar peso por encima de la cabeza, la Valsalva, las inversiones y los saltos hasta que un oftalmólogo dé el visto bueno. Un cambio repentino de la visión implica parar y derivar ese mismo día.
+  applies_to: |-
+    Adultos con DM1 o DM2 con complicaciones microvasculares. Pautas de nivel de consenso más que resultados de ensayos.
+  conflicts: |-
+    La ADA dice "puede estar contraindicado", mientras que el ACSM dice contraindicado en la retinopatía proliferativa inestable o no tratada; la restricción exacta la decide el oftalmólogo.
+- key: recovery-habits/train-it-aerobic-and-resistance-work-both-lower-bp
+  source_hash: 7c8484b7639073298f3918f4e715d2890aff517043f52346b38fc8b461ad8ae3
+  status: machine
+  heading: 'Entrénala: el trabajo aeróbico y el de fuerza bajan la TA'
+  rule_text: |-
+    La hipertensión es un motivo para entrenar, no para evitar el trabajo de fuerza. Consigue una TA en reposo reciente y aplica las franjas de "Umbrales de TA en reposo para aplazar o derivar" para aplazar o derivar. En la hipertensión controlada, programa 2-3 días/semana de fuerza con carga moderada junto al trabajo aeróbico, más trabajo isométrico opcional (sentadilla en pared, prensión manual), con esfuerzo moderado y respiración continua. Como decisión práctica que las fuentes no especifican, usa unas 8-12 repeticiones quedándote a 2-3 repeticiones del fallo (unos 13-15 en la escala de Borg 6-20), nunca al fallo, empezando con máquinas, y progresa la carga una vez que la TA esté controlada y la técnica respiratoria sea sólida. Evita las cargas máximas con Valsalva en la hipertensión no controlada o complicada. Los cambios de medicación corresponden al clínico.
+  applies_to: |-
+    Adultos desde TA normal hasta hipertensión controlada; ensayos de 2-6 meses en su mayoría. La precaución con la fuerza pesada procede de las pautas para la DM2. La evidencia de que el entrenamiento baja la TA es fuerte; el grado es moderado porque la regla incluye también cifras de repeticiones, esfuerzo y derivación elegidas por el coach.
+  conflicts: |-
+    Los datos de seguridad de la AHA se basan en un número pequeño de eventos. Un metaanálisis en red de 2026 sobre TA ambulatoria (31 ECA, adultos hipertensos) concluyó que la evidencia del entrenamiento de fuerza dinámico e isométrico sobre la TA de 24 h "sigue siendo incierta"; solo el entrenamiento aeróbico, el HIIT y el combinado la bajaron claramente. Que el entrenamiento isométrico sea el que más baja la TA y las pautas contra contener la respiración son compatibles: la advertencia se dirige a la Valsalva y a los esfuerzos máximos. Las franjas de TA son convenciones de cribado. Cuenta con que habrá respondedores y no respondedores.
+- key: recovery-habits/resting-bp-thresholds-to-defer-or-refer
+  source_hash: 56292b337c2747f9f337ccdb8e7c7a93470f60dacc25556364b834f3249c5f1d
+  status: machine
+  heading: Umbrales de TA en reposo para aplazar o derivar
+  rule_text: |-
+    Este es el único lugar donde se definen las franjas de TA en reposo del coach; las demás reglas y archivos remiten aquí. Los clientes con hipertensión conocida o sospechada se toman una lectura sentados tras 5 min de reposo (bien medida, no una única lectura apresurada) antes de las sesiones mientras la TA aún no esté controlada. Una franja se aplica cuando cualquiera de las dos cifras la alcanza. Con 200 de sistólica o más, o 110 de diastólica o más: nada de ejercicio; vuelve a medir pasados 5-10 min y, si sigue alta, que vaya pronto al médico; con dolor de cabeza, dolor en el pecho, cambios en la visión, síntomas neurológicos o falta de aire, deriva con urgencia. Con 180-199 de sistólica: no entrenar hasta la revisión del médico de cabecera. Con 160-179 de sistólica o 90-109 de diastólica, o con la TA desconocida en alguien con hipertensión conocida o sospechada: revisión del médico de cabecera antes de empezar un programa o de progresar uno existente, y solo trabajo ligero a moderado hasta que la TA esté controlada. Con 140-159 de sistólica y diastólica por debajo de 90: entrena a intensidad moderada y recomienda una revisión del médico de cabecera.
+  applies_to: |-
+    Adultos con hipertensión en un gimnasio; cita secundaria de la 9.ª edición de las ACSM GETP (2013), que no se consultó directamente; no se revisaron ediciones posteriores.
+  conflicts: |-
+    Ningún dato de ensayos define estos puntos de corte. La redacción de la fuente para 180/110 dice que hay que ver a un médico antes de empezar un programa; aplicar "no entrenar hasta la revisión del médico de cabecera" a quienes ya entrenan es una extensión conservadora, y el ACSM 2004 permitiría ejercicio moderado durante el estudio. El punto de corte del PAR-Q+ es 160/90, así que aquí una diastólica de 90-99 cae en la franja de revisión del médico de cabecera y no en la moderada. El techo durante el ejercicio de 220/105 difiere del techo de >240/>110 de la misma revisión. La declaración de posición del ACSM de 2004 sobre hipertensión no contiene ninguna regla de 200/110 en reposo, así que esa cifra procede de las GETP 9.
+- key: recovery-habits/in-session-stop-criteria
+  source_hash: 2cf01c9aa2cf252d4220e32348061bd09b6b835cafb76003b8475ded16c9eb6a
+  status: machine
+  heading: Criterios para parar durante la sesión
+  rule_text: |-
+    Detén la sesión de inmediato ante dolor u opresión en el pecho, falta de aire inusual, mareo o casi desmayo, palpitaciones o pulso irregular, dolor de cabeza intenso, o síntomas visuales o neurológicos; no retomes ese día y consigue el visto bueno médico antes de la siguiente sesión. Si se mide la TA durante el ejercicio, para o reduce la intensidad cuando la TAS supere unos 220-240 o la TAD unos 105-110, o cuando la TAS baje al subir la carga de trabajo. Incluye una vuelta a la calma gradual (5-10 min) para los clientes con medicación para la TA y, como extensión práctica, evita las paradas bruscas y levantarse deprisa tras el trabajo en el suelo.
+  applies_to: |-
+    Adultos con hipertensión o riesgo cardiovascular; los límites numéricos proceden de las pruebas clínicas y la rehabilitación, y en los gimnasios rara vez se mide la TA durante el ejercicio.
+  conflicts: |-
+    Los techos numéricos varían y se basan en expertos; parar por síntomas es más práctico y genera más acuerdo. La duración de la vuelta a la calma y el consejo de levantarse no están especificados en las fuentes.
+- key: recovery-habits/breathing-and-load-avoid-valsalva-in-at-risk-clients
+  source_hash: f0998038cdc08537958a378eddd426b1a77fc160d39c504c63900aec8edec829
+  status: machine
+  heading: 'Respiración y carga: evita la Valsalva en clientes de riesgo'
+  rule_text: |-
+    Con clientes hipertensos, diabéticos o con riesgo cardiovascular, evita contener la respiración a propósito y el bracing con la glotis cerrada. Indica una respiración continua (espira durante el esfuerzo, inspira en la bajada). Regula el esfuerzo con RIR/RPE, no con %1RM (el coach no tiene un 1RM medido): usa cargas que el cliente pueda mover 8 o más repeticiones y termina las series a 2-3 repeticiones del fallo (unos 13-15 en la escala de Borg 6-20), nunca al fallo, porque la respuesta presora aumenta con el esfuerzo y la fatiga. Las personas mayores sin síntomas pueden progresar a 1-2 RIR pasadas unas 8 semanas (los objetivos de RIR y el paso de las 8 semanas son convenciones de entrenamiento compartidas con el archivo de fuerza, no de las fuentes de abajo). Evita los test de 1RM reales hasta que la TA esté bien controlada.
+  applies_to: |-
+    Datos mecanicistas de muestras pequeñas de hombres jóvenes normotensos; aplicarlos a mujeres, personas mayores o principiantes hipertensos es una inferencia, aunque sustenta los consejos de las guías.
+  conflicts: |-
+    Estas fuentes no relacionan los picos transitorios con eventos clínicos en hipertensos controlados. Para los deportistas de fuerza, la Valsalva es una herramienta de rendimiento y de estabilidad de la columna, así que esto es una precaución para clientes de riesgo, no una regla universal.
+- key: recovery-habits/isometric-training-as-an-add-on
+  source_hash: 6a11c49d71722f6a90d3ec9603bfac49474c4f21dab0e605c1019f06bcecaa0c
+  status: machine
+  heading: El entrenamiento isométrico como complemento
+  rule_text: |-
+    Ofrece el entrenamiento de fuerza isométrico como complemento, no como sustituto del entrenamiento aeróbico y dinámico. Protocolos típicos: prensión manual 4 x 2 min a alrededor del 30% de la CVM con 1-3 min de descanso, o sentadilla en pared 4 x 2 min a una profundidad sostenible con 2 min de descanso, unas 3 veces por semana. Preséntalo como útil para la TA en consulta, sobre todo para clientes que no pueden o no quieren hacer mucho trabajo aeróbico, y no prometas el control de la TA de 24 h.
+  applies_to: |-
+    Adultos (edad media de unos 50-60) con TA normal-alta o hipertensión; el análisis de prensión manual incluye a normotensos. Ensayos en su mayoría de 12 semanas o menos.
+  conflicts: |-
+    Los resultados de la TA en consulta coinciden en la dirección, pero la certeza es baja y la heterogeneidad alta; los hallazgos ambulatorios son contradictorios. La clasificación de "el isométrico es el mejor" se basa en menos ensayos, y más pequeños, que el entrenamiento aeróbico.
+- key: recovery-habits/isometric-training-keep-it-low-intensity-and-screened
+  source_hash: 7350e44a90637e9b87c36b98df52132ae07a4f7c0f95186e3767eaad8190c7a7
+  status: machine
+  heading: 'Entrenamiento isométrico: de baja intensidad y con cribado'
+  rule_text: |-
+    Mantén el trabajo isométrico a baja intensidad (prensión manual a alrededor del 30% de la CVM; sentadilla en pared a una profundidad que se pueda aguantar 2 min sin apretar), con respiración continua y sin aguantes máximos. En los levantamientos normales, indica un agarre relajado y no contener la respiración. No empieces el entrenamiento isométrico con una TA en reposo de 180/110 o más, hipertensión de grado 2 o superior no controlada, angina inestable o arritmia conocida hasta que haya una revisión médica.
+  applies_to: |-
+    Adultos de mediana edad con hipertensión, en su mayoría medicados o estables; pocos datos sobre TA muy alta o enfermedad cardiaca.
+  conflicts: |-
+    La reticencia histórica a usar isométricos se resuelve con la intensidad: los aguantes a un %CVM bajo dan respuestas presoras modestas, y los esfuerzos máximos, grandes. La notificación de efectos adversos a menudo es incompleta, y el panel Delphi no llegó a un acuerdo total sobre la seguridad.
+- key: recovery-habits/sequencing-with-high-or-uncontrolled-bp
+  source_hash: 6cd1ec5aef2bbe0d3e0e11f54ee0ecfb5bea22212634af362285ad9228ddbbb8
+  status: machine
+  heading: Secuencia con TA alta o no controlada
+  rule_text: |-
+    Cuando la TA está elevada pero por debajo de las franjas de no entrenar de "Umbrales de TA en reposo para aplazar o derivar", o aún se está estudiando, empieza con trabajo aeróbico ligero a moderado (ritmo del test del habla; RPE de unos 10-12 en la escala 6-20, la cifra del ACSM para la hipertensión en la DM2, sin pasar de la franja moderada del ACSM de 12-13, véase "Franjas de intensidad del ACSM" en cardio-health.md) más trabajo de fuerza ligero y con la respiración controlada, y progresa a fuerza dinámica más pesada una vez que la TA esté controlada (una inferencia práctica, no un protocolo probado). Para clientes con poco tiempo, el entrenamiento combinado aeróbico y de fuerza es la opción mejor respaldada para la TA de 24 h.
+  applies_to: |-
+    Adultos con hipertensión, incluida la DM2. La declaración de posición de 2004 es anterior a los datos más recientes sobre el entrenamiento de fuerza. La propia secuencia es una inferencia práctica, no un protocolo probado, de ahí el grado emergente.
+  conflicts: |-
+    Los metaanálisis de TA en consulta sitúan primero el entrenamiento isométrico, mientras que el metaanálisis en red ambulatorio favorece el entrenamiento aeróbico y el combinado; las comparaciones directas no fueron concluyentes. Las preferencias y la adherencia también cuentan.
+- key: recovery-habits/competitive-sport-clearance-is-not-a-gym-threshold
+  source_hash: 23eebcbf6ad916575c118601cf92cc1f6987a2d93eb9e108adda273f36302769
+  status: machine
+  heading: El apto para el deporte de competición no es un umbral de gimnasio
+  rule_text: |-
+    No uses el punto de corte de 140/90 del deporte de competición para prohibir el entrenamiento recreativo en el gimnasio. Sin síntomas, una TA en reposo de 140-159 de sistólica con diastólica por debajo de 90 implica que el entrenamiento sigue a intensidad moderada, recomendando una revisión del médico de cabecera; las lecturas más altas siguen las franjas de "Umbrales de TA en reposo para aplazar o derivar". Deja para más adelante los esfuerzos máximos, los test de 1RM y las competiciones hasta que la TA esté controlada.
+  applies_to: |-
+    La fuente trata sobre deportistas de competición; aquí se usa solo para separar el apto deportivo del ejercicio recreativo.
+  conflicts: |-
+    El consejo popular de que cualquier lectura por encima de 140/90 significa "no entrenes" no es lo que dicen las guías para el ejercicio recreativo.
+- key: recovery-habits/coach-scope-vs-medical-nutrition-therapy
+  source_hash: 2a4c400b650f4fd1eeec08d232ee7aadfbd2553c33a450f05bfac9a97bf02b15
+  status: machine
+  heading: Ámbito del coach frente a la terapia nutricional médica
+  rule_text: |-
+    Da solo pautas generales de alimentación saludable a nivel poblacional y control de peso no médico a adultos sanos. Si el usuario comunica una enfermedad diagnosticada en la que influye la dieta (por ejemplo ECV, dislipidemia, SII/EII/celiaquía, alergia alimentaria, SOP, tiroides, enfermedad hepática o renal, cáncer, osteoporosis, un trastorno de la conducta alimentaria o varios medicamentos), no redactes una dieta terapéutica: da solo principios generales, explica que el plan debe fijarlo un dietista-nutricionista o el médico que lo trata, y ofrécete a coordinar el entrenamiento con sus indicaciones.
+  applies_to: |-
+    Coaches sin titulación sanitaria que trabajan con adultos; el límite legal varía según el país y el estado de EE. UU. Las encuestas son australianas y sus recomendaciones son de los autores, no una declaración de un organismo profesional.
+  conflicts: |-
+    No se encontró ni se consultó ninguna declaración formal sobre el ámbito de actuación del ACSM, la ISSN, la Academy, la BDA o Dietitians of Canada, así que la lista de derivación (enfermedades diagnosticadas en las que influye la dieta) es una convención de entrenamiento conservadora construida sobre la separación entre lo general y lo médico. Algunas fuentes de profesionales son más estrictas. El SOP, la tiroides, el hígado, el cáncer, las alergias y la polimedicación entran en la redacción genérica; ninguna fuente los nombra.
+- key: recovery-habits/what-a-dietitian-referral-adds
+  source_hash: 1851423ff74c4799b9b3702f518877e8faeca682e2d3855e859f7c8fd12eb9e2
+  status: machine
+  heading: Lo que aporta derivar a un dietista-nutricionista
+  rule_text: |-
+    Recomienda un dietista-nutricionista por ámbito y seguridad (TNM específica de una enfermedad, interacciones con la medicación, desnutrición, trastornos de la conducta alimentaria, dislipidemia), no porque garantice una gran pérdida de peso adicional: el beneficio extra medio fue de alrededor de 1 kg. Para adultos sanos con objetivos generales, las pautas generales que da el coach son una opción por defecto razonable (una inferencia que estos ensayos no probaron).
+  applies_to: |-
+    Adultos en ensayos de control de peso y pacientes de alto riesgo de atención primaria; riesgo de sesgo de incierto a alto, pocos estudios agrupados.
+  conflicts: |-
+    Los efectos son modestos e imprecisos. Ambas revisiones proceden de un mismo grupo formado en gran parte por dietistas acreditados. El beneficio puede ser mayor en enfermedades complejas que aquí no se recogen.
+- key: recovery-habits/malnutrition-and-unintended-weight-loss-no-deficit-refer
+  source_hash: 21beacd83fce51aa519172178bfe4ec8167c730231347613a54b69556c701eeb
+  status: machine
+  heading: 'Desnutrición y pérdida de peso no buscada: sin déficit, deriva'
+  rule_text: |-
+    Antes de fijar cualquier déficit, pregunta por los cambios de peso, el apetito y la ingesta de los últimos 3-6 meses. No prescribas un déficit ni un objetivo de pérdida de peso, y sugiere una revisión del médico de cabecera o del dietista-nutricionista, si: el IMC es inferior a 18.5 (inferior a 20 con 70 años o más); el IMC es inferior a 20 (inferior a 22 por encima de 70) con alguna pérdida reciente no buscada; o la pérdida involuntaria supera el 5% en los últimos 6 meses. El peso perdido con una dieta planificada que el usuario eligió no es involuntario; la pérdida con poco apetito, enfermedad o una ingesta mucho menor sí lo es, aunque el usuario también estuviera a dieta.
+  applies_to: |-
+    Adultos en entornos clínicos y comunitarios. Los umbrales son para clínicos; los coaches usan los umbrales fenotípicos solo como motivos de derivación, nunca para diagnosticar.
+  conflicts: |-
+    GLIM usa más del 5% en 6 meses; NICE usa más del 10% en 3-6 meses o más del 5% con un IMC inferior a 20; usa el más sensible. Los puntos de corte del IMC son más bajos en poblaciones asiáticas, y una masa muscular baja puede coexistir con un IMC normal o alto. GLIM escribe el corte de edad como ">70" en una tabla y "70 o más" en otra.
+- key: recovery-habits/older-adults-muscle-before-weight-loss
+  source_hash: 576da27c259c2ba98008d02b59391c3156cdb5b7c0217d2dbd3ccbf3064f64ef
+  status: machine
+  heading: 'Mayores: músculo antes que pérdida de peso'
+  rule_text: |-
+    Con usuarios de unos 65 años o más, revisa en el alta la historia de peso, el apetito y la ingesta usando los motivos de alerta de desnutrición de arriba. Prioriza el entrenamiento de fuerza y una proteína suficiente (al menos 1.0-1.2 g/kg/día, 1.2-1.6 g/kg/día si entrena fuerza, como en el archivo de nutrición) frente a la pérdida de peso. No fijes un déficit salvo que haya obesidad con un problema de salud relacionado con el peso, y en ese caso usa solo un déficit modesto acompañado de entrenamiento de fuerza y esa ingesta de proteína. Deriva al médico de cabecera o al dietista-nutricionista si se cumplen los motivos de alerta de desnutrición, el apetito es escaso o el usuario tiene varias enfermedades crónicas o medicamentos.
+  applies_to: Personas mayores (por lo general de 65 años o más).
+  conflicts: |-
+    Para los criterios de sarcopenia, véase "Mayores: signos de sarcopenia probable"; no se consultaron los puntos de corte del MNA. Las decisiones dependen de la fragilidad, la comorbilidad y los objetivos. El extremo superior de 1.6 g/kg para quienes entrenan fuerza es el rango del archivo de nutrición, no una cifra de PROT-AGE; la enfermedad renal prevalece sobre estos objetivos de proteína (regla siguiente).
+- key: recovery-habits/older-adults-signs-of-probable-sarcopenia
+  source_hash: 427b69c26dfbe5352d9df949e2a95c04c2bf0f4201065be3ba082683aa43e4e8
+  status: machine
+  heading: 'Mayores: signos de sarcopenia probable'
+  rule_text: |-
+    Con clientes de 65 años o más, sugiere una valoración clínica de sarcopenia si la fuerza de prensión es inferior a 27 kg (hombres) o 16 kg (mujeres), cinco levantamientos de la silla llevan más de 15 s, o cuentan caídas, sensación de debilidad, marcha lenta, dificultad para levantarse de una silla o pérdida de peso no buscada. Mientras tanto, que sigan entrenando con trabajo de fuerza progresivo y una proteína suficiente. No diagnostiques la sarcopenia.
+  applies_to: |-
+    Personas mayores; definición del consenso europeo. Una prueba de prensión necesita un dinamómetro, y las mediciones del coach son señales de cribado, no pruebas clínicas.
+  conflicts: |-
+    Otros grupos (FNIH, AWGS) usan puntos de corte distintos. No se confirmó en ninguna fuente consultada que los puntos de corte del MNA-SF sirvan como motivos de derivación.
+- key: recovery-habits/chronic-kidney-disease-protein-targets-from-the-renal-team
+  source_hash: 3db166227de22c18512bdd3be2edb3cb8c90fdd74057da3b4b88441e05ceaa29
+  status: machine
+  heading: 'Enfermedad renal crónica: objetivos de proteína del equipo de nefrología'
+  rule_text: |-
+    Si un usuario comunica ERC, un FGe reducido o proteinuria, no apliques los objetivos estándar de proteína alta para ganar músculo (como 1.6-2.2 g/kg). Los objetivos de proteína, sodio, potasio y fósforo los fija su nefrólogo o un dietista-nutricionista renal; hasta que los fijen, no subas la proteína por encima de la ingesta de la población general (unos 0.8 g/kg/día) sin la aprobación del clínico. Como precaución conservadora, no recomiendes AINE, creatina ni otros suplementos sin la aprobación de nefrología. Anima a hacer 150 min/semana de actividad moderada dentro de lo que tolere.
+  applies_to: |-
+    Adultos con ERC; las recomendaciones de proteína se dirigen a G3-G5 y a las personas con riesgo de progresión.
+  conflicts: |-
+    Las recomendaciones de proteína (2C) y de actividad (1D) son de certeza baja; el tope de 1.3 g/kg es un punto de buena práctica sin graduar y es solo contexto, no una regla del coach. La precaución con la creatina es una precaución, no procede de KDIGO.
+- key: recovery-habits/glp-1-receptor-agonist-users
+  source_hash: 36d38af3571a3d1235f35da7b4b7f5f8c6f61adb96c1972969021f93c03a8a5a
+  status: machine
+  heading: Usuarios de agonistas del receptor de GLP-1
+  rule_text: |-
+    Si un usuario toma un agonista de GLP-1 o un agonista dual, coordínate con quien lo prescribe y recomienda un dietista-nutricionista, sobre todo si la ingesta es muy baja, hay síntomas gastrointestinales importantes o antecedentes de trastorno de la conducta alimentaria. Pregunta por antecedentes de TCA antes de empezar. Céntrate en el entrenamiento de fuerza al menos 3 veces por semana más al menos 150 min/semana de actividad aeróbica moderada, según tolere. Usa comidas centradas en la proteína (unos 1.2-1.6 g/kg/día salvo que un clínico diga otra cosa; nunca por debajo de unos 0.5 g/kg/día), líquidos y fibra. Inferencia del coach, no indicada en las fuentes: no añadas un déficit calórico impuesto por el coach a la reducción del apetito que produce el fármaco; el plan de peso es del clínico que lo prescribe, y esto prevalece sobre las reglas generales del déficit. El trabajo del coach es el entrenamiento de fuerza, la proteína y las señales de alarma.
+  applies_to: |-
+    Adultos con obesidad (o sobrepeso con complicaciones) en tratamiento con fármacos basados en GLP-1. El documento consultivo es una valoración de expertos, no una revisión sistemática; la revisión rápida incluyó también a adolescentes y a personas con DM2.
+  conflicts: |-
+    No está claro si los objetivos de proteína deben usar la masa real, la ajustada o la masa libre de grasa. La evidencia sobre el riesgo de TCA es limitada (emergente); los GLP-1 "podrían, en teoría, reducir o agravar" los síntomas de TCA. Varios autores declaran vínculos con la industria; en 2026 se publicó una fe de erratas.
+- key: recovery-habits/bariatric-surgery-patients
+  source_hash: 1d6253d2383dfe479fc90113afcb291b9e557c52baa833d061ebba1c2980f38a
+  status: machine
+  heading: Pacientes de cirugía bariátrica
+  rule_text: |-
+    Con cualquier usuario que se haya sometido o vaya a someterse a cirugía bariátrica, el plan de nutrición lo fija el equipo de cirugía bariátrica o su dietista-nutricionista, incluidas la dieta por fases, los objetivos de proteína y los suplementos. El coach apoya el entrenamiento y la adherencia a ese plan, y no prescribe dietas ni suplementos.
+  applies_to: Adultos antes o después de procedimientos bariátricos.
+  conflicts: |-
+    Solo se consultó el resumen, así que no se afirma ningún contenido concreto sobre las fases de la dieta ni los micronutrientes. De sus recomendaciones, 101 (41%) son de grado D (opinión de expertos) y solo 31 (13%) de grado A.
+- key: recovery-habits/screening-brief-questions-as-a-prompt-not-a-diagnosis
+  source_hash: 20c76ac55a6d21efe77e3e52f13ebe185dc4148f9cbaaf88e7348c6d291359e6
+  status: machine
+  heading: 'Cribado: preguntas breves como señal de alerta, no un diagnóstico'
+  rule_text: |-
+    No pases un cribado diagnóstico de trastornos de la conducta alimentaria ni etiquetes a los usuarios. En el alta, haz preguntas breves al estilo del SCOFF (provocarse el vómito, pérdida de control sobre la comida, una gran pérdida de peso reciente de alrededor de una stone o 6 kg en 3 meses, creerse gordo cuando los demás dicen que está delgado, la comida domina su vida; la redacción de los ítems es la del SCOFF estándar y no se toma de las fuentes consultadas). No hay una herramienta de cribado universal obligatoria; estas preguntas son una señal de alerta, nunca un diagnóstico. Cualquier respuesta positiva, o cualquier señal de alerta (regla siguiente), implica que el coach no fija déficit calórico, ni objetivos de peso, ni pesajes, y recomienda con tacto un médico de cabecera o un profesional de TCA (véase "Cómo plantear una preocupación"). Nunca digas a un usuario que tiene o no tiene un TCA a partir de las respuestas, y no tomes un cribado negativo como algo tranquilizador, sobre todo en hombres o cuando se sospechen atracones. Si el PAR-Q+ revela un TCA diagnosticado, se aplica lo mismo y manda el equipo que lo trata.
+  applies_to: |-
+    Adolescentes y adultos. La evidencia del SCOFF procede sobre todo de mujeres jóvenes; las presentaciones en hombres, las centradas en el músculo y las de atracones se detectan menos.
+  conflicts: |-
+    "Cribar a todo el mundo con el SCOFF" va más allá de la evidencia: el USPSTF la considera insuficiente y no hay evidencia directa de resultados del cribado. Los falsos negativos son más probables en hombres, en el trastorno por atracón y en muestras comunitarias como los socios de un gimnasio. El metaanálisis sobre la adicción al ejercicio tiene una heterogeneidad alta (I2=81%). Actuar ante una sola respuesta positiva es más estricto que el punto de corte habitual del SCOFF de 2 o más; es una política de producto preventiva, igual que no fijar déficits, objetivos de peso ni pesajes. Las fuentes de base se valoraron como moderadas y fuertes; se mantiene el grado más bajo para la regla fusionada.
+- key: recovery-habits/warning-signs-that-warrant-referral
+  source_hash: a0b3ea0182ac124ceef00fd45f4f3dcdaad2f0651f2b08ccf2b1aa4c95804b4a
+  status: machine
+  heading: Señales de alerta que justifican derivar
+  rule_text: |-
+    Trata cualquiera de lo siguiente como motivo para derivar al usuario a un médico de cabecera o a un servicio de TCA: vómitos, laxantes, diuréticos o pastillas adelgazantes usados para controlar el peso; ejercicio para "compensar" la comida, o angustia cuando no puede entrenar; normas rígidas sobre la comida o una rigidez creciente de "comer limpio"; atracones con pérdida de control; faltas de la regla; desmayos, mareos o palpitaciones; cambios rápidos de peso; o un miedo marcado a ganar peso. Con usuarios hombres, pregunta también por el entrenamiento excesivo y el uso de esteroides anabolizantes. Si aparece alguno, no fijes déficit calórico, objetivos de peso, objetivos de composición corporal ni pesajes (la misma regla que con un cribado positivo); pausar la programación de pérdida de peso mientras la preocupación siga abierta es una política de producto preventiva, no una recomendación de estas fuentes.
+  applies_to: |-
+    Todas las edades y sexos. La NG69 es una guía clínica del Reino Unido, la guía de la AED son pautas internacionales para clínicos y MEED son pautas de un colegio profesional del Reino Unido; los coaches las usan como señales para reconocer y derivar, no para diagnosticar.
+  conflicts: |-
+    Ninguna señal aislada es diagnóstica, y un trastorno de la conducta alimentaria potencialmente mortal puede darse sin signos físicos evidentes. MEED aconseja preguntar específicamente a los hombres por el entrenamiento excesivo y el abuso de esteroides anabolizantes o androgénicos.
+- key: recovery-habits/do-not-judge-risk-by-appearance-or-bmi
+  source_hash: 93669aa015ad7fe50c84c324149adf85514f42c115dd40726a94501be47f0d07
+  status: machine
+  heading: No juzgues el riesgo por el aspecto ni por el IMC
+  rule_text: |-
+    Nunca descartes una preocupación porque el usuario "parece sano", está en un rango de IMC normal o alto, o está muy en forma. Un usuario con obesidad que pierde peso muy deprisa mediante restricción o purgas también es un caso para derivar.
+  applies_to: Todos los adultos y adolescentes.
+  conflicts: No se señala ninguno.
+- key: recovery-habits/urgent-medical-red-flags
+  source_hash: 34c33999d17b0904923c40e2e05239d565f32b54c2ab1e3382725ba46e49bef9
+  status: machine
+  heading: Señales de alarma médicas urgentes
+  rule_text: |-
+    Dile al usuario que busque atención médica urgente ese mismo día, y detén la sesión y el plan, si comunica cualquiera de lo siguiente: desmayo o casi desmayo; dolor en el pecho o palpitaciones; confusión; comer casi nada (menos de unas 500 kcal/día) durante 2 días o más; vomitar varias veces al día; una FC en reposo inferior a 40; o perder 1 kg o más por semana estando ya delgado. Con síntomas, envíalo a urgencias o a los servicios de emergencia. No sigas con el coaching hasta que tenga el visto bueno médico.
+  applies_to: |-
+    Adultos (18 años o más); los niños y jóvenes necesitan parámetros ajustados por edad y sexo. El marco apoya el juicio clínico y no es una herramienta independiente.
+  conflicts: |-
+    Ningún parámetro aislado es un indicador de riesgo adecuado. Los umbrales son de consenso de expertos del Reino Unido; otros organismos usan puntos de corte distintos (la SAHM usa una FC diurna inferior a 50 como criterio de hospitalización). Los coaches no pueden medir la mayoría de los ítems y deben actuar según los síntomas comunicados.
+- key: recovery-habits/a-low-resting-heart-rate-is-not-automatically-fitness
+  source_hash: 55668c9aaacec11a1fffb91cb777dc0c5a9b8ef5a06b1a6b53b3df08450155f8
+  status: machine
+  heading: Una frecuencia cardiaca en reposo baja no es automáticamente buena forma
+  rule_text: |-
+    Si la FC en reposo de un usuario (según un wearable) es inferior a 50 y además restringe la comida, ha perdido peso deprisa o muestra otras señales de TCA, recomienda una revisión médica en pocos días. Si es inferior a 40, o tiene síntomas (mareo, desmayos), recomienda atención ese mismo día. En ese contexto, nunca elogies una FC en reposo baja como señal de buena forma.
+  applies_to: |-
+    Adolescentes, adultos jóvenes y adultos con sospecha de restricción alimentaria. Una FC baja en una persona bien alimentada, con peso estable y entrenada en resistencia, sin otras señales, es una situación distinta.
+  conflicts: |-
+    Los umbrales difieren según el organismo y el propósito (criterio de hospitalización de la SAHM frente a la clasificación de riesgo en adultos de MEED); decide el contexto.
+- key: recovery-habits/adolescents-no-deficits
+  source_hash: e2e93104606355c7b21f68c2bd2d8ecc064fb91d45d1b6718558a5e55d00e8b8
+  status: machine
+  heading: 'Adolescentes: sin déficits'
+  rule_text: |-
+    Política de producto basada en las pautas citadas (no una recomendación directa de estas fuentes): los menores de 18 años quedan fuera del ámbito de esta plantilla; derívalos a un profesional pediátrico (pediatra, médico de cabecera o dietista-nutricionista pediátrico). El coach no les fija déficits calóricos, objetivos de pérdida de peso, objetivos de composición corporal, pesajes ni registro de calorías, da solo pautas generales de alimentación saludable y de entrenamiento, e implica a un padre, madre o tutor cuando proceda.
+  applies_to: |-
+    Adolescentes (fuera de la población adulta principal). El control de peso supervisado de adolescentes con obesidad corresponde a los clínicos pediátricos.
+  conflicts: |-
+    La regla de no hacer déficit en menores es una decisión conservadora del producto, no una recomendación de las guías; los servicios de obesidad pediátrica sí usan el control de peso supervisado.
+- key: recovery-habits/missed-periods-and-low-energy-availability
+  source_hash: 0d88f67c4f1b27aaf424c72d2968dfaf98750be7a9621133f91cd3e31d65b14c
+  status: machine
+  heading: Faltas de la regla y baja disponibilidad energética
+  rule_text: |-
+    Si una usuaria que menstrúa comunica cualquier falta de la regla o regla irregular nueva durante una dieta o un entrenamiento intenso (fuera de un embarazo o de los efectos de la anticoncepción hormonal), o un hombre comunica una libido baja con entrenamiento intenso y dieta, pregunta por la ingesta, recomienda ir al médico de cabecera y deja de aumentar el déficit. Si la regla lleva ausente 3 meses o más, o hay menos de 6 al año, detén el déficit, sube la ingesta hacia el mantenimiento y deriva al médico de cabecera (y a un dietista-nutricionista deportivo). No trates la amenorrea como un efecto secundario normal de estar definida.
+  applies_to: |-
+    Mujeres y hombres activos a nivel recreativo; la evidencia sobre REDs procede sobre todo de deportistas.
+  conflicts: |-
+    REDs como síndrome está en debate (por ejemplo, una crítica de 2024 en Sports Med, no consultada). Las herramientas del COI se crearon para deportistas. La respuesta en dos niveles (actuar ante cualquier cambio nuevo, detener el déficit a los 3 meses o con menos de 6 reglas al año) es una política de producto construida sobre estos puntos de corte de estratificación del riesgo, no un umbral diagnóstico.
+- key: recovery-habits/reds-big-deficit-plus-high-training-volume
+  source_hash: db59ca5af707b399fd28a504c4e04948a94df184e64ca5e7df5b56bbe62dd2d5
+  status: machine
+  heading: 'REDs: gran déficit más alto volumen de entrenamiento'
+  rule_text: |-
+    Cuando un usuario combina un déficit calórico considerable con un volumen de entrenamiento alto, vigila el cansancio persistente, la caída del rendimiento, las enfermedades frecuentes, el dolor óseo o de fractura por estrés, los cambios menstruales (mujeres) o la libido baja (hombres), y los cambios de humor. Si hay varios, reduce el déficit o la carga de entrenamiento y deriva a un médico del deporte o a un dietista-nutricionista. Diagnosticar REDs requiere una valoración clínica, no un coach.
+  applies_to: |-
+    Deportistas, en gran parte de deportes de resistencia, estéticos y por categorías de peso; generalizarlo a usuarios recreativos del gimnasio en un corte agresivo es plausible pero no está cuantificado.
+  conflicts: |-
+    La prevalencia depende del método de medición; los datos en hombres son más recientes y escasos; los resultados sobre el riesgo general de lesión son dispares; faltan datos en no deportistas.
+- key: recovery-habits/compulsive-or-driven-exercise
+  source_hash: 190a4fc84ce994cb1bf2125ec771533b330fa88833c296e18df98aa587a75979
+  status: machine
+  heading: Ejercicio compulsivo o impulsado
+  rule_text: |-
+    Pregunta y vigila si hay ejercicio impulsado por la culpa o por "ganarse" o "quemar" la comida, angustia cuando se pierde una sesión, entrenar lesionado o enfermo, y un volumen creciente durante un déficit. Si lo hay, no añadas volumen ni cardio para perder grasa; háblalo abiertamente y deriva si persiste o va acompañado de restricción.
+  applies_to: |-
+    Adultos y adolescentes, mujeres y hombres; datos sobre todo transversales. Los umbrales de MEED son para personas con trastornos de la conducta alimentaria y desnutrición, no para usuarios sanos del gimnasio.
+  conflicts: |-
+    Se desconoce la causalidad. Un volumen de entrenamiento alto por sí solo no es patológico; importan el motivo y la rigidez. No apliques los umbrales de horas de MEED a quienes entrenan y están bien nutridos.
+- key: recovery-habits/calorie-and-weight-tracking-depends-on-the-user
+  source_hash: 01786769402f54a0c87484bba4412928bf4306f8d2bb422b97a77f3b5ac227c4
+  status: machine
+  heading: 'Registro de calorías y de peso: depende del usuario'
+  rule_text: |-
+    El registro de calorías o macros y los pesajes regulares son opciones aceptables para adultos de bajo riesgo, no obligaciones; ofrece alternativas sin registro (guías de raciones, objetivos de hábitos). No prescribas contar calorías, pesajes de ninguna frecuencia, medidas corporales ni fotos de progreso a nadie con un TCA actual o pasado, un cribado positivo, una señal de alerta, conductas compensatorias o angustia en torno a los números, y retíralos si aparece angustia.
+  applies_to: |-
+    Adultos; datos nulos en muestras de bajo riesgo, señal de daño en una muestra clínica (percibido por los propios pacientes, transversal).
+  conflicts: |-
+    Las afirmaciones de que el registro causa trastornos de la conducta alimentaria van más allá de la evidencia para la población general, mientras que las muestras clínicas refieren un daño percibido. Ninguna fuente consultada probó las indicaciones de comprobar el cuerpo o hacer fotos; evitarlas en usuarios de riesgo es preventivo.
+- key: recovery-habits/structured-weight-management-rarely-triggers-eds-but-monitor
+  source_hash: 3906bd5f2606c5b3cb9517568d0ef395ae9588754c6cba00f743f710fe57da32
+  status: machine
+  heading: El control estructurado del peso rara vez desencadena TCA, pero vigila
+  rule_text: |-
+    Un plan estructurado y moderado de pérdida de grasa es razonable para adultos con sobrepeso u obesidad. Haz un cribado en el alta (antecedentes de TCA, atracones, conductas compensatorias) y vuelve a comprobarlo cada pocas semanas por si aparecen normas rígidas nuevas, atracones, purgas o angustia, y pasa a derivar si aparecen. Esta evidencia no respalda los déficits agresivos.
+  applies_to: |-
+    Adultos con sobrepeso u obesidad (81% mujeres) en programas supervisados y estructurados de 4 semanas a 18 meses.
+  conflicts: |-
+    Heterogeneidad alta (I2 67-83%); cambios intragrupo; los programas estructurados difieren de las dietas agresivas por cuenta propia; algunos autores tienen vínculos comerciales.
+- key: recovery-habits/how-to-raise-a-concern
+  source_hash: 686009d54fcb44006aab4c625b02641b1510d22527c7a282d819fa9ce4bceedb
+  status: machine
+  heading: Cómo plantear una preocupación
+  rule_text: |-
+    Cuando aparezca una señal de alarma, di en privado y con calma lo que has notado (una o dos observaciones concretas), muestra que te importa, pregunta cómo se siente y evita comentarios sobre el cuerpo, el peso o lo "buena" que es la comida (el entorno privado y tranquilo y el formato de una o dos observaciones son convenciones de entrenamiento, no probadas). Después, sugiere un médico de cabecera o un servicio de TCA y facilita líneas de ayuda (por ejemplo, Beat en el Reino Unido o ANAD en EE. UU.). Si lo niega, pausa de todos modos la programación centrada en el peso y ofrécete a retomar la conversación. Si hay alguna señal de alarma urgente, prioriza la seguridad.
+  applies_to: Adultos y adolescentes; pautas para no clínicos, adaptadas al coaching.
+  conflicts: |-
+    La NG69 está escrita para profesionales sanitarios, no para coaches; el estudio del curso no tenía grupo de control y dos de sus autores trabajan para la organización que lo desarrolló. Ninguna fuente revisada por pares probó cómo debe formular un coach la conversación; puede que haya que adaptar el lenguaje a la cultura y a las preferencias.
+- key: recovery-habits/diabetes-or-pregnancy-combined-with-an-eating-disorder
+  source_hash: 84c8002e7e45353a977a2349a5366ae34dc65feb8e0dd421d181ec5735e68315
+  status: machine
+  heading: Diabetes o embarazo combinados con un trastorno alimentario
+  rule_text: |-
+    Con usuarios con diabetes o celiaquía que muestren señales de TCA (incluido saltarse o reducir la insulina para controlar el peso), y con usuarias embarazadas o en el posparto con un trastorno de la conducta alimentaria actual o pasado: nada de coaching para perder peso. Derívalos a su equipo de diabetes o de maternidad y a un dietista-nutricionista, y limita el coaching a la actividad que esos equipos hayan aprobado. Es una extrapolación prudente; NICE se dirige a clínicos, no a coaches.
+  applies_to: |-
+    Personas con diabetes o celiaquía; mujeres embarazadas y en el posparto con un trastorno de la conducta alimentaria actual o pasado. Guía del Reino Unido para profesionales sanitarios.
+  conflicts: |-
+    Recomendaciones de una sola guía que se apoyan en gran parte en el consenso del comité. Ninguna fuente consultada dio criterios de derivación nutricional en el embarazo fuera del contexto de los TCA.
+- key: recovery-habits/default-is-to-be-active
+  source_hash: 47a32d0b272b71856713067f68ce1a9d3629da9298bccbfb0f6e579d1f532876
+  status: machine
+  heading: Lo normal es mantenerse activa
+  rule_text: |-
+    Si una usuaria está embarazada, dile que consulte su plan con el profesional que lleva su embarazo. Una vez autorizada, apunta a al menos 150 min/semana de actividad moderada repartidos en 3 o más días, combinando trabajo aeróbico y de fuerza. Las mujeres que ya eran activas pueden mantener las actividades a las que están acostumbradas, incluidas las vigorosas que ya hacían. Como precaución de entrenamiento, introduce las actividades nuevas de forma gradual en lugar de añadir trabajo de alta intensidad desconocido. Cambia de posición si las posturas en decúbito supino le dan síntomas. Nunca fomentes la pérdida de peso durante el embarazo.
+  applies_to: |-
+    Mujeres embarazadas sin contraindicaciones; pocos datos sobre volúmenes muy altos, duraciones de más de 60 min o entrenamiento de élite.
+  conflicts: |-
+    La evidencia de seguridad sobre la muerte fetal es de muy baja calidad; las guías coinciden en la dirección; la historia obstétrica individual lo rige todo.
+- key: recovery-habits/contraindications-the-obstetric-provider-decides
+  source_hash: ab52986473e9f59ceaf8f0a20e39c4414bb0c5156c3754679ddb9cea9c984690
+  status: machine
+  heading: 'Contraindicaciones: decide el profesional obstétrico'
+  rule_text: |-
+    Pregunta a las usuarias embarazadas si el profesional obstétrico les ha señalado alguna complicación. Con cualquier contraindicación absoluta, no programes ejercicio más allá de la actividad de la vida diaria. Con una relativa, programa solo lo que el profesional obstétrico haya aprobado de forma explícita. Sangrado, pérdida de líquido, contracciones, dolor en el pecho, mareo o menos movimientos fetales implican parar y contactar con el equipo obstétrico. El coach nunca toma la decisión.
+  applies_to: Mujeres embarazadas; las listas se basan en el consenso.
+  conflicts: |-
+    Conflicto abierto entre las listas de las guías y Meah 2020, que sostiene que varias "contraindicaciones" quizá no justifiquen restricciones; lo resuelve el juicio obstétrico individual.
+- key: recovery-habits/warning-signs-to-stop-exercise
+  source_hash: c2f984fd5ae6fb2a417958aa332df4635ce5bf2f2208730d40ddf4529d8c8377
+  status: machine
+  heading: Señales de alerta para dejar el ejercicio
+  rule_text: |-
+    Antes de cada sesión con una clienta embarazada, pregunta por sangrado, pérdida de líquido, contracciones, dolor de cabeza, mareo, dolor en el pecho, dolor o hinchazón en la pantorrilla, falta de aire inusual en reposo y (más adelante en el embarazo) si el bebé se mueve tanto como de costumbre. Si aparece algo antes o durante el ejercicio, termina la sesión y dile que contacte con su matrona u obstetra ese mismo día. Ante un sangrado, una salida brusca de líquido, dolor en el pecho, contracciones regulares y dolorosas o una pantorrilla hinchada y dolorosa, dile que busque atención urgente. Nunca le hagas seguir entrenando con estos síntomas.
+  applies_to: |-
+    Todas las clientas embarazadas; las listas proceden del consenso de expertos. El coach criba y deriva.
+  conflicts: |-
+    Las listas difieren ligeramente entre guías, y la comparación abarca guías hasta 2012. Ante la duda, trata un síntoma como señal para parar.
+- key: recovery-habits/keep-resistance-training-in
+  source_hash: 89dd594253ae930499bf59b4cae0f281f8e171f52df2871708017294b567300e
+  status: machine
+  heading: Mantén el entrenamiento de fuerza
+  rule_text: |-
+    Mantén el entrenamiento de fuerza en el programa durante todo un embarazo sin complicaciones, junto al trabajo aeróbico, apuntando a al menos 150 min/semana de actividad moderada en total. Con principiantes, empieza con cargas ligeras a moderadas y progresa poco a poco. Ajusta la elección de ejercicios y la posición a medida que avanza el embarazo, pero no elimines el entrenamiento de fuerza por defecto.
+  applies_to: |-
+    Mujeres embarazadas sanas sin contraindicaciones, de principiantes a entrenadas a nivel recreativo; sobre todo programas supervisados de dosis baja a moderada.
+  conflicts: |-
+    El acuerdo entre guías es fuerte; los beneficios concretos sobre los resultados se basan en un solo metaanálisis (moderado por sí mismo), y no está clara la parte que se debe al entrenamiento de fuerza en sí. El cansancio y las náuseas, sobre todo en el primer trimestre, pueden obligar a hacer menos durante un tiempo.
+- key: recovery-habits/heavy-lifting-in-pregnancy-for-experienced-lifters
+  source_hash: ad485ddf45fa4dd6c0b93dc9a9bc1cff6a67464755911f539933aec43dffb705
+  status: machine
+  heading: Fuerza pesada en el embarazo para quienes tienen experiencia
+  rule_text: |-
+    Con una levantadora experimentada con un embarazo sin complicaciones y la aprobación de su profesional sanitario, la fuerza pesada puede continuar; no la prohíbas por defecto. Reduce la carga o cambia el ejercicio cuando se resientan la técnica, la comodidad o el equilibrio, o aparezcan síntomas de suelo pélvico (pérdidas, pesadez) o cualquier señal de alerta, y usa el RPE o las repeticiones en reserva en lugar de perseguir cifras de 1RM. No introduzcas por primera vez la fuerza pesada ni la halterofilia a principiantes durante el embarazo; mantenlas con cargas moderadas y una técnica controlada.
+  applies_to: |-
+    Levantadoras recreativas experimentadas (en gran parte de CrossFit y halterofilia) en encuestas online autoseleccionadas con denominadores variables. No para principiantes ni embarazos complicados.
+  conflicts: |-
+    Datos observacionales y autodeclarados; la cifra del resumen de 2023 sobre la proporción de deportistas recreativas es incoherente internamente (reutiliza el recuento de halterofilia), así que aquí no se usa ningún porcentaje. Es probable la causalidad inversa. Las precauciones tradicionales se basan en la opinión de expertos, y estos datos no pueden demostrar la seguridad. La tasa de incontinencia del 57% justifica el cribado del suelo pélvico.
+- key: recovery-habits/valsalva-and-bracing-in-pregnancy
+  source_hash: a0d49178d5fec24082a915dd12e2a34dde37478b568f4728e23567fdcac22956
+  status: machine
+  heading: Valsalva y bracing en el embarazo
+  rule_text: |-
+    Una breve contención de la respiración (bracing) durante una repetición pesada no es, según los datos actuales, una urgencia ni un motivo para que pare una levantadora embarazada experimentada. Por defecto, indica aun así espirar en el esfuerzo y evita las apneas máximas sostenidas o repetidas. Deja de levantar ante mareo, dolor de cabeza, alteraciones visuales, o pérdidas o pesadez en el suelo pélvico; los síntomas de suelo pélvico durante el bracing implican bajar la carga y derivar a un fisioterapeuta de suelo pélvico.
+  applies_to: |-
+    Embarazos sanos en el segundo trimestre y al principio del tercero; muestras agudas muy pequeñas; medidas fetales tomadas antes y después, no durante. No para embarazos con hipertensión ni para resultados de suelo pélvico.
+  conflicts: |-
+    La mayoría de las guías siguen aconsejando evitar la Valsalva por opinión de expertos; estos estudios no tienen potencia suficiente para eventos raros. Evita la Valsalva con hipertensión gestacional o riesgo de preeclampsia, que no se estudiaron.
+- key: recovery-habits/supine-exercise-after-about-20-weeks
+  source_hash: 29f8143798ec9357e1a9da03c3763495803d7a35beff5230c650992df937510c
+  status: machine
+  heading: Ejercicio en decúbito supino a partir de unas 20 semanas
+  rule_text: |-
+    A partir de la mitad del embarazo (unas 20 semanas), sustituye el trabajo largo o pesado en decúbito supino por un banco inclinado, alternativas de lado o de pie (el ángulo exacto es una decisión práctica). Permite tramos cortos en supino si se encuentra bien. Para de inmediato y cambia de posición (por ejemplo, de lado) si se nota mareada, con náuseas o mal. Evita también los periodos largos de pie sin moverse.
+  applies_to: |-
+    Mujeres embarazadas, sobre todo en la segunda mitad del embarazo; evidencia de calidad muy baja a baja.
+  conflicts: |-
+    "No te tumbes nunca boca arriba después del primer trimestre" va más allá de la evidencia; no se ha demostrado daño ni se ha probado la seguridad. El consejo del ACOG es más amplio que la regla basada en síntomas de la CSEP.
+- key: recovery-habits/gauge-intensity-by-talk-test-and-rpe-not-a-heart-rate-cap
+  source_hash: c6875d9c944ce1aab70ac73d5883b2e768b280e280f0c982947dde210e2b103b
+  status: machine
+  heading: |-
+    Mide la intensidad con el test del habla y el RPE, no con un tope de frecuencia cardiaca
+  rule_text: |-
+    Usa el test del habla y el RPE (o las repeticiones en reserva en la fuerza) como principales indicadores de intensidad, con "puede hablar pero no cantar" o RPE 13-14 como objetivo moderado. Trata la frecuencia cardiaca como algo secundario, no como un techo estricto, y no apliques un tope de 140 bpm. Si no puede decir una frase, está haciendo ejercicio vigoroso, lo que es aceptable para mujeres que ya eran activas; a las principiantes, diles que aflojen.
+  applies_to: |-
+    Todas las clientas embarazadas; una síntesis del contenido de las guías (una revisión de alcance de 22 guías y una comparación de 11 guías), no ensayos de resultados.
+  conflicts: |-
+    Algunas guías siguen dando límites de FC (Japón por debajo de 150, España por debajo de 140 en 2014, zonas ajustadas por edad en Canadá y el Reino Unido). Las guías se contradicen por encima de la intensidad moderada. Combina el RPE con los síntomas.
+- key: recovery-habits/vigorous-work-avoid-near-maximal-efforts
+  source_hash: 2da38633d9ccb370a20d56f622be5778e13d179be9a0cecee613a9b57a0a728d
+  status: machine
+  heading: 'Trabajo vigoroso: evita los esfuerzos casi máximos'
+  rule_text: |-
+    El cardio vigoroso es aceptable para las mujeres que ya hacían actividad vigorosa antes del embarazo. Evita los esfuerzos a tope y los intervalos largos cerca del máximo (por encima de alrededor del 90% de la FC máx, o RPE 18 o más); limita el acondicionamiento a "duro pero controlado" y para ante cualquier señal de alerta. Las principiantes deben ir subiendo desde una intensidad moderada.
+  applies_to: |-
+    Embarazos sanos, sobre todo datos observacionales; la señal del 90% procede de una sola sesión en 6 deportistas de élite, un caso extremo.
+  conflicts: |-
+    La seguridad del ejercicio vigoroso (evidencia moderada) y la precaución del 90% (emergente) se basan en evidencias distintas. Las guías discrepan sobre los límites superiores, y la CSEP aconseja consultar a un profesional sanitario antes de empezar una actividad vigorosa.
+- key: recovery-habits/heat-in-pregnancy
+  source_hash: fd3eb6622e9b39d4f3eb8f81a73d931677a56aa47bbf1bc148383f757c253195
+  status: machine
+  heading: Calor en el embarazo
+  rule_text: |-
+    Una sesión normal en un gimnasio con aire acondicionado está bien. Anima a beber agua antes, durante y después, y a llevar ropa ligera. Evita el yoga o el pilates en caliente, y las sesiones largas y duras al aire libre con tiempo caluroso y húmedo. Con calor, baja la intensidad y la duración, añade pausas de descanso y para si se nota acalorada en exceso, mareada o mal.
+  applies_to: |-
+    Mujeres embarazadas sanas; las condiciones muy calurosas y húmedas, las duraciones largas y los esfuerzos máximos no están bien estudiados.
+  conflicts: |-
+    Los datos sugieren que el miedo a la hipertermia es exagerado en las sesiones habituales, pero las guías siguen siendo prudentes porque la exposición al calor ambiental se asocia a resultados adversos en el parto. La tolerancia al calor varía.
+- key: recovery-habits/when-and-how-much-to-resume
+  source_hash: 44e85f6e14d32adbc45c2954fc1e92a42441dbebb0fe59b0a43270557a5dec44
+  status: machine
+  heading: Cuándo y cuánto retomar
+  rule_text: |-
+    Empieza con caminar y entrenamiento de la musculatura del suelo pélvico en las primeras semanas. Pasa a actividad estructurada de moderada a vigorosa, incluido el entrenamiento de fuerza, cuando las heridas hayan cicatrizado, los loquios no aumenten con la actividad y no tenga síntomas. Apunta a al menos 120-150 min a la semana al final del primer año. Progresa la carga y el impacto según los síntomas, no según el calendario. La lactancia no es un motivo para no entrenar.
+  applies_to: |-
+    Mujeres en el primer año de posparto sin contraindicaciones, tras parto vaginal y por cesárea (la cesárea necesita la cicatrización de la herida y una progresión condicionada a los síntomas).
+  conflicts: |-
+    Los objetivos difieren (120 frente a 150 min). La "revisión de las 6 semanas" rutinaria no es un filtro basado en la evidencia para el ejercicio. El sueño, la salud mental, la cicatrización de la cesárea y el estado del suelo pélvico varían.
+- key: recovery-habits/postpartum-red-flags
+  source_hash: 373ab15210cd834d2045264c4ba98cb7428c6569ffba6332713074b8cd7ca4db
+  status: machine
+  heading: Señales de alarma en el posparto
+  rule_text: |-
+    Haz un cribado de alta en el posparto (basado en el Get Active Questionnaire for Postpartum). Cualquier señal de alarma de la lista implica pausar el entrenamiento de moderado a vigoroso y obtener el visto bueno de un profesional de atención primaria. Dolor o hinchazón en la pantorrilla, dolor en el pecho, falta de aire o desmayo implican atención médica urgente. Haz un cribado de los síntomas de suelo pélvico, el estado de ánimo y el sueño, y deriva según corresponda.
+  applies_to: |-
+    Mujeres en los 12 meses siguientes al parto; consenso de expertos adoptado en una guía nacional.
+  conflicts: |-
+    Son contraindicaciones relativas; la mayoría de las mujeres pueden seguir con modificaciones una vez autorizadas.
+- key: recovery-habits/return-to-running-and-impact
+  source_hash: 77b62485acce0eea10b90a2a38db179d1401b8bf9b00a31c637be4b92b24b010
+  status: machine
+  heading: Vuelta a la carrera y al impacto
+  rule_text: |-
+    Mantén a las clientas en el posparto con entrenamiento de bajo impacto (caminar, bicicleta, trabajo de fuerza, entrenamiento del suelo pélvico) durante aproximadamente las 12 primeras semanas. Empieza a correr, saltar o hacer pliometría solo después de que supere las pruebas de carga e impacto sin síntomas. Usa progresiones de caminar y correr, y retrocede si aparecen pérdidas, pesadez, sensación de arrastre o dolor. Trata los 3 meses como un mínimo, no como una garantía.
+  applies_to: |-
+    Mujeres en el posparto que vuelven a correr o al entrenamiento de alto impacto; umbrales de expertos; los datos de élite (11 estudios, 372 deportistas) pueden no ser generalizables.
+  conflicts: |-
+    La guía canadiense anima a hacer AFMV en las 12 primeras semanas, mientras que Goom retrasa la carrera hasta los 3 meses; son compatibles (actividad general pronto, impacto más tarde y condicionado a los síntomas). La lactancia, el tipo de parto, el suelo pélvico y la experiencia previa corriendo cambian los plazos.
+- key: recovery-habits/pelvic-floor-screening-and-referral
+  source_hash: 0eda0427f0aabdaff8b0818677a3ad9db4e3e2a75844ddbf41fb82ec933158cb
+  status: machine
+  heading: Cribado y derivación del suelo pélvico
+  rule_text: |-
+    Pregunta a todas las clientas embarazadas y en el posparto, de forma directa y rutinaria, por pérdidas de orina (también al levantar peso, saltar o toser), urgencia, pesadez o bulto vaginal, dolor pélvico o lumbar y dolor en las relaciones sexuales. Cualquier "sí" implica derivar a un fisioterapeuta de suelo pélvico; mientras tanto, reduce la carga, el impacto o la exigencia de bracing que provoca el síntoma. Anima a entrenar el suelo pélvico a diario, idealmente con la enseñanza de un fisioterapeuta. No trates las pérdidas durante el ejercicio como algo normal ni como algo que hay que aguantar.
+  applies_to: |-
+    Mujeres embarazadas y en el posparto, también años después del parto; los umbrales de derivación son de consenso de expertos del Reino Unido e Irlanda.
+  conflicts: |-
+    No hay ensayos sobre el propio cribado; el acceso a la fisioterapia de suelo pélvico varía. Los síntomas pueden depender de la carga, así que cambiar la carga o usar un pesario o una prenda de sujeción bajo la supervisión de un fisioterapeuta puede permitirle seguir.
+- key: recovery-habits/pelvic-floor-training-prevents-more-than-it-treats
+  source_hash: 012b4ef44ee21a07d57d4d181be8d422c475cfca00b5f2d021ef94c4c9a2d77b
+  status: machine
+  heading: El entrenamiento del suelo pélvico previene más de lo que trata
+  rule_text: |-
+    Anima a todas las clientas embarazadas a empezar pronto un entrenamiento estructurado del suelo pélvico, idealmente con la enseñanza de un fisioterapeuta, como prevención. A una clienta que ya tiene pérdidas no le presentes los ejercicios de Kegel genéricos como la solución; derívala a un fisioterapeuta de suelo pélvico para una valoración y un tratamiento individuales.
+  applies_to: |-
+    Mujeres embarazadas y en el posparto; la prevención es más clara en mujeres continentes que empiezan pronto.
+  conflicts: |-
+    Las guías recomiendan entrenar a diario a todas, mientras que la evidencia Cochrane sobre el tratamiento de la incontinencia perinatal ya existente es incierta. Los efectos dependen de la supervisión y la adherencia.
+- key: recovery-habits/diastasis-recti-common-usually-not-dangerous
+  source_hash: c0b6d1266d6833f2f3e84744c4bb05f51459fa84f79ac52e64dd1e71d1ce21b5
+  status: machine
+  heading: 'Diástasis de rectos: frecuente y, por lo general, no peligrosa'
+  rule_text: |-
+    Trata la diástasis de rectos como algo frecuente y, por lo general, no peligroso. No digas a las clientas que eviten para siempre los crunches o todo el trabajo abdominal. Comprueba si hay abombamiento o hundimiento en la línea media durante los ejercicios de core y de fuerza; si lo hay, retrocede en la carga o el ejercicio hasta que pueda controlarlo y progresa poco a poco. Deriva a un fisioterapeuta de suelo pélvico si la separación es amplia o limita la función, hay dolor o un bulto tipo hernia, o no hay mejoría hacia los 6-12 meses. Juzga el progreso por la función y los síntomas, no por mediciones en anchos de dedo.
+  applies_to: |-
+    Mujeres en el posparto; primerizas noruegas diagnosticadas por palpación; ensayos pequeños y heterogéneos; los criterios funcionales son opinión de expertos.
+  conflicts: |-
+    Los metaanálisis discrepan sobre si el ejercicio cierra la separación. Las afirmaciones de que ciertos ejercicios la "cierran", o de que los crunches la empeoran, van más allá de la evidencia.
+- key: recovery-habits/diastasis-is-not-a-marker-of-pelvic-floor-dysfunction
+  source_hash: d1a21cb935a9688507c408f27a9280fbcb493f2877945ee8856011308a1609ca
+  status: machine
+  heading: La diástasis no es un marcador de disfunción del suelo pélvico
+  rule_text: |-
+    No deduzcas una disfunción del suelo pélvico por la presencia de diástasis, ni la descartes porque no haya diástasis. Haz un cribado por separado de los síntomas de suelo pélvico (pérdidas, pesadez o bulto, urgencia, dolor) en todas las clientas en el posparto.
+  applies_to: Primerizas noruegas de una sola cohorte, diagnosticadas por palpación.
+  conflicts: |-
+    Goom 2019 aconseja tratar la diástasis como un posible factor de riesgo para el suelo pélvico hasta que la investigación demuestre lo contrario, lo que contrasta con los datos de la cohorte.

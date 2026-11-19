@@ -8,6 +8,7 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from activities.models import Activity
+from activities.selectors import compute_load_band
 from users.services import email_verify, user_create
 from users.tokens import generate_email_verification_token
 
@@ -46,8 +47,10 @@ def test_sin_actividades(auth_client):
     resp = auth_client.get("/api/v1/activities/metrics")
     assert resp.status_code == 200
     assert resp.data == {
-        "week_au": 0, "daily7": [0] * 7, "acwr": None, "provisional": True,
+        "week_au": 0, "daily7": [0] * 7, "acwr": None, "week_vs_avg_pct": None,
+        "ratio_days_left": 28, "gaps": False,
         "monotonia": None, "tension": None, "sin_variacion": False, "history_days": 0,
+        "band": None,
     }
 
 
@@ -59,22 +62,62 @@ def test_semana_sin_acwr_por_poco_historial(auth_client, user):
     assert resp.data["week_au"] == 660
     assert resp.data["daily7"][-1] == 480
     assert resp.data["history_days"] == 3
-    assert resp.data["acwr"] is None  # umbral: 10 días de historial
+    assert resp.data["acwr"] is None  # umbral: 28 días de historial
+    assert resp.data["ratio_days_left"] == 25
     assert resp.data["monotonia"] is None  # umbral: 7 días
 
 
 @pytest.mark.django_db
-def test_acwr_con_historial_suficiente(auth_client, user):
-    # 12 días de historial: 1 sesión hace 11 días + carga esta semana
-    add(user, days_ago=11, minutes=60, rpe=5)  # 300 AU (fuera de la semana aguda)
+def test_sin_ratio_antes_de_28_dias(auth_client, user):
+    """E.5 (combat-sports "Show the load ratio only after 28 days of history"): con menos de
+    28 días se ven las cargas, pero no el ratio, y se dice cuántos días faltan. Ya no hay
+    comparación "provisional" a partir de 10 días."""
+    add(user, days_ago=11, minutes=60, rpe=5)  # 300 AU
     add(user, days_ago=1, minutes=60, rpe=7)  # 420 AU
-    resp = auth_client.get("/api/v1/activities/metrics")
-    d = resp.data
+    d = auth_client.get("/api/v1/activities/metrics").data
     assert d["history_days"] == 12
     assert d["week_au"] == 420
-    # crónica = (300+420)/12 = 60 AU/día; aguda = 420/7 = 60 -> ACWR 1.0
-    assert d["acwr"] == 1.0
-    assert d["provisional"] is True  # < 28 días
+    assert d["acwr"] is None and d["week_vs_avg_pct"] is None
+    assert d["ratio_days_left"] == 16
+    assert "provisional" not in d
+
+
+@pytest.mark.django_db
+def test_ratio_con_28_dias_y_comparacion_con_la_media(auth_client, user):
+    """Con 28 días: ratio (media diaria de 7 d / media diaria de 28 d) y el % frente a la
+    media de 4 semanas, que es lo que se muestra ("this week's load is X% above...")."""
+    for days_ago in (27, 20, 13):
+        add(user, days_ago=days_ago, minutes=60, rpe=5)  # 300 AU por semana anterior
+    add(user, days_ago=1, minutes=60, rpe=10)  # 600 AU esta semana
+    d = auth_client.get("/api/v1/activities/metrics").data
+    assert d["history_days"] == 28 and d["ratio_days_left"] == 0
+    # media semanal de 4 semanas = 1500/4 = 375; 600/375 = 1.6 -> +60 %
+    assert d["acwr"] == 1.6
+    assert d["week_vs_avg_pct"] == 60
+    assert d["gaps"] is False
+
+
+@pytest.mark.django_db
+def test_semana_por_debajo_de_la_media(auth_client, user):
+    for days_ago in (27, 20, 13):
+        add(user, days_ago=days_ago, minutes=60, rpe=8)  # 480 AU
+    add(user, days_ago=1, minutes=30, rpe=8)  # 240 AU
+    d = auth_client.get("/api/v1/activities/metrics").data
+    # media semanal = (3×480 + 240)/4 = 420; 240/420 = 0.571 -> −43 %
+    assert d["acwr"] == pytest.approx(0.571, abs=0.001)
+    assert d["week_vs_avg_pct"] == -43
+
+
+@pytest.mark.django_db
+def test_huecos_en_el_historial_dan_aviso(auth_client, user):
+    """Una semana sin sesiones (parón, lesión) deja el número con aviso: puede engañar
+    (convención de FightLab apoyada en la misma regla)."""
+    add(user, days_ago=27, minutes=60, rpe=5)
+    add(user, days_ago=13, minutes=60, rpe=5)  # la semana de 21-27 → 14-20 queda vacía
+    add(user, days_ago=1, minutes=60, rpe=5)
+    d = auth_client.get("/api/v1/activities/metrics").data
+    assert d["acwr"] is not None
+    assert d["gaps"] is True
 
 
 @pytest.mark.django_db
@@ -186,3 +229,72 @@ def test_sesiones_con_carga_cero_no_cuentan(auth_client, user):
     resp = auth_client.get("/api/v1/activities/metrics")
     assert resp.data["history_days"] == 2  # la sesión de carga 0 no abre historial
     assert resp.data["week_au"] == 180
+
+
+def _daily28(loads_by_days_ago: dict[int, int]) -> list[int]:
+    """daily28[27] = hoy, igual que dailyAU/loadMetrics del frontend."""
+    arr = [0] * 28
+    for days_ago, load in loads_by_days_ago.items():
+        arr[27 - days_ago] = load
+    return arr
+
+
+class TestComputeLoadBandParidad:
+    """Port 1:1 de describe('loadMetrics().band') en frontend/lib/load.test.ts:
+    mismos escenarios, mismos daily28 (día 27 = hoy), para paridad EXACTA con
+    computeLoadBand."""
+
+    def test_historial_menor_14_dias_banda_null(self):
+        daily28 = _daily28({i: 100 for i in range(12)})
+        week_au = sum(daily28[-7:])
+        assert compute_load_band(daily28, week_au, 12) is None
+
+    def test_28_dias_estables_sostenible_no_provisional(self):
+        daily28 = _daily28({i: 100 for i in range(28)})
+        week_au = sum(daily28[-7:])
+        band = compute_load_band(daily28, week_au, 28)
+        assert band["status"] == "sostenible"
+        assert band["provisional"] is False
+
+    def test_suelo_de_anchura_sigma_cero(self):
+        """mu=700 (7×100), sigma=0 => sigmaEff=70 => low=630, high=770, overreach=840."""
+        daily28 = _daily28({i: 100 for i in range(28)})
+        week_au = sum(daily28[-7:])
+        band = compute_load_band(daily28, week_au, 28)
+        assert band["low"] == 630
+        assert band["high"] == 770
+        assert band["overreach"] == 840
+
+    def test_pico_fuerte_sobre_baseline_estable_alta(self):
+        daily28 = _daily28({i: (300 if i <= 6 else 100) for i in range(28)})
+        week_au = sum(daily28[-7:])
+        assert compute_load_band(daily28, week_au, 28)["status"] == "alta"
+
+    def test_semana_muy_suave_descarga(self):
+        daily28 = _daily28({i: (20 if i <= 6 else 100) for i in range(28)})
+        week_au = sum(daily28[-7:])
+        assert compute_load_band(daily28, week_au, 28)["status"] == "descarga"
+
+    def test_semana_por_encima_sin_pico_elevada(self):
+        daily28 = _daily28({i: (115 if i <= 6 else 100) for i in range(28)})
+        week_au = sum(daily28[-7:])
+        assert compute_load_band(daily28, week_au, 28)["status"] == "elevada"
+
+    def test_20_dias_historial_provisional(self):
+        daily28 = _daily28({i: 100 for i in range(20)})
+        week_au = sum(daily28[-7:])
+        assert compute_load_band(daily28, week_au, 20)["provisional"] is True
+
+
+@pytest.mark.django_db
+def test_metrics_endpoint_incluye_band(auth_client, user):
+    """Extremo a extremo: /activities/metrics expone band con la misma forma
+    que el motor local (28 días estables -> sostenible, no provisional)."""
+    for i in range(28):
+        add(user, days_ago=i, minutes=10, rpe=10)  # 100 AU/día
+    resp = auth_client.get("/api/v1/activities/metrics")
+    band = resp.data["band"]
+    assert band == {
+        "week_au": 700, "low": 630, "high": 770, "overreach": 840,
+        "status": "sostenible", "provisional": False,
+    }

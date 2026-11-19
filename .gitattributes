@@ -1,0 +1,4 @@
+# Los fixtures del motor vendorizado se comparan byte a byte (saltos de línea dentro de campos CSV
+# entre comillas): siempre LF, también en Windows con core.autocrlf=true. Sin esto,
+# `test_hevy_basic` del coach falla en local (U16 en docs/coach-upstream-sugerencias.md).
+backend/vendor/ai-personal-coach/tests/fixtures/** text eol=lf

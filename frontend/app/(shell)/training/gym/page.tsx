@@ -1,64 +1,62 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { TrainingIcon, CoachIcon, ChevronRight } from "@/components/icons";
-import { GYM_LIVE_KEY, loadGymSessions, type GymSession, type LiveGym } from "@/lib/gym";
+import { useSearchParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { intlLocale } from "@/lib/locale";
+import { TrainingIcon, ChevronRight } from "@/components/icons";
+import {
+  GYM_LIVE_KEY,
+  FOCUS_KEYS,
+  gymSessionFromPending,
+  gymSessionFromServer,
+  loadGymSessions,
+  sessionCounts,
+  type GymSession,
+  type LiveGym,
+} from "@/lib/gym";
+import { useUserState } from "@/lib/user-state";
+import { useActivityHistory } from "@/lib/activity-history";
+import { TrainingCalendar } from "@/components/gym/TrainingCalendar";
+import { RejectedNotice } from "@/components/gym/RejectedNotice";
 
-const DAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 const FOCI = ["Descanso", "Full body", "Empuje", "Tirón", "Pierna", "Torso", "Pecho", "Espalda", "Hombro", "Brazo", "Cardio"];
 
-const EXERCISES: Record<string, string[]> = {
-  "Full body": ["Sentadilla", "Press banca", "Remo", "Press militar"],
-  Empuje: ["Press banca", "Press militar", "Fondos", "Extensión tríceps"],
-  Tirón: ["Dominadas", "Remo con barra", "Curl bíceps", "Face pull"],
-  Pierna: ["Sentadilla", "Peso muerto rumano", "Prensa", "Gemelos"],
-  Torso: ["Press banca", "Remo", "Press militar", "Dominadas"],
-  Pecho: ["Press banca", "Press inclinado", "Aperturas", "Fondos"],
-  Espalda: ["Dominadas", "Remo", "Jalón al pecho", "Peso muerto"],
-  Hombro: ["Press militar", "Elevaciones laterales", "Pájaros", "Face pull"],
-  Brazo: ["Curl bíceps", "Extensión tríceps", "Curl martillo", "Fondos"],
-};
-const SPLITS: Record<string, string[]> = {
-  "Full body": ["Full body"],
-  "Torso / Pierna": ["Torso", "Pierna"],
-  "PPL (Empuje/Tirón/Pierna)": ["Empuje", "Tirón", "Pierna"],
-  "Dividida (Weider)": ["Pecho", "Espalda", "Pierna", "Hombro", "Brazo"],
-};
-const REPS: Record<string, string> = {
-  Fuerza: "4-6 reps · descansos largos",
-  Hipertrofia: "8-12 reps",
-  "Pérdida de grasa": "12-15 reps + cardio",
-  Mantenimiento: "8-10 reps",
-};
+const DEFAULT_WEEK: string[] = Array(7).fill("Descanso");
 
-const WEEK_KEY = "flp_gym_week";
-type RoutineDay = { day: number; focus: string; exercises: string[] };
+// Historial del servidor (F17, F1 de raíz): la caché del navegador solo si el servidor no responde.
+const GYM_SOURCE = { fromServer: gymSessionFromServer, fromPending: gymSessionFromPending, local: loadGymSessions };
+const PAGE = 20;
 
-function fmtDate(ts: number) {
-  const d = new Date(ts);
-  return d.toDateString() === new Date().toDateString()
-    ? "Hoy"
-    : d.toLocaleDateString("es", { day: "2-digit", month: "short" });
-}
-
-export default function GymPage() {
-  const [view, setView] = useState<"cal" | "ia">("cal");
-  const [week, setWeek] = useState<string[]>(() => Array(7).fill("Descanso"));
+function GymInner() {
+  const t = useTranslations("training.gym");
+  const locale = intlLocale(useLocale());
+  const params = useSearchParams();
+  const saved = params?.get("saved") ?? null;
+  const focusLabel = (f: string) => (FOCUS_KEYS[f] ? t(`foci.${FOCUS_KEYS[f]}`) : f);
+  function fmtDate(ts: number) {
+    const d = new Date(ts);
+    return d.toDateString() === new Date().toDateString()
+      ? t("today")
+      : d.toLocaleDateString(locale, { day: "2-digit", month: "short" });
+  }
+  const { value: savedWeek, setValue: setWeek } = useUserState<string[]>("gym_week", DEFAULT_WEEK);
+  const week = Array.isArray(savedWeek) && savedWeek.length === 7 ? savedWeek : DEFAULT_WEEK;
   const [live, setLive] = useState<LiveGym | null>(null);
-  const [recent, setRecent] = useState<GymSession[]>([]);
+  const history = useActivityHistory<GymSession>("GYM", GYM_SOURCE, PAGE);
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(WEEK_KEY);
-      if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr) && arr.length === 7) setWeek(arr); }
       const liveRaw = localStorage.getItem(GYM_LIVE_KEY);
       if (liveRaw) {
         const l: LiveGym = JSON.parse(liveRaw);
+        // Lectura síncrona de localStorage tras montar. Pre-existente.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (l && Date.now() - l.savedAt < 12 * 3600_000) setLive(l);
         else localStorage.removeItem(GYM_LIVE_KEY);
       }
-      setRecent(loadGymSessions().slice(0, 3));
     } catch { /* noop */ }
   }, []);
 
@@ -69,182 +67,120 @@ export default function GymPage() {
       ? `/training/gym/session?focus=${encodeURIComponent(todayFocus)}`
       : "/training/gym/session";
   function setDay(i: number, v: string) {
-    setWeek((w) => { const n = [...w]; n[i] = v; localStorage.setItem(WEEK_KEY, JSON.stringify(n)); return n; });
-  }
-
-  // wizard IA
-  const [nivel, setNivel] = useState("Intermedio");
-  const [dias, setDias] = useState(4);
-  const [tipo, setTipo] = useState("PPL (Empuje/Tirón/Pierna)");
-  const [objetivo, setObjetivo] = useState("Hipertrofia");
-  const [generating, setGenerating] = useState(false);
-  const [routine, setRoutine] = useState<RoutineDay[] | null>(null);
-
-  function generate() {
-    setGenerating(true);
-    setRoutine(null);
-    const seq = SPLITS[tipo];
-    setTimeout(() => {
-      const r: RoutineDay[] = Array.from({ length: dias }, (_, i) => {
-        const focus = seq[i % seq.length];
-        return { day: i + 1, focus, exercises: EXERCISES[focus] ?? [] };
-      });
-      setRoutine(r);
-      setGenerating(false);
-    }, 1000);
-  }
-  function applyToCalendar() {
-    if (!routine) return;
-    const n = Array(7).fill("Descanso");
-    routine.forEach((d, i) => { if (i < 7) n[i] = d.focus; });
+    const n = [...week];
+    n[i] = v;
     setWeek(n);
-    localStorage.setItem(WEEK_KEY, JSON.stringify(n));
-    setView("cal");
   }
 
   const selectCls = "field px-3 py-2.5 text-sm";
+  const sessionTitle = (s: GymSession) => (s.focus ? focusLabel(s.focus) : s.title && s.title !== "Gimnasio" ? s.title : t("workout"));
 
   return (
     <div className="pt-4">
-      <Link href="/training" className="t-label text-muted">← Entreno</Link>
+      <Link href="/training" className="t-label text-muted">{t("back")}</Link>
       <div className="mt-2 flex items-center gap-2">
         <span className="text-neon"><TrainingIcon className="h-6 w-6" /></span>
-        <h1 className="t-display text-2xl text-ink">Gimnasio</h1>
+        <h1 className="t-display text-2xl text-ink">{t("title")}</h1>
       </div>
+
+      {saved && (
+        <p role="status" className="t-body mt-3 rounded-xl border border-[rgba(67,232,160,0.3)] p-2.5 text-xs text-[#43e8a0]">
+          {saved === "queued" ? t("savedQueued") : t("savedOk")}
+        </p>
+      )}
+      <RejectedNotice kind="GYM" />
 
       {/* sesión sin terminar */}
       {live && (
         <div className="glass neon-edge mt-4 flex items-center gap-3 p-4">
           <span className="text-warn"><TrainingIcon className="h-5 w-5" /></span>
           <div className="min-w-0 flex-1">
-            <p className="t-label text-ink">Entreno sin terminar</p>
+            <p className="t-label text-ink">{t("unfinished")}</p>
             <p className="t-body text-xs text-muted">
-              {live.focus ? `${live.focus} · ` : ""}{live.exercises.length} ejercicios
+              {live.focus ? `${focusLabel(live.focus)} · ` : live.routine ? `${live.routine.title} · ` : ""}{t("exerciseCount", { n: live.exercises.length })}
             </p>
           </div>
-          <Link href="/training/gym/session" className="btn btn-tonal btn-sm shrink-0">Reanudar</Link>
-          <button onClick={() => { localStorage.removeItem(GYM_LIVE_KEY); setLive(null); }} aria-label="Descartar" className="t-label shrink-0 text-muted">✕</button>
+          <Link href="/training/gym/session" className="btn btn-tonal btn-sm shrink-0">{t("resume")}</Link>
+          <button onClick={() => { localStorage.removeItem(GYM_LIVE_KEY); setLive(null); }} aria-label={t("discard")} className="t-label shrink-0 text-muted">✕</button>
         </div>
       )}
 
       {/* empezar entreno */}
       {!live && (
         <Link href={startHref} className="btn btn-primary mt-4 w-full">
-          ▶ Empezar entreno{todayFocus && todayFocus !== "Descanso" ? ` · ${todayFocus}` : ""}
+          {todayFocus && todayFocus !== "Descanso" ? t("startWithFocus", { focus: focusLabel(todayFocus) }) : t("start")}
         </Link>
       )}
-
-      {/* toggle */}
-      <div className="glass mt-4 grid grid-cols-2 gap-1 rounded-2xl p-1">
-        {([["cal", "Calendario"], ["ia", "Crear rutina"]] as const).map(([k, label]) => (
-          <button key={k} onClick={() => setView(k)} className="rounded-xl py-2.5 text-sm font-medium transition-colors"
-            style={view === k ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)", color: "#03101c" } : { background: "transparent", color: "var(--color-muted)" }}>
-            {label}
-          </button>
-        ))}
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        <Link href="/training/routines" className="btn btn-tonal btn-sm min-h-11">{t("routinesLink")}</Link>
+        <Link href="/training/gym/records" className="btn btn-tonal btn-sm min-h-11">{t("recordsLink")}</Link>
       </div>
+      <Link href="/training/gym/import" className="btn btn-tonal btn-sm mt-2 w-full">{t("importLink")}</Link>
 
-      {view === "cal" ? (
-        <div className="mt-4">
-          <p className="t-eyebrow text-muted">Tu semana</p>
-          <div className="mt-2 flex flex-col gap-2">
-            {DAYS.map((d, i) => {
-              const rest = week[i] === "Descanso";
-              return (
-                <div key={d} className="glass flex items-center gap-3 p-3">
-                  <span className={`stat w-10 text-sm ${rest ? "text-muted" : "text-neon"}`}>{d}</span>
-                  <select value={week[i]} onChange={(e) => setDay(i, e.target.value)} className={`${selectCls} flex-1`}>
-                    {FOCI.map((f) => <option key={f} value={f}>{f}</option>)}
-                  </select>
-                </div>
+      <TrainingCalendar />
+
+      {/* historial (servidor) */}
+      {history.items.length > 0 && (
+        <div className="mt-5">
+          <p className="t-eyebrow text-muted">{t("recent")}</p>
+          <div className="mt-2 flex flex-col gap-2" data-testid="gym-history">
+            {history.items.map((s) => {
+              const c = sessionCounts(s);
+              const body = (
+                <>
+                  <span className="text-neon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(69,233,255,0.07)]">
+                    <TrainingIcon className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="t-label truncate text-ink">{sessionTitle(s)} <span className="text-muted">· {fmtDate(s.ts)}</span></p>
+                    <p className="t-body text-[11px] text-muted">
+                      {t("exerciseCount", { n: c.exercises })} · {t("setCount", { n: c.sets })} · {c.volume.toLocaleString(locale)} kg
+                      {s.load ? ` · ${s.load} AU` : ""}
+                      {s.serverId === undefined && !history.offline ? ` · ${t("pendingUpload")}` : ""}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
+                </>
+              );
+              return s.serverId !== undefined ? (
+                <Link key={s.id} href={`/training/gym/history/${s.serverId}`} className="glass flex items-center gap-3 p-3.5">{body}</Link>
+              ) : (
+                <div key={s.id} className="glass flex items-center gap-3 p-3.5">{body}</div>
               );
             })}
           </div>
-          <p className="t-body mt-3 text-xs text-muted">Apunta qué toca cada día. Se guarda solo en tu dispositivo (luego, en tu cuenta).</p>
-
-          {/* últimos entrenos */}
-          {recent.length > 0 && (
-            <div className="mt-5">
-              <p className="t-eyebrow text-muted">Últimos entrenos</p>
-              <div className="mt-2 flex flex-col gap-2">
-                {recent.map((s) => (
-                  <div key={s.id} className="glass flex items-center gap-3 p-3.5">
-                    <span className="text-neon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(69,233,255,0.07)]">
-                      <TrainingIcon className="h-5 w-5" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="t-label text-ink">{s.focus ?? "Entreno"} <span className="text-muted">· {fmtDate(s.ts)}</span></p>
-                      <p className="t-body text-[11px] text-muted">
-                        {s.exercises.length} ejercicios · {s.exercises.reduce((a, x) => a + x.sets.length, 0)} series · {s.volume.toLocaleString("es")} kg
-                        {s.load ? ` · ${s.load} AU` : ""}
-                      </p>
-                    </div>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
-                  </div>
-                ))}
-              </div>
-            </div>
+          {history.hasMore && (
+            <button type="button" onClick={history.loadMore} disabled={history.loading} className="btn btn-tonal btn-sm mt-3 min-h-11 w-full">{t("more")}</button>
           )}
-        </div>
-      ) : (
-        <div className="mt-4">
-          <div className="flex items-center gap-2">
-            <p className="t-eyebrow text-muted">Crear rutina</p>
-            <span className="badge badge-neon">IA simulada</span>
-          </div>
-          <p className="t-body mt-1 text-xs text-muted">Responde unas preguntas y la IA te arma la rutina.</p>
-
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <label className="flex flex-col gap-1.5">
-              <span className="t-label text-muted">Nivel</span>
-              <select value={nivel} onChange={(e) => setNivel(e.target.value)} className={selectCls}>
-                {["Principiante", "Intermedio", "Avanzado"].map((o) => <option key={o}>{o}</option>)}
-              </select>
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="t-label text-muted">Días/semana</span>
-              <select value={dias} onChange={(e) => setDias(Number(e.target.value))} className={selectCls}>
-                {[2, 3, 4, 5, 6].map((o) => <option key={o} value={o}>{o} días</option>)}
-              </select>
-            </label>
-            <label className="col-span-2 flex flex-col gap-1.5">
-              <span className="t-label text-muted">Tipo de rutina</span>
-              <select value={tipo} onChange={(e) => setTipo(e.target.value)} className={selectCls}>
-                {Object.keys(SPLITS).map((o) => <option key={o}>{o}</option>)}
-              </select>
-            </label>
-            <label className="col-span-2 flex flex-col gap-1.5">
-              <span className="t-label text-muted">Objetivo</span>
-              <select value={objetivo} onChange={(e) => setObjetivo(e.target.value)} className={selectCls}>
-                {Object.keys(REPS).map((o) => <option key={o}>{o}</option>)}
-              </select>
-            </label>
-          </div>
-
-          <button className="btn btn-primary mt-4 w-full" onClick={generate} disabled={generating}>
-            <CoachIcon className="h-4 w-4" /> {generating ? "Generando…" : "Generar rutina con IA"}
-          </button>
-
-          {generating && (
-            <div className="glass mt-4 p-4"><span className="pulse t-body text-sm text-muted">La IA está diseñando tu rutina ({nivel}, {dias} días, {objetivo.toLowerCase()})…</span></div>
-          )}
-
-          {routine && (
-            <div className="mt-4">
-              <p className="t-eyebrow text-neon">Rutina propuesta · {REPS[objetivo]}</p>
-              <div className="mt-2 flex flex-col gap-2">
-                {routine.map((d) => (
-                  <div key={d.day} className="glass p-3.5">
-                    <p className="t-label text-ink">Día {d.day} · <span className="text-neon">{d.focus}</span></p>
-                    <p className="t-body mt-1 text-xs text-muted">{d.exercises.join(" · ")}</p>
-                  </div>
-                ))}
-              </div>
-              <button className="btn btn-tonal mt-3 w-full" onClick={applyToCalendar}>Aplicar al calendario</button>
-            </div>
-          )}
+          {history.offline && <p className="t-body mt-2 text-[11px] text-muted">{t("historyOffline")}</p>}
         </div>
       )}
+
+      <div className="mt-5">
+        <p className="t-eyebrow text-muted">{t("yourWeek")}</p>
+        <div className="mt-2 flex flex-col gap-2">
+          {DAYS.map((d, i) => {
+            const rest = week[i] === "Descanso";
+            return (
+              <div key={d} className="glass flex items-center gap-3 p-3">
+                <span className={`stat w-10 text-sm ${rest ? "text-muted" : "text-neon"}`}>{t(`days.${d}`)}</span>
+                <select value={week[i]} onChange={(e) => setDay(i, e.target.value)} className={`${selectCls} flex-1`}>
+                  {FOCI.map((f) => <option key={f} value={f}>{focusLabel(f)}</option>)}
+                </select>
+              </div>
+            );
+          })}
+        </div>
+        <p className="t-body mt-3 text-xs text-muted">{t("weekHint")}</p>
+      </div>
     </div>
+  );
+}
+
+export default function GymPage() {
+  return (
+    <Suspense fallback={null}>
+      <GymInner />
+    </Suspense>
   );
 }

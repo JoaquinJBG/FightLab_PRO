@@ -2,3 +2,8 @@
 DJANGO_SETTINGS_MODULE = "core.settings"
 python_files = ["test_*.py"]
 addopts = "-ra"
+# `vendor/ai-personal-coach` aporta el paquete `coach`; sus propios tests se
+# pasan aparte (pytest vendor/ai-personal-coach/tests -p no:django).
+pythonpath = [".", "vendor/ai-personal-coach"]
+testpaths = ["."]
+norecursedirs = ["vendor"]

@@ -2,8 +2,43 @@
 // dispositivo (deportes, MMA y gimnasio, cada una con su carga sRPE en AU)
 // y calcula las métricas de Foster: carga semanal, ACWR, monotonía y tensión.
 // Pasa al backend (ActivityLog) en la fase 3 — las fórmulas son las mismas.
+// E.5 (anexo de combate): el ratio solo con 28 días de historial (convención de FightLab) y
+// mostrado como "la semana frente a tu media de 4 semanas", sin zonas de seguridad.
+
+/** Días de historial antes de mostrar el ratio (convención de FightLab). */
+export const RATIO_MIN_DAYS = 28;
 
 export type LoadPoint = { ts: number; load: number };
+
+export type LoadBandStatus = "descarga" | "sostenible" | "elevada" | "alta";
+
+export type LoadBand = {
+  weekAU: number;    // carga de la semana en curso (marcador)
+  low: number;       // límite inferior del rango habitual (μ − σ_eff)
+  high: number;      // límite superior del rango habitual (μ + σ_eff)
+  overreach: number; // umbral de carga alta (μ + 2σ_eff)
+  status: LoadBandStatus;
+  provisional: boolean; // 14..27 días de historial: el rango aún se calibra
+};
+
+// Umbrales de historial (en días) que gobiernan cuándo se puede mostrar cada
+// métrica. Únicos en todo el frontend: la vista de Carga, el mini-resumen de
+// Entreno y el Home leen de aquí para no repetir (ni desincronizar) el
+// "necesitamos X días más".
+export const LOAD_BAND_MIN_DAYS = 14; // por debajo: sin banda (baseline insuficiente)
+export const LOAD_BAND_FULL_DAYS = 28; // por debajo: banda "provisional" (aún calibrando)
+export const ACWR_MIN_HISTORY_DAYS = RATIO_MIN_DAYS; // por debajo: ACWR null (E.5: convención de 28 días)
+
+// Banda de carga (P0.1) como dato secundario: "dónde cae tu semana frente a tu rango habitual".
+// Manda el anexo de combate, así que la banda no lleva semáforo ni consejos: un único color neutro
+// para todos los estados. Las etiquetas están en el catálogo (`load.band.status.<estado>`).
+const LOAD_BAND_COLOR = "var(--color-neon)";
+export const LOAD_BAND_META: Record<LoadBandStatus, { color: string }> = {
+  descarga: { color: LOAD_BAND_COLOR },
+  sostenible: { color: LOAD_BAND_COLOR },
+  elevada: { color: LOAD_BAND_COLOR },
+  alta: { color: LOAD_BAND_COLOR },
+};
 
 const DAY = 86_400_000;
 const startOfDay = (ts: number) => {
@@ -48,13 +83,67 @@ export function dailyAU(n: number, loads: LoadPoint[] = collectTrainingLoads()):
 export type LoadMetrics = {
   weekAU: number;
   daily7: number[];
-  acwr: number | null;
-  provisional: boolean; // historial < 28 días: el ACWR aún se está calibrando
+  acwr: number | null; // solo con 28 días de historial
+  weekVsAvgPct: number | null; // la semana frente a la media semanal de 4 semanas, en %
+  ratioDaysLeft: number; // días que faltan para el ratio (0 cuando ya hay 28)
+  gaps: boolean; // alguna de las 4 semanas sin carga: el número puede engañar
   monotonia: number | null;
   tension: number | null;
   sinVariacion: boolean; // 7 días con carga idéntica (SD=0): monotonía máxima
+  band: LoadBand | null; // carga semanal vs rango propio (P0.1); null si historial < 14 días
   historyDays: number;
 };
+
+/**
+ * Banda de carga tipo Strava: sitúa la carga de la semana en curso dentro del
+ * rango de las semanas previas del propio atleta (no umbrales fijos). Devuelve
+ * null si no hay al menos una semana de baseline antes de la semana actual.
+ */
+export function computeLoadBand(
+  daily28: number[],
+  weekAU: number,
+  historyDays: number,
+): LoadBand | null {
+  if (historyDays < LOAD_BAND_MIN_DAYS) return null;
+
+  // Ventanas móviles de 7 días que terminan ANTES de la semana en curso (índices
+  // 21..27), acotadas al historial real para no incluir días sin datos.
+  const d0 = 28 - historyDays;          // primer índice con datos reales
+  const firstEnd = Math.max(6, d0 + 6); // primer día-fin con ventana completa dentro del historial
+  const samples: number[] = [];
+  for (let e = firstEnd; e <= 20; e++) {
+    let s = 0;
+    for (let i = e - 6; i <= e; i++) s += daily28[i];
+    samples.push(s);
+  }
+  if (samples.length === 0) return null;
+
+  const mu = samples.reduce((a, b) => a + b, 0) / samples.length;
+  if (mu <= 0) return null; // baseline sin carga: nada que comparar
+
+  const variance = samples.reduce((a, v) => a + (v - mu) ** 2, 0) / samples.length;
+  const sigma = Math.sqrt(variance);
+  const sigmaEff = Math.max(sigma, 0.1 * mu); // suelo de anchura (estabilidad visual, no umbral de seguridad)
+
+  const low = mu - sigmaEff;
+  const high = mu + sigmaEff;
+  const overreach = mu + 2 * sigmaEff;
+
+  let status: LoadBandStatus;
+  if (weekAU < low) status = "descarga";
+  else if (weekAU <= high) status = "sostenible";
+  else if (weekAU <= overreach) status = "elevada";
+  else status = "alta";
+
+  return {
+    weekAU: Math.round(weekAU),
+    low: Math.max(0, Math.round(low)),
+    high: Math.round(high),
+    overreach: Math.round(overreach),
+    status,
+    provisional: historyDays < LOAD_BAND_FULL_DAYS,
+  };
+}
 
 export function loadMetrics(): LoadMetrics {
   const loads = collectTrainingLoads();
@@ -68,18 +157,16 @@ export function loadMetrics(): LoadMetrics {
     ? Math.min(28, Math.round((startOfDay(Date.now()) - startOfDay(firstTs)) / DAY) + 1)
     : 0;
 
-  // ACWR: media diaria aguda (7 d) vs crónica (historial disponible, máx 28 d).
-  // Umbral en 10 días: con exactamente 7, aguda ≡ crónica y el ratio sería un
-  // 1.00 tautológico sin información.
+  // Ratio: media diaria aguda (7 d) vs crónica (28 d, incluida la semana aguda). Solo con
+  // 28 días de historial; antes se ven las cargas y cuántos días faltan.
   let acwr: number | null = null;
-  let provisional = true;
-  if (historyDays >= 10 && weekAU > 0) {
-    const chronicWindow = daily28.slice(-historyDays);
-    const chronicAvg = chronicWindow.reduce((a, b) => a + b, 0) / historyDays;
-    if (chronicAvg > 0) {
-      acwr = weekAU / 7 / chronicAvg;
-      provisional = historyDays < 28;
-    }
+  let weekVsAvgPct: number | null = null;
+  let gaps = false;
+  if (historyDays >= RATIO_MIN_DAYS && weekAU > 0) {
+    const chronicAvg = daily28.reduce((a, b) => a + b, 0) / 28;
+    acwr = weekAU / 7 / chronicAvg;
+    weekVsAvgPct = Math.round((acwr - 1) * 100);
+    gaps = [0, 7, 14, 21].some((i) => daily28.slice(i, i + 7).every((v) => v === 0));
   }
 
   // Monotonía (media/SD de la carga diaria de 7 d) y tensión (semanal × monotonía)
@@ -93,11 +180,16 @@ export function loadMetrics(): LoadMetrics {
       monotonia = meanDaily / sd;
       tension = Math.round(weekAU * monotonia);
     } else {
-      // SD = 0 con carga: cero variación entre días = monotonía MÁXIMA (riesgo),
-      // no "sin datos"
+      // SD = 0 con carga: cero variación entre días = monotonía MÁXIMA, no "sin datos"
       sinVariacion = true;
     }
   }
 
-  return { weekAU: Math.round(weekAU), daily7, acwr, provisional, monotonia, tension, sinVariacion, historyDays };
+  const band = computeLoadBand(daily28, weekAU, historyDays);
+
+  return {
+    weekAU: Math.round(weekAU), daily7, acwr, weekVsAvgPct,
+    ratioDaysLeft: Math.max(0, RATIO_MIN_DAYS - historyDays), gaps,
+    monotonia, tension, sinVariacion, band, historyDays,
+  };
 }

@@ -1,0 +1,445 @@
+// @vitest-environment node
+//
+// Tests a nivel de ruta del proxy genérico del BFF.
+import { describe, test, expect, vi, beforeEach, afterEach } from "vitest";
+
+const cookieStore = new Map<string, string>();
+
+vi.mock("next/headers", () => ({
+  cookies: async () => ({
+    get: (name: string) => (cookieStore.has(name) ? { value: cookieStore.get(name)! } : undefined),
+    set: (name: string, value: string) => {
+      cookieStore.set(name, value);
+    },
+    delete: (name: string) => {
+      cookieStore.delete(name);
+    },
+  }),
+}));
+
+const djangoRequest = vi.fn();
+const djangoFetch = vi.fn();
+vi.mock("@/lib/api", () => ({ djangoRequest, djangoFetch }));
+
+const { POST } = await import("./route");
+const { resetRefreshFlights } = await import("@/lib/refresh-flight");
+
+function fakeJwt(payload: Record<string, unknown>): string {
+  const b64url = (obj: unknown) => Buffer.from(JSON.stringify(obj)).toString("base64url");
+  return `${b64url({ alg: "none" })}.${b64url(payload)}.sig`;
+}
+
+function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
+}
+
+function makeReq() {
+  return new Request("https://app.example.com/api/proxy/me/state/foo", {
+    method: "POST",
+    headers: { "content-type": "application/json", origin: "https://app.example.com" },
+    body: JSON.stringify({ a: 1 }),
+  });
+}
+
+function ctx(path: string[]) {
+  return { params: Promise.resolve({ path }) };
+}
+
+beforeEach(() => {
+  resetRefreshFlights();
+  cookieStore.clear();
+  djangoRequest.mockReset();
+  djangoFetch.mockReset();
+});
+
+describe("POST /api/proxy/[...path] — validación de ruta", () => {
+  test("una ruta con traversal disfrazado ('..' + TAB) se rechaza con 404, sin llegar a llamar a Django", async () => {
+    const req = new Request("https://app.example.com/api/proxy/me/x", {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: "https://app.example.com" },
+      body: "{}",
+    });
+    const res = await POST(req, ctx(["me", "..\t", "auth", "login"]));
+
+    expect(res.status).toBe(404);
+    expect(djangoRequest).not.toHaveBeenCalled();
+  });
+
+  test("un fallo de red al hablar con Django se traduce a 502, no a un 500 sin manejar", async () => {
+    cookieStore.set("fl_access", "access");
+    djangoRequest.mockRejectedValueOnce(new TypeError("fetch failed"));
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(502);
+  });
+
+  test("un timeout (AbortSignal.timeout) al hablar con Django se traduce a 504", async () => {
+    cookieStore.set("fl_access", "access");
+    djangoRequest.mockRejectedValueOnce(new DOMException("timeout", "TimeoutError"));
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(504);
+  });
+});
+
+describe("POST /api/proxy/[...path] — refresh de sesión", () => {
+  test("si el refresh falla porque el refresh token ya expiró, limpia las cookies", async () => {
+    const expiredRefresh = fakeJwt({ exp: Math.floor(Date.now() / 1000) - 60 });
+    cookieStore.set("fl_access", "access-vieja");
+    cookieStore.set("fl_refresh", expiredRefresh);
+
+    djangoRequest.mockResolvedValueOnce(jsonResponse({ detail: "token inválido" }, 401));
+    djangoFetch.mockResolvedValueOnce({ status: 401, data: { detail: "expirado" } });
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(401);
+    expect(cookieStore.has("fl_access")).toBe(false);
+    expect(cookieStore.has("fl_refresh")).toBe(false);
+  });
+
+  test("si el refresh falla por un motivo puntual (red, 500) con un refresh AÚN válido, NO borra las cookies", async () => {
+    // Este es el caso del hallazgo de revisión: un fallo de /auth/refresh que
+    // no significa que el refresh token en sí sea inválido (p. ej. una
+    // petición concurrente lo rotó, o Django tuvo un fallo transitorio) no
+    // debe desloguear al usuario.
+    const validRefresh = fakeJwt({ exp: Math.floor(Date.now() / 1000) + 3600 });
+    cookieStore.set("fl_access", "access-vieja");
+    cookieStore.set("fl_refresh", validRefresh);
+
+    djangoRequest.mockResolvedValueOnce(jsonResponse({ detail: "token inválido" }, 401));
+    djangoFetch.mockResolvedValueOnce({ status: 500, data: null });
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(503);
+    expect(cookieStore.get("fl_access")).toBe("access-vieja");
+    expect(cookieStore.get("fl_refresh")).toBe(validRefresh);
+  });
+
+  test("si el refresh funciona, reintenta la petición original con el access nuevo", async () => {
+    cookieStore.set("fl_access", "access-vieja");
+    cookieStore.set("fl_refresh", fakeJwt({ exp: Math.floor(Date.now() / 1000) + 3600 }));
+
+    djangoRequest
+      .mockResolvedValueOnce(jsonResponse({ detail: "token inválido" }, 401))
+      .mockResolvedValueOnce(jsonResponse({ ok: true }, 200));
+    djangoFetch.mockResolvedValueOnce({
+      status: 200,
+      data: { access: "access-nueva", refresh: "refresh-nueva" },
+    });
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true });
+    expect(cookieStore.get("fl_access")).toBe("access-nueva");
+    expect(cookieStore.get("fl_refresh")).toBe("refresh-nueva");
+    expect(djangoRequest).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("POST /api/proxy/[...path] — clientIpHeaders en vez de X-Forwarded-For crudo", () => {
+  beforeEach(() => {
+    cookieStore.set("fl_access", "access");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  test("una petición normal manda clientIpHeaders (con secreto), no X-Forwarded-For crudo", async () => {
+    vi.stubEnv("BFF_SHARED_SECRET", "top-secret");
+    djangoRequest.mockResolvedValueOnce(jsonResponse({ ok: true }, 200));
+
+    const req = new Request("https://app.example.com/api/proxy/me/state/foo", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: "https://app.example.com",
+        "x-real-ip": "203.0.113.9",
+        "x-forwarded-for": "6.6.6.6",
+      },
+      body: JSON.stringify({ a: 1 }),
+    });
+
+    await POST(req, ctx(["me", "state", "foo"]));
+
+    expect(djangoRequest).toHaveBeenCalledTimes(1);
+    const [, opts] = djangoRequest.mock.calls[0];
+    expect(opts.headers).toEqual({
+      "Content-Type": "application/json",
+      "X-Bff-Secret": "top-secret",
+      "X-Bff-Client-Ip": "203.0.113.9",
+    });
+    expect(opts.forwardedFor).toBeUndefined();
+  });
+
+  test("sin BFF_SHARED_SECRET no manda cabeceras de IP (comportamiento actual)", async () => {
+    vi.stubEnv("BFF_SHARED_SECRET", "");
+    djangoRequest.mockResolvedValueOnce(jsonResponse({ ok: true }, 200));
+
+    await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    const [, opts] = djangoRequest.mock.calls[0];
+    expect(opts.headers).toEqual({ "Content-Type": "application/json" });
+  });
+
+  test("el refresh interno tras un 401 también manda clientIpHeaders", async () => {
+    vi.stubEnv("BFF_SHARED_SECRET", "top-secret");
+    cookieStore.set("fl_refresh", fakeJwt({ exp: Math.floor(Date.now() / 1000) + 3600 }));
+
+    djangoRequest
+      .mockResolvedValueOnce(jsonResponse({ detail: "token inválido" }, 401))
+      .mockResolvedValueOnce(jsonResponse({ ok: true }, 200));
+    djangoFetch.mockResolvedValueOnce({
+      status: 200,
+      data: { access: "access-nueva", refresh: "refresh-nueva" },
+    });
+
+    const req = new Request("https://app.example.com/api/proxy/me/state/foo", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: "https://app.example.com",
+        "x-real-ip": "203.0.113.9",
+        "x-forwarded-for": "6.6.6.6",
+      },
+      body: JSON.stringify({ a: 1 }),
+    });
+
+    await POST(req, ctx(["me", "state", "foo"]));
+
+    expect(djangoFetch).toHaveBeenCalledWith(
+      "/auth/refresh",
+      expect.objectContaining({
+        headers: { "X-Bff-Secret": "top-secret", "X-Bff-Client-Ip": "203.0.113.9" },
+      }),
+    );
+  });
+});
+
+describe("POST /api/proxy/[...path] — deadline por petición", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
+    cookieStore.set("fl_access", "access");
+    cookieStore.set("fl_refresh", fakeJwt({ exp: Math.floor(Date.now() / 1000) + 3600 }));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  test("si el upstream lento consume el presupuesto, no intenta refresh y responde 504 (no 401)", async () => {
+    djangoRequest.mockImplementationOnce(async () => {
+      vi.advanceTimersByTime(45_000);
+      return jsonResponse({ detail: "token inválido" }, 401);
+    });
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(504);
+    expect(djangoFetch).not.toHaveBeenCalled();
+    expect(cookieStore.has("fl_access")).toBe(true);
+  });
+
+  test("con margen suficiente hace refresh, y el reintento nunca supera lo que queda", async () => {
+    djangoRequest
+      .mockImplementationOnce(async () => {
+        vi.advanceTimersByTime(30_000);
+        return jsonResponse({ detail: "token inválido" }, 401);
+      })
+      .mockResolvedValueOnce(jsonResponse({ ok: true }, 200));
+    djangoFetch.mockImplementationOnce(async () => {
+      vi.advanceTimersByTime(10_000);
+      return { status: 200, data: { access: "nueva" } };
+    });
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(200);
+    expect(djangoRequest.mock.calls[0][1].timeoutMs).toBe(55_000);
+    expect(djangoFetch.mock.calls[0][1].timeoutMs).toBeLessThanOrEqual(15_000);
+    // 40 s ya gastados: solo quedan 15 s para el reintento.
+    expect(djangoRequest.mock.calls[1][1].timeoutMs).toBe(15_000);
+  });
+
+  test("si el refresh agota el presupuesto, no reintenta y responde 504", async () => {
+    djangoRequest.mockImplementationOnce(async () => {
+      vi.advanceTimersByTime(30_000);
+      return jsonResponse({ detail: "token inválido" }, 401);
+    });
+    djangoFetch.mockImplementationOnce(async () => {
+      vi.advanceTimersByTime(25_000);
+      return { status: 200, data: { access: "nueva" } };
+    });
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(504);
+    expect(djangoRequest).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("POST /api/proxy/[...path] — reintento tras refresh con poco margen", () => {
+  test("si tras el refresh quedan menos de 15 s, no reintenta: 504 y conserva las cookies nuevas", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
+    try {
+      cookieStore.set("fl_access", "vieja");
+      cookieStore.set("fl_refresh", fakeJwt({ exp: Math.floor(Date.now() / 1000) + 3600 }));
+      djangoRequest.mockImplementationOnce(async () => {
+        vi.advanceTimersByTime(30_000);
+        return jsonResponse({ detail: "token inválido" }, 401);
+      });
+      djangoFetch.mockImplementationOnce(async () => {
+        vi.advanceTimersByTime(14_000);
+        return { status: 200, data: { access: "nueva", refresh: "refresh-nueva" } };
+      });
+
+      const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+      expect(res.status).toBe(504);
+      expect(djangoRequest).toHaveBeenCalledTimes(1);
+      expect(cookieStore.get("fl_access")).toBe("nueva");
+      expect(cookieStore.get("fl_refresh")).toBe("refresh-nueva");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe("POST /api/proxy/[...path] — contrato de fallo del refresh", () => {
+  const validRefresh = () => fakeJwt({ exp: Math.floor(Date.now() / 1000) + 3600 });
+
+  beforeEach(() => {
+    cookieStore.set("fl_access", "access-vieja");
+    cookieStore.set("fl_refresh", validRefresh());
+    djangoRequest.mockResolvedValueOnce(jsonResponse({ detail: "token inválido" }, 401));
+  });
+
+  test.each([500, 503, 429])(
+    "refresh con %s de Django: 503 refresh_unavailable, cookies intactas, sin reintento",
+    async (status) => {
+      const before = cookieStore.get("fl_refresh");
+      djangoFetch.mockResolvedValueOnce({ status, data: null });
+
+      const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+      expect(res.status).toBe(503);
+      expect(await res.json()).toEqual({ code: "refresh_unavailable" });
+      expect(cookieStore.get("fl_access")).toBe("access-vieja");
+      expect(cookieStore.get("fl_refresh")).toBe(before);
+      expect(djangoRequest).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  test.each([
+    ["TimeoutError", new DOMException("t", "TimeoutError")],
+    ["error de red", new TypeError("fetch failed")],
+  ])("refresh con %s: 503 refresh_unavailable y cookies intactas", async (_n, err) => {
+    djangoFetch.mockRejectedValueOnce(err);
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ code: "refresh_unavailable" });
+    expect(cookieStore.has("fl_refresh")).toBe(true);
+    expect(djangoRequest).toHaveBeenCalledTimes(1);
+  });
+
+  test.each([401, 400])("refresh rechazado por Django (%s): 401 sin reintento", async (status) => {
+    djangoFetch.mockResolvedValueOnce({ status, data: { code: "token_not_valid" } });
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(401);
+    expect(djangoRequest).toHaveBeenCalledTimes(1);
+  });
+
+  test("refresh caducado en local con Django caído: 401 y limpia cookies", async () => {
+    cookieStore.set("fl_refresh", fakeJwt({ exp: Math.floor(Date.now() / 1000) - 60 }));
+    djangoFetch.mockResolvedValueOnce({ status: 500, data: null });
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(401);
+    expect(cookieStore.has("fl_refresh")).toBe(false);
+  });
+
+  test("sin cookie de refresh: 401", async () => {
+    cookieStore.delete("fl_refresh");
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(401);
+    expect(djangoFetch).not.toHaveBeenCalled();
+  });
+
+  test("refresh 200: reintenta con el access nuevo", async () => {
+    djangoFetch.mockResolvedValueOnce({ status: 200, data: { access: "nueva" } });
+    djangoRequest.mockResolvedValueOnce(jsonResponse({ ok: true }, 200));
+
+    const res = await POST(makeReq(), ctx(["me", "state", "foo"]));
+
+    expect(res.status).toBe(200);
+    expect(cookieStore.get("fl_access")).toBe("nueva");
+  });
+});
+
+describe("POST /api/proxy/[...path] — un solo refresh a la vez (F30)", () => {
+  test("4 peticiones simultáneas con el access caducado hacen un único POST /auth/refresh", async () => {
+    cookieStore.set("fl_access", "caducada");
+    cookieStore.set("fl_refresh", fakeJwt({ exp: Math.floor(Date.now() / 1000) + 3600, jti: "f30" }));
+    djangoRequest.mockImplementation(async (_path: string, opts: { access: string | null }) =>
+      opts.access === "access-nueva" ? jsonResponse({ ok: true }) : jsonResponse({ detail: "expired" }, 401),
+    );
+    let release!: () => void;
+    const gate = new Promise<void>((r) => { release = r; });
+    djangoFetch.mockImplementation(async () => {
+      await gate; // el refresh tarda: las cuatro llegan mientras está en curso
+      return { status: 200, data: { access: "access-nueva", refresh: "refresh-nueva" } };
+    });
+
+    const all = Promise.all([1, 2, 3, 4].map(() => POST(makeReq(), ctx(["me", "state", "foo"]))));
+    await new Promise((r) => setTimeout(r, 10));
+    release();
+    const res = await all;
+
+    expect(res.map((r) => r.status)).toEqual([200, 200, 200, 200]);
+    expect(djangoFetch.mock.calls.filter(([p]) => p === "/auth/refresh")).toHaveLength(1);
+    expect(cookieStore.get("fl_access")).toBe("access-nueva");
+  });
+
+  test("una que llega justo después, aún con la cookie vieja, reutiliza el refresh bueno", async () => {
+    const old = fakeJwt({ exp: Math.floor(Date.now() / 1000) + 3600, jti: "f30b" });
+    djangoRequest.mockImplementation(async (_path: string, opts: { access: string | null }) =>
+      opts.access === "access-nueva" ? jsonResponse({ ok: true }) : jsonResponse({ detail: "expired" }, 401),
+    );
+    djangoFetch.mockResolvedValue({ status: 200, data: { access: "access-nueva", refresh: "refresh-nueva" } });
+    for (let i = 0; i < 2; i++) {
+      cookieStore.set("fl_access", "caducada");
+      cookieStore.set("fl_refresh", old);
+      expect((await POST(makeReq(), ctx(["me", "state", "foo"]))).status).toBe(200);
+    }
+    expect(djangoFetch).toHaveBeenCalledTimes(1);
+  });
+
+  test("un refresh que falla no se reutiliza: el siguiente lo vuelve a intentar", async () => {
+    const valid = fakeJwt({ exp: Math.floor(Date.now() / 1000) + 3600, jti: "f30c" });
+    djangoRequest.mockResolvedValue(jsonResponse({ detail: "expired" }, 401));
+    djangoFetch.mockResolvedValue({ status: 500, data: {} });
+    for (let i = 0; i < 2; i++) {
+      cookieStore.set("fl_access", "caducada");
+      cookieStore.set("fl_refresh", valid);
+      expect((await POST(makeReq(), ctx(["me", "state", "foo"]))).status).toBe(503);
+    }
+    expect(djangoFetch).toHaveBeenCalledTimes(2);
+  });
+});

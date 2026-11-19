@@ -1,0 +1,101 @@
+from django.urls import path
+
+from .barcode_views import BarcodeView
+from .chain_views import ChainImportView, ChainProductsView, ChainShoppingView, SubstitutesView
+from .checkin_views import CheckinView
+from .import_views import HistoryImportView, ImportView
+from .menu_ai_views import AppMenuContextView, AppMenuPasteView, MenuAiImportView, MenuContextView
+from .menu_tokens import MenuTokenDetailView, MenuTokensView
+from .menu_views import (
+    FoodsView,
+    KitchenView,
+    MenuCheckView,
+    MenuDetailView,
+    MenuImportView,
+    MenuShoppingView,
+    MenuPdfView,
+    MenuRateView,
+    MenuView,
+    ProductDetailView,
+    ProductLookupView,
+    ProductSearchView,
+    ProductsView,
+    RecipesView,
+    TastesView,
+)
+from .plan_views import PlanApplyView, PlanView
+from .review_views import KnowledgeStaleView, ReviewAcceptView, ReviewView
+from .safety_views import (
+    HeadImpactDetailView,
+    HeadImpactListView,
+    InjuryDetailView,
+    InjuryListView,
+    SafetyView,
+    ScreeningView,
+)
+from .session_check import SessionCheckView
+from .strength_views import StrengthE1rmView, StrengthLastView, StrengthProgressView, StrengthSetsView
+from .today_views import TodayCardioDetailView, TodayCardioView, TodayMealView, TodayView
+from .targets_views import TargetsView, TrendView, WeighInView, ZonesView
+from .views import EngineView, RuleDetailView, RuleSearchView, SourceDetailView
+
+urlpatterns = [
+    path("knowledge/rules", RuleSearchView.as_view(), name="knowledge-rules"),
+    path("knowledge/rules/<path:key>", RuleDetailView.as_view(), name="knowledge-rule"),
+    path("knowledge/sources/<str:sid>", SourceDetailView.as_view(), name="knowledge-source"),
+    path("coach/engine", EngineView.as_view(), name="coach-engine"),
+    path("coach/safety", SafetyView.as_view(), name="coach-safety"),
+    path("coach/targets", TargetsView.as_view(), name="coach-targets"),
+    path("coach/trend", TrendView.as_view(), name="coach-trend"),
+    path("coach/zones", ZonesView.as_view(), name="coach-zones"),
+    path("coach/weigh-in", WeighInView.as_view(), name="coach-weigh-in"),
+    path("coach/checkin", CheckinView.as_view(), name="coach-checkin"),
+    path("coach/today", TodayView.as_view(), name="coach-today"),
+    path("coach/today/meal", TodayMealView.as_view(), name="coach-today-meal"),
+    path("coach/today/cardio", TodayCardioView.as_view(), name="coach-today-cardio"),
+    path("coach/today/cardio/<int:pk>", TodayCardioDetailView.as_view(), name="coach-today-cardio-detail"),
+    path("coach/plan", PlanView.as_view(), name="coach-plan"),
+    path("coach/plan/<int:pk>/apply", PlanApplyView.as_view(), name="coach-plan-apply"),
+    path("coach/review", ReviewView.as_view(), name="coach-review"),
+    path("coach/review/<int:pk>/accept", ReviewAcceptView.as_view(), name="coach-review-accept"),
+    path("coach/knowledge/stale", KnowledgeStaleView.as_view(), name="coach-knowledge-stale"),
+    path("coach/menu", MenuView.as_view(), name="coach-menu"),
+    path("coach/menu/check", MenuCheckView.as_view(), name="coach-menu-check"),
+    path("coach/menu/rate", MenuRateView.as_view(), name="coach-menu-rate"),
+    path("coach/menu/<int:pk>/pdf", MenuPdfView.as_view(), name="coach-menu-pdf"),
+    path("coach/menu/import", MenuImportView.as_view(), name="coach-menu-import"),
+    # Fase 14: menús con la IA del usuario. `menu/*` acepta el token personal; `coach/*`, la sesión.
+    path("menu/context", MenuContextView.as_view(), name="menu-context"),
+    path("menu/import", MenuAiImportView.as_view(), name="menu-import"),
+    path("coach/menu/context", AppMenuContextView.as_view(), name="coach-menu-context"),
+    path("coach/menu/paste", AppMenuPasteView.as_view(), name="coach-menu-paste"),
+    path("coach/menu-tokens", MenuTokensView.as_view(), name="coach-menu-tokens"),
+    path("coach/menu-tokens/<int:pk>", MenuTokenDetailView.as_view(), name="coach-menu-token"),
+    path("coach/menu/<int:pk>", MenuDetailView.as_view(), name="coach-menu-detail"),
+    path("coach/menu/<int:pk>/shopping", MenuShoppingView.as_view(), name="coach-menu-shopping"),
+    path("coach/kitchen", KitchenView.as_view(), name="coach-kitchen"),
+    path("coach/tastes", TastesView.as_view(), name="coach-tastes"),
+    path("coach/recipes", RecipesView.as_view(), name="coach-recipes"),
+    path("coach/foods", FoodsView.as_view(), name="coach-foods"),
+    path("coach/products", ProductsView.as_view(), name="coach-products"),
+    path("coach/products/search", ProductSearchView.as_view(), name="coach-products-search"),
+    path("coach/products/lookup/<str:barcode>", ProductLookupView.as_view(), name="coach-products-lookup"),
+    path("coach/products/<str:barcode>", ProductDetailView.as_view(), name="coach-product"),
+    path("coach/barcode/<str:code>", BarcodeView.as_view(), name="coach-barcode"),
+    path("coach/chain-products", ChainProductsView.as_view(), name="coach-chain-products"),
+    path("coach/chain-products/import", ChainImportView.as_view(), name="coach-chain-import"),
+    path("coach/chain-products/shopping", ChainShoppingView.as_view(), name="coach-chain-shopping"),
+    path("coach/substitutes", SubstitutesView.as_view(), name="coach-substitutes"),
+    path("coach/strength/e1rm", StrengthE1rmView.as_view(), name="coach-strength-e1rm"),
+    path("coach/strength/sets", StrengthSetsView.as_view(), name="coach-strength-sets"),
+    path("coach/strength/progress", StrengthProgressView.as_view(), name="coach-strength-progress"),
+    path("coach/strength/last", StrengthLastView.as_view(), name="coach-strength-last"),
+    path("coach/import", ImportView.as_view(), name="coach-import"),
+    path("coach/import/history", HistoryImportView.as_view(), name="coach-import-history"),
+    path("coach/session-check", SessionCheckView.as_view(), name="coach-session-check"),
+    path("coach/screening", ScreeningView.as_view(), name="coach-screening"),
+    path("coach/injuries", InjuryListView.as_view(), name="coach-injuries"),
+    path("coach/injuries/<int:pk>", InjuryDetailView.as_view(), name="coach-injury"),
+    path("coach/head-impacts", HeadImpactListView.as_view(), name="coach-head-impacts"),
+    path("coach/head-impacts/<int:pk>", HeadImpactDetailView.as_view(), name="coach-head-impact"),
+]

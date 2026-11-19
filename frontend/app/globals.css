@@ -154,6 +154,7 @@ body {
 .btn-neon:hover { filter: brightness(1.07); box-shadow: 0 0 38px -2px rgba(69, 233, 255, 0.9); }
 
 .field {
+  min-width: 0;
   background: rgba(8, 14, 28, 0.55);
   border: 1px solid rgba(150, 190, 255, 0.16);
   border-radius: 1rem;

@@ -1,4 +1,20 @@
-// Lógica y datos de nutrición (mockup). Persistencia local; luego backend + IA.
+// Lógica y datos de nutrición (mockup). Persistencia local; copia de
+// seguridad y sincronización entre dispositivos vía backend/userstate
+// (ver lib/user-state.ts): localStorage sigue siendo la fuente inmediata.
+
+import { hydrateUserState, hydrateUserStatePrefix, rawStringSerde, syncUserState } from "@/lib/user-state";
+
+/** De dónde sale cada entrada del diario (F6). `menu` la pone el servidor al marcar una comida
+ * del menú como «Hecha» en Hoy, con `link` a esa marca; las de antes no traen origen. R4-9:
+ * `scanned` (código de barras) y `catalogue` (un producto de tu catálogo elegido en la búsqueda). */
+export const ITEM_SOURCES = ["menu", "food", "manual", "photo", "recent", "yesterday", "scanned", "catalogue"] as const;
+
+/** El origen de un alimento elegido en la búsqueda: un producto de tu catálogo (no los de la tabla
+ * de la región, que vienen con el motor) o un alimento de la tabla. */
+export function searchSource(food: { kind: string; source: string }): ItemSource {
+  return food.kind === "product" && !food.source.startsWith("label:") ? "catalogue" : "food";
+}
+export type ItemSource = (typeof ITEM_SOURCES)[number];
 
 export type Item = {
   id: string;
@@ -9,33 +25,54 @@ export type Item = {
   p: number;
   c: number;
   f: number;
+  source?: ItemSource;
+  link?: string;
 };
+
+/** El origen que se enseña de una entrada; las antiguas sin origen cuentan como apuntadas a mano. */
+export function itemSource(item: Pick<Item, "source">): ItemSource {
+  return item.source && (ITEM_SOURCES as readonly string[]).includes(item.source) ? item.source : "manual";
+}
 
 export const MEALS = ["Desayuno", "Comida", "Cena", "Snack"];
 
+// Los valores de siempre del selector de la pantalla de Nutrición. Los objetivos ya no se
+// calculan aquí: salen de `GET /coach/targets` (fase 4).
 export type Goal = "perder" | "mantener" | "ganar";
-export const GOAL_LABEL: Record<Goal, string> = { perder: "Perder", mantener: "Mantener", ganar: "Ganar" };
 
-export type Macros = { kcal: number; p: number; c: number; f: number };
+// Los alimentos ya no están aquí: la búsqueda usa la tabla del motor del coach, con nombre en
+// español y en inglés (`useFoodSearch` en `lib/menu.ts`, fase 8). Solo quedan los nombres en
+// inglés de los platos simulados de la foto (cuando la IA no está configurada). Lo que se guarda
+// es el nombre que vio el usuario.
+const EN_NAMES: Record<string, string> = {
+  "Pechuga de pollo": "Chicken breast",
+  "Arroz blanco cocido": "Cooked white rice",
+  "Huevo": "Egg",
+  "Avena": "Oats",
+  "Plátano": "Banana",
+  "Atún en lata": "Tinned tuna",
+  "Pan integral": "Wholemeal bread",
+  "Yogur natural": "Natural yoghurt",
+  "Aguacate": "Avocado",
+  "Verduras salteadas": "Stir-fried vegetables",
+  "Ensalada mixta": "Mixed salad",
+  "Aceite de oliva": "Olive oil",
+  "Pollo con arroz y verduras": "Chicken with rice and vegetables",
+  "Ensalada con atún": "Tuna salad",
+  "Tostada de aguacate y huevo": "Avocado and egg toast",
+  "Bol de avena con plátano": "Oat bowl with banana",
+};
 
-// Alimentos de ejemplo, valores por 100 g
-export const FOODS: { name: string; kcal: number; p: number; c: number; f: number }[] = [
-  { name: "Pechuga de pollo", kcal: 165, p: 31, c: 0, f: 3.6 },
-  { name: "Arroz blanco cocido", kcal: 130, p: 2.7, c: 28, f: 0.3 },
-  { name: "Huevo", kcal: 155, p: 13, c: 1.1, f: 11 },
-  { name: "Avena", kcal: 389, p: 17, c: 66, f: 7 },
-  { name: "Plátano", kcal: 89, p: 1.1, c: 23, f: 0.3 },
-  { name: "Atún en lata", kcal: 132, p: 28, c: 0, f: 1 },
-  { name: "Pan integral", kcal: 247, p: 13, c: 41, f: 3.4 },
-  { name: "Yogur natural", kcal: 61, p: 3.5, c: 4.7, f: 3.3 },
-  { name: "Almendras", kcal: 579, p: 21, c: 22, f: 50 },
-  { name: "Lentejas cocidas", kcal: 116, p: 9, c: 20, f: 0.4 },
-  { name: "Salmón", kcal: 208, p: 20, c: 0, f: 13 },
-  { name: "Patata cocida", kcal: 87, p: 2, c: 20, f: 0.1 },
-  { name: "Boniato", kcal: 86, p: 1.6, c: 20, f: 0.1 },
-  { name: "Aguacate", kcal: 160, p: 2, c: 9, f: 15 },
-  { name: "Queso fresco batido", kcal: 72, p: 12, c: 4, f: 0.2 },
-];
+/** F24: los gramos de un objetivo de macros (proteína, grasa, hidratos, fibra) como se enseñan en
+ * Nutrición, el Menú y el Plan: al gramo entero más cercano. Una sola función para todos, para que
+ * la misma cifra del servidor nunca salga distinta en dos pantallas. */
+export function roundGrams(grams: number): number {
+  return Math.round(grams);
+}
+
+export function foodName(name: string, locale: string): string {
+  return locale === "en" ? (EN_NAMES[name] ?? name) : name;
+}
 
 export function scale(food: { kcal: number; p: number; c: number; f: number }, grams: number) {
   const k = grams / 100;
@@ -47,21 +84,17 @@ export function scale(food: { kcal: number; p: number; c: number; f: number }, g
   };
 }
 
-export function targets(weightKg: number, heightCm: number, age: number, gender: string | null, goal: Goal): Macros {
-  const bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + (gender === "FEMALE" ? -161 : 5);
-  const tdee = bmr * 1.55;
-  const kcal = Math.round(goal === "perder" ? tdee - 500 : goal === "ganar" ? tdee + 300 : tdee);
-  const p = Math.round(weightKg * 2);
-  const f = Math.round((kcal * 0.25) / 9);
-  const c = Math.max(0, Math.round((kcal - p * 4 - f * 9) / 4));
-  return { kcal, p, c, f };
+function isoDate(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
-
 function dayKeyFor(d: Date) {
-  return `flp_nutri_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return `flp_nutri_${isoDate(d)}`;
 }
 function dayKey() {
   return dayKeyFor(new Date());
+}
+function bareDayKey(d: Date) {
+  return `nutri_${isoDate(d)}`;
 }
 
 export function loadToday(): Item[] {
@@ -79,15 +112,40 @@ function newId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 export function addItem(it: Omit<Item, "id">) {
+  let all: Item[] = [];
   try {
-    const all = [...loadToday(), { ...it, id: newId() }];
+    all = [...loadToday(), { ...it, id: newId() }];
     localStorage.setItem(dayKey(), JSON.stringify(all));
   } catch { /* almacenamiento lleno: no es crítico */ }
+  syncUserState(bareDayKey(new Date()), all);
 }
 export function removeItem(id: string) {
+  let all: Item[] = [];
   try {
-    localStorage.setItem(dayKey(), JSON.stringify(loadToday().filter((i) => i.id !== id)));
+    all = loadToday().filter((i) => i.id !== id);
+    localStorage.setItem(dayKey(), JSON.stringify(all));
   } catch { /* noop */ }
+  syncUserState(bareDayKey(new Date()), all);
+}
+
+/** Hidrata el diario y el agua de los últimos `days` días (hoy incluido) desde
+ *  el servidor si tiene algo más nuevo que lo local: útil al abrir la app en
+ *  un dispositivo nuevo, o tras usar otro dispositivo. Ver lib/user-state.ts. */
+export async function hydrateRecentNutritionDays(days = 7): Promise<void> {
+  const to = new Date();
+  const from = new Date();
+  from.setDate(from.getDate() - (days - 1));
+  await Promise.all([
+    hydrateUserStatePrefix("nutri_", isoDate(from), isoDate(to)),
+    hydrateUserStatePrefix("water_", isoDate(from), isoDate(to)),
+  ]);
+}
+
+/** Si el servidor tiene un objetivo (perder/mantener/ganar) más nuevo que el
+ *  local, lo adopta y lo devuelve; si no, null (el local ya vale). */
+export async function hydrateGoal(): Promise<Goal | null> {
+  const g = await hydrateUserState<string>("nutri_goal", rawStringSerde);
+  return g === "perder" || g === "ganar" || g === "mantener" ? g : null;
 }
 
 /** Alimentos usados recientemente (últimos 14 días), sin repetidos. */
@@ -132,8 +190,10 @@ export function yesterdayMealItems(meal: string): Item[] {
 
 /* ---- agua (vasos de ~250 ml, por día) ---- */
 function waterKey() {
-  const d = new Date();
-  return `flp_water_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return `flp_${bareWaterKey()}`;
+}
+function bareWaterKey() {
+  return `water_${isoDate(new Date())}`;
 }
 export function loadWater(): number {
   if (typeof window === "undefined") return 0;
@@ -141,9 +201,11 @@ export function loadWater(): number {
   return Number.isFinite(n) && n >= 0 ? Math.min(n, 30) : 0;
 }
 export function saveWater(n: number) {
+  const clamped = Math.max(0, Math.min(30, n));
   try {
-    localStorage.setItem(waterKey(), String(Math.max(0, Math.min(30, n))));
+    localStorage.setItem(waterKey(), String(clamped));
   } catch { /* noop */ }
+  syncUserState(bareWaterKey(), clamped);
 }
 
 export function loadGoal(): Goal {
@@ -153,4 +215,30 @@ export function loadGoal(): Goal {
 }
 export function saveGoal(g: Goal) {
   localStorage.setItem("flp_nutri_goal", g);
+  syncUserState("nutri_goal", g, rawStringSerde);
+}
+
+/* ---- foto → plato: mensajes honestos para los fallos conocidos de la IA
+   de visión, en vez de inventar un plato de ejemplo ---- */
+
+/**
+ * Mensaje honesto para cada fallo conocido de la IA de visión. `null`
+ * significa "no es uno de estos códigos": el llamante decide qué hacer
+ * (seguir leyendo la respuesta o caer al error genérico de conexión).
+ */
+export function photoErrorForStatus(status: number): string | null {
+  if (status === 503) return "La IA no está disponible ahora mismo. Añade la comida a mano mientras tanto.";
+  if (status === 429) return "Has llegado al límite diario de fotos con IA. Añade la comida a mano mientras tanto.";
+  if (status === 502) return "La IA no ha podido analizar la foto. Añade la comida a mano mientras tanto.";
+  return null;
+}
+
+/** Lo mismo que `photoErrorForStatus`, pero como clave estable para el
+ *  catálogo de textos (`nutrition.add.photo.errors.<clave>`). */
+export type PhotoErrorKind = "unavailable" | "quota" | "failed";
+export function photoErrorKind(status: number): PhotoErrorKind | null {
+  if (status === 503) return "unavailable";
+  if (status === 429) return "quota";
+  if (status === 502) return "failed";
+  return null;
 }

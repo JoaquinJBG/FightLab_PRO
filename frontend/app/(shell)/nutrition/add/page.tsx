@@ -3,68 +3,45 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { formatNumber } from "@/lib/locale";
+import { useFoodSearch, type Food } from "@/lib/menu";
 import {
-  FOODS,
   MEALS,
   addItem,
   recentFoods,
+  searchSource,
   scale,
   yesterdayMealItems,
+  photoErrorKind,
   type Item,
 } from "@/lib/nutrition";
+import { compressImage } from "@/lib/compress-image";
+import { ScanFood } from "@/components/scanner/ScanFood";
+import type { ScannedEntry } from "@/components/scanner/ScanResult";
 
-/* Foto → lista de alimentos detectados. Con la IA configurada analiza la foto real
-   (Claude visión); si no, cae a un ejemplo simulado claramente marcado.
-   Cada componente lleva su base para reescalar al editar los gramos. */
+/* Foto → lista de alimentos detectados por la IA (visión de Claude).
+   Cada componente lleva su base para reescalar al editar los gramos.
+   Beta honesta: si la IA no responde (503/429/502) NO se inventa un plato
+   de ejemplo; se muestra el error (ver photoErrorKind en lib/nutrition)
+   y se deja la entrada manual disponible. */
 type Detected = { name: string; grams: number | null; kcal: number; p: number; c: number; f: number };
 
-/* Reescala la foto en el dispositivo (≤1280 px, JPEG) antes de subirla:
-   menos datos, más rápido y dentro de los límites de la API de visión. */
-async function toJpeg(file: File): Promise<Blob> {
-  try {
-    const bmp = await createImageBitmap(file);
-    const MAX = 1280;
-    const k = Math.min(1, MAX / Math.max(bmp.width, bmp.height));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(bmp.width * k));
-    canvas.height = Math.max(1, Math.round(bmp.height * k));
-    canvas.getContext("2d")!.drawImage(bmp, 0, 0, canvas.width, canvas.height);
-    bmp.close();
-    return await new Promise((res, rej) =>
-      canvas.toBlob((b) => (b ? res(b) : rej(new Error("blob"))), "image/jpeg", 0.85),
-    );
-  } catch {
-    return file; // formato que el navegador no decodifica: que lo valide el backend
-  }
+/** Valores por 100 g (o 100 ml) de la tabla del motor; un dato que falta cuenta 0 en el diario,
+ * pero sin kcal no se puede añadir. */
+function per100(food: Food) {
+  return { kcal: food.kcal ?? 0, p: food.protein_g ?? 0, c: food.carbs_g ?? 0, f: food.fat_g ?? 0 };
 }
-
-function fromFood(name: string, grams: number): Detected {
-  const food = FOODS.find((f) => f.name === name);
-  if (!food) return { name, grams, kcal: 0, p: 0, c: 0, f: 0 };
-  return { name, grams, ...scale(food, grams) };
-}
-const PHOTO_PLATES: { name: string; items: Detected[] }[] = [
-  {
-    name: "Pollo con arroz y verduras",
-    items: [fromFood("Pechuga de pollo", 150), fromFood("Arroz blanco cocido", 200), { name: "Verduras salteadas", grams: 120, kcal: 80, p: 2, c: 9, f: 4 }],
-  },
-  {
-    name: "Ensalada con atún",
-    items: [fromFood("Atún en lata", 80), { name: "Ensalada mixta", grams: 150, kcal: 35, p: 2, c: 6, f: 0 }, { name: "Aceite de oliva", grams: 10, kcal: 90, p: 0, c: 0, f: 10 }],
-  },
-  {
-    name: "Tostada de aguacate y huevo",
-    items: [fromFood("Pan integral", 60), fromFood("Aguacate", 50), fromFood("Huevo", 60)],
-  },
-  {
-    name: "Bol de avena con plátano",
-    items: [fromFood("Avena", 60), fromFood("Plátano", 120), fromFood("Yogur natural", 125)],
-  },
-];
 
 type Mode = "recientes" | "buscar" | "rapido";
 
 function AddInner() {
+  const t = useTranslations("nutrition.add");
+  const locale = useLocale();
+  // Macros con el formato del idioma (F12): un número suelto en el mensaje sale con punto
+  const macros = (m: { kcal: number; p: number; c: number; f: number }) =>
+    t("macros", { kcal: formatNumber(locale, m.kcal, { max: 0 }), p: formatNumber(locale, m.p, { max: 1 }), c: formatNumber(locale, m.c, { max: 1 }), f: formatNumber(locale, m.f, { max: 1 }) });
+  const tm = useTranslations("nutrition.meals");
   const router = useRouter();
   const qpMeal = useSearchParams().get("meal");
   const meal = MEALS.includes(qpMeal ?? "") ? (qpMeal as string) : "Comida";
@@ -76,7 +53,10 @@ function AddInner() {
   const [saving, setSaving] = useState(false); // anti doble-toque en acciones que añaden y navegan
 
   useEffect(() => {
+    // Lectura síncrona de localStorage tras montar (no existe en el
+    // servidor). Pre-existente a este cambio.
     const r = recentFoods();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRecents(r);
     setYesterday(yesterdayMealItems(meal));
     if (r.length > 0) setMode("recientes");
@@ -88,17 +68,28 @@ function AddInner() {
     setTimeout(() => setAddedFlash((cur) => (cur === name ? null : cur)), 1200);
   }
 
-  /* ---- buscar ---- */
+  /* ---- buscar: tabla del motor del coach y productos propios (`/coach/foods`) ---- */
   const [q, setQ] = useState("");
-  const [sel, setSel] = useState<(typeof FOODS)[number] | null>(null);
+  const [sel, setSel] = useState<Food | null>(null);
   const [grams, setGrams] = useState(100);
-  const results = FOODS.filter((f) => f.name.toLowerCase().includes(q.toLowerCase())).slice(0, 8);
-  const scaled = sel ? scale(sel, grams) : null;
+  const search = useFoodSearch(q);
+  const results = (search.data ?? []).slice(0, 8);
+  const scaled = sel && sel.kcal != null ? scale(per100(sel), grams) : null;
+  const unit = sel?.per === "100 ml" ? "ml" : "g";
 
   function addFood() {
     if (!sel || !scaled || saving) return;
     setSaving(true);
-    addItem({ meal, name: sel.name, grams, kcal: scaled.kcal, p: scaled.p, c: scaled.c, f: scaled.f });
+    addItem({ meal, name: sel.name, grams, kcal: scaled.kcal, p: scaled.p, c: scaled.c, f: scaled.f, source: searchSource(sel) });
+    router.push("/nutrition");
+  }
+
+  /* ---- escáner de código de barras ---- */
+  function addScanned(e: ScannedEntry) {
+    if (saving) return;
+    setSaving(true);
+    // R4-9: sale en Nutrición como «Escaneado», no como buscado en la tabla.
+    addItem({ meal, name: e.name, grams: e.grams, kcal: e.kcal, p: e.p, c: e.c, f: e.f, source: "scanned" });
     router.push("/nutrition");
   }
 
@@ -116,11 +107,11 @@ function AddInner() {
     const kcal = toInt(qKcal);
     if (kcal <= 0 || saving) return;
     setSaving(true);
-    addItem({ meal, name: qName.trim() || "Comida rápida", grams: null, kcal, p: toInt(qP), c: toInt(qC), f: toInt(qF) });
+    addItem({ meal, name: qName.trim() || t("quick.defaultName"), grams: null, kcal, p: toInt(qP), c: toInt(qC), f: toInt(qF), source: "manual" });
     router.push("/nutrition");
   }
 
-  /* ---- foto (IA real con fallback simulado) ---- */
+  /* ---- foto (IA de visión; sin plato de ejemplo si falla) ---- */
   const fileRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   useEffect(() => () => abortRef.current?.abort(), []); // corta el análisis al salir
@@ -128,7 +119,6 @@ function AddInner() {
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [detected, setDetected] = useState<{
     name: string;
-    real: boolean;
     nota: string | null;
     items: (Detected & { base: Detected })[];
   } | null>(null);
@@ -147,13 +137,19 @@ function AddInner() {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     try {
+      // Comprime en el dispositivo antes de subir: menos datos, más rápido y
+      // dentro de los límites de la API de visión (lado largo más pequeño
+      // que el máximo general de subida, ya que aquí solo hace falta que la
+      // IA reconozca el plato). Si el navegador no puede comprimir (formato
+      // que no decodifica), se sube el original y que lo valide el backend,
+      // como en Biometría.
+      const image = await compressImage(file, { maxSide: 1280 }).catch(() => file);
       const fd = new FormData();
-      fd.append("image", await toJpeg(file), "comida.jpg");
+      fd.append("image", image, "comida.jpg");
       const res = await fetch("/api/proxy/ai/food/analyze", { method: "POST", body: fd, signal: ctrl.signal });
-      if (res.status === 503) {
-        // IA aún sin configurar: ejemplo simulado, marcado como tal
-        const plate = PHOTO_PLATES[Math.floor(Math.random() * PHOTO_PLATES.length)];
-        setDetected({ name: plate.name, real: false, nota: null, items: plate.items.map((i) => ({ ...i, base: i })) });
+      const knownError = photoErrorKind(res.status);
+      if (knownError) {
+        setPhotoError(t(`photo.errors.${knownError}`));
         return;
       }
       if (!res.ok) throw new Error(String(res.status));
@@ -167,13 +163,13 @@ function AddInner() {
         return { ...d, base: d };
       });
       if (items.length === 0) {
-        setPhotoError(data.nota || "No he reconocido comida en la foto. Prueba con otra toma.");
+        setPhotoError(data.nota || t("photo.noFood"));
         return;
       }
-      setDetected({ name: data.plato || "Plato detectado", real: true, nota: data.nota ?? null, items });
+      setDetected({ name: data.plato || t("photo.detected"), nota: data.nota ?? null, items });
     } catch {
       if (ctrl.signal.aborted) return; // se salió de la vista: no tocar el estado
-      setPhotoError("No se pudo analizar la foto. Revisa la conexión e inténtalo de nuevo.");
+      setPhotoError(t("photo.failed"));
     } finally {
       if (!ctrl.signal.aborted) setAnalyzing(false);
     }
@@ -205,7 +201,7 @@ function AddInner() {
     if (!detected || saving) return;
     setSaving(true);
     detected.items.forEach((it) => {
-      addItem({ meal, name: it.name, grams: it.grams, kcal: it.kcal, p: it.p, c: it.c, f: it.f });
+      addItem({ meal, name: it.name, grams: it.grams, kcal: it.kcal, p: it.p, c: it.c, f: it.f, source: "photo" });
     });
     router.push("/nutrition");
   }
@@ -216,7 +212,7 @@ function AddInner() {
     if (saving) return;
     setSaving(true);
     yesterday.forEach((it) => {
-      addItem({ meal, name: it.name, grams: it.grams, kcal: it.kcal, p: it.p, c: it.c, f: it.f });
+      addItem({ meal, name: it.name, grams: it.grams, kcal: it.kcal, p: it.p, c: it.c, f: it.f, source: "yesterday" });
     });
     router.push("/nutrition");
   }
@@ -230,26 +226,26 @@ function AddInner() {
 
   return (
     <div className="pt-4">
-      <Link href="/nutrition" className="t-label text-muted">← Nutrición</Link>
-      <h1 className="t-display mt-2 text-2xl text-ink">Añadir a <span className="neon-text">{meal}</span></h1>
+      <Link href="/nutrition" className="t-label text-muted">{t("back")}</Link>
+      <h1 className="t-display mt-2 text-2xl text-ink">{t.rich("title", { meal: tm(meal), neon: (c) => <span className="neon-text">{c}</span> })}</h1>
 
       {/* Foto -> kcal */}
       <div className="glass neon-edge mt-4 p-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="t-label text-ink">Foto → kcal</p>
-            <p className="t-body text-xs text-muted">La IA detecta los alimentos del plato. Revisa y ajusta antes de añadir.</p>
+            <p className="t-label text-ink">{t("photo.title")}</p>
+            <p className="t-body text-xs text-muted">{t("photo.intro")}</p>
           </div>
-          <button onClick={takePhoto} disabled={analyzing} className="btn btn-tonal btn-sm shrink-0">📷 Hacer foto</button>
+          <button onClick={takePhoto} disabled={analyzing} className="btn btn-tonal btn-sm shrink-0">{t("photo.take")}</button>
           <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onPhoto} />
         </div>
-        {analyzing && <p className="pulse t-body mt-3 text-sm text-muted">Analizando la foto…</p>}
+        {analyzing && <p className="pulse t-body mt-3 text-sm text-muted">{t("photo.analyzing")}</p>}
         {photoError && !analyzing && <p className="t-body mt-3 text-sm text-warn">{photoError}</p>}
         {detected && !analyzing && (
           <div className="mt-3 border-t border-[rgba(150,190,255,0.1)] pt-3">
             <div className="flex items-center justify-between">
               <p className="t-title text-ink">{detected.name}</p>
-              <span className="badge badge-neon">{detected.real ? "IA real" : "IA simulada"}</span>
+              <span className="badge badge-neon">{t("photo.detectedByAi")}</span>
             </div>
             {detected.nota && <p className="t-body mt-1 text-[11px] text-muted">{detected.nota}</p>}
             <div className="mt-2 flex flex-col gap-2">
@@ -257,37 +253,40 @@ function AddInner() {
                 <div key={`${it.name}-${i}`} className="flex items-center gap-2">
                   <div className="min-w-0 flex-1">
                     <p className="t-body text-sm text-ink">{it.name}</p>
-                    <p className="t-body text-[11px] text-muted">{it.kcal} kcal · P {it.p} · C {it.c} · G {it.f}</p>
+                    <p className="t-body text-[11px] text-muted">{macros(it)}</p>
                   </div>
                   {it.grams !== null && (
                     <span className="flex items-center gap-1.5">
-                      <button onClick={() => setDetGrams(i, Math.max(10, (it.grams ?? 0) - 10))} aria-label={`Quitar 10 g de ${it.name}`}
+                      <button onClick={() => setDetGrams(i, Math.max(10, (it.grams ?? 0) - 10))} aria-label={t("photo.removeGrams", { name: it.name })}
                         className="flex h-7 w-7 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-ink active:scale-95">−</button>
                       <span className="t-body w-12 text-center text-xs text-ink">{it.grams} g</span>
-                      <button onClick={() => setDetGrams(i, Math.min(1000, (it.grams ?? 0) + 10))} aria-label={`Añadir 10 g de ${it.name}`}
+                      <button onClick={() => setDetGrams(i, Math.min(1000, (it.grams ?? 0) + 10))} aria-label={t("photo.addGrams", { name: it.name })}
                         className="flex h-7 w-7 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-ink active:scale-95">+</button>
                     </span>
                   )}
-                  <button onClick={() => removeDetected(i)} aria-label="Quitar" className="t-label shrink-0 px-1 text-muted hover:text-bad">✕</button>
+                  <button onClick={() => removeDetected(i)} aria-label={t("photo.remove")} className="t-label shrink-0 px-1 text-muted hover:text-bad">✕</button>
                 </div>
               ))}
             </div>
             {detected.items.length > 0 ? (
               <button onClick={addAllDetected} disabled={saving} className="btn btn-primary mt-3 w-full disabled:opacity-60">
-                Añadir todo · {detTotal} kcal
+                {t("photo.addAll", { kcal: formatNumber(locale, detTotal, { max: 0 }) })}
               </button>
             ) : (
-              <p className="t-body mt-3 text-center text-xs text-muted">Has quitado todos los alimentos. Haz otra foto.</p>
+              <p className="t-body mt-3 text-center text-xs text-muted">{t("photo.empty")}</p>
             )}
           </div>
         )}
       </div>
 
+      {/* código de barras: catálogo propio y luego Open Food Facts */}
+      <ScanFood mode="diary" addLabel={t("addTo", { meal: tm(meal) })} onAdd={addScanned} />
+
       {/* copiar de ayer */}
       {yesterday.length > 0 && (
         <button onClick={copyYesterday} disabled={saving} className="glass mt-3 flex w-full items-center justify-between p-3.5 text-left disabled:opacity-60">
           <span>
-            <span className="t-label block text-ink">Copiar {meal.toLowerCase()} de ayer</span>
+            <span className="t-label block text-ink">{t("copyYesterday", { meal: tm(meal).toLowerCase() })}</span>
             <span className="t-body text-[11px] text-muted">
               {yesterday.map((i) => i.name).slice(0, 3).join(", ")}{yesterday.length > 3 ? "…" : ""} · {yesterday.reduce((a, i) => a + i.kcal, 0)} kcal
             </span>
@@ -298,9 +297,9 @@ function AddInner() {
 
       {/* selector de modo */}
       <div className="glass mt-4 grid grid-cols-3 gap-1 rounded-2xl p-1">
-        {segBtn("recientes", "Recientes")}
-        {segBtn("buscar", "Buscar")}
-        {segBtn("rapido", "Rápido")}
+        {segBtn("recientes", t("modes.recientes"))}
+        {segBtn("buscar", t("modes.buscar"))}
+        {segBtn("rapido", t("modes.rapido"))}
       </div>
 
       {/* ---- recientes ---- */}
@@ -308,15 +307,15 @@ function AddInner() {
         <div className="mt-3 flex flex-col gap-2">
           {recents.length === 0 ? (
             <div className="glass p-4">
-              <p className="t-body text-xs text-muted">Aún no hay recientes. Cuando añadas alimentos aparecerán aquí para repetirlos en un toque.</p>
+              <p className="t-body text-xs text-muted">{t("recent.empty")}</p>
             </div>
           ) : (
             recents.map((r) => (
-              <button key={r.name} onClick={() => { addItem({ meal, ...r }); flash(r.name); }}
+              <button key={r.name} onClick={() => { addItem({ meal, ...r, source: "recent" }); flash(r.name); }}
                 className="glass flex items-center justify-between p-3.5 text-left">
                 <span className="min-w-0">
                   <span className="t-body block text-sm text-ink">{r.name}{r.grams ? ` · ${r.grams} g` : ""}</span>
-                  <span className="t-body text-[11px] text-muted">{r.kcal} kcal · P {r.p} · C {r.c} · G {r.f}</span>
+                  <span className="t-body text-[11px] text-muted">{macros(r)}</span>
                 </span>
                 <span className={`shrink-0 text-lg ${addedFlash === r.name ? "text-good" : "text-neon"}`}>
                   {addedFlash === r.name ? "✓" : "+"}
@@ -325,7 +324,7 @@ function AddInner() {
             ))
           )}
           {recents.length > 0 && (
-            <Link href="/nutrition" className="btn btn-tonal mt-1 w-full">Hecho</Link>
+            <Link href="/nutrition" className="btn btn-tonal mt-1 w-full">{t("recent.done")}</Link>
           )}
         </div>
       )}
@@ -333,32 +332,37 @@ function AddInner() {
       {/* ---- buscar ---- */}
       {mode === "buscar" && (
         <div className="mt-3">
-          <input value={q} onChange={(e) => { setQ(e.target.value); setSel(null); }} placeholder="Pollo, arroz, avena…" className="field w-full px-4 py-3 text-sm" />
+          <input value={q} onChange={(e) => { setQ(e.target.value); setSel(null); }} placeholder={t("search.placeholder")} className="field w-full px-4 py-3 text-sm" />
           {!sel ? (
             <div className="mt-3 flex flex-col gap-2">
               {results.map((f) => (
-                <button key={f.name} onClick={() => { setSel(f); setGrams(100); }} className="glass flex items-center justify-between p-3.5 text-left">
-                  <span className="t-body text-ink">{f.name}</span>
-                  <span className="t-body text-xs text-muted">{f.kcal} kcal/100g</span>
+                <button key={`${f.kind}-${f.barcode ?? f.name}`} data-testid="food-hit" onClick={() => { setSel(f); setGrams(100); }} className="glass flex items-center justify-between gap-2 p-3.5 text-left">
+                  <span className="t-body text-ink first-letter:uppercase">{f.name}{f.chain ? ` · ${f.chain}` : ""}</span>
+                  <span className="t-body shrink-0 text-xs text-muted">
+                    {f.kcal == null ? t("search.noData") : t(f.per === "100 ml" ? "search.perHundredMl" : "search.perHundred", { kcal: Math.round(f.kcal) })}
+                  </span>
                 </button>
               ))}
-              {results.length === 0 && <p className="t-body mt-2 text-xs text-muted">Sin resultados. Prueba otra búsqueda, el modo Rápido o la foto.</p>}
+              {q.trim().length < 2 && <p className="t-body mt-2 text-xs text-muted">{t("search.typeMore")}</p>}
+              {q.trim().length >= 2 && search.isFetching && <p className="t-body mt-2 text-xs text-muted">{t("search.searching")}</p>}
+              {q.trim().length >= 2 && !search.isFetching && results.length === 0 && <p className="t-body mt-2 text-xs text-muted">{t("search.none")}</p>}
+              <p className="t-body mt-1 text-[11px] text-muted">{t("search.source")}</p>
             </div>
           ) : (
             <div className="glass mt-3 p-4">
-              <p className="t-title text-ink">{sel.name}</p>
+              <p className="t-title text-ink first-letter:uppercase">{sel.name}</p>
               <div className="mt-3 flex items-center justify-between">
-                <span className="t-label text-muted">Cantidad</span>
+                <span className="t-label text-muted">{t("search.amount")}</span>
                 <div className="flex items-center gap-3">
-                  <button onClick={() => setGrams((g) => Math.max(10, g - 10))} aria-label="Quitar 10 g" className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">−</button>
-                  <span className="stat w-20 text-center text-lg text-ink">{grams} g</span>
-                  <button onClick={() => setGrams((g) => Math.min(1000, g + 10))} aria-label="Añadir 10 g" className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">+</button>
+                  <button onClick={() => setGrams((g) => Math.max(10, g - 10))} aria-label={t("search.less")} className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">−</button>
+                  <span className="stat w-20 text-center text-lg text-ink">{grams} {unit}</span>
+                  <button onClick={() => setGrams((g) => Math.min(1000, g + 10))} aria-label={t("search.more")} className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(150,190,255,0.2)] text-xl text-ink active:scale-95">+</button>
                 </div>
               </div>
-              <p className="t-body mt-3 text-center text-sm text-neon">{scaled?.kcal} kcal · P {scaled?.p} · C {scaled?.c} · G {scaled?.f}</p>
+              <p className="t-body mt-3 text-center text-sm text-neon">{scaled ? macros(scaled) : t("search.noData")}</p>
               <div className="mt-3 flex gap-2">
-                <button onClick={() => setSel(null)} className="btn btn-outline btn-sm flex-1">Volver</button>
-                <button onClick={addFood} disabled={saving} className="btn btn-primary btn-sm flex-1 disabled:opacity-60">Añadir a {meal}</button>
+                <button onClick={() => setSel(null)} className="btn btn-outline btn-sm flex-1">{t("search.back")}</button>
+                <button onClick={addFood} disabled={saving || !scaled} className="btn btn-primary btn-sm flex-1 disabled:opacity-60">{t("addTo", { meal: tm(meal) })}</button>
               </div>
             </div>
           )}
@@ -368,14 +372,14 @@ function AddInner() {
       {/* ---- rápido ---- */}
       {mode === "rapido" && (
         <div className="glass mt-3 flex flex-col gap-3 p-4">
-          <p className="t-body text-xs text-muted">¿Sabes las kcal pero no quieres buscar? Apúntalas directas.</p>
-          <input value={qName} onChange={(e) => setQName(e.target.value)} placeholder="Nombre (opcional)" className="field px-4 py-3 text-sm" />
+          <p className="t-body text-xs text-muted">{t("quick.intro")}</p>
+          <input value={qName} onChange={(e) => setQName(e.target.value)} placeholder={t("quick.name")} className="field px-4 py-3 text-sm" />
           <label className="flex items-center justify-between gap-3">
-            <span className="t-label text-ink">Kcal *</span>
+            <span className="t-label text-ink">{t("quick.kcal")}</span>
             <input value={qKcal} onChange={(e) => setQKcal(e.target.value.replace(/\D/g, "").slice(0, 5))} inputMode="numeric" placeholder="0" className="field w-28 px-3 py-2.5 text-right text-sm" />
           </label>
           <div className="grid grid-cols-3 gap-2">
-            {([["P (g)", qP, setQP], ["C (g)", qC, setQC], ["G (g)", qF, setQF]] as const).map(([label, val, set]) => (
+            {([[t("quick.p"), qP, setQP], [t("quick.c"), qC, setQC], [t("quick.f"), qF, setQF]] as const).map(([label, val, set]) => (
               <label key={label} className="flex flex-col gap-1">
                 <span className="t-label text-muted">{label}</span>
                 <input value={val} onChange={(e) => set(e.target.value.replace(/\D/g, "").slice(0, 4))} inputMode="numeric" placeholder="—" className="field px-3 py-2 text-center text-sm" />
@@ -383,7 +387,7 @@ function AddInner() {
             ))}
           </div>
           <button onClick={addQuick} disabled={toInt(qKcal) <= 0 || saving} className="btn btn-primary mt-1 disabled:opacity-60">
-            Añadir a {meal}
+            {t("addTo", { meal: tm(meal) })}
           </button>
         </div>
       )}
@@ -391,9 +395,14 @@ function AddInner() {
   );
 }
 
+function AddFallback() {
+  const t = useTranslations("common");
+  return <div className="pt-6 text-center"><p className="t-body text-muted">{t("loading")}</p></div>;
+}
+
 export default function AddFoodPage() {
   return (
-    <Suspense fallback={<div className="pt-6 text-center"><p className="t-body text-muted">Cargando…</p></div>}>
+    <Suspense fallback={<AddFallback />}>
       <AddInner />
     </Suspense>
   );

@@ -1,0 +1,929 @@
+# Traducción al español de knowledge/cardio-health.md de AI personal coach, de matgarfer499
+# (https://github.com/matgarfer499/ai-personal-coach), CC BY 4.0.
+# Cambios: FightLab Pro (Joaquín J Beltrán García) ha traducido las reglas al español; la
+# traducción se publica también bajo CC BY 4.0. Ver LICENSE-CONTENT.md.
+# Formato y cómo se actualiza: backend/knowledge_translations/README.md.
+# status: machine = traducción sin revisar por una persona.
+
+lang: es
+origin: upstream
+file: cardio-health
+rules:
+- key: cardio-health/weekly-baseline-dose
+  source_hash: 35d8fb2bc3f1ae45d802fe7858e82d14f6479388acf407dccdc85124ddbd8999
+  status: machine
+  heading: Dosis semanal básica
+  rule_text: |-
+    Base semanal de salud por defecto para todos los clientes: 150-300 min de cardio moderado, o 75-150 min de cardio vigoroso, o una combinación (1 minuto vigoroso equivale a unos 2 minutos moderados), más al menos 2 sesiones de fuerza de cuerpo completo. Usa 150 min moderados o 75 min vigorosos como mínimo y acércate a 300/150 cuando el cliente tenga tiempo. Los programas de gimnasio cubren la parte de fuerza; asegúrate de que los minutos de cardio también se programen o se registren (caminar a paso ligero cuenta). Considera más de 300 min como un beneficio extra opcional, no como un requisito. Deja que el cliente elija modalidades que disfrute, porque la adherencia pesa más que la optimización.
+  applies_to: |-
+    Adultos aparentemente sanos de 18-64 años; la OMS también lo aplica a personas mayores y a personas con enfermedades crónicas o discapacidad, dentro de sus capacidades (con autorización médica cuando esté indicada en poblaciones clínicas). La evidencia procede sobre todo de cohortes poblacionales, no de usuarios de gimnasio en particular.
+  conflicts: |-
+    Los rangos superiores y el beneficio extra por encima de 300 min/semana tienen una recomendación condicional de la OMS, y la curva de beneficio se aplana con volúmenes más altos. Ajusta los planes a la actividad habitual, el estado de salud y los objetivos, como indica el ACSM.
+- key: cardio-health/start-low-progress-gradually-screen-by-symptoms
+  source_hash: b398509039e6659941edbbf1f1724eb1ee9dc4f686d8a2cfc8fc8cf3c17199ac
+  status: machine
+  heading: Empieza bajo, progresa de forma gradual y cribado por síntomas
+  rule_text: |-
+    Nunca conviertas la pauta completa en un requisito previo. Un principiante sedentario empieza con paseos de 10-20 min (o 1-2 sesiones cortas de fuerza) y va avanzando hacia 150 min/semana, aumentando la frecuencia o la duración antes que la intensidad; el objetivo, una vez establecido el hábito, son sesiones de 20-60 min 3-5 días/semana. Haz el cribado de todos los clientes con el algoritmo del ACSM 2015: (1) actualmente inactivo con enfermedad cardiovascular, metabólica o renal conocida, o con cualquier síntoma (dolor torácico, falta de aire inusual, desmayos, palpitaciones): autorización médica antes de empezar cualquier programa y, después, empezar con intensidad ligera a moderada; (2) actualmente activo con enfermedad conocida y sin síntomas: seguir con trabajo moderado y autorización antes de progresar a vigoroso; (3) síntomas en cualquier momento: parar y obtener autorización. Las personas sanas y asintomáticas no necesitan autorización médica para empezar actividad ligera o moderada; someterlas a un cribado excesivo es en sí mismo una barrera.
+  applies_to: |-
+    Todos los adultos, incluidas las personas mayores. La indicación de no necesitar autorización se aplica solo a personas sin síntomas ni enfermedad conocida. La dosis inicial de paseos de 10-20 min es una elección práctica para clientes muy sedentarios, por debajo del rango de inicio del PAR-Q+.
+  conflicts: |-
+    Las necesidades de cribado varían según la persona. Quienes tienen síntomas o una enfermedad conocida necesitan una evaluación clínica, que queda fuera del ámbito del coach. La capacidad predictiva del algoritmo del ACSM aún no está validada.
+- key: cardio-health/one-or-two-sessions-a-week-still-count
+  source_hash: 9748174cc835199ee46d2a19a6b583b11aa1e49bde3d1430bad5ce2da52e3924
+  status: machine
+  heading: Una o dos sesiones a la semana también cuentan
+  rule_text: |-
+    Para un cliente que solo puede comprometerse a 1-2 sesiones cortas/semana, empieza por ahí y trátalo como una victoria real para la salud; después aumenta el volumen hacia el rango semanal. Nunca dejes que "no llego a 150 minutos" se convierta en una razón para no hacer nada.
+  applies_to: |-
+    Adultos de 40 años o más en cohortes de vigilancia del Reino Unido con actividad autodeclarada; la guía de la OMS abarca a todos los adultos y a las personas mayores.
+  conflicts: |-
+    El HR casi igual para la actividad por debajo de la pauta probablemente refleja errores de clasificación del autoinforme y confusión residual. La literatura de dosis-respuesta (p. ej., Arem 2015) muestra más beneficio con más volumen, así que esto no debe interpretarse como "más no ayuda".
+- key: cardio-health/bouts-of-any-length-count
+  source_hash: aa3df6886bf49815c4101e80428f49084bb5992e8b98c3b1b13df41c34dd1058
+  status: machine
+  heading: Cuentan los bloques de cualquier duración
+  rule_text: |-
+    Cuenta cada minuto de actividad moderada a vigorosa real para el total semanal, incluidos los bloques cortos como subir escaleras a buen ritmo, caminatas rápidas de 3-5 min, ir andando al gimnasio o cargar peso cuesta arriba. Úsalos como herramienta de adherencia para clientes con poco tiempo, pero programa también algunas sesiones planificadas, porque las mejoras de forma física vienen de las sesiones estructuradas.
+  applies_to: |-
+    Todos los adultos y personas mayores, para resultados de salud. La evidencia no trata sobre adaptaciones de forma física ni de rendimiento.
+  conflicts: |-
+    La recomendación de la OMS es firme (consenso a nivel de guía), pero la base de evidencia es observacional. Ningún ECA ha probado bloques de menos de 10 min, así que no se ha demostrado que los bloques cortos y largos sean equivalentes para las mejoras de forma física (véase Snacks de ejercicio).
+- key: cardio-health/weekend-warrior-pattern-mortality
+  source_hash: ad6848a314e5717f113a4e3146da09acdd3b13c8d060446009813503e67b88c7
+  status: machine
+  heading: 'Patrón de guerrero de fin de semana: mortalidad'
+  rule_text: |-
+    Planifica la dosis aeróbica semanal primero por minutos totales; la frecuencia es una cuestión de logística. Si un cliente solo puede entrenar 1-2 días/semana, encaja la dosis semanal completa en esos días en lugar de decirle que no cuenta. Prefiere 3 días o más cuando el horario lo permita (mejor para la técnica, la recuperación y la adherencia), pero nunca presentes 1-2 días como "no merece la pena".
+  applies_to: |-
+    Adultos de cohortes poblacionales con actividad de tiempo libre autodeclarada (cohortes de 40 años o más, NHIS con edad media de 41, UK Biobank de unos 62). Solo observacional; ningún ECA compara patrones en resultados duros. "Guerrero de fin de semana" significa aquí alcanzar el volumen de la pauta en 1-2 sesiones, no una sesión a tope tras una semana sedentaria.
+  conflicts: |-
+    Las estimaciones puntuales favorecen sistemáticamente un poco a la actividad regular (p. ej., dos Santos: WW frente a inactivos HR 0.92, 0.83-1.02; regular 0.85), así que no puede descartarse una pequeña ventaja de repartirla. Los dos metaanálisis de 2025 agrupan en gran parte las mismas cohortes. Los grupos WW son pequeños, lo que da CI amplios.
+- key: cardio-health/weekend-warrior-pattern-incident-cardiovascular-and-other-disease
+  source_hash: f07903b9331f574ad375be1e584d1a4746a0714e74aaea7c49e6f88f6fa5b66c
+  status: machine
+  heading: |-
+    Patrón de guerrero de fin de semana: incidencia de enfermedad cardiovascular y otras
+  rule_text: |-
+    Tranquiliza a los clientes con poco tiempo: un patrón concentrado sigue aportando protección cardiometabólica; la prioridad es alcanzar el volumen semanal. No uses "solo entrenas los fines de semana" como razón para recortar volumen o saltarte la intensidad.
+  applies_to: |-
+    Adultos de mediana edad y mayores del Reino Unido (media de 62, 56% mujeres), mayoritariamente blancos; actividad medida durante una semana. El 42% se clasificó como WW, así que la mayoría seguía moviéndose otros días; esto no describe un patrón totalmente sedentario entre semana. Observacional.
+  conflicts: |-
+    Ambos artículos son del mismo grupo y la misma cohorte. El HR para obesidad fue más fuerte con la actividad regular (0.44 frente a 0.55), sin diferencia significativa en la comparación directa, y expuesto a causalidad inversa. Con el umbral de la mediana (230 min/semana o más), las asociaciones con el ictus dejaron de ser significativas (WW 0.89, 0.79-1.02; regular 0.87, 0.74-1.02). Medir una sola semana puede clasificar mal los patrones habituales.
+- key: cardio-health/diminishing-returns-at-high-volume
+  source_hash: eebe2576c802211cff15254ba2f5843df838586a3f892853ed3dcf55ad2cb0eb
+  status: machine
+  heading: Rendimientos decrecientes con volúmenes altos
+  rule_text: |-
+    Para la salud y la longevidad, la gran ganancia es pasar de inactivo al rango de la pauta. Más allá de aproximadamente 2-4x el mínimo (unos 300-600 min moderados o 150-300 min vigorosos por semana), el volumen aeróbico extra aporta poco beneficio adicional en mortalidad. Por encima de eso, elige el volumen en función de objetivos de rendimiento, disfrute o composición corporal, y dedica el tiempo extra al entrenamiento de fuerza, la recuperación y la nutrición en lugar de a más cardio "por salud".
+  applies_to: |-
+    Adultos de mediana edad y mayores en cohortes de EE. UU. y Europa (mediana de edad de 62 en Arem; profesionales sanitarios en Lee). Actividad de tiempo libre autodeclarada.
+  conflicts: |-
+    El autoinforme sobrestima el volumen, así que los umbrales son aproximados. Las cohortes de Lee 2022 tienen menos confusión, pero no son representativas. Los objetivos de forma física y composición corporal pueden justificar más volumen aunque las curvas de mortalidad sean planas.
+- key: cardio-health/no-upper-cap-on-mortality-grounds
+  source_hash: 804f9164d6d3e7a2f657453cfa75c2e8921da3cc119806f442d9a0d7380bb3ce
+  status: machine
+  heading: Sin límite superior por motivos de mortalidad
+  rule_text: |-
+    No impongas un límite superior a la actividad aeróbica semanal de los adultos corrientes por motivos de mortalidad. Limita el volumen, en cambio, por la recuperación, el riesgo de lesión, la interferencia con los objetivos de fuerza y la adherencia. Los clientes que hacen volúmenes de resistencia muy altos (aproximadamente más de 6-7 h/semana de resistencia intensa durante años) deben conocer las señales de fibrilación auricular (FA) y coronarias, y comunicar los síntomas (véase Seguridad).
+  applies_to: |-
+    Población adulta general, incluidas las personas que hacen ejercicio recreativo de alto volumen. No está pensado para deportistas de élite de competición. La cohorte Cooper es un 72% de hombres, con edad media de 54 y actividad autodeclarada.
+  conflicts: |-
+    La estimación puntual a 10x (0.69) es algo peor que la meseta de 3-5x (0.61), lo que algunos interpretan como un ligero repunte, pero los CI se solapan y sigue muy por debajo de los inactivos. Pocas personas están en el extremo, así que la precisión es baja. Algunos resultados concretos muestran señales con dosis muy altas (sin reducción de infarto de miocardio en Cooper; riesgo de FA en otros datos).
+- key: cardio-health/muscle-strength-and-strength-training
+  source_hash: 16155b7d765322220a46a0274d59d1f16bd675e90c34ce5be1c0d894e0d0ba51
+  status: machine
+  heading: Fuerza muscular y entrenamiento de fuerza
+  rule_text: |-
+    Programa entrenamiento de fuerza para todos los clientes, incluidos aquellos cuyo objetivo principal es la salud o la pérdida de grasa, al menos 2 días/semana y trabajando todos los grandes grupos musculares (recomendación fuerte de la OMS). Como contexto observacional, 30-60 min/semana de trabajo de fuerza ya recogen la mayor parte de la asociación observada con la mortalidad; más volumen está bien para objetivos de hipertrofia, pero no lo vendas como beneficio extra de longevidad. Combínalo con el entrenamiento aeróbico en lugar de sustituirlo.
+  applies_to: |-
+    Adultos de 18 años o más sin problemas de salud graves (Momma) y adultos aparentemente sanos, incluidas personas mayores (Garcia-Hermoso). La fuerza de prensión es en parte un marcador de salud general y de fragilidad.
+  conflicts: |-
+    El grado fuerte cubre la recomendación de 2 días/semana (OMS). Las asociaciones con la mortalidad y la dosis de 30-60 min/semana son solo observacionales, así que trátalas como contexto de grado moderado. La curva en J con volúmenes altos probablemente se debe a confusión o imprecisión y no debe interpretarse como daño; no digas a quienes entrenan fuerza que más de 60 min/semana es perjudicial. No se encontró asociación con algunos cánceres de localización concreta (colon, riñón, vejiga, páncreas). La fuerza refleja en parte la genética y la enfermedad (causalidad inversa).
+- key: cardio-health/older-adults-multicomponent-balance-and-strength
+  source_hash: b20734a9ec00768c1b81650d4d8f135ee5ea11ca8e87aab02b2f30c93f2eea9d
+  status: machine
+  heading: 'Mayores: equilibrio y fuerza multicomponente'
+  rule_text: |-
+    Para clientes de 65 años o más (y, con sentido común, desde unos 60), programa trabajo de equilibrio y fuerza funcional al menos 3 días/semana. Ejemplos: apoyo a una pierna, marcha en tándem o hacia atrás, subidas a cajón, levantarse de la silla, acarreos. Pueden integrarse en las sesiones de fuerza. El entrenamiento de fuerza en sí empieza con 2 días/semana y progresa a 3 si la recuperación lo permite; hasta entonces, cubre el objetivo de 3 días con trabajo breve de equilibrio y funcional en un día sin pesas. Aumenta la dificultad del equilibrio de forma segura, con un apoyo cerca.
+  applies_to: |-
+    Adultos de 65 años o más, incluidos los que tienen enfermedades crónicas. Extenderlo a personas de unos 60 años con baja forma física es razonable, pero queda fuera de lo que cubre la guía.
+  conflicts: |-
+    El tipo y la dosis dependen de la movilidad, el historial de caídas y las comorbilidades. Los clientes frágiles o con antecedentes de caídas pueden necesitar la intervención de un fisioterapeuta.
+- key: cardio-health/daily-step-targets
+  source_hash: 5fb91f1e9f985e1fbf0efc3f6ce12ad715e3e82bdb08ceef21df7ac2d1d96cc5
+  status: machine
+  heading: Objetivos de pasos diarios
+  rule_text: |-
+    Para la salud general, apunta a al menos unos 7,000 pasos/día (unos 6,000-8,000 para clientes de 60 años o más; 8,000-10,000 es un objetivo ambicioso razonable para clientes más jóvenes). Trata 10,000 como opcional, no como un umbral. Fija los objetivos en relación con la línea base medida del cliente y añade unos 1,000 pasos/día cada vez.
+  applies_to: |-
+    Adultos de cohortes de población general, muchos de mediana edad y mayores. Observacional, de cohortes prospectivas; no hay evidencia aleatorizada sobre objetivos de pasos y resultados duros.
+  conflicts: |-
+    Son posibles la confusión residual y la causalidad inversa (las personas enfermas caminan menos). Los dos metaanálisis probablemente comparten cohortes. Ding no hizo análisis por edad y la mayoría de los resultados cuentan con pocos estudios. El recuento de pasos varía según el dispositivo (cadera, muñeca, podómetro).
+- key: cardio-health/steps-benefit-starts-low-upper-plateau-disputed
+  source_hash: 7c4aa1adaf6cb51cf7f8c48a2699f22c91253e916a0aba0cf1d6af730cf9e3e4
+  status: machine
+  heading: 'Pasos: el beneficio empieza bajo y la meseta superior está en discusión'
+  rule_text: |-
+    Explica a los clientes muy inactivos que pasar de unos 2,000-3,000 a unos 4,000-5,000 pasos/día ya marca la diferencia. Aumenta unos 1,000/día cada vez. No prometas más beneficio en mortalidad por encima de unos 8,000-10,000 pasos/día (unos 6,000-8,000 para clientes de 60 años o más). Más pasos están bien para el gasto energético o por disfrute, pero la evidencia de un beneficio extra de longevidad es dispar.
+  applies_to: |-
+    Adultos de cohortes observacionales, en su mayoría de mediana edad y mayores; Banach incluyó también pacientes con riesgo cardiovascular. Asociaciones, no causalidad.
+  conflicts: |-
+    Paluch y Stens muestran una meseta (dependiente de la edad en Paluch); Banach muestra un beneficio continuado hasta 20,000. Todos coinciden en que el beneficio empieza con recuentos bajos. Stens encontró efectos mayores con acelerómetros de cadera que con podómetros o dispositivos de muñeca.
+- key: cardio-health/step-cadence-vs-total-steps
+  source_hash: a736676ca40170fc935ce3eaf9703e4df497c725ee1c6ab9f76cc6a3c330ef13
+  status: machine
+  heading: Cadencia de pasos frente a pasos totales
+  rule_text: |-
+    Prioriza los pasos diarios totales. Anima a caminar algo a paso ligero (unos 100 pasos/min o más rápido, aproximadamente intensidad moderada) como extra, pero no digas a los clientes que los pasos lentos "no cuentan".
+  applies_to: Adultos de mediana edad y mayores en cohortes observacionales.
+  conflicts: |-
+    Una cohorte grande no encontró un efecto independiente de la cadencia; dos metaanálisis encontraron efectos parciales o independientes según la métrica.
+- key: cardio-health/sedentary-time-and-how-much-activity-offsets-it
+  source_hash: 921433f582353a621b466b8bd334340c8219fbe1b9c3e0687b0f8611c2edc089
+  status: machine
+  heading: Tiempo sedentario y cuánta actividad lo compensa
+  rule_text: |-
+    Para clientes que pasan el día en una mesa: (1) reduce e interrumpe el tiempo sentado, y (2) lleva la actividad moderada total hacia unos 60 min/día (caminar, entrenar, desplazamientos) si están sentados 8 h o más. Trata el tiempo de televisión por la noche como un hábito aparte que recortar. No des un número "seguro" de horas sentado, porque no se ha establecido ninguno.
+  applies_to: |-
+    Adultos, en su mayoría de mediana edad y mayores, principalmente de países de ingresos altos. Observacional.
+  conflicts: |-
+    La mayoría de los datos de tiempo sentado y televisión son autodeclarados y todos los datos son observacionales, de ahí el grado moderado pese a la recomendación de la OMS. La compensación de 60-75 min/día procede de un único análisis armonizado. Los datos de acelerómetro eran de adultos mayores (edad media de 62.6).
+- key: cardio-health/light-activity-counts
+  source_hash: ab3218d3492d6c8642ac67f5afbef1420a28b98facc3c7c119e6273ead7625c1
+  status: machine
+  heading: La actividad ligera cuenta
+  rule_text: |-
+    Considera valioso el movimiento ligero (tareas de pie, caminar despacio, jardinería), sobre todo en clientes muy sedentarios, mayores o desentrenados. Úsalo como primer peldaño antes de añadir trabajo moderado o vigoroso.
+  applies_to: |-
+    Adultos de mediana edad y mayores (edad media de unos 63 en los datos de acelerómetro). Observacional.
+  conflicts: |-
+    La recomendación de la OMS es fuerte, pero los datos son observacionales y en parte transversales. La actividad ligera no sustituye los beneficios de forma física y fuerza de la MVPA y el entrenamiento de fuerza.
+- key: cardio-health/breaking-up-sitting-and-sit-stand-desks
+  source_hash: 7be4ef5a79308d75818825d36cea574a925b81e314e3a3575ecac09619147efe
+  status: machine
+  heading: Interrumpir el tiempo sentado y escritorios de pie
+  rule_text: |-
+    Aconseja a quienes trabajan en una mesa que interrumpan a menudo el tiempo sentado. Una pauta práctica por defecto es aproximadamente cada 30 min, con 1-5 min de caminar, escaleras o sentadillas (una elección práctica; la evidencia no fija la mejor dosis de pausa). Sugiere un paseo después de comer, sobre todo a clientes con IMC más alto o resistencia a la insulina. Recomienda un escritorio elevable si está disponible. Cuenta con que los consejos o recordatorios por sí solos tengan efectos pequeños o tardíos.
+  applies_to: |-
+    Adultos, metabólicamente sanos o alterados. Los datos de glucosa proceden de ensayos agudos de laboratorio; los de escritorios, de lugares de trabajo de países de ingresos altos.
+  conflicts: |-
+    Son efectos metabólicos agudos; no se han establecido los resultados a largo plazo de las pausas. Posible sesgo de publicación para los triglicéridos. La evidencia sobre escritorios es de baja calidad, se reduce con el tiempo y no pasa de 12 meses. No se han establecido la frecuencia ni la duración óptimas de las pausas (la OMS 2020 tampoco encontró evidencia suficiente).
+- key: cardio-health/exercise-snacks
+  source_hash: 6bf6e4b6635f10307fa5a3759e648a436f6ef7c59bd7fefa06eed27e998dc461
+  status: machine
+  heading: Snacks de ejercicio
+  rule_text: |-
+    Usa los snacks de ejercicio (p. ej., 3 bloques de 1-5 min de subir escaleras a buen ritmo o ráfagas vigorosas repartidas a lo largo del día) como puerta de entrada para clientes inactivos o con poco tiempo, para elevar el VO2máx y crear el hábito. No los vendas como herramienta de pérdida de grasa o recomposición; combínalos con entrenamiento de fuerza y trabajo de nutrición, y progresa hacia sesiones completas cuando sea posible. El cribado sigue aplicándose: un cliente inactivo mayor de 45 años o con algún "sí" en el PAR-Q+ pasa una revisión profesional antes de las ráfagas vigorosas; hasta entonces, usa snacks a paso ligero en lugar de a tope.
+  applies_to: |-
+    Adultos inactivos y personas mayores (edades medias de unos 19-74 años); ensayos cortos, muestras pequeñas, en su mayoría mujeres. No se ha probado en personas entrenadas.
+  conflicts: |-
+    Heterogeneidad alta para la CRF (I2=71%) en 6 ensayos. Los resultados nulos proceden de ensayos cortos y pequeños, así que muestran falta de evidencia, no prueba de ausencia de efecto. No hay ECA a largo plazo ni con resultados duros.
+- key: cardio-health/vigorous-intermittent-lifestyle-activity-vilpa
+  source_hash: db112b45b920c09802da1ec684c91ce6de79fe9eb6e58b58d423e7ecf397fb81
+  status: machine
+  heading: Actividad vigorosa intermitente en la vida diaria (VILPA)
+  rule_text: |-
+    Anima a los clientes que no van a hacer ejercicio formal a añadir algunas ráfagas vigorosas cortas a su vida diaria (subir escaleras rápido, apretar el paso cuesta arriba, cargar la compra pesada a buen ritmo), con el objetivo de varias ráfagas de 1-2 min al día. Empújalos hacia ráfagas que sean de verdad duras (sin aliento, sin poder hablar cómodamente) y que, cuando sea posible, duren unos minutos en lugar de segundos; las ráfagas muy cortas deberían ser al menos vigorosas. Preséntalo como un hábito prometedor y de bajo coste, no como un sustituto demostrado del entrenamiento ni como una reducción de riesgo garantizada. En hombres, mantén el ejercicio estructurado como recomendación por defecto. El cribado sigue aplicándose: un cliente mayor de 45 años o con algún "sí" en el PAR-Q+ pasa una revisión profesional antes de hacer ráfagas de verdad duras, y un cliente antes inactivo progresa de ráfagas a paso ligero a ráfagas duras a lo largo de varias semanas (véase Sesiones vigorosas concentradas).
+  applies_to: |-
+    Adultos del Reino Unido que declaran no hacer ejercicio, mayoritariamente blancos, de unos 40-69 años (media de unos 62), más una muestra independiente estadounidense de NHANES de personas que no hacen ejercicio (n=3,293, edad media de 51). No se ha estudiado en adultos jóvenes entrenados.
+  conflicts: |-
+    La mayoría de los artículos usan la misma muestra de UK Biobank o muestras solapadas, con unos 7 años de seguimiento y pocos eventos. La replicación independiente de NHANES 2026 encontró un HR de 0.56 en la mediana de 5.3 bloques/día, pero al excluir la enfermedad cardiovascular o el cáncer prevalentes el CI cruzó 1 (HR 0.68, 0.41-1.11), lo que sugiere causalidad inversa parcial. La diferencia entre sexos no tiene explicación ni se ha replicado. El autor sénior declara consultoría y participación accionarial en una empresa relacionada con la VILPA (artículos de 2025 y 2026; los artículos de 2022 y 2023 no declaran ninguna).
+- key: cardio-health/cardiorespiratory-fitness-and-mortality
+  source_hash: de486018def84a9f803b1e986be08b4aac2598a3e1044b05d1f4d26366420cd9
+  status: machine
+  heading: Forma cardiorrespiratoria y mortalidad
+  rule_text: |-
+    Trata la mejora de la forma aeróbica como un objetivo central de salud, no solo de rendimiento o estético. La mayor diferencia de riesgo está entre los menos en forma y todos los demás, así que para un cliente en baja forma (por debajo de unos 8 MET, unos 28 mL/kg/min, o en el cuartil más bajo para su edad y sexo) elevar la CRF es la máxima prioridad aeróbica. Plantea los objetivos como "sumar alrededor de 1 MET" (unos 3.5 mL/kg/min) en unos meses, sigue un indicador sencillo de forma física (caminata o carrera cronometrada, prueba en bicicleta o prueba de escalón) y no prometas reducciones de riesgo concretas a una persona.
+  applies_to: |-
+    Kodama: hombres y mujeres aparentemente sanos. Lang: adultos de población general y clínica. Mandsager: pacientes clínicos de un único centro terciario de EE. UU. (edad media de 53, 59% hombres), con el beneficio de élite frente a alto observado también a partir de los 70 años. Todos observacionales.
+  conflicts: |-
+    Parte de la CRF es genética y está confundida por el estado de salud; es posible la causalidad inversa. No se ha demostrado que las mejoras inducidas por el entrenamiento aporten la misma reducción de riesgo que la CRF basal. El hallazgo de "sin límite superior" procede de una cohorte retrospectiva de un solo centro con pacientes derivados, y el HR de 5.04 compara grupos extremos; no lo cites como el riesgo de un cliente típico.
+- key: cardio-health/estimated-crf-is-good-enough-for-risk-framing
+  source_hash: 5e6c00ab70228a63348a5f8d5ad7860b1d6d7f7fb59c1700fbbe93150ff0cdf7
+  status: machine
+  heading: La CRF estimada basta para enmarcar el riesgo
+  rule_text: |-
+    Registra una estimación de la CRF basal al dar de alta a cada cliente, aunque sea solo una estimación sin ejercicio (edad, sexo, cintura o IMC, nivel de actividad, FC en reposo). Úsala para enmarcar el riesgo y elegir una dosis inicial, no como un número individual preciso.
+  applies_to: |-
+    Predicción del riesgo a nivel poblacional en adultos. La evidencia en mujeres es más escasa. Las asociaciones de HUNT solo se mantuvieron en menores de 60 años al inicio, en una población noruega.
+  conflicts: |-
+    Las estimaciones ordenan el riesgo a nivel de grupo; una estimación individual puede desviarse más de 1 MET. El resumen de Nes 2014 da para las mujeres un resultado de mortalidad por todas las causas un 8% más bajo por MET con un CI del 95% de "3%-3%", lo cual no puede ser correcto; existe una corrección de 2020 (doi 10.1249/MSS.0000000000002352), pero no se pudo abrir su contenido, así que esa cifra se deja fuera.
+- key: cardio-health/non-exercise-equations-individual-accuracy
+  source_hash: 0b4c4187bc91efb187bdcad47fe18561a4e787c2fedc2f0c075226fb01609046
+  status: machine
+  heading: 'Ecuaciones sin ejercicio: precisión individual'
+  rule_text: |-
+    Presenta una estimación sin ejercicio como un rango (unos ±5 mL/kg/min, o ±1.5 MET), nunca como un número único ni como una categoría de forma física firme. No uses estimaciones sin ejercicio repetidas para seguir el progreso del entrenamiento; reflejan sobre todo cambios en los datos de entrada, no la forma física medida. Para clientes con obesidad, marca la estimación como de baja confianza.
+  applies_to: |-
+    Adultos aparentemente sanos (Peterman: edad media de 45 ± 13, 42% mujeres; HUNT: media de unos 48). La precisión es peor en la obesidad (cohorte clínica italiana).
+  conflicts: |-
+    Peterman cita una declaración que recomienda al menos una evaluación de la CRF sin ejercicio en la práctica clínica, pero sus datos muestran a cerca de la mitad de las personas mal clasificadas; la utilidad clínica no está resuelta.
+- key: cardio-health/walk-and-run-field-tests
+  source_hash: 2c5aa2eaaeb74ad742e909be5ff20a1c34d00bc8da7482ab0fb2ffae67a19d48
+  status: machine
+  heading: Pruebas de campo de marcha y carrera
+  rule_text: |-
+    Para clientes que pueden correr de forma continua con seguridad (cribados, sin síntomas, que ya trotan), la carrera de 12 min o la de 1.5 millas es la mejor prueba de campo máxima sencilla. Para principiantes o clientes mayores, usa la caminata rápida de 1 milla de Rockport (tiempo, FC final, edad, peso, sexo); úsala con más precaución en la obesidad, donde no se validó. Trata el VO2máx convertido como una estimación; su principal valor es comparar la distancia o el tiempo con el resultado anterior del propio cliente.
+  applies_to: |-
+    Niños y adultos aparentemente sanos; Rockport, en adultos sanos de 30-69 años. Las pruebas de carrera máximas no son adecuadas para clientes no entrenados, con síntomas o de alto riesgo sin cribado.
+  conflicts: |-
+    Las ecuaciones tienen sesgos propios de cada población. Es plausible que el ritmo, la motivación y la economía de carrera afecten a las puntuaciones con independencia del VO2máx (razonamiento, no un hallazgo de estas fuentes).
+- key: cardio-health/submaximal-step-tests
+  source_hash: 7cfccfd908771d65adf7819704a568fb2a3408cd25dccc4059d161c1efdc0893
+  status: machine
+  heading: Pruebas de escalón submáximas
+  rule_text: |-
+    Para clientes de gimnasio que no deban hacer carreras máximas, usa una prueba de escalón submáxima estandarizada (preferiblemente el Chester Step Test) con un pulsómetro de banda pectoral. Mantén iguales en cada prueba la altura del escalón, la cadencia, la hora del día, la cafeína y el ejercicio previo. Considera real solo un cambio de más de unos 4 mL/kg/min, o una FC claramente más baja en la misma fase.
+  applies_to: |-
+    Adultos sanos de 18-65 años. Como las pruebas de escalón basadas en la FC suelen extrapolar a una FC máx predicha por la edad, probablemente sean menos válidas con betabloqueantes o con una FC máx atípica (razonamiento fisiológico, no comprobado).
+  conflicts: |-
+    La validez varía mucho entre protocolos, y la fiabilidad se apoya en 2 estudios. Una desviación individual sistemática respecto a la FC máx predicha probablemente sesga el valor absoluto, lo que hace más útil el seguimiento dentro de la misma persona que los valores absolutos (inferencia).
+- key: cardio-health/6-minute-walk-test
+  source_hash: 740cfae1c06f3062fe1687bf0a6e99a84e8ff7f02c98ab8758f2f4d900848a12
+  status: machine
+  heading: Prueba de marcha de 6 minutos
+  rule_text: |-
+    No conviertas la distancia de la prueba de marcha de 6 minutos (6MWD) en un número de VO2máx. En clientes desentrenados o mayores, registra la 6MWD junto con la FC y el RPE como marcador de capacidad funcional y sigue su evolución. Para clientes en mejor forma, prefiere una prueba de escalón o de marcha/carrera.
+  applies_to: |-
+    Pacientes cardiopulmonares y adultos jóvenes sanos (edad media de 21). Ninguna fuente la valida frente al VO2máx en personas mayores sanas que viven en la comunidad.
+  conflicts: |-
+    La marcha, el dolor articular y el ritmo afectan a la 6MWD con independencia de la capacidad aeróbica. Añadir la FC y el gasto cardiaco mejoró la predicción (R2 0.866), pero requiere equipo de laboratorio.
+- key: cardio-health/smartwatch-vo2max-estimates
+  source_hash: b621f04dd308db118cd5bc2d12e1d26ffd3cec286a8b08c623bd5812ea6a9f54
+  status: machine
+  heading: Estimaciones de VO2máx de los relojes inteligentes
+  rule_text: |-
+    Trata el VO2máx del reloj solo como un indicador de tendencia. No lo cites como un valor medido, no lo uses para los límites de las zonas y no le digas a un cliente su percentil o categoría de forma física a partir de él. Prefiere las estimaciones de carreras o caminatas al aire libre con GPS y FC a las basadas en datos en reposo. Interpreta un cambio como significativo solo si se mantiene durante semanas y concuerda con los datos de pruebas de campo o de FC a un ritmo dado. Compara siempre lecturas del mismo dispositivo, firmware y tipo de actividad.
+  applies_to: |-
+    Las muestras de validación suelen ser grupos pequeños de adultos sanos; aplicarlas a clientes mayores, clínicos o en muy baja forma es incierto.
+  conflicts: |-
+    El 2026-10-13 se publicó una corrección de este metaanálisis (doi 10.1007/s40279-026-02547-9). No se pudo abrir su texto; el resumen de PubMed, que ahora enlaza la corrección, sigue mostrando el sesgo y los límites de concordancia citados arriba (revisado de nuevo el 2026-10-24), pero no está verificado si la corrección cambia otras cifras. La regla no usa ningún número concreto de ella. Los algoritmos cambian con el firmware.
+- key: cardio-health/apple-watch-vo2max
+  source_hash: a8199b1a3a766dcf9b1f4ab140046c9e192551c95fbb02a6b0632b5636e613b5
+  status: machine
+  heading: VO2máx del Apple Watch
+  rule_text: |-
+    Espera que el VO2máx del Apple Watch marque de media unos 4.5-6 mL/kg/min menos que un valor de laboratorio, con un error individual mayor. Úsalo solo para ver la dirección del cambio a lo largo de meses, nunca para un percentil o una categoría.
+  applies_to: |-
+    Muestras pequeñas (19-40) de adultos en su mayoría jóvenes y sanos. No está establecida la precisión del seguimiento longitudinal.
+  conflicts: |-
+    La dirección es constante, pero las muestras son pequeñas y dos de los tres estudios comparten autores. El Bland-Altman de Caserman mostró una "buena concordancia general" pese a un ICC bajo. Un cliente en baja forma podría quedar sobrestimado.
+- key: cardio-health/garmin-and-polar-vo2max
+  source_hash: e2334361a32e42010bc17b73809ed38cabab8431af54c1431b43e18d6c08eaea
+  status: machine
+  heading: VO2máx de Garmin y Polar
+  rule_text: |-
+    Un VO2máx de Garmin basado en carrera es aceptable para seguir tendencias en corredores, pero puede marcar unos pocos mL/kg/min de más. Considera las estimaciones basadas en datos en reposo (Polar OwnIndex y similares) como las menos fiables, sobre todo en personas mayores.
+  applies_to: |-
+    Muestras pequeñas de corredores recreativos y adultos sanos; datos de Polar de deportistas veteranos varones mayores; estimaciones de Garmin de carreras al aire libre con GPS y FC.
+  conflicts: |-
+    Los resultados varían según el modelo y el firmware. Garmin parece seguir la dirección del cambio, pero la sobrestimación media no se redujo tras 12 semanas. Los algoritmos dependen de que la FC máx esté bien configurada.
+- key: cardio-health/age-and-sex-norms
+  source_hash: 849ad043d879f85b1ebe249282554b11f4ca335bccafd8203ef9550cbb6a73ec
+  status: machine
+  heading: Valores de referencia por edad y sexo
+  rule_text: |-
+    Interpreta cualquier valor de CRF frente a los percentiles FRIEND 2022 específicos por edad, sexo y modalidad (cinta frente a bicicleta), y da un rango de percentiles, no un número único, cuando el valor sea estimado. Para clientes mayores de 50 años, plantea mantenerse estable durante un año como un éxito real, porque la tendencia sin entrenamiento es descendente y se acelera con la edad.
+  applies_to: |-
+    Adultos de EE. UU. derivados o voluntarios para una CPET, y una cohorte comunitaria sana. Su uso en clientes europeos es razonable, pero no está validado.
+  conflicts: |-
+    El descenso transversal (10-13.5% por década) difiere del descenso longitudinal, que se acelera. Los valores de referencia de 2015 y 2022 difieren hasta en 4.6 mL/kg/min, así que indica qué versión se usa.
+- key: cardio-health/realistic-gains-younger-and-middle-aged-adults
+  source_hash: 1282b2867f3c2d49baa25995e382ddd3eff15b888985dd7d935427ffdf051dc4
+  status: machine
+  heading: 'Mejoras realistas: adultos jóvenes y de mediana edad'
+  rule_text: |-
+    Fija las expectativas para 8-24 semanas de entrenamiento aeróbico al nivel de la pauta en aproximadamente +3 a +6 mL/kg/min (unos +1 a 1.5 MET, o un 10-20%), con los principiantes en peor forma en el extremo superior. Explica a los clientes que los resultados individuales varían mucho y que la pérdida de peso por sí sola eleva el VO2máx relativo (mL/kg/min) sin cambiar el VO2 absoluto.
+  applies_to: |-
+    Adultos sanos, en su mayoría jóvenes, de sedentarios a activos recreativos; HERITAGE incluyó familias caucásicas sedentarias de dos generaciones. No cubre a grupos mayores ni clínicos (véase la regla siguiente).
+  conflicts: |-
+    La magnitud depende de la forma física inicial, la duración del programa, la intensidad y la adherencia. HERITAGE estimó la heredabilidad de la respuesta en un 47% aproximadamente. Parte del rango de respondedores probablemente es ruido de medición.
+- key: cardio-health/realistic-gains-older-adults
+  source_hash: 060c3a48b8711d48fc4254ce5fd829673227c3acf5d929e84bae833149212fd9
+  status: machine
+  heading: 'Mejoras realistas: mayores'
+  rule_text: |-
+    Para clientes mayores de 60 años, espera alrededor de +1 MET (unos +3.5-4 mL/kg/min, un 15% aproximadamente) en unos 5-9 meses de entrenamiento aeróbico de moderado a vigoroso (alrededor del 60-75% de la FCR, 3-4 días/semana, 40-50 min). Explícales que el progreso es gradual pero clínicamente relevante.
+  applies_to: |-
+    Adultos sanos sedentarios de 60+ años (media de unos 67) en ensayos controlados. No poblaciones frágiles ni clínicas.
+  conflicts: |-
+    Los dos metaanálisis comparten un conjunto de datos. La intensidad explicó solo alrededor del 11% de la varianza entre estudios. Las menores mejoras por encima del 75-80% de la FCR proceden de comparaciones entre estudios, probablemente están confundidas y no son evidencia de que una intensidad mayor sea perjudicial; los ensayos de HIIT en personas mayores están poco representados.
+- key: cardio-health/low-response-is-dose-dependent
+  source_hash: e5d27bbc73f59a268cf87d829960dc0182f16da48382a7726f7d20bb9b08701f
+  status: machine
+  heading: La baja respuesta depende de la dosis
+  rule_text: |-
+    Si la CRF no ha mejorado tras unas 8-12 semanas pese a una buena adherencia, revisa primero la adherencia y el método de evaluación. Después sube la dosis: lleva la intensidad hacia vigorosa (alrededor del 75% del VO2pico o de la FCR, o añade intervalos) y añade 1-2 sesiones o unos 60-120 min por semana. No digas a los clientes que son "genéticamente incapaces de mejorar".
+  applies_to: |-
+    Adultos de mediana edad con obesidad abdominal (62% mujeres; Ross) y adultos sanos en bloques de 6 semanas (Montero).
+  conflicts: |-
+    Montero definió la respuesta según la Wmax, no el VO2máx, y los grupos se asignaron en lugar de aleatorizarse claramente. Clasificar a los respondedores frente a un umbral es estadísticamente frágil.
+- key: cardio-health/individual-response-real-but-overstated
+  source_hash: c5be8a80559127221a18d4bbb318e1ca7a97d3e97d451c861e00d9fe7d553726
+  status: machine
+  heading: 'Respuesta individual: real pero sobrestimada'
+  rule_text: |-
+    Nunca etiquetes a un cliente como "no respondedor" a partir de una sola prueba antes/después. Repite la prueba con el mismo protocolo, fíjate en varios indicadores (FC a un ritmo o carga fijos, resultado de la prueba de campo, RPE) y aplica la regla de aumento de dosis antes de sacar conclusiones.
+  applies_to: |-
+    Adultos sedentarios en estudios de entrenamiento supervisado; HERITAGE se limitó a familias blancas de dos generaciones en el análisis de 1999.
+  conflicts: |-
+    Desacuerdo directo entre la postura de consenso de Bouchard/HERITAGE y Ross 2019 y la de Williamson, Atkinson y Batterham. Ambas partes coinciden en que una única prueba individual no puede clasificar a una persona.
+- key: cardio-health/re-test-frequency-and-detecting-real-change
+  source_hash: 1eeb3f834f251b1b4d8e89c1ee63178319fe66ca5a670ec65be975cfc64f580a
+  status: machine
+  heading: Frecuencia de reevaluación y detección de cambios reales
+  rule_text: |-
+    Línea base: una estimación sin ejercicio para todos, más una prueba de campo repetible elegida según el riesgo y la capacidad (Chester step test, caminata de Rockport, o carrera de 12 min o de 1.5 millas para corredores), registrada en unidades brutas (distancia, tiempo, FC). Repite la prueba cada 8-12 semanas, no antes de unas 6, con la misma prueba y las mismas condiciones. Considera real un cambio solo si supera unos 4 mL/kg/min o si lo confirman una segunda prueba y una FC más baja a una carga fija. Usa el VO2máx del reloj solo como línea de tendencia. Si no hay cambio tras un bloque, aumenta la frecuencia o la intensidad antes de calificar al cliente de no respondedor. Es una regla derivada, no un protocolo probado.
+  applies_to: |-
+    Adultos corrientes que entrenan en gimnasios comerciales, por extrapolación a partir de adultos sanos de 18-45 años, adultos sedentarios de 60+, adultos con obesidad abdominal (media de 53) y adultos sanos de 18-65.
+  conflicts: |-
+    Ninguna guía consultada especifica un intervalo de reevaluación. La fiabilidad de las pruebas de escalón se apoya en 2 estudios. Montero usó la Wmax, no el VO2máx. El error de medición varía según la prueba y la persona, y la pérdida de peso por sí sola cambia el VO2máx relativo. Las mejoras son mayores en personas más jóvenes y en peor forma, y con intervenciones más largas.
+- key: cardio-health/0-10-effort-scale-and-talk-test-anchors
+  source_hash: 5ac7a46d31b0424f0df347904ec1e74982fa7dab54043657020f97c7526529fd
+  status: machine
+  heading: Escala de esfuerzo de 0-10 y referencias del test del habla
+  rule_text: |-
+    Da a cada cliente un objetivo de esfuerzo de 0-10 junto con la zona de FC: moderado 5-6, vigoroso 7-8. Cuando se use la escala de Borg 6-20, usa las franjas del ACSM: moderado 12-13, vigoroso 14-17 (véase "Franjas de intensidad del ACSM"). Una referencia "ligera" de unos 3-4 es una extrapolación, no figura en la guía. Añade el test del habla como comprobación rápida (moderado = puedes hablar pero no cantar; vigoroso = solo unas pocas palabras sin pararte a respirar). Cuando no haya datos de FC, estas herramientas son una guía práctica razonable para el cardio de salud general; cuando haya datos de FC, combínalas con una zona de FC. No presentes la escala divulgativa de 0-10 como una prescripción validada con la Borg CR10.
+  applies_to: |-
+    Población adulta general. Los adultos mayores o en peor forma necesitan más esfuerzo para la misma actividad absoluta, así que actividades "moderadas" en MET pueden resultarles vigorosas.
+  conflicts: |-
+    Grado moderado porque el ACSM considera estas herramientas insuficientes como método principal de prescripción. La escala de la PAG no coincide exactamente con la Borg CR10. El ACSM clasifica el RPE y el test del habla como complementos. La asociación del test del habla con marcadores fisiológicos es inconsistente.
+- key: cardio-health/talk-test-validity
+  source_hash: ed28646f4e53354ea9dc5c0c101501de02ad42e055c0f1c07261e29ad623648f
+  status: machine
+  heading: Validez del test del habla
+  rule_text: |-
+    Usa el test del habla como herramienta de intensidad por defecto para el cardio continuo: "puedo decir frases completas cómodamente" = suave/moderado (en torno al primer umbral); "solo puedo decir unas pocas palabras" = vigoroso. Enséñalo desde la primera sesión, sobre todo a clientes sin pulsómetro o con medicación que altera la FC. Para los intervalos, usa en su lugar el RPE o el ritmo.
+  applies_to: |-
+    Adultos sanos, deportistas y pacientes cardiacos; la mayoría de los datos de las revisiones proceden de enfermedad coronaria.
+  conflicts: |-
+    No hay un protocolo estándar, los datos de fiabilidad son escasos y cada persona percibe de forma distinta qué es "hablar cómodamente". Es menos útil para intervalos.
+- key: cardio-health/rpe-validity
+  source_hash: 0bce1833d696aef753af5dc043f842c0a34a9b996bf625938deb0a121f1d8e35
+  status: machine
+  heading: Validez del RPE
+  rule_text: |-
+    Usa el RPE (0-10 o 6-20) como una herramienta al mismo nivel que la FC y el test del habla, no como una medida fisiológica precisa. Ancla la escala para el cliente (por ejemplo, 3-4/10 suave, 5-6 moderado, 7-8 duro, 9-10 casi máximo) y recalíbrala a lo largo de las semanas a medida que aprende. Combina el RPE con al menos otra referencia en las sesiones clave.
+  applies_to: Personas sanas de todos los niveles de forma física y modalidades.
+  conflicts: |-
+    Las correlaciones fueron más altas en hombres que se ejercitaban al máximo, en tareas poco habituales como la natación y, para el lactato, con la escala de 15 puntos. Que los principiantes calculen mal el esfuerzo hasta que tienen experiencia es una suposición práctica, no un hallazgo de este metaanálisis.
+- key: cardio-health/interval-intensity-cues-without-lab-testing
+  source_hash: 2c08595ca41fea331bb888bff055afbf1ebd645fd3cc09c2783f56aca52398bf
+  status: machine
+  heading: Pautas de intensidad para intervalos sin pruebas de laboratorio
+  rule_text: |-
+    SIT y REHIT: "a tope, lo más fuerte que puedas, desde el primer segundo", contra una resistencia suficiente para que baje la cadencia. Intervalos de 1-4 min: RPE 7/10 ("duro; solo unas pocas palabras"), en torno al 85-95% de la FC máx estimada en el último tercio del intervalo. Recuperación: RPE 2-3/10. Cardio moderado continuo: RPE 5-6/10 ("puedes hablar, pero no cantar"), alrededor del 65-75% de la FC máx. Los esfuerzos a tope son solo para clientes que cumplen los requisitos previos del SIT (véase Seguridad del HIIT y cribado previo). Si se usa la FC, prefiere una FC pico medida en un esfuerzo duro a 220 - edad.
+  applies_to: |-
+    Validación del RPE en estudiantes de educación física jóvenes y en forma; referencias de FC de hombres jóvenes moderadamente entrenados y de adultos de 70-77 años; RPE del REHIT de adultos jóvenes sedentarios. No está establecido para personas sedentarias, con obesidad o mayores, ni para intervalos cortos.
+  conflicts: |-
+    Un único estudio de validación del RPE. Los objetivos de FC dependen de una FC máx precisa, y la FC va con retraso en los intervalos cortos, así que no es fiable en intervalos de 30 s o menos. Los principiantes difieren en su percepción del esfuerzo.
+- key: cardio-health/hrmax-formulas-and-setting-the-anchor
+  source_hash: 47010e9c1c682b6ff1aa04d4bb17f6bc1d84da57cb4d3ad32b57494d67d1c375
+  status: machine
+  heading: 'FC máx: fórmulas y cómo fijar la referencia'
+  rule_text: |-
+    Usa por defecto Tanaka (208 - 0.7 x edad), o 220 - edad, solo como punto de partida aproximado, y explica al cliente que puede desviarse 20+ bpm (unos ±11 bpm es 1 SEE, así que alrededor de un tercio de las personas se desvían más). Mide tú mismo la FC en reposo (sentado, por la mañana o tras 5 min de reposo, media de varios días) y usa Karvonen. Si un cliente ve de forma fiable una FC más alta en esfuerzos realmente a tope (con una banda pectoral bien ajustada, o en un intervalo duro o una carrera), usa ese pico observado o pruebas de laboratorio. Contrasta las zonas con el RPE y el test del habla en las primeras 2-3 sesiones. Nunca limites ni fuerces a un cliente basándote solo en el número de una fórmula.
+  applies_to: |-
+    Adultos sanos de un amplio rango de edades (HUNT y Tanaka incluyen personas mayores). La muestra de Shookster era pequeña (dos tercios hombres, en su mayoría de 26-51 años, VO2máx de unos 46.5). No es válido con betabloqueantes u otros fármacos que limitan la frecuencia cardiaca, ni con incompetencia cronotrópica.
+  conflicts: |-
+    Shookster favoreció 220 - edad (sin sesgo proporcional); Tanaka y Nes encontraron que 220 - edad subestima en personas mayores. Todas las ecuaciones tienden a subestimar la FC máx en personas en peor forma o mayores y a sobrestimarla en personas en mejor forma o más jóvenes. El error individual importa más que la elección de la ecuación.
+- key: cardio-health/threshold-based-vs-hrr-prescription
+  source_hash: d52f00d9925295c041a8d7c25b976870a3cad31c08ec5d2b645edfa16944a033
+  status: machine
+  heading: Prescripción basada en umbrales frente a %FCR
+  rule_text: |-
+    No digas a un cliente que "necesita" pruebas de umbral en laboratorio. Usa el sustituto de campo más cercano: ancla "moderado" al punto en que la respiración se hace más profunda por primera vez y hablar cuesta un poco más (en torno al VT1), y "vigoroso" al punto en que solo son posibles frases cortas. Si un cliente no mejora tras 8-12 semanas de cardio basado en el %FCR, aumenta la intensidad según el RPE y el test del habla antes de concluir que es un no respondedor.
+  applies_to: Adultos sanos sedentarios, incluidos los de mediana edad.
+  conflicts: |-
+    Puede que los grupos difirieran en la intensidad real; las muestras son pequeñas; en Weatherwax 2019 el VO2máx basal era distinto (24.3 frente a 29.2). Los puntos de corte de respondedor son arbitrarios y varían. El sustituto con el test del habla o el RPE es una inferencia, no se probó en estos ensayos.
+- key: cardio-health/acsm-intensity-bands
+  source_hash: 044d24c8486f88d388951a25134c718167771ff49a15018da0406fbecdd22777
+  status: machine
+  heading: Franjas de intensidad del ACSM
+  rule_text: |-
+    Cuando el coach muestre zonas de frecuencia cardiaca o de esfuerzo, usa como tabla de referencia las franjas de la declaración de posición del ACSM 2011: ligera = 30-39% FCR (o %VO2R), 57-63% FC máx, RPE 9-11 en la escala 6-20; moderada = 40-59% FCR, 64-76% FC máx, RPE 12-13; vigorosa = 60-89% FCR, 77-95% FC máx, RPE 14-17; casi máxima = 90% FCR o más, 96% FC máx o más, RPE 18 o más. Prefiere el %FCR (Karvonen) cuando se conozca la FC en reposo y, si no, el %FC máx, y no trates ambos como intercambiables. Presenta todas las zonas como aproximadas y contrástalas con el RPE y el test del habla (véase "Los porcentajes fijos no captan los umbrales individuales"). Para clientes con cardiopatía conocida, usa las zonas que fije su equipo de cardiología.
+  applies_to: |-
+    Adultos aparentemente sanos. Las cifras de la 10.ª edición proceden de una transcripción secundaria; no se pudieron abrir la 11.ª ni la 12.ª edición.
+  conflicts: |-
+    El límite entre vigorosa y casi máxima varía según la edición (89/90% FCR en 2011, 84/85% en GETP 10); limitar la franja vigorosa de FCR al 84% en las herramientas del coach la mantiene dentro de ambas (una convención). Todas las franjas aeróbicas de Borg por convención del coach en estos archivos siguen esta tabla (moderada 12-13, vigorosa 14-17). Las franjas citadas de una fuente se mantienen como las da la fuente (RPE 13-14 en el embarazo; ICFSR Borg 12-14 aeróbico y 15-18 de fuerza), y la correspondencia de RIR a Borg para el levantamiento (2-3 RIR, unos 13-15, en strength-hypertrophy.md y recovery-habits.md) es una convención aparte para series de fuerza, no una zona aeróbica. El esquema de rehabilitación cardiaca de la EAPC usa otras franjas (moderada 40-69% FCR, 55-74% FC máx), dice que los índices basados en el pico "deben aplicarse con gran precaución" y trata el test del habla y el RPE solo como complementos, así que no mezcles ambos esquemas.
+- key: cardio-health/hrr-tracks-vo2r-not-vo2max
+  source_hash: 6ade0331396c976bb3127cfba801e0d9937d470c0cf4f61d98fa8230f92bb5ec
+  status: machine
+  heading: El %FCR sigue al %VO2R, no al %VO2máx
+  rule_text: |-
+    Traduce los objetivos de esfuerzo a frecuencia cardiaca con la frecuencia cardiaca de reserva (Karvonen) siempre que se conozca la FC en reposo: el %FCR se aproxima al %VO2R uno a uno. No conviertas objetivos de %VO2máx en %FC máx con la antigua tabla 55/70/85/90; en adultos jóvenes, los equivalentes reales de %FC máx son más altos. Trata cada conversión como una estimación.
+  applies_to: |-
+    Adultos sanos en pruebas incrementales de laboratorio; los datos de %FC máx proceden de adultos de 18-34 años.
+  conflicts: |-
+    Tres estudios de laboratorio pequeños de un mismo grupo; ambas regresiones en cinta seguían difiriendo estadísticamente de la identidad, y el ACSM señala que el respaldo es inconsistente.
+- key: cardio-health/fixed-percentages-miss-individual-thresholds
+  source_hash: af809cc101ff3d5a67889a387aeb88f3c6b2dc06884380533bc889c447d644d9
+  status: machine
+  heading: Los porcentajes fijos no captan los umbrales individuales
+  rule_text: |-
+    Presenta las zonas de %FC máx y %FCR como promedios poblacionales con un error individual amplio: con el mismo porcentaje, un cliente puede estar por debajo y otro por encima de su umbral metabólico. Usa el test del habla y el RPE como comprobación del día a día y, si una zona resulta mucho más dura o más fácil de lo que indica su etiqueta, fíate más de la respuesta del cliente que del número.
+  applies_to: |-
+    Adultos evaluados en laboratorio (no se indica su nivel de entrenamiento); los datos de FCR proceden solo de pacientes de rehabilitación cardiaca.
+  conflicts: Un estudio transversal, una cohorte retrospectiva y una revisión narrativa.
+- key: cardio-health/wrist-optical-hr-steady-state-cardio
+  source_hash: c1ca8a79a9e9880c0987dfc9a61d4394d2a26bddbda5f0fe03eb3a562910d7d0
+  status: machine
+  heading: 'FC óptica de muñeca: cardio estable'
+  rule_text: |-
+    Para caminar, correr o hacer elíptica a ritmo estable, un reloj de muñeca actual de una marca bien validada basta para seguir las zonas de FC. Considera cualquier lectura aislada como de unos ±7 bpm (límites del Apple Watch; otras marcas pueden tenerlos más amplios), aproximadamente entre un tercio y la mitad de una zona de 20% de FCR de ancho para la mayoría de los adultos. Guía al cliente a partir de la media de la sesión o de varios minutos de datos estables, no de picos momentáneos.
+  applies_to: |-
+    Muestras de laboratorio en su mayoría sanas, de jóvenes a mediana edad. La cifra de ±7 bpm es específica del Apple Watch y agrupa distintas condiciones. Los modelos de dispositivo cambian rápidamente.
+  conflicts: |-
+    Un sesgo medio cercano a cero no significa un error individual pequeño. La precisión varía según la marca y el modelo, y la precisión de la FC es "más variable" que la del recuento de pasos (Fuller).
+- key: cardio-health/wrist-optical-hr-intervals-cycling-and-resistance-work
+  source_hash: c729b3ab898c53b452106a261efb2844889ff7bf46202aa16a929c92982f47b2
+  status: machine
+  heading: 'FC óptica de muñeca: intervalos, ciclismo y trabajo de fuerza'
+  rule_text: |-
+    Para HIIT, intervalos cortos, ciclismo y circuitos o trabajo de fuerza, no confíes en la FC de muñeca para situar al cliente en una zona ni para confirmar el objetivo de un intervalo. Usa una banda pectoral o un sensor de brazo, o prescribe por RPE o por potencia y ritmo. Ignora las zonas de FC de muñeca en las sesiones de fuerza. La FC de muñeca puede ir por detrás de los cambios rápidos de esfuerzo, así que juzga cada bloque de trabajo por su parte final o por el RPE.
+  applies_to: |-
+    Adultos sanos en protocolos de laboratorio (p. ej., 21-68 años, media de 34, n=45 en Gielen). La prueba de 2026 usó caminar, no HIIT ni trabajo de fuerza. Específico de cada modelo y firmware.
+  conflicts: |-
+    Los resultados varían según la marca, el modelo, el ajuste y la posición en la muñeca. Zhang aun así consideró aceptables los dispositivos de muñeca para la mayoría de las actividades habituales. La evidencia de que la FC de muñeca se retrasa al inicio de los intervalos es indirecta.
+- key: cardio-health/watch-auto-zones-and-threshold-features
+  source_hash: 9cbf5a406bd61be01917755bdd58dfb545c48c401c6f0d95c867bdd1ea5406e7
+  status: machine
+  heading: Zonas automáticas del reloj y funciones de umbral
+  rule_text: |-
+    No aceptes como precisas la FC de umbral de lactato ni las zonas detectadas automáticamente por un reloj; trátalas como de unos ±10 bpm y contrástalas con el RPE y el test del habla. Si las zonas del reloj se basan en 220 - edad o en una FC máx por defecto, sustitúyelas por zonas de Karvonen construidas con la FC en reposo medida. El VO2máx del reloj sirve para tendencias, no para los límites de las zonas.
+  applies_to: |-
+    Corredores recreativos y adultos sanos, en gran parte con banda pectoral; muestras pequeñas de Garmin y Coros. No se ha probado el uso solo con muñeca ni en modalidades de gimnasio.
+  conflicts: |-
+    Sin sesgo a nivel de grupo, pero con una correlación individual débil (r de solo 0.13), y todos los dispositivos sobrestimaron el ritmo de umbral. Los algoritmos cambian con el firmware.
+- key: cardio-health/beta-blockers-no-formula-based-hr-zones
+  source_hash: 13db789aeb3fbc320364d5c90817ac2c9a699c9746cad330e22c838b5dfcf9bd
+  status: machine
+  heading: 'Betabloqueantes: nada de zonas de FC basadas en fórmulas'
+  rule_text: |-
+    Si un cliente toma un betabloqueante, nunca uses 220 - edad, Tanaka ni ninguna zona de FC basada en fórmulas. Usa una FC máx de una prueba de esfuerzo con supervisión médica y con la medicación actual si está disponible; si no, prescribe por RPE (12-13 moderado en la escala 6-20; nada de trabajo vigoroso sostenido, RPE 14 o más, sin autorización médica, véase la regla siguiente) y por el test del habla. Tras cualquier cambio de dosis, reajusta los objetivos volviendo a anclarlos a las cargas de las sesiones recientes o con una nueva prueba. Pregunta a cada cliente nuevo por medicación cardiovascular o que limite la frecuencia cardiaca y deriva para autorización médica cuando corresponda.
+  applies_to: |-
+    Pacientes con insuficiencia cardiaca y de rehabilitación cardiaca. Es probable que las personas que toman betabloqueantes por hipertensión, migraña o ansiedad se vean afectadas de forma parecida, pero no se ha estudiado.
+  conflicts: |-
+    La atenuación depende del fármaco, la dosis y el momento de la toma. No se cubrieron otros fármacos que limitan la frecuencia cardiaca (p. ej., antagonistas del calcio no dihidropiridínicos, ivabradina).
+- key: cardio-health/rpe-as-the-anchor-under-beta-blockade
+  source_hash: 4f07cdd57c0b69cf8e396b80e44009959d684571d1a6ae460a53599372671f3d
+  status: machine
+  heading: El RPE como referencia con betabloqueantes
+  rule_text: |-
+    Para clientes con betabloqueantes, usa el RPE como referencia principal de intensidad: Borg 12-13 (CR10 de unos 5-6) para el trabajo moderado, la franja moderada del ACSM 2011 (véase "Franjas de intensidad del ACSM"), empezando por el extremo inferior (el ensayo posbaipás citado abajo usó CR10 4-5), con el test del habla como comprobación. Fija un techo: nada de trabajo vigoroso sostenido (RPE 14 o más, la franja vigorosa del ACSM) sin autorización médica. Respeta cualquier límite objetivo de una prueba supervisada (p. ej., 50% de la FCR o 65% de la carga pico). Vuelve a enseñar a anclar el RPE en las primeras sesiones, porque algunas personas infravaloran el esfuerzo y acaban yendo más fuerte.
+  applies_to: |-
+    Adultos jóvenes sanos tras una única dosis aguda (Mitchell) y pacientes de rehabilitación tras un CABG (Zanettini). La aplicación a clientes de gimnasio de mediana edad con medicación crónica es una inferencia.
+  conflicts: |-
+    Las relaciones RPE-FC y RPE-VO2 cambian con el betabloqueo, y la autorregulación puede derivar hacia el sobreentrenamiento. Influyen la habilidad para anclar la escala, la educación y la familiaridad con el entrenamiento.
+- key: cardio-health/hiit-and-sit-raise-vo2max-the-edge-over-mict-is-small
+  source_hash: dcfcebabc9d6c7370245c67316ac2f92e6666109d269837f13fcdba1c04cc185
+  status: machine
+  heading: El HIIT y el SIT aumentan el VO2máx; la ventaja sobre el MICT es pequeña
+  rule_text: |-
+    A un cliente con poco tiempo, que ya es activo y cuyo objetivo principal es la forma física o la salud, ofrécele el SIT o el HIIT de bajo volumen como alternativa respaldada por la evidencia al cardio moderado más largo, una vez cumpla los requisitos previos de "Seguridad del HIIT y cribado previo". Espera una mejora del VO2máx de aproximadamente 1-2 MET (3-6 mL/kg/min) en 6-12 semanas. Dile al cliente que el HIIT supera al MICT solo ligeramente; la ventaja es el tiempo, no un efecto mucho mayor.
+  applies_to: |-
+    Adultos sanos de 18-64 años, sedentarios o activos de forma recreativa. Los datos de SIT proceden sobre todo de personas jóvenes (media de 23.5 años en Gist) y no entrenadas, en cicloergómetro. Todos los ensayos Cochrane fueron supervisados y, en su mayoría, cortos y pequeños.
+  conflicts: |-
+    Todos coinciden en que el HIIT/SIT es mejor que no hacer ejercicio; el tamaño de la ventaja sobre el MICT varía, Cochrane le asigna una certeza baja y Gist no encontró ninguna. La mayoría de las revisiones de la revisión paraguas obtuvieron una puntuación de moderada a críticamente baja en AMSTAR-2. El HIIT sin supervisión no se ha probado. Las respuestas individuales varían mucho.
+- key: cardio-health/using-hiit-on-top-of-a-continuous-base
+  source_hash: b88ddd9732bef6223e22221b60df30105fc76ed5ebdef12a523ec277397e196c
+  status: machine
+  heading: Usar el HIIT sobre una base continua
+  rule_text: |-
+    Usa el entrenamiento continuo moderado como base. Cuando el objetivo principal sea la forma aeróbica y el cliente tolere esfuerzos duros, añade 1-2 sesiones de HIIT/semana (por ejemplo, 4 x 4 min fuertes con 3 min suaves, intervalos más largos de 3-5 min con una relación trabajo:descanso de alrededor de 1:1, o esfuerzos de 30-60 s), sobre todo cuando el progreso se ha estancado. Si al cliente no le gustan los intervalos, tiene limitaciones ortopédicas o es un principiante total, el MICT sigue produciendo la mayor parte de la mejora. Hacer al menos 4 semanas previas de cardio moderado regular antes de los intervalos es una práctica sensata pero no probada (es obligatorio antes de los esprints a tope; véase "Seguridad del HIIT y cribado previo"). No prometas que el HIIT sea muchísimo mejor: en personas sanas la ventaja es de alrededor de 1 mL/kg/min.
+  applies_to: |-
+    Los datos en personas sanas proceden sobre todo de adultos jóvenes y ensayos cortos; los datos clínicos, de enfermedad coronaria, insuficiencia cardiaca, hipertensión, síndrome metabólico y obesidad; el metaanálisis en red abarca sobrepeso u obesidad. La evidencia en personas mayores es más escasa.
+  conflicts: |-
+    La ventaja es pequeña e imprecisa en personas sanas ("posiblemente pequeña"; Milanovic usó la discutida inferencia basada en magnitudes) y mayor en grupos menos en forma y clínicos. El subconjunto de Bacon es pequeño, seleccionado y sin control. La respuesta individual, la adherencia y el riesgo de lesión varían, y el disfrute influye más en la adherencia que una diferencia de 1 mL/kg/min.
+- key: cardio-health/fewer-sprints-more-weeks-and-skip-classic-wingate
+  source_hash: c6f8995f5743db79336d0b4fe5fd8a71dadd18e65c356833afe04daedd11833a
+  status: machine
+  heading: Menos esprints, más semanas (y sin el Wingate clásico)
+  rule_text: |-
+    En el SIT, usa 2-3 esprints por sesión, no el clásico Wingate de 4-6 x 30 s. Haz que el plan dure más (al menos 6-12 semanas) en lugar de añadir esprints, y aumenta la intensidad, no las repeticiones. Si un cliente pide sesiones de esprints clásicas, explícale que 2-3 esprints a tope de unos 20 s dan mejoras del VO2máx similares con menos malestar y tiempo.
+  applies_to: |-
+    Adultos no entrenados o activos de forma recreativa, en su mayoría jóvenes, que hacen esprints a tope en bicicleta (Vollaard 2017 excluyó a pacientes, deportistas y a quienes tenían un VO2máx inicial superior a 55). No a esprints corriendo ni a deportistas entrenados; el SIT clásico puede seguir siendo adecuado para deportistas, lo que queda fuera de este ámbito.
+  conflicts: |-
+    Todos estos análisis comparten autor (Vollaard), que desarrolló el REHIT; Vollaard 2017 usó inferencia basada en magnitudes. Wen 2019 encontró lo contrario para el HIIT en general: los protocolos de intervalos largos (2 min o más) y de alto volumen (15 min o más) dieron mayores efectos sobre el VO2máx y fueron las únicas variantes que superaron al MICT. Así que la conclusión es "menos esprints bastan para el SIT", no "menos siempre es mejor". El metaanálisis estudió el número de esprints, no su duración.
+- key: cardio-health/minimum-effective-dose-rehit-and-3-x-20-s
+  source_hash: 8d3db2236a5a83a15be6234776e1d067c9be7dfda2e5bd1d9cf6b3d375f7c3fa
+  status: machine
+  heading: 'Dosis mínima eficaz: REHIT y 3 x 20 s'
+  rule_text: |-
+    El REHIT y el SIT de 3 x 20 s son opciones para clientes ya activos que no tienen tiempo, no para principiantes sedentarios. Requisitos previos: PAR-Q+ con todas las respuestas "no" y al menos 4 semanas de cardio moderado regular sin síntomas; cualquiera mayor de 45 años o con algún "sí" en el PAR-Q+ pasa antes una revisión profesional (véase "Seguridad del HIIT y cribado previo"). Para un cliente que cumpla los requisitos, la dosis mínima es de 3 sesiones a la semana de 10 minutos en bicicleta: 2-3 min suaves, luego 2-3 esprints a tope de 20 s con unos 2-3 min de pedaleo suave entre ellos y, después, 3 min de vuelta a la calma. No acortes los esprints por debajo de unos 20 s para hacerlos "más fáciles"; se pierde adaptación sin que se sientan mejor. Introdúcelo a lo largo de 2-3 semanas: 1 esprint de 10 s, luego de 15 s y luego de 20 s, como en la progresión del REHIT.
+  applies_to: |-
+    Adultos jóvenes sanos y sedentarios (Gillen: hombres de 27 ± 8 años, IMC 26, n=9 SIT; Metcalfe: n=15 REHIT; Nalcakan: n=36, edad 22 ± 3). Ensayos pequeños, cortos y de laboratorio en bicicleta; no está establecido en personas mayores u obesas ni sin supervisión.
+  conflicts: |-
+    ECA únicos y pequeños, respaldados por los metaanálisis sobre el número de esprints, procedentes en gran parte del mismo grupo de investigación. La mejora de la sensibilidad a la insulina se dio en hombres, no en mujeres. Las respuestas individuales difieren. Los ensayos incluyeron a adultos jóvenes sedentarios bajo supervisión de laboratorio; restringir el trabajo a tope a clientes ya activos y cribados es una política de seguridad para el coaching sin supervisión, basada en las fuentes de cribado, no un hallazgo de estos ensayos.
+- key: cardio-health/longer-submaximal-intervals-10-x-1-min-and-4-x-4-min
+  source_hash: 8f15cab072a67e7955f4d8cd7ba38019aa4a0c3073df3bba1de9ffb17a4b3ee8
+  status: machine
+  heading: 'Intervalos submáximos más largos: 10 x 1 min y 4 x 4 min'
+  rule_text: |-
+    Para los clientes que no pueden o no quieren ir a tope, o que buscan la mayor mejora de forma física, usa HIIT submáximo. Empieza con 10 x 1 min fuerte / 1 min suave (alrededor del 90% de la FC máx, RPE de unos 7-8/10). Progresa a 4 x 4 min al 90-95% de la FC máx (RPE de unos 7/10) con 3 min suaves, unos 25 min más el calentamiento, 2-3 veces por semana. Combina los objetivos de FC con el RPE.
+  applies_to: |-
+    4 x 4: 40 hombres jóvenes moderadamente entrenados (valor inicial de unos 55-60). 10 x 1: un piloto minúsculo de 2 semanas sin control en personas mayores con diabetes tipo 2. Extrapolado a usuarios corrientes de gimnasio.
+  conflicts: |-
+    Ensayos únicos y pequeños, respaldados por Wen 2019. La FC máx estimada por la edad tiene un gran error individual. El resumen de Helgerud da la mejora del 4 x 4 como un 7.2%, lo que no cuadra con sus propios 55.5 a 60.4 mL/kg/min (alrededor de un 8.8%); aquí solo se citan los valores absolutos.
+- key: cardio-health/zone-2-popular-claims-outrun-evidence
+  source_hash: e831e11f6b9bd1bb84e732b55890207f1a4d97b4417217b935a049de1d702fdd
+  status: machine
+  heading: 'Zona 2: las afirmaciones populares van por delante de la evidencia'
+  rule_text: |-
+    No prescribas la Zona 2 como una intensidad singularmente superior u obligatoria. El cardio suave, en el que se puede conversar, es una forma perfectamente válida de acumular volumen, recuperarse y cumplir los minutos de las guías. Para un cliente con poco tiempo (2-3 horas/semana en total), dedica parte del tiempo aeróbico a una intensidad más alta en lugar de pasarlo todo en Zona 2. No te obsesiones con límites de zona de precisión de laboratorio.
+  applies_to: |-
+    Adultos de la población general. El metaanálisis sobre el VO2máx abarcó a adultos sanos de 18-45 años (media de 25), así que extrapolarlo a clientes mayores o clínicos es indirecto. Los deportistas de resistencia de alto volumen son otro contexto.
+  conflicts: |-
+    La fuente principal es una revisión narrativa; uno de los autores (Gibala) investiga la alta intensidad y declara una participación accionarial (Longevity League). Pocos ECA prueban directamente la "Zona 2", y las definiciones varían (lactato, umbral ventilatorio, %FC máx). El trabajo en Zona 2 sigue siendo ejercicio válido; solo carece de respaldo la afirmación de que es "óptimo".
+- key: cardio-health/hiit-for-broader-cardiometabolic-health
+  source_hash: 2ef3c75860c59dd73e264a435d73ae8934f38ada944b0c88775818a3416ea8da
+  status: machine
+  heading: HIIT para la salud cardiometabólica en general
+  rule_text: |-
+    Presenta el HIIT como una opción eficaz y eficiente en tiempo para la salud cardiometabólica, no como algo obligatorio ni mágico. En personas mayores, el objetivo principal es la actividad regular a los niveles de las guías; algo de trabajo vigoroso es razonable si se tolera, pero no afirmes que se ha demostrado que el HIIT alarga la vida.
+  applies_to: |-
+    Revisión paraguas: poblaciones adultas mixtas, en gran parte clínicas. Generation 100: adultos noruegos de 70-77 años, el 87.5% con buena salud y el 80% con actividad media o alta al inicio.
+  conflicts: |-
+    Alta heterogeneidad entre revisiones. En Generation 100 el grupo de control hizo una parte mayor de su actividad como HIIT que el grupo de MICT, lo que diluyó el contraste; las diferencias de mortalidad no fueron significativas y la comparación HIIT frente a MICT fue exploratoria.
+- key: cardio-health/insulin-sensitivity-and-glycaemic-markers
+  source_hash: 6f71c8c52534422f84d01c9679c8f44f01a6f97463a837a740ccbe03d8062249
+  status: machine
+  heading: Sensibilidad a la insulina y marcadores glucémicos
+  rule_text: |-
+    Presenta el HIIT y el SIT como una forma válida de mejorar la sensibilidad a la insulina, no como mejores que el cardio moderado para la HbA1c. Para clientes con prediabetes o diabetes, tanto el HIIT como el MICT son aceptables y la constancia importa más que la modalidad. La diabetes cuenta como enfermedad metabólica conocida según el algoritmo del ACSM 2015: un cliente con diabetes que ahora está inactivo necesita autorización médica antes de empezar cualquier programa, y uno activo, antes de progresar a trabajo vigoroso (véase "Empieza bajo, progresa de forma gradual y cribado por síntomas").
+  applies_to: |-
+    Adultos, incluidos los que tienen diabetes tipo 2 o riesgo de tenerla. Los datos de SIT son heterogéneos y proceden sobre todo de muestras jóvenes o sanas.
+  conflicts: |-
+    Jelleyman encontró que el HIIT era mejor para la resistencia a la insulina; Zeng no encontró diferencias entre HIIT y MICT en la HbA1c ni en el HOMA-IR en la diabetes tipo 2. La respuesta glucémica varía mucho.
+- key: cardio-health/enjoyment-and-affect
+  source_hash: 769adb7eb39e41faf15e1d497cd65f167624216519295f5f4503b7f898ff4e27
+  status: machine
+  heading: Disfrute y estado afectivo
+  rule_text: |-
+    No prometas que el HIIT es más divertido. Protege el disfrute manteniendo bajo el número de esfuerzos duros, con preferencia por esprints muy cortos (unos 5-6 s) o pocas repeticiones. Pregunta por la sensación durante la sesión (Feeling Scale de -5 a +5) y por el disfrute después de la sesión. Si un cliente refiere sensaciones claramente negativas o le aterran las sesiones, cambia a MICT o a intervalos más suaves; su propia respuesta pesa más que las medias de grupo.
+  applies_to: |-
+    Adultos sanos en sesiones agudas de laboratorio. El estado afectivo a largo plazo y la adherencia sin supervisión están en gran parte sin estudiar.
+  conflicts: |-
+    Hay un desacuerdo metodológico abierto entre los defensores del HIIT (p. ej. Metcalfe, Vollaard) y los investigadores del estado afectivo (Ekkekakis). Las respuestas afectivas difieren mucho entre personas.
+- key: cardio-health/real-world-adherence-to-unsupervised-hiit
+  source_hash: fb5f475a771f8056d79ee0a4ecab62d2ad48f1d261f2d30c64602caeec24ced2
+  status: machine
+  heading: Adherencia real al HIIT sin supervisión
+  rule_text: |-
+    Trata el HIIT como una opción más y deja que el cliente elija. Da por hecho que la adherencia decaerá sin estructura: programa las sesiones, pide al cliente que las registre, revísalas cada 2-4 semanas y ten preparada una alternativa de cardio moderado. Juzga el éxito por las sesiones completadas a lo largo de meses, no por el protocolo sobre el papel.
+  applies_to: |-
+    Adultos neozelandeses con sobrepeso u obesidad y adultos sanos sedentarios en ensayos supervisados. Hay pocos datos de gimnasios comerciales sin supervisión.
+  conflicts: |-
+    Un único estudio no aleatorizado de 12 meses; la comparación de quienes se adhirieron es post hoc y su IC cruza el cero. La opinión de los expertos está dividida. La adherencia probablemente depende del sexo, la experiencia y las preferencias.
+- key: cardio-health/dropout-tracks-time-not-intensity
+  source_hash: 455bcbeeabfd47d846c3d39f24d4e5c15c433688bc901c893630a4525e26adad
+  status: machine
+  heading: El abandono depende del tiempo, no de la intensidad
+  rule_text: |-
+    Cuando un cliente empiece con el HIIT (tras el periodo previo de cardio moderado), mantén las sesiones cortas (10-20 min incluido el calentamiento) y el tiempo semanal moderado. Al empezar con los intervalos, prefiere la bicicleta u otra modalidad de bajo impacto, sobre todo con clientes de más peso o con dolor articular; en los demás casos, que decidan las preferencias. El riesgo de abandono lo suponen las sesiones largas y extenuantes, no la intensidad en sí.
+  applies_to: |-
+    Adultos sanos sedentarios en intervenciones de investigación supervisadas de 4 semanas o más; el abandono en el gimnasio puede ser mayor.
+  conflicts: |-
+    Un único metaanálisis de voluntarios motivados. Wewege 2017 sugiere que correr da más pérdida de grasa que pedalear, así que elegir la modalidad supone sopesar la adherencia frente al resultado.
+- key: cardio-health/stair-climbing-and-home-based-hiit
+  source_hash: 78725576dbe296829539fae6983cbc4e227c8b341e051821f186cfd81b402392
+  status: machine
+  heading: Subir escaleras y HIIT en casa
+  rule_text: |-
+    Para clientes ya activos sin tiempo para una sesión de gimnasio que cumplan los requisitos previos del SIT (véase "Seguridad del HIIT y cribado previo"), 3 x 20 s subiendo escaleras rápido y de forma continua (tan rápido como sea seguro, con pasamanos si hace falta), 3 veces por semana, con recuperación suave entre esfuerzos, es una opción validada. La versión de 3 x 60 s subiendo y bajando un solo tramo sirve cuando solo hay un tramo disponible, pero se percibe más o menos igual de dura y dio mejoras menores. Para clientes con problemas de rodilla o de equilibrio, usa la bicicleta. No prometas nada sobre el control de la glucosa con los esprints en escaleras.
+  applies_to: |-
+    Escaleras: mujeres jóvenes sedentarias en fases pequeñas de un solo brazo sin controles. HIIT en casa: adultos sanos y pacientes, mezclados. Las personas mayores, los hombres y las personas con problemas de rodilla o de equilibrio no se han estudiado en escaleras.
+  conflicts: |-
+    La evidencia sobre escaleras es pequeña y sin control; la evidencia más amplia sobre HIIT respalda la idea, no el protocolo concreto. El riesgo de caída en escaleras depende del equilibrio, el calzado y la fatiga.
+- key: cardio-health/older-adults-and-interval-training
+  source_hash: 93bda824a53d9ddbcad5dac89e2204c06932d5db3b2a85c8613aada98d5ef732
+  status: machine
+  heading: Mayores y entrenamiento por intervalos
+  rule_text: |-
+    Las personas mayores pueden hacer entrenamiento por intervalos, pero usa intervalos submáximos (por ejemplo, 4 x 4 o intervalos de 1 min a RPE 6-7/10) en bicicleta o caminando cuesta arriba, no esprints a tope, al menos al principio. Combínalo siempre con entrenamiento de fuerza y de equilibrio. Supervisa las primeras sesiones. Los clientes mayores de 45 años que se inician en el trabajo vigoroso pasan una revisión profesional antes de los intervalos; cualquiera con síntomas, o con enfermedad cardiovascular, metabólica o renal conocida, sigue las normas de autorización del ACSM (véase "Empieza bajo, progresa de forma gradual y cribado por síntomas").
+  applies_to: |-
+    Adultos de 60-77+ años, en su mayoría sanos y supervisados. Cai abarca solo a mujeres. Evidencia limitada para el uso sin supervisión o en adultos frágiles.
+  conflicts: |-
+    El resultado principal de Generation 100 fue nulo y su grupo de control hizo gran parte de su actividad como HIIT. Los resultados de VO2máx y VO2pico discrepan en Cai. La calidad de las revisiones es limitada. La idoneidad depende de las comorbilidades, las articulaciones y el riesgo de caídas.
+- key: cardio-health/choosing-hiit-vs-mict-vs-sit
+  source_hash: ed27343f94d002c9c3f2a32a2ba43c3afb35a4fb4ef262cc26732044c4c1ca18
+  status: machine
+  heading: Elegir entre HIIT, MICT y SIT
+  rule_text: |-
+    (0) Principiante sedentario: primero MICT (caminar como base, pasando de 10-20 min hacia 150 min/semana); nada de esprints a tope. (1) Cliente con muy poco tiempo que ya es activo (PAR-Q+ todo "no", al menos 4 semanas de cardio moderado regular sin síntomas, revisión profesional previa si es mayor de 45 años o tiene algún "sí" en el PAR-Q+): SIT/REHIT 3 veces por semana (2-3 x 20 s a tope en bicicleta), presentado como dosis mínima, más caminar a diario de forma adicional hacia los minutos de la OMS. (2) Quiere la mayor mejora de forma física y dispone de 25-30 min: HIIT de 4 x 4 o de 10 x 1 min, 2-3 veces por semana. (3) Desentrenado, con obesidad y dolor articular, mayor, con ansiedad ante el esfuerzo duro, al que no le ha gustado el HIIT o con un problema médico sin cribar: primero MICT (caminar a paso ligero, bicicleta), añadiendo intervalos submáximos más adelante. (4) En todos los casos, prioriza el entrenamiento de fuerza 2 o más veces por semana y deja que decidan las preferencias, porque la adherencia determina los resultados.
+  applies_to: |-
+    Adultos corrientes de 18-65 años, además de personas mayores con las salvedades anteriores. La evidencia de bajo volumen procede sobre todo de ensayos cortos supervisados; el ejemplo del REHIT, de adultos jóvenes sedentarios.
+  conflicts: |-
+    Se desconoce si 1-3 min/semana de trabajo a tope pueden sustituir al volumen de las guías para resultados a largo plazo como la mortalidad, y la OMS no lo respalda. Cochrane asigna una certeza baja a la ventaja del HIIT en CRF y no encontró ningún ensayo que informara de la mortalidad. Entre los autores de Yin hay defensores del bajo volumen.
+- key: cardio-health/jump-rope-as-conditioning
+  source_hash: dac3ed519dbcb2c7cc69ca9c61158bb7e28a961700d85dc40a17ec733a2017b2
+  status: machine
+  heading: La comba como acondicionamiento
+  rule_text: |-
+    La comba puede servir como opción de cardio. En ensayos, sobre todo con jóvenes, dio mejoras de pequeñas a moderadas frente a controles activos o pasivos en la frecuencia cardiaca en reposo, el IMC, la masa grasa, la resistencia cardiorrespiratoria, el salto y el esprint, pero no cambió la tensión arterial, el perímetro de cintura-cadera ni la masa magra. Trata saltar a la comba de forma continua como un trabajo vigoroso y muy exigente: unos 11.7 a 12.5 MET, con una frecuencia cardiaca de unos 176 a 177 bpm en un estudio de laboratorio, y las mujeres alcanzaron alrededor del 92% del VO2máx. Entre unos 125 y 145 saltos por minuto, saltar más rápido apenas cambió el coste energético, pero los ritmos muy altos cuestan más. Inferencia práctica, no probada en ensayos: los principiantes deberían hacer tandas cortas con descansos en lugar de series largas continuas.
+  applies_to: |-
+    Los efectos del entrenamiento proceden sobre todo de niños y adolescentes, así que aplicarlos a adultos es una extrapolación. Los datos de intensidad proceden de dos pequeñas muestras de laboratorio de los años 1980 cuyas edades no figuran en los resúmenes.
+  conflicts: |-
+    Hay pocos ensayos de entrenamiento en adultos. Zhao 2023 (preadolescentes de 10 a 12 años, 15 estudios, 1,048 sujetos) no encontró ninguna ventaja frente a la educación física habitual en la morfología corporal, lo que contradice en parte los hallazgos sobre el IMC y la masa grasa (Singh comparó la comba con controles activos o pasivos). No se encontró ninguna revisión en adultos. Ninguna fuente dio tasas de lesión ni una progresión de volumen para principiantes.
+- key: cardio-health/exercise-for-bone-resistance-plus-impact
+  source_hash: e811d2a7ba3a044f1a67303b8b4ed8a6b1417633a32544b0ccd8bb1db3e0ec9e
+  status: machine
+  heading: 'Ejercicio para el hueso: fuerza más impacto'
+  rule_text: |-
+    Para la salud ósea, combina entrenamiento de fuerza progresivo de los grandes grupos musculares (incluidos la espalda y las piernas) 2-3 días por semana, avanzando con el tiempo hacia unas 3 series con una carga que se pueda levantar 8-12 veces, con algo de trabajo de impacto moderado (pisotones, trote, saltitos o saltos bajos) la mayoría de los días, unos 50 impactos por sesión (por ejemplo, 5 series de 10). Empieza con poco impacto y auméntalo cuando el cliente esté acondicionado y no tenga ningún problema articular ni de fracturas que lo impida. Evita la flexión de columna con carga en cualquiera con masa ósea baja conocida. Las dosis son cifras de consenso, no umbrales derivados de ensayos.
+  applies_to: |-
+    El consenso británico está redactado para personas con osteoporosis (sobre todo mujeres posmenopáusicas y personas mayores); ESSA abarca tanto la prevención como el tratamiento. Aplicar las dosis a adultos sanos y a quienes entrenan fuerza de forma recreativa es una extrapolación.
+  conflicts: |-
+    La guía británica eligió el impacto moderado porque el impacto de mayor intensidad no mostró un beneficio adicional claro, mientras que la guía australiana usa saltos de mayor intensidad en personas sin osteoporosis. Las personas con fracturas vertebrales o con varias fracturas por traumatismo leve normalmente deberían limitar el impacto al nivel de caminar a paso ligero y pedir antes consejo clínico (véase "Masa ósea baja: cargas pesadas solo con cribado y supervisión" en strength-hypertrophy.md).
+- key: cardio-health/expected-bone-gains-are-modest
+  source_hash: 111a3bbe7dd0326637a1ebcf8d698a6ccc9a0740fca71f391facd61d303126cf
+  status: machine
+  heading: Las mejoras óseas esperables son modestas
+  rule_text: |-
+    Explica a los clientes que el ejercicio frena la pérdida de hueso o añade un poco de hueso, normalmente un pequeño porcentaje de DMO en un plazo de meses a un año, y que un programa para el hueso tiene que mantenerse un año o más. Prefiere la combinación de fuerza más impacto o trabajo con carga del propio peso frente a solo fuerza o solo caminar. No prometas menos fracturas a partir de estos cambios en la DMO.
+  applies_to: |-
+    Mujeres posmenopáusicas (el metaanálisis en red también incluyó a mujeres sanas de 60+ años). Para hombres y adultos de 65+ años, véase "Entrenamiento de fuerza y hueso en hombres y en mayores de 65 años" en strength-hypertrophy.md.
+  conflicts: |-
+    La calidad de la información en los ensayos Cochrane fue baja y la heterogeneidad, notable. El metaanálisis en red de 2026 sitúa en buen lugar en varias localizaciones el ejercicio cuerpo-mente más entrenamiento de fuerza, lo que difiere del énfasis en el impacto.
+- key: cardio-health/walking-alone-does-little-for-bone-density
+  source_hash: 6c4dfc77b5f701b14c435b67eddb1c8dcade07abe35b778f51b3a6f5b6adca3f
+  status: machine
+  heading: Caminar por sí solo hace poco por la densidad ósea
+  rule_text: |-
+    Mantén caminar como base para la salud general, pero no lo presentes como el plan para la salud ósea: añade entrenamiento de fuerza y algo de impacto. Un cliente que solo camina puede esperar poco o ningún beneficio en la columna y, como mucho, un beneficio pequeño en la cadera al cabo de 6 meses o más.
+  applies_to: |-
+    Mujeres perimenopáusicas y posmenopáusicas; ensayos pequeños y mixtos, aleatorizados y no aleatorizados.
+  conflicts: |-
+    Para las personas con fracturas vertebrales, el consenso británico fija caminar a paso ligero como techo de impacto, así que caminar es el nivel adecuado para ellas; se trata de un límite de seguridad, no de una afirmación de que fortalezca el hueso.
+- key: cardio-health/concentrated-vigorous-sessions-ramp-up-screen-by-symptoms
+  source_hash: d6d87cfcc05750e86908d689ddd6a4beae755f0c77c8a4dc2814f8e97eb01f6e
+  status: machine
+  heading: |-
+    Sesiones vigorosas concentradas: aumenta de forma progresiva y cribado por síntomas
+  rule_text: |-
+    Un cliente que antes era inactivo no debe empezar con una única sesión larga o a tope el fin de semana; aumenta la intensidad y la duración de las sesiones a lo largo de varias semanas antes de usar un patrón concentrado de "guerrero de fin de semana" o ráfagas intensas de VILPA. En la evaluación inicial, haz un cribado de síntomas (dolor u opresión en el pecho, falta de aire inusual, palpitaciones, desmayos) y de enfermedad cardiovascular, metabólica o renal conocida, y aplica el algoritmo del ACSM 2015: si es inactivo con enfermedad conocida, o si tiene síntomas, necesita autorización médica antes de empezar cualquier programa; si es activo con enfermedad conocida y sin síntomas, la necesita antes de progresar a trabajo vigoroso. Los clientes sanos y habitualmente activos pueden entrenar de forma vigorosa sin autorización rutinaria.
+  applies_to: |-
+    Todos los adultos; los datos sobre el desencadenante proceden de médicos varones de EE. UU. (Albert, 2000) y de pacientes con infarto de miocardio (Mittleman, diseño de casos cruzados), así que las cifras absolutas pueden diferir en mujeres y otros grupos. Especialmente relevante para adultos de mediana edad y mayores que empiezan a hacer ejercicio vigoroso.
+  conflicts: |-
+    El riesgo depende de una cardiopatía subyacente, a menudo sin diagnosticar. Unos antecedentes familiares de muerte súbita o de enfermedades cardiacas hereditarias justifican la valoración médica sea cual sea la forma física.
+- key: cardio-health/hiit-safety-and-pre-hiit-screening
+  source_hash: 793238e3cecae136528ae29db82cf1e97d20bb947c2c0a63d03cb0352eae7678
+  status: machine
+  heading: Seguridad del HIIT y cribado previo
+  rule_text: |-
+    El HIIT es aceptable para adultos sanos, pero hay que llegar a él de forma progresiva. Los esprints a tope (SIT, REHIT, esprints en escaleras) no son para principiantes sedentarios. Requisitos previos para cualquier trabajo a tope: PAR-Q+ con todas las respuestas "no" y al menos 4 semanas de cardio moderado regular sin síntomas. Cualquiera mayor de 45 años, o con algún "sí" en el PAR-Q+, pasa una revisión por un profesional del ejercicio cualificado o un clínico antes del trabajo vigoroso o máximo. Después, progresa el número y la duración de los intervalos, y haz siempre calentamiento (3-5 min) y vuelta a la calma (3 min suaves). Antes del HIIT o el SIT, haz un cribado de síntomas (dolor en el pecho, falta de aire inusual, desmayos, mareos, palpitaciones), de enfermedad cardiaca, metabólica o renal conocida y de antecedentes familiares, y enseña estos síntomas como señales para parar y buscar atención médica. Cualquiera con síntomas o enfermedad conocida sigue las normas de autorización del ACSM y debería empezar con intervalos submáximos supervisados en lugar de esprints a tope. El periodo previo de 4 semanas es un criterio práctico, no un protocolo probado.
+  applies_to: |-
+    Los datos de eventos proceden de pacientes de rehabilitación cardiaca supervisados; el riesgo absoluto en usuarios sanos de gimnasio es presumiblemente menor, pero no está cuantificado. La guía del ACSM se dirige a adultos aparentemente sanos. La seguridad del HIIT sin supervisión no se ha probado.
+  conflicts: |-
+    Solo hubo 3 eventos en total, así que la comparación de tasas entre HIIT y ejercicio moderado es muy imprecisa y procede de una sola cohorte observacional. Los ensayos en población sana rara vez registran los efectos adversos. El riesgo individual depende de la enfermedad subyacente.
+- key: cardio-health/atrial-fibrillation-at-very-high-endurance-volumes
+  source_hash: 8d904a9d904a3ad730ca390e7068dd655fcf7ff9fce340fb0842ed509de572db
+  status: machine
+  heading: Fibrilación auricular con volúmenes de resistencia muy altos
+  rule_text: |-
+    Con volúmenes de las guías y moderadamente por encima de ellas (hasta unos 25-30 MET-h/semana, p. ej. unas 4-5 h/semana de cardio mixto moderado-vigoroso), trata el ejercicio como protector frente a la FA. Los clientes que acumulan más de unas 6-7 h/semana de entrenamiento de resistencia duro durante años deberían conocer la modesta señal de FA y comunicar a un médico palpitaciones, pulso irregular, una caída del rendimiento sin explicación o mareos. No desanimes a los clientes corrientes de entrenar de forma vigorosa por la FA.
+  applies_to: |-
+    Los datos de deportistas proceden sobre todo de deportistas varones, en su mayoría blancos; a efectos de coaching, esto atañe a quienes practican deportes de resistencia de forma recreativa con alto volumen. El efecto protector se aplica a adultos corrientes.
+  conflicts: |-
+    El metaanálisis dosis-respuesta de 2026 es un único estudio publicado de forma anticipada que estandariza exposiciones en su mayoría autodeclaradas, así que los umbrales son aproximados. Que los deportes mixtos conlleven más riesgo que los de resistencia contradice el planteamiento habitual. Se desconocen los umbrales por sexo y la relevancia clínica individual es incierta.
+- key: cardio-health/coronary-calcium-in-very-high-volume-exercisers
+  source_hash: f4dac15218ddac89dea10c14f7971bc9aa5ad40e54a5c395ce0cbbd9938370ec
+  status: machine
+  heading: Calcio coronario en quienes hacen volúmenes de ejercicio muy altos
+  rule_text: |-
+    Los clientes corrientes con volúmenes de las guías (unos 7.5-20 MET-h/semana) están muy por debajo de los niveles en los que aparece una señal de calcio arterial coronario (CAC); no cites el CAC como motivo para evitar el cardio. A los hombres de mediana edad que hacen más de unas 5-8 h/semana de trabajo de resistencia, en su mayoría muy duro, durante años, coméntales que el CAC puede ser más alto y que la evaluación estándar del riesgo cardiovascular por parte de un médico sigue siendo aplicable. Variar la intensidad (más vigorosa, menos máxima) es una opción razonable.
+  applies_to: |-
+    Casi en su totalidad, deportistas varones de mediana edad y mayores de resistencia o de deportes mixtos; las mujeres no mostraron diferencias. La señal aparece a partir de aproximadamente 2000-3000+ MET-min/semana, unas 1.7-2.5x el volumen superior equivalente al de la OMS (unos 1200 MET-min/semana).
+  conflicts: |-
+    En su mayoría observacional y transversal, con ejercicio a lo largo de la vida autodeclarado. MARC-2 señala a la intensidad; los estudios transversales, al volumen. La genética, los lípidos, el tabaco y la tensión arterial dominan el riesgo de CAC.
+- key: cardio-health/clinical-meaning-of-exercise-related-coronary-calcium
+  source_hash: 019de5054d4dc84f5e90500ed9b8fb022cbc9133e902944694a258afaddd53d6
+  status: machine
+  heading: Significado clínico del calcio coronario asociado al ejercicio
+  rule_text: |-
+    Nunca le digas a un cliente que el volumen de entrenamiento anula una puntuación de CAC positiva conocida u otro riesgo cardiovascular. Cualquiera con un hallazgo de CAC, dolor en el pecho, falta de aire con el esfuerzo o síncope se gestiona con su médico; el coach solo ajusta el entrenamiento dentro de ese consejo médico.
+  applies_to: |-
+    Personas de mediana edad que hacen ejercicio, en su mayoría hombres, de EE. UU. y de los Países Bajos, con volumen autodeclarado (Cooper: 28% mujeres; datos neerlandeses de placa solo en hombres).
+  conflicts: |-
+    Conflicto directo: Ellingson 2026 y Aengevaeren 2017 respaldan una placa calcificada benigna; Berry 2025 muestra que el CAC mantiene su valor pronóstico sea cual sea la actividad y que no hay beneficio en infarto de miocardio con el volumen más alto. El beneficio en mortalidad se mantiene en cualquier caso.
+- key: cardio-health/exercise-alone-gives-modest-weight-loss
+  source_hash: 12834b2bda7a41549bcef9eddd3bf22b00d3b4fbc80dc033b4ba1716ea5c126f
+  status: machine
+  heading: El ejercicio por sí solo da una pérdida de peso modesta
+  rule_text: |-
+    Di a los clientes con claridad que el cardio sin cambios en la dieta suele mover la báscula solo unos 1.5-3.5 kg (como mucho unos 2 kg con los volúmenes de las guías, a menudo menos). Una pérdida de grasa significativa necesita un déficit energético: combina un déficit moderado (no severo) con cardio y entrenamiento de fuerza. Aun así, prescribe ejercicio por la grasa visceral, la forma física, la salud cardiometabólica, la prevención del aumento de peso, el mantenimiento y la conservación del músculo. Si el ejercicio es una parte importante de un plan de pérdida de peso, apunta a más de 250 min/semana. Nunca prescribas grandes volúmenes de cardio como sustituto de los cambios en la nutrición.
+  applies_to: |-
+    Adultos con sobrepeso u obesidad en ensayos controlados (en su mayoría programas aeróbicos moderados de 3-12 meses), incluidos pacientes con fármacos contra la obesidad o tras cirugía bariátrica (AHA). STRRIDE: personas sedentarias de 40-65 años, sin dieta, con dislipidemia leve a moderada. Quienes entrenan fuerza de forma recreativa y están delgados probablemente verían cambios en la báscula aún menores.
+  conflicts: |-
+    Las respuestas varían mucho por la compensación en la ingesta y en otros gastos. La cifra de más de 250 min/semana es una asociación; el ACSM señala que no hay ECA bien diseñados sobre la actividad para prevenir la recuperación del peso. El resultado nulo de la revisión paraguas sobre el mantenimiento se basa en una sola revisión sistemática con metaanálisis.
+- key: cardio-health/resistance-training-during-weight-loss
+  source_hash: 6c0854ec3918ba9c961b4ca522b7d0e9683b43c9e1ae57d02b616f135f8a2f01
+  status: machine
+  heading: Entrenamiento de fuerza durante la pérdida de peso
+  rule_text: |-
+    Combina el déficit calórico con entrenamiento de fuerza regular para proteger la masa magra. Elige entre HIIT y cardio continuo según las preferencias, el tiempo y la tolerancia articular, ya que son equivalentes para la pérdida de grasa con el mismo gasto energético. Presenta el éxito en la pérdida de peso como un resultado de composición corporal, no solo como una cifra en la báscula.
+  applies_to: |-
+    Adultos con sobrepeso u obesidad (ensayos de pérdida de peso) y cohortes de adultos en general (datos de mortalidad). No procede de levantadores entrenados.
+  conflicts: |-
+    La estimación sobre la masa magra procede de un único metaanálisis y el ACSM formula el beneficio con un "puede". La curva en J de Momma por encima de unos 60 min/semana es incierta y no debe interpretarse como un daño.
+- key: cardio-health/hiit-vs-mict-for-body-composition
+  source_hash: 58726efb928a22c9109ccad7560141edb1ee408e18d91789abc0ce34cb4380a3
+  status: machine
+  heading: HIIT frente a MICT para la composición corporal
+  rule_text: |-
+    Para la pérdida de grasa, elige la modalidad de cardio según el tiempo disponible y las preferencias, no según "zonas quemagrasa". No vendas el HIIT ni el SIT como un método mejor para perder grasa; el HIIT ahorra tiempo, pero no quema grasa más rápido por sí mismo. Espera efectos modestos sobre la pérdida de grasa solo con cardio; el balance energético y el entrenamiento de fuerza deben sostener el plan (una inferencia práctica, no probada en estos ensayos).
+  applies_to: |-
+    Adultos con normopeso, sobrepeso y obesidad en ensayos cortos (8-16 semanas), en su mayoría supervisados. No se ha probado en personas mayores delgadas ni durante periodos largos.
+  conflicts: |-
+    El metaanálisis en red sitúa el HIIT en primer lugar y señala mayores reducciones del IMC y del peso frente al control, mientras que Wewege no encuentra diferencias entre HIIT y MICT ni cambios de peso; Sultana no encontró efecto sobre la masa grasa frente a no hacer ejercicio, mientras que Cochrane encontró una pequeña reducción de la cintura. Todos coinciden en que el HIIT no tiene ventaja sobre el MICT en la composición corporal. La diferencia entre correr y pedalear es un hallazgo de subgrupo.
+- key: cardio-health/no-special-fat-burning-zone
+  source_hash: 1cf31ec7b85549909ba295f309500236c13e7c40c8512ad2bd64ed1851ba19a2
+  status: machine
+  heading: No existe una "zona quemagrasa" especial
+  rule_text: |-
+    No restrinjas a los clientes a una "zona quemagrasa". Para la pérdida de grasa, prescribe el volumen semanal de cardio (minutos o kcal) que el cliente pueda mantener, a la intensidad que disfrute y de la que se recupere. La intensidad baja es una opción válida por comodidad, por las articulaciones, para principiantes y para la recuperación; la intensidad más alta sobre todo ahorra tiempo.
+  applies_to: |-
+    Adultos con sobrepeso, de sedentarios a activos de forma recreativa; la evidencia de cámara metabólica procede de 8 hombres con obesidad. La idoneidad del HIIT depende del cribado y de la tolerancia articular.
+  conflicts: |-
+    Los metaanálisis sobre FATmax comparan con controles que no hacen ejercicio, no con intensidades más altas a igual gasto energético, así que no demuestran que la zona sea superior. Los consejos populares van aquí más allá de la evidencia.
+- key: cardio-health/fatmax-intensity-as-a-sustainable-default
+  source_hash: 9baf6a0967182f75161a1e0220d7956589ef6b85b417107d6b67eff267c47d1a
+  status: machine
+  heading: La intensidad FATmax como opción sostenible por defecto
+  rule_text: |-
+    Para clientes con obesidad, usa alrededor del 57-66% de la FC pico (de suave a moderada, en la que se puede conversar) como intensidad sostenible por defecto. Para principiantes con normopeso, una intensidad suave similar es un comienzo razonable, pero estas cifras de FC no se obtuvieron en ese grupo. Preséntala como una intensidad cómoda para acumular volumen, no como una zona quemagrasa especial; los resultados vienen del volumen acumulado (semanas x minutos).
+  applies_to: |-
+    Adultos con sobrepeso u obesidad, con protocolos heterogéneos; la edad, el IMC y la etnia moderaron algunos resultados. Las referencias de FC proceden de pruebas de FATmax en adultos con obesidad y mala forma física, en su mayoría de mediana edad (40-60); no son directamente aplicables a adultos delgados o en forma.
+  conflicts: |-
+    No hay evidencia de que FATmax supere a otras intensidades a igual gasto energético. FATmax varía entre personas y según el ergómetro (mayor oxidación máxima de grasa en cinta que en bicicleta). La certeza es baja por la heterogeneidad.
+- key: cardio-health/modality-choice-for-fat-loss
+  source_hash: b4e50c4601802d96613e991516858f7531a87d93524c3db8d9d7bc56902d80ee
+  status: machine
+  heading: Elección de modalidad para perder grasa
+  rule_text: |-
+    Caminar es la base para todos los clientes. Para principiantes, clientes de más peso o cualquiera con dolor articular, usa la bicicleta u otra opción de bajo impacto junto con caminar. Las opciones con carga del propio peso (caminar en pendiente y luego trotar) pueden dar algo más de pérdida de grasa por sesión según los datos de abajo, y para el hueso ayudan el impacto más el entrenamiento de fuerza, mientras que caminar por sí solo hace poco (véase el apartado de salud ósea); pero, más allá de eso, gana la preferencia del cliente, porque la adherencia es lo que decide: la mejor modalidad es la que se hace con constancia. Si una modalidad sin carga del propio peso quema menos por minuto, compénsalo con más minutos.
+  applies_to: |-
+    Adultos con sobrepeso u obesidad: de 18-45 años en ensayos cortos para la masa grasa; en su mayoría adultos de mediana edad con baja forma física para la oxidación de grasa. Un análisis de subgrupos.
+  conflicts: |-
+    El contraste entre correr y pedalear se hace entre ensayos distintos, no en comparación directa, y el resultado nulo del ciclismo puede reflejar un menor gasto energético más que la modalidad. Una mayor oxidación de grasa no implica por sí sola más pérdida de grasa. Las personas mayores y las personas con artrosis de rodilla o de cadera pueden necesitar opciones sin impacto. El HIIT en bicicleta tiene menos abandono (véase "El abandono depende del tiempo, no de la intensidad"). Para el hueso, caminar por sí solo no cambió la DMO de la columna en un metaanálisis de 10 ensayos en mujeres, y las guías de consenso recomiendan impacto más trabajo de fuerza. El mismo mensaje sobre la modalidad (caminar como base, bajo impacto para principiantes, clientes de más peso o con dolor articular y, en los demás casos, preferencia) se aplica en todos los archivos de conocimiento.
+- key: cardio-health/fasted-vs-fed-cardio
+  source_hash: a9bdbcbf98179662c51c1b813535e41ed63954302b662b9b1f5b026adbce0b1c
+  status: machine
+  heading: Cardio en ayunas frente a tras comer
+  rule_text: |-
+    No prescribas el cardio en ayunas como herramienta para perder grasa. Deja que el cliente entrene en ayunas o tras comer, lo que prefiera y tolere (p. ej. molestias digestivas, mareo, poca energía). Céntrate en el déficit energético semanal, el volumen total de actividad y la proteína, no en el horario de las comidas en torno al cardio. Los clientes con fármacos hipoglucemiantes, como la insulina o las sulfonilureas, deberían recibir orientación médica antes de entrenar en ayunas (una precaución clínica general, no probada en estas fuentes).
+  applies_to: |-
+    Adultos sanos, en su mayoría jóvenes y con normopeso, que hacen cardio continuo moderado; ensayos pequeños y cortos. Pocos datos en personas mayores o con obesidad.
+  conflicts: |-
+    Solo hay 5 estudios en el metaanálisis, así que no se puede descartar un efecto pequeño. Los estudios agudos muestran que se quema más grasa durante la sesión (regla siguiente). La tolerancia varía.
+- key: cardio-health/acute-fat-oxidation-is-not-fat-loss
+  source_hash: d4e18d1ddb07a4f7c5223d639112e73c7666639ecc13003f2df7d016abcf5275
+  status: machine
+  heading: La oxidación aguda de grasa no es pérdida de grasa
+  rule_text: |-
+    Cuando un cliente diga que el cardio en ayunas "quema más grasa", explícale que unos pocos gramos de grasa extra oxidados en una sesión no se traducen en más grasa perdida a lo largo de semanas; lo que decide es el balance energético total. No prometas una pérdida de grasa más rápida por entrenar con el estómago vacío.
+  applies_to: |-
+    Adultos en ensayos de laboratorio con sesiones aeróbicas de 120 min o menos; la evidencia de cámara metabólica de 24 h procede de 10 hombres jóvenes sin obesidad.
+  conflicts: |-
+    Iwayama apunta hacia un posible beneficio, pero ningún ensayo a largo plazo con potencia suficiente muestra que se convierta en más pérdida de grasa. Heterogeneidad moderada (I2 39%).
+- key: cardio-health/eating-before-longer-sessions
+  source_hash: b9301217d4f995c20da791dac324341d60bc9a2535508edf34f4150bb60da151
+  status: machine
+  heading: Comer antes de las sesiones largas
+  rule_text: |-
+    Para el cardio más corto, de suave a moderado, en ayunas o tras comer es decisión del cliente. Para salidas largas en bicicleta o carreras largas, recomienda una comida o un tentempié con hidratos de carbono antes y cuéntalo en la ingesta del día, en lugar de saltártelo para "ahorrar calorías". Considerar "prolongadas" las sesiones de más de una hora aproximadamente es una suposición de trabajo; el metaanálisis no da ningún punto de corte. Para intervalos u otro trabajo intermitente, decide según la tolerancia y las preferencias.
+  applies_to: |-
+    Adultos sanos en pruebas de rendimiento de laboratorio. Generalizarlo a principiantes es razonable por comodidad y por el rendimiento en sesiones largas; los hallazgos moleculares son preliminares.
+  conflicts: |-
+    Las afirmaciones sobre la adaptación con "entrenar bajo" (train-low) proceden de datos de señalización y siguen sin demostrarse para resultados recreativos. La tolerancia digestiva varía mucho.
+- key: cardio-health/time-of-day
+  source_hash: 2e32eed252098f898803ad07c2ec6a358e65d469fde0bfabcfc06551fea83e0d
+  status: machine
+  heading: Hora del día
+  rule_text: |-
+    Programa el cardio cuando el cliente pueda hacerlo con más constancia. Para la pérdida de grasa, la hora del día no importa. Los clientes con diabetes tipo 2 pueden comentar el horario con su clínico, pero no deberían dejar que se imponga a la adherencia.
+  applies_to: |-
+    Adultos, incluida la diabetes tipo 2, donde se observaron principalmente las diferencias glucémicas. Ensayos heterogéneos.
+  conflicts: |-
+    Un estudio en cámara metabólica de 24 h (Iwayama 2015; 9 deportistas de resistencia varones y jóvenes) encontró una mayor oxidación de grasa en 24 h con ejercicio antes del desayuno (1,142 frente a 608 kcal/24 h tras la comida); esto no se ha traducido en diferencias de composición corporal y no se puede generalizar a clientes corrientes ni a mujeres. El cronotipo y los horarios de trabajo hacen que esto sea individual.
+- key: cardio-health/energy-compensation-burned-calories-under-deliver
+  source_hash: 5d938b919f372f6b03f59e85e55006b556a683aee9a51973c24a1f6359662109
+  status: machine
+  heading: 'Compensación energética: las calorías quemadas rinden menos de lo esperado'
+  rule_text: |-
+    De media, solo una parte de las calorías quemadas con el ejercicio se refleja como pérdida de peso, porque el cuerpo compensa, y la cantidad varía mucho entre personas. Plantea el déficit principalmente a través de la ingesta. Cuando la pérdida sea menor de lo que predicen las cuentas de calorías, revisa la ingesta, los pasos diarios y la adherencia antes de culpar al apetito. No dejes que los clientes vuelvan a comerse más de alrededor de la mitad de las calorías de ejercicio estimadas. La tendencia de peso a lo largo de 2-4 semanas (junto con la cintura) es la verdadera calibración.
+  applies_to: |-
+    Adultos en vida libre de distintas poblaciones. Análisis transversales y ecológicos, no ensayos de entrenamiento.
+  conflicts: |-
+    Correlacional; la causalidad y la dirección no están claras (la adiposidad puede causar la compensación, o al revés). La compensación varía mucho entre personas. El límite de volver a comerse "alrededor de la mitad" es una heurística pragmática, no derivada de estas fuentes. La revisión enumera posibles mecanismos, pero no muestra cuál predomina.
+- key: cardio-health/neat-a-real-but-variable-lever
+  source_hash: cc8da96257bd3864519aaffed27e40e4c92c1d35aa50199101fdd94657d979b7
+  status: machine
+  heading: 'NEAT: una palanca real pero variable'
+  rule_text: |-
+    Registra los pasos diarios además de los entrenamientos. Durante un déficit, da un objetivo diario de pasos (individualizado a partir del valor inicial) como suelo de NEAT para que el movimiento no deportivo no baje sin que se note, sobre todo los días de entrenamiento. Revisa la tendencia de los pasos si la pérdida de peso se estanca. Presenta el NEAT como una palanca individual útil, no como una fuente garantizada de un gran gasto calórico.
+  applies_to: |-
+    Adultos sanos. Los datos de sobrealimentación proceden de un único estudio pequeño y sin control con voluntarios sin obesidad, y tratan sobre la sobrealimentación, no sobre hacer dieta. La revisión abarcó a adultos en vida libre en ensayos de al menos 7 días, muchos no aleatorizados.
+  conflicts: |-
+    Las diferencias individuales son grandes (de 10 veces en Levine). La revisión no fue concluyente sobre si hacer dieta reduce de forma fiable el NEAT; la compensación parece más probable con déficits agresivos. Las afirmaciones populares (p. ej. que el NEAT puede sumar unas 2,000 kcal/día, de una revisión narrativa) van mucho más allá de los datos de los ensayos para los clientes típicos.
+- key: cardio-health/appetite-after-a-single-session
+  source_hash: 3f17f55005be30d6a02d51587bc10f199146ba0741cba2b8748dda6734e9fa0f
+  status: machine
+  heading: Apetito tras una sola sesión
+  rule_text: |-
+    Tranquiliza a los clientes: un entrenamiento no hace automáticamente que coman de más ese mismo día. Usa el ejercicio como un déficit real a corto plazo, pero vigila la tendencia semanal, porque en algunas personas la compensación puede ir acumulándose a lo largo de semanas.
+  applies_to: |-
+    Adultos en entornos de laboratorio durante horas hasta 24 h; el ensayo de 2026 solo probó HIIE.
+  conflicts: |-
+    Los resultados de laboratorio a corto plazo no descartan la compensación a lo largo de semanas o meses. El ensayo de 2026 lo financió Novo Nordisk, y algunos autores son o fueron empleados.
+- key: cardio-health/compensators-vs-non-compensators
+  source_hash: 115ae3b66ef3c806444f05878525636c3f6f39d87817ca83e6ced21a49da9460
+  status: machine
+  heading: Compensadores frente a no compensadores
+  rule_text: |-
+    Espera grandes diferencias entre clientes. Si la pérdida de peso va por detrás de lo previsto tras 4-8 semanas de entrenamiento constante, comprueba si hay más ingesta, más hambre y picoteo, y menos actividad diaria antes de cambiar el plan de ejercicio. Trabaja la estructura de la alimentación (proteína, fibra, comidas planificadas) en lugar de añadir más cardio. Informa siempre también de las mejoras que no se ven en la báscula.
+  applies_to: |-
+    Adultos sedentarios con sobrepeso u obesidad en entrenamiento aeróbico supervisado; un único estudio de 35 personas.
+  conflicts: |-
+    La clasificación puede reflejar en parte el ruido de medición y la regresión a la media. Los datos sobre si la compensación es un rasgo estable son limitados.
+- key: cardio-health/wearable-calorie-estimates-are-unreliable
+  source_hash: 85402f41156bfefa1ae3cc13f470e7a618c1cb5a44bc82c08db25d4863cda487
+  status: machine
+  heading: Las estimaciones de calorías de los wearables no son fiables
+  rule_text: |-
+    Trata las cifras de calorías de los dispositivos como indicadores aproximados de tendencia, no como números para volver a comerse. No sumes las "calorías activas" del wearable al objetivo de ingesta una por una; fija la ingesta a partir de la tendencia de peso de 2-4 semanas. Si un cliente insiste en volver a comerse las calorías del ejercicio, sugiérele no más de alrededor de la mitad de la cifra del dispositivo, y dile con claridad que es una heurística pragmática, no un número derivado de la evidencia.
+  applies_to: |-
+    Adultos sanos que usan dispositivos comerciales de muñeca o de brazo, en su mayoría en protocolos de laboratorio; los modelos nuevos salen más rápido de lo que se validan.
+  conflicts: |-
+    La dirección del error no es constante (regla siguiente). El error es mayor en algunos usuarios (IMC más alto, piel más oscura, al caminar), así que un dispositivo puede equivocarse de forma sistemática con una persona concreta. La heterogeneidad fue grande (O'Driscoll: I2 por encima del 75% en muchos dispositivos).
+- key: cardio-health/direction-of-calorie-error-wearables-vary-machines-inflate
+  source_hash: 8e001f591fe8b5f22c96b0573d45e212e1415af5b7b1dec4efd3330b4be3cff0
+  status: machine
+  heading: 'Dirección del error en calorías: los wearables varían, las máquinas inflan'
+  rule_text: |-
+    Trata con recelo las cifras de calorías de las máquinas de cardio. En las elípticas, réstales unas 100 kcal por cada 30 minutos de trabajo moderado, o ignóralas. En otras máquinas, asume que probablemente están infladas, pero no apliques ninguna corrección fija, porque no se ha verificado ninguna. Nunca des por hecho que un wearable se equivoca en una dirección conocida para una persona concreta. Si hace falta una estimación de las calorías del ejercicio, usa una estimación basada en la distancia para caminar y correr. Introducir en la máquina el peso corporal, la edad y el sexo del cliente puede reducir el error.
+  applies_to: |-
+    Adultos sanos; la evidencia sobre máquinas procede de un único modelo de elíptica en adultos jóvenes. Otras marcas y tipos de máquina no se han verificado.
+  conflicts: |-
+    La creencia de que "los wearables sobrestiman" no tiene un respaldo constante: Fitbit infraestima y el Apple Watch sobrestima ligeramente. No se ha podido rastrear hasta una fuente primaria los porcentajes por máquina que circulan por internet (p. ej. cintas 13%, bicicletas 7%).
+- key: cardio-health/gross-vs-net-exercise-calories
+  source_hash: 16fd2708dfb91212ea493c6fd19affc77d8af041568b08bad51596952ff48235
+  status: machine
+  heading: Calorías brutas frente a netas del ejercicio
+  rule_text: |-
+    Explica que las cifras de calorías calculadas a partir de MET son brutas: incluyen la aproximadamente 1 kcal/kg/h que el cuerpo quema en reposo de todos modos. El coste extra de una sesión es de alrededor de (MET menos 1) x peso corporal en kg x horas. Úsalo cuando un cliente pregunte cuánto añade de verdad un entrenamiento, indica que es una aproximación y no afirmes saber cómo informa de las calorías un dispositivo concreto.
+  applies_to: |-
+    Adultos sanos; los datos de reparto proceden de 6 personas caminando. Que los wearables den valores brutos es una inferencia, no probada en estas fuentes.
+  conflicts: |-
+    El gasto real en reposo varía entre personas. Restar el gasto de estar de pie en lugar del de reposo cambia el coste neto de caminar hasta en un 16.0% a velocidades lentas.
+- key: cardio-health/walking-vs-running-energy-cost
+  source_hash: 7b64fc1229cb03f4e35f751696e11d9a7bed2872620fec10b48c6de6e9a44768
+  status: machine
+  heading: Coste energético de caminar frente a correr
+  rule_text: |-
+    Estima correr en alrededor de 1 kcal por kg y por km (unas 70 kcal/km para una persona de 70 kg), sea cual sea el ritmo. Caminar a velocidades normales cuesta menos por km, pero la diferencia se reduce en personas de más peso y a velocidades de marcha más rápidas o más lentas. Las cifras brutas incluyen la energía de reposo que se gastaría de todos modos, así que el gasto extra es menor que el total, sobre todo al caminar despacio. Recomienda caminar para acumular volumen sin lesiones y correr para quemar más calorías por km y por minuto en los clientes que lo toleren.
+  applies_to: |-
+    Adultos sanos (corredores varones entrenados en Mayhew; adultos jóvenes de forma física media, con una media de edad de 22 años, en Wilkin; caminantes con normopeso y con sobrepeso y corredores de maratón en Loftin). La masa corporal es el principal determinante del coste absoluto.
+  conflicts: |-
+    Loftin encontró un gasto por milla similar en caminantes con normopeso (93.9 kcal), caminantes con sobrepeso (98.4) y corredores de maratón (99.3) a sus velocidades preferidas, una comparación entre grupos que muestra que la masa corporal y la velocidad pueden reducir la diferencia. No se pudo confirmar para caminar la regla popular de "0.5 frente a 1 kcal/kg/km netas". El coste de caminar por km tiene forma de U según la velocidad, y restar el coste de estar de pie cambia más los resultados a velocidades lentas (Abe 2015, 11 deportistas varones entrenados).
+- key: cardio-health/activity-volume-to-prevent-weight-regain
+  source_hash: 46b0372cc6612cc83357616aeff68f7864b7e4aef9e869212f12e418deb2d41d
+  status: machine
+  heading: Volumen de actividad para evitar recuperar el peso
+  rule_text: |-
+    Una vez que el cliente alcance su peso objetivo, sube el objetivo de actividad, no lo bajes: apunta a más de 250 min/semana de actividad al menos moderada (o un número alto de pasos diarios más sesiones estructuradas). Preséntalo como la principal palanca de mantenimiento junto con el control de la dieta y el autopesaje. Señala cualquier caída sostenida de la actividad como un riesgo temprano de recuperar peso.
+  applies_to: |-
+    Adultos tras una pérdida de peso significativa (NWCR: al menos 13.6 kg perdidos y mantenidos durante al menos 1 año). Los datos del NWCR son autoseleccionados, de alrededor de un 76-78% de mujeres y en gran parte autodeclarados; los estudios objetivos son pequeños (n=25-26 personas que mantienen el peso). Las personas mayores pueden alcanzar el volumen con más actividad ligera y caminando.
+  conflicts: |-
+    En gran parte observacional. Los autores del NWCR insisten en que la actividad es demasiado variable para una única recomendación. Los metaanálisis de ECA sobre el mantenimiento con dieta y actividad combinadas muestran efectos pequeños: Dombrowski 2014, -1.56 kg menos de recuperación a los 12 meses (-2.27 a -0.86); Ghoreishy 2025, -0.3 kg (-4.13 a 3.52, cruza el cero).
+- key: cardio-health/cardio-does-not-kill-gains-at-moderate-doses
+  source_hash: f5c8c9470eb6c119d510ee979d322eda7f929abe631d0d273988eb716737afca
+  status: machine
+  heading: El cardio no anula las ganancias a dosis moderadas
+  rule_text: |-
+    Di a los clientes que cantidades moderadas de cardio no frenarán de forma apreciable las ganancias de tamaño muscular global ni de fuerza máxima, y que los beneficios para la salud justifican incluirlo. Un valor práctico por defecto de 2-3 sesiones/semana de 20-40 min es una extrapolación, no un umbral probado. Con clientes que buscan potencia o rendimiento en el salto, o que hacen volúmenes de cardio muy altos, gestiona la interferencia de forma activa (véanse las reglas de programación y de modalidad).
+  applies_to: |-
+    Adultos sanos en ensayos supervisados de al menos 4 semanas, en su mayoría no entrenados o activos de forma recreativa, con programas de fuerza equiparados y dosis aeróbicas moderadas. Datos limitados para levantadores muy entrenados y volúmenes de resistencia altos.
+  conflicts: |-
+    Wilson encontró un déficit de potencia significativo y relacionó la interferencia con la carrera, la frecuencia y la duración; Schumann no encontró ningún efecto sobre la hipertrofia ni sobre la fuerza máxima; Lundberg muestra un pequeño efecto a nivel de fibra. La interferencia probablemente aumenta con el volumen aeróbico y los años de entrenamiento.
+- key: cardio-health/modality-frequency-and-duration-of-cardio
+  source_hash: 95f43f41fb4b7fb27601be0b1bb579c06599098fc765c580ef5a0cc9954f05d7
+  status: machine
+  heading: Modalidad, frecuencia y duración del cardio
+  rule_text: |-
+    Para un cliente que prioriza el tamaño o la fuerza de las piernas, mantén moderado el volumen total de cardio y no acumules sesiones largas o frecuentes encima de un entrenamiento de pierna pesado. Caminar sigue siendo la base; elige cualquier modalidad adicional según preferencia, tolerancia articular y adherencia (véase Elección de modalidad para perder grasa): el ciclismo continuo tiene algunos datos a favor (Wilson, Lundberg) y, para el HIIT, los datos de Sabag se inclinan ligeramente hacia la carrera. No digas a los clientes que una modalidad es "segura" y la otra "perjudicial" como si estuviera demostrado.
+  applies_to: |-
+    Adultos sanos en ensayos sobre todo cortos (unas 4-16 semanas); sujetos entrenados y no entrenados mezclados.
+  conflicts: |-
+    Los resultados por modalidad se contradicen: la carrera salió peor en Wilson y Lundberg (sobre todo trabajo continuo), el HIIT en bicicleta tendió a salir peor en Sabag y Schumann no encontró efecto de la modalidad. Las correlaciones de dosis son entre estudios.
+- key: cardio-health/scheduling-and-order
+  source_hash: 81f9c8a0c7c79503ef9169c54c3db175f53794489fb5f0212a90f8d543225fad
+  status: machine
+  heading: Programación y orden
+  rule_text: |-
+    Si la prioridad es la fuerza y se hacen las dos cosas en la misma visita, levanta primero y haz el cardio después. Cuando sea práctico, separa el cardio duro del entrenamiento de pierna al menos 3 horas o ponlo en días distintos, sobre todo en clientes a los que les importa la potencia o el salto. Para clientes que buscan solo salud o perder grasa, elige el orden y el momento que vayan a mantener.
+  applies_to: |-
+    Adultos sanos en ensayos sobre todo cortos; el efecto del orden se aplica a la fuerza dinámica del tren inferior.
+  conflicts: |-
+    El efecto del orden es pequeño y se limita a un único resultado. El orden no afecta a la hipertrofia, así que la comodidad puede mandar cuando el objetivo es la hipertrofia o la salud.

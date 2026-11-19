@@ -13,7 +13,8 @@
 // síncrono usa el uid cacheado. El historial legacy lo reclama un único uid
 // por dispositivo (flp_acts_legacy_owner) para no copiar datos de A a B.
 
-import type { LoadMetrics } from "@/lib/load";
+import type { LoadMetrics, LoadBandStatus } from "@/lib/load";
+import { gymSets } from "@/lib/gym";
 
 export type ActivityKind = "SPORT" | "MMA" | "GYM";
 
@@ -27,10 +28,29 @@ export type SyncItem = {
   kcal?: number | null;
   note?: string;
   detail?: Record<string, unknown> | null;
+  /** Series de gimnasio (Task 6.1): van aparte para que no las corte el tope de `detail`. */
+  sets?: SyncSet[];
+};
+
+export type SyncSet = {
+  exercise: string;
+  exercise_index: number;
+  set_index: number;
+  weight_kg: number | null; // null: con el peso corporal
+  reps: number;
+  // F17: clave del ejercicio, tipo de serie, RPE o RIR y lo del bloque (superserie, notas, descanso)
+  exercise_key?: string;
+  set_type?: "warmup" | "normal" | "drop" | "failure";
+  rpe?: number;
+  rir?: number;
+  superset?: number;
+  notes?: string;
+  rest_s?: number;
 };
 
 const UID_CACHE_KEY = "flp_uid";
 const LEGACY_OWNER_KEY = "flp_acts_legacy_owner";
+const DEVICE_OWNER_KEY = "flp_owner_uid"; // lo fija lib/user-state.ts (claimDeviceOwner)
 const queueKey = (uid: string) => `flp_pending_acts_${uid}`;
 const delsKey = (uid: string) => `flp_pending_dels_${uid}`;
 const migratedKey = (uid: string) => `flp_acts_migrated_${uid}`;
@@ -70,6 +90,13 @@ export function resetActivityUid(): void {
   try { localStorage.removeItem(UID_CACHE_KEY); } catch { /* noop */ }
 }
 
+/** Uid cacheado SIN red (puede ser null si aún no se resolvió). Solo para
+    decidir qué claves `flp_pending_*` son "propias" al cerrar sesión: no vale
+    para encolar (usar resolveUidFresh vía flushActivities). */
+export function cachedActivityUid(): string | null {
+  return cachedUid();
+}
+
 /* --------------------------------- cola ----------------------------------- */
 
 function readQueue(key: string): SyncItem[] {
@@ -95,6 +122,25 @@ function removeFromQueue(key: string, done: Set<string>) {
   return cur.length;
 }
 
+/** Lo que este dispositivo tiene encolado (propio + adoptable de "anon") para
+    un tipo, sin tocar la red: se usa para que el historial muestre lo recién
+    guardado aunque el servidor todavía no lo haya confirmado. */
+export function pendingQueueItems(kind: ActivityKind): SyncItem[] {
+  if (typeof window === "undefined") return [];
+  const uid = cachedUid() ?? "anon";
+  const keys = uid === "anon" ? [queueKey("anon")] : [queueKey(uid), queueKey("anon")];
+  const seen = new Set<string>();
+  const out: SyncItem[] = [];
+  for (const k of keys) {
+    for (const item of readQueue(k)) {
+      if (item.kind !== kind || seen.has(item.client_id)) continue;
+      seen.add(item.client_id);
+      out.push(item);
+    }
+  }
+  return out;
+}
+
 function readDels(key: string): ActivityKind[] {
   try {
     const v = JSON.parse(localStorage.getItem(key) ?? "[]");
@@ -111,7 +157,106 @@ export function enqueueActivity(item: SyncItem): void {
   void flushActivities();
 }
 
-type SyncResult = { client_id: string | null; status: "created" | "exists" | "invalid" };
+/* ------------------- sesiones que el servidor no aceptó (F2) ------------------- */
+
+/** Una sesión rechazada por el servidor (o guardada sin alguna serie), con el motivo: nunca se
+    pierde en silencio. La pantalla la enseña hasta que el usuario la cierra. */
+export type RejectedActivity = {
+  client_id: string;
+  kind: ActivityKind;
+  title: string;
+  started_at: string;
+  errors?: unknown;
+  dropped_sets?: number;
+};
+
+const rejectedKey = (uid: string) => `flp_rejected_acts_${uid}`;
+
+function readRejected(): RejectedActivity[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(rejectedKey(cachedUid() ?? "anon")) ?? "[]");
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+}
+
+function addRejected(items: RejectedActivity[]) {
+  if (items.length === 0) return;
+  const cur = readRejected().filter((r) => !items.some((i) => i.client_id === r.client_id));
+  try { localStorage.setItem(rejectedKey(cachedUid() ?? "anon"), JSON.stringify([...items, ...cur].slice(0, 50))); } catch { /* noop */ }
+}
+
+export function rejectedActivities(kind: ActivityKind): RejectedActivity[] {
+  if (typeof window === "undefined") return [];
+  return readRejected().filter((r) => r.kind === kind);
+}
+
+export function dismissRejected(clientId: string): void {
+  const rest = readRejected().filter((r) => r.client_id !== clientId);
+  try { localStorage.setItem(rejectedKey(cachedUid() ?? "anon"), JSON.stringify(rest)); } catch { /* noop */ }
+}
+
+/** El primer motivo legible de un error de DRF (`{campo: [texto]}` o `{sets: [{campo: [texto]}]}`). */
+export function firstReason(errors: unknown): string | null {
+  if (typeof errors === "string") return errors;
+  if (Array.isArray(errors)) {
+    for (const e of errors) {
+      const r = firstReason(e);
+      if (r) return r;
+    }
+    return null;
+  }
+  if (errors && typeof errors === "object") {
+    for (const v of Object.values(errors as Record<string, unknown>)) {
+      const r = firstReason(v);
+      if (r) return r;
+    }
+  }
+  return null;
+}
+
+export type SaveResult =
+  | { status: "created" | "exists"; id: number | null }
+  | { status: "invalid"; errors: unknown }
+  | { status: "queued" };
+
+/** Guarda UNA sesión al terminarla (F17, fallo F2). Se apunta en la cola antes de nada (si se
+    cierra la app, no se pierde) y se envía al momento con `POST activities`, que responde 400
+    con el motivo: entonces sale de la cola y la pantalla enseña el motivo, sin perder lo escrito.
+    Sin red, se queda en la cola y se sube después. */
+export async function saveActivityNow(item: SyncItem): Promise<SaveResult> {
+  if (typeof window === "undefined") return { status: "queued" };
+  const key = queueKey(cachedUid() ?? "anon");
+  appendToQueue(key, [item]);
+  try {
+    const res = await fetch("/api/proxy/activities", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(item),
+    });
+    if (res.status === 400) {
+      const data = (await res.json().catch(() => ({}))) as { errors?: unknown };
+      removeFromQueue(key, new Set([item.client_id]));
+      return { status: "invalid", errors: data.errors ?? data };
+    }
+    if (res.ok) {
+      const data = (await res.json().catch(() => ({}))) as { id?: number; status?: string };
+      removeFromQueue(key, new Set([item.client_id]));
+      void flushActivities();
+      return { status: data.status === "exists" ? "exists" : "created", id: data.id ?? null };
+    }
+  } catch { /* sin red: se queda en la cola */ }
+  void flushActivities();
+  return { status: "queued" };
+}
+
+type SyncResult = {
+  client_id: string | null;
+  status: "created" | "exists" | "invalid";
+  errors?: unknown;
+  warnings?: { dropped_sets?: number };
+};
 
 async function postBatch(items: SyncItem[]): Promise<Set<string> | null> {
   const body = JSON.stringify({ items });
@@ -124,6 +269,19 @@ async function postBatch(items: SyncItem[]): Promise<Set<string> | null> {
   });
   if (!res.ok) return null; // transitorio (red/5xx/throttle/sesión): se reintenta
   const data = (await res.json()) as { results?: SyncResult[] };
+  // Los rechazos (y las series que no se pudieron guardar) se apuntan con su motivo para
+  // enseñarlos: salen de la cola, pero no en silencio.
+  const byId = new Map(items.map((i) => [i.client_id, i]));
+  addRejected(
+    (data.results ?? []).flatMap((r) => {
+      const it = r.client_id ? byId.get(r.client_id) : undefined;
+      if (!it || !(r.status === "invalid" || r.warnings?.dropped_sets)) return [];
+      return [{
+        client_id: it.client_id, kind: it.kind, title: it.title ?? "", started_at: it.started_at,
+        ...(r.status === "invalid" ? { errors: r.errors ?? null } : { dropped_sets: r.warnings?.dropped_sets }),
+      }];
+    }),
+  );
   // created/exists confirmados e invalid terminal: todos salen de la cola
   return new Set((data.results ?? []).map((r) => r.client_id).filter((c): c is string => !!c));
 }
@@ -280,6 +438,7 @@ function legacyItems(): SyncItem[] {
       duration_sec: dur,
       rpe: rpeOf(g.rpe),
       detail,
+      sets: gymSets(Array.isArray(g.exercises) ? g.exercises : []),
     });
   }
 
@@ -296,6 +455,8 @@ export async function migrateLocalActivities(): Promise<void> {
   if (!uid) return;
   try {
     if (localStorage.getItem(migratedKey(uid)) === "1") return;
+    const deviceOwner = localStorage.getItem(DEVICE_OWNER_KEY);
+    if (deviceOwner && deviceOwner !== uid) return; // los flp_* del dispositivo son de otra cuenta
     const owner = localStorage.getItem(LEGACY_OWNER_KEY);
     if (owner && owner !== uid) return; // el legacy es de otra cuenta
     localStorage.setItem(LEGACY_OWNER_KEY, uid);
@@ -306,6 +467,83 @@ export async function migrateLocalActivities(): Promise<void> {
   if (flushed) {
     try { localStorage.setItem(migratedKey(uid), "1"); } catch { /* noop */ }
   }
+}
+
+/* --------------------------- historial del servidor ------------------------ */
+
+export type ServerActivity = {
+  id: number;
+  client_id: string | null;
+  kind: ActivityKind;
+  title: string;
+  started_at: string; // ISO
+  duration_sec: number;
+  rpe: number | null;
+  kcal: number | null;
+  note: string;
+  detail: Record<string, unknown> | null;
+  load_au: number | null;
+  source: string;
+  created_at: string;
+  /** Resumen de las series de gimnasio guardadas en el servidor (F17); null fuera del gimnasio. */
+  summary?: { exercises: number; sets: number; volume_kg: number } | null;
+  sets_truncated?: boolean;
+};
+
+/** Una serie de una sesión del servidor (`GET activities/<id>`). */
+export type ServerSet = {
+  exercise: string;
+  exercise_key: string | null;
+  exercise_index: number;
+  set_index: number;
+  set_type: string;
+  weight_kg: number | null;
+  reps: number | null;
+  rpe: number | null;
+  rir: number | null;
+  distance_km: number | null;
+  duration_s: number | null;
+  superset: number | null;
+  notes: string;
+  rest_s: number | null;
+};
+
+export type ServerActivityDetail = ServerActivity & { sets: ServerSet[] };
+
+/** Fin de sesión (lo que este proyecto usa como `ts`) a partir de una
+    actividad del servidor: inicio + duración, igual que el guardado local. */
+export function serverActivityTs(a: ServerActivity): number {
+  return new Date(a.started_at).getTime() + a.duration_sec * 1000;
+}
+
+/** Historial de un tipo desde el servidor (fuente de verdad para varios
+    dispositivos). null si no responde: la vista debe caer al historial local. */
+export async function fetchServerActivities(kind: ActivityKind, limit = 100, offset = 0): Promise<ServerActivity[] | null> {
+  if (typeof window === "undefined") return null;
+  try {
+    const res = await fetch(`/api/proxy/activities?kind=${kind}&limit=${limit}${offset ? `&offset=${offset}` : ""}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return Array.isArray(data) ? (data as ServerActivity[]) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Combina varios historiales del mismo tipo sin duplicar por client_id.
+    Los grupos posteriores GANAN sobre los anteriores para un mismo client_id
+    (pásalos en orden de confianza ascendente: local, pendiente, servidor). Lo
+    sin client_id (legacy muy antiguo) se conserva tal cual, sin deduplicar. */
+export function mergeByClientId<T extends { client_id?: string | null }>(...groups: T[][]): T[] {
+  const byId = new Map<string, T>();
+  const noId: T[] = [];
+  for (const group of groups) {
+    for (const item of group) {
+      if (item.client_id) byId.set(item.client_id, item);
+      else noId.push(item);
+    }
+  }
+  return [...byId.values(), ...noId];
 }
 
 /* -------------------------------- métricas -------------------------------- */
@@ -323,18 +561,32 @@ export async function fetchServerMetrics(): Promise<LoadMetrics | null> {
     const res = await fetch(`/api/proxy/activities/metrics?tz=${encodeURIComponent(tz)}`);
     if (!res.ok) return null;
     const d = (await res.json()) as {
-      week_au: number; daily7: number[]; acwr: number | null; provisional: boolean;
+      week_au: number; daily7: number[]; acwr: number | null; week_vs_avg_pct: number | null;
+      ratio_days_left: number; gaps: boolean;
       monotonia: number | null; tension: number | null; sin_variacion: boolean; history_days: number;
+      band: { week_au: number; low: number; high: number; overreach: number; status: string; provisional: boolean } | null;
     };
     if (typeof d.week_au !== "number" || !Array.isArray(d.daily7)) return null;
     return {
       weekAU: d.week_au,
       daily7: d.daily7,
       acwr: d.acwr,
-      provisional: d.provisional,
+      weekVsAvgPct: d.week_vs_avg_pct ?? null,
+      ratioDaysLeft: d.ratio_days_left ?? 0,
+      gaps: d.gaps ?? false,
       monotonia: d.monotonia,
       tension: d.tension,
       sinVariacion: d.sin_variacion,
+      band: d.band
+        ? {
+            weekAU: d.band.week_au,
+            low: d.band.low,
+            high: d.band.high,
+            overreach: d.band.overreach,
+            status: d.band.status as LoadBandStatus,
+            provisional: d.band.provisional,
+          }
+        : null,
       historyDays: d.history_days,
     };
   } catch {

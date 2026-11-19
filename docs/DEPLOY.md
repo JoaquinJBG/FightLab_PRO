@@ -1,0 +1,630 @@
+# Despliegue de la beta (Neon + Render + Vercel)
+
+> Guía paso a paso para poner la beta cerrada de FightLab Pro en internet, gratis,
+> con datos reales y con invitados por email. Backend en **Render** (Docker),
+> base de datos en **Neon** (Postgres), frontend en **Vercel** (Next.js).
+
+Arquitectura: el navegador solo habla con Vercel. El frontend Next.js hace de
+**BFF** (Backend For Frontend): guarda los tokens JWT en cookies `httpOnly` y
+reenvía las peticiones a Django por servidor, con un secreto compartido
+(`BFF_SHARED_SECRET`) para que Django sepa distinguir el tráfico real de cada
+visitante del tráfico directo a su URL pública.
+
+```
+Móvil/navegador → Vercel (Next.js, BFF) → Render (Django/DRF) → Neon (Postgres)
+```
+
+---
+
+## 0. Antes de empezar
+
+Necesitas:
+- Una cuenta en [Neon](https://neon.tech), [Render](https://render.com) y
+  [Vercel](https://vercel.com) (las tres tienen plan gratis, sin tarjeta).
+- Una cuenta en [Brevo](https://www.brevo.com) (antes Sendinblue) para el envío
+  de emails — también gratis, sin tarjeta.
+- El repo en GitHub con la rama de producción `main` (o la rama/tag que vayas a
+  desplegar; un entorno de prueba usa `staging`).
+- Una cuenta de Anthropic con una API key, si quieres que el coach y el
+  análisis de fotos de comida usen IA real (opcional: sin clave, esos
+  endpoints responden un 503 limpio en vez de fallar mal).
+
+El orden importa: Neon primero (necesitas la cadena de conexión antes de crear
+el servicio de Render), Render segundo (con un `FRONTEND_URL` provisional,
+porque Vercel aún no existe), Vercel tercero, y luego se vuelve a Render para
+poner la URL final.
+
+---
+
+## 1. Neon (Postgres)
+
+1. Crea un proyecto nuevo. Región **eu-central-1** (Frankfurt) — la más cercana
+   a Render (región Frankfurt) y a Vercel (`fra1`); minimiza la latencia entre
+   los tres.
+2. Neon crea una rama `main` con una base de datos por defecto. En
+   **Connection Details**, copia la cadena **directa** (no la "pooled
+   connection" con `-pooler` en el host): Django abre sus propias conexiones
+   por request y no necesita el pooler de Neon; usarlo añade una capa extra
+   sin beneficio aquí.
+3. La cadena tiene esta forma:
+   ```
+   postgresql://<user>:<password>@<host>.neon.tech/<db>?sslmode=require
+   ```
+   Guárdala: es tu `DATABASE_URL` para Render. `sslmode=require` es
+   obligatorio (Neon no acepta conexiones sin TLS).
+4. Plan gratis de Neon: **0.5 GB** de almacenamiento. De sobra para la beta
+   (texto e IDs; las fotos de progreso también viven en Postgres, pero se
+   comprimen antes de subirlas — ver [Límites del plan gratis](#límites-del-plan-gratis)).
+
+No hace falta crear tablas a mano: el contenedor de Render corre
+`migrate` y `createcachetable` en cada arranque.
+
+---
+
+## 2. Render (backend)
+
+El backend se despliega como **Blueprint** a partir de `render.yaml`, que ya
+vive en la raíz del repo (`runtime: docker`, `rootDir: backend`,
+`healthCheckPath: /health`, plan `free`).
+
+1. En el dashboard de Render: **New → Blueprint**.
+2. Conecta el repo de GitHub y elige la rama `main` (producción).
+3. Render lee `render.yaml` y propone el servicio `fightlab-backend`. Las
+   variables marcadas `sync: false` en el blueprint quedan en blanco: hay que
+   rellenarlas a mano (ver la tabla de abajo). Las que tienen `value:` en el
+   YAML ya vienen puestas.
+4. Rellena las variables obligatorias. Como Vercel todavía no existe, pon en
+   `FRONTEND_URL` un valor **provisional** (por ejemplo
+   `https://fightlab-beta.vercel.app`, el nombre que le vayas a dar al
+   proyecto de Vercel) — se corrige en el paso 4 de más abajo.
+5. Despliega. La primera build tarda unos minutos (instala dependencias,
+   compila la imagen Docker). Al arrancar, el contenedor lanza `python manage.py boot`
+   (un solo proceso): aplica las migraciones, crea la tabla de caché, carga la base de
+   evidencia del coach si cambió (ver 6b) y, solo con `DEMO_USER_EMAIL`, el usuario de
+   demostración. Después arranca gunicorn.
+6. Comprueba `https://<tu-servicio>.onrender.com/health` → debe dar `200`.
+
+**La rama de producción es `main`.** Si el servicio ya existía apuntando a otra rama (por ejemplo
+`feat/beta-cloud`), cámbiala a mano en los dos sitios:
+
+- **Render** → el servicio `fightlab-backend` → **Settings → Branch** = `main`.
+- **Vercel** → el proyecto → **Settings → Git → Production Branch** = `main`.
+
+### Variables de entorno de Render
+
+Salvo que se diga lo contrario, el valor es texto plano (no secreto) y va como
+`value:` fijo en `render.yaml`. "Secreto" = no lo compartas ni lo subas a git;
+`sync: false` en el blueprint significa que Render no lo rellena solo.
+
+| Variable | Obligatoria | Secreto | Ejemplo / cómo generarla |
+|---|---|---|---|
+| `DEBUG` | Sí | No | `False` (ya viene fija en `render.yaml`) |
+| `SECRET_KEY` | Sí | **Sí** | Mínimo 50 caracteres: con `DEBUG=False` el backend se niega a arrancar si es más corta. `python -c "from django.core.management.utils import get_random_secret_key as f; print(f())"` |
+| `ALLOWED_HOSTS` | Sí | No | `fightlab-backend.onrender.com` (el hostname de Render se añade solo, pero conviene ponerlo igual) |
+| `ADMIN_URL` | Sí | Semi (no lo publiques) | Una ruta rara con barra final, ej. `panel-x7k2q9/` — nunca `admin/`. Si no la pones con `DEBUG=False`, el admin no se monta. El login del admin se bloquea por IP tras 5 fallos (`ADMIN_LOGIN_MAX_FAILURES`) durante 15 min (`ADMIN_LOGIN_LOCKOUT_SECONDS`) |
+| `NUM_PROXIES` | Sí | No | **`1`** — es la cadena real vista desde la URL pública de Render (un solo proxy de confianza delante de gunicorn). No pongas `2`: con la app detrás del BFF y llamada directamente a la URL de Render a la vez, un valor más alto deja que quien llame directo se invente la IP y salte el límite de intentos de login |
+| `DATABASE_URL` | Sí | **Sí** | La cadena directa de Neon del paso 1, con `?sslmode=require` |
+| `FRONTEND_URL` | Sí | No | `https://<tu-proyecto>.vercel.app` (sin barra final). Se usa en los enlaces de verificación de email y de recuperar contraseña |
+| `CORS_ALLOWED_ORIGINS` | Sí | No | Vacío — el BFF llama de servidor a servidor, sin CORS |
+| `CSRF_TRUSTED_ORIGINS` | Sí | No | `https://<tu-servicio>.onrender.com` (solo lo usa el admin de Django) |
+| `BETA_ALLOWED_EMAILS` | Sí | No | Emails invitados separados por comas. Vacía en producción = nadie puede registrarse |
+| `BFF_SHARED_SECRET` | Sí | **Sí** | Cadena aleatoria de 32+ caracteres. **Tiene que ser idéntica** a la que pongas en Vercel — es como el BFF de Next demuestra a Django que una petición viene de verdad de un visitante y no directo a la URL pública |
+| `EMAIL_PROVIDER` | Sí | No | `brevo` — activa el envío por API HTTP (django-anymail) en vez de SMTP |
+| `BREVO_API_KEY` | Sí | **Sí** | Se genera en Brevo → *SMTP & API* → *API Keys*. Plan gratis: 300 emails/día |
+| `EMAIL_TIMEOUT` | No (recomendada) | No | `10` (segundos). Evita que una llamada a la API de email deje una petición colgada |
+| `DEFAULT_FROM_EMAIL` | Sí | No | El remitente que hayas verificado en Brevo como "sender" — en el plan gratis de Brevo, tiene que ser una dirección que ya controles y confirmes (por ejemplo tu Gmail), no un dominio propio. Ej. `FightLab Pro <tu_cuenta@gmail.com>` |
+| `ANTHROPIC_API_KEY` | No | **Sí** | `sk-ant-…`. Sin ella, `/ai/coach/chat` y `/ai/food/analyze` responden `503 {"detail":"IA no configurada."}` en vez de fallar mal |
+| `AI_MODEL_CHAT` / `AI_MODEL_VISION` | No | No | `claude-sonnet-5` |
+| `AI_DAILY_QUOTA_CHAT` | No | No | `50` (mensajes al coach por usuario y día; por defecto) |
+| `AI_DAILY_QUOTA_FOOD` | No | No | `20` (fotos de comida analizadas por usuario y día; por defecto) |
+| `DJANGO_LOG_LEVEL` | No | No | `INFO` |
+| `KNOWLEDGE_SYNC_ON_START` | No | No | `True` por defecto: al arrancar se carga la base de evidencia del coach si cambiaron sus archivos (sección 6b). `False` lo desactiva |
+| `LANGUAGE_SELECTOR_ENABLED` | No | No | `True` por defecto (selector es/en encendido). `False` deja toda la app en español; va a juego con `NEXT_PUBLIC_LANGUAGE_SELECTOR_ENABLED` de Vercel |
+| `AI_MODEL_TRANSLATE` | No | No | Modelo de `manage.py translate_rules` (traducción de las reglas de evidencia). Por defecto, el de `AI_MODEL_CHAT` |
+| `PARQ_URL_ES` / `PARQ_URL_EN` | No | No | Enlaces al formulario oficial PAR-Q+ (eparmedx.com) del cribado. Por defecto, los oficiales en español e inglés; solo se cambian si eparmedx mueve los PDF |
+| `CRT6_URL` | No | No | Enlace al Concussion Recognition Tool 6 oficial (BJSM) que se muestra tras un golpe en la cabeza. Por defecto `https://doi.org/10.1136/bjsports-2023-107021` |
+| `COACH_OFF_CONTACT` | No | No | Contacto que Open Food Facts pide en el User-Agent (un correo del equipo de la app, nunca el de un usuario). Vacía por defecto: FightLab no llama nunca a OFF y la búsqueda de productos del súper sale apagada con su explicación; los menús y la tabla de alimentos del motor funcionan igual |
+| `SECURE_HSTS_SECONDS` | No | No | `3600` por defecto |
+| `EMAIL_VERIFICATION_TIMEOUT` | No | No | `86400` (24 h) por defecto |
+| `DATA_UPLOAD_MAX_MEMORY_SIZE` / `FILE_UPLOAD_MAX_MEMORY_SIZE` | No | No | `10485760` (10 MB) por defecto — límite de subida de fotos |
+| `VAPID_PUBLIC_KEY` | No | No | Avisos con Web Push (sección 7b). La clave **pública** de `npx web-push generate-vapid-keys`; la misma que `NEXT_PUBLIC_VAPID_PUBLIC_KEY` en Vercel. Sin las tres `VAPID_*`, los avisos quedan apagados y la app lo explica |
+| `VAPID_PRIVATE_KEY` | No | **Sí** | La clave **privada** del mismo par. Solo va en Render, nunca en Vercel ni en git |
+| `VAPID_SUBJECT` | No | No | Contacto del proyecto para los servicios de push: la URL de la app (`https://<tu-proyecto>.vercel.app`) o un `mailto:` del proyecto. Nunca un correo personal (el repo es público y el valor viaja en cada aviso). Tiene que empezar por `https://` o `mailto:`: si no, el backend arranca igual, deja el error en el log y los avisos quedan apagados |
+| `R2_ACCOUNT_ID` | No | No | Fotos de tickets en Cloudflare R2 (sección 7c). El ID de la cuenta de Cloudflare. Sin las cuatro `R2_*` obligatorias, la subida de tickets queda apagada y la app lo explica |
+| `R2_ACCESS_KEY_ID` | No | No | Access Key ID del token de API de R2 (sección 7c) |
+| `R2_SECRET_ACCESS_KEY` | No | **Sí** | Secret Access Key del mismo token. Solo va en Render, nunca en Vercel ni en git |
+| `R2_BUCKET` | No | No | Nombre del bucket privado, p. ej. `fightlab-tickets` |
+| `R2_SIGNED_URL_SECONDS` | No | No | Caducidad de las URLs firmadas de las fotos, de 60 a 3600 s. `600` (10 min) por defecto. Un valor fuera de rango o no numérico no tumba el arranque: queda en el log y la subida de tickets se apaga |
+| `AI_GLOBAL_DAILY_TOKEN_BUDGET` | No | No | Freno global de coste: tokens (entrada + salida) de todos los usuarios en el día. Al pasarlo, la IA responde `503` hasta mañana. `2000000` por defecto; `0` o menos lo desactiva |
+| `PLAN_NARRATIVE_ENABLED` | No | No | `False` por defecto. `True` hace que el plan semanal y la revisión lleven unas frases escritas por el LLM (de pago): cada texto gasta una unidad de la cuota del chat, cuenta para `AI_GLOBAL_DAILY_TOKEN_BUDGET` y hay un máximo de 10 por hora y usuario. Apagado, el plan sale igual, sin ese texto |
+| `PORT` | — | — | La pone Render sola; no la definas |
+
+> `render.yaml` de este repo trae ya fijas (`value:`) `DEBUG` (`False`), `NUM_PROXIES` (`1`),
+> `CORS_ALLOWED_ORIGINS` (vacía), `EMAIL_PROVIDER` (`brevo`), `EMAIL_TIMEOUT` (`10`),
+> `AI_MODEL_CHAT` y `AI_MODEL_VISION` (`claude-sonnet-5`), `AI_DAILY_QUOTA_CHAT` (`50`),
+> `AI_DAILY_QUOTA_FOOD` (`20`) y `DJANGO_LOG_LEVEL` (`INFO`): al sincronizar el blueprint pisan lo
+> que haya en el panel. Declara con `sync: false` (Render no las rellena ni las pisa) las
+> obligatorias (`SECRET_KEY`, `ALLOWED_HOSTS`, `ADMIN_URL`, `DATABASE_URL`, `FRONTEND_URL`,
+> `CSRF_TRUSTED_ORIGINS`, `BETA_ALLOWED_EMAILS`, `BFF_SHARED_SECRET`, `BREVO_API_KEY`,
+> `DEFAULT_FROM_EMAIL`, `ANTHROPIC_API_KEY`) y las opcionales `AI_GLOBAL_DAILY_TOKEN_BUDGET`,
+> `PLAN_NARRATIVE_ENABLED`, `VAPID_*`, `R2_*`, `COACH_OFF_CONTACT` y `KNOWLEDGE_SYNC_ON_START`
+> (vacías, valen su valor por defecto). Se rellenan a mano en el dashboard de Render la primera
+> vez; en despliegues siguientes quedan guardadas y no hay que repetirlas. Las del entorno de
+> prueba (`DEMO_USER_EMAIL`, `DEMO_USER_PASSWORD`, `DEMO_SEED_ALLOWED`) no están en el blueprint a
+> propósito: solo se añaden a mano en el servicio de prueba.
+
+---
+
+## 3. Vercel (frontend)
+
+1. **Add New → Project**, importa el mismo repo de GitHub.
+2. **Root Directory:** `frontend` (el repo es un monorepo backend+frontend;
+   si no se cambia, Vercel intenta construir desde la raíz y falla).
+3. Vercel detecta Next.js solo. El gestor de paquetes se fija por
+   `packageManager` en `frontend/package.json` (`pnpm@10.30.3`) — no hace
+   falta tocar nada en la configuración de build.
+4. Región: **`fra1`** (Frankfurt), ya fijada en `frontend/vercel.json`. Igual
+   que Neon y Render: menos salto de red entre las tres piezas.
+5. Variables de entorno (ver tabla) en **Production** (y también en
+   **Preview** si vas a usar despliegues de rama).
+6. **Deploy**. Al terminar, Vercel te da la URL definitiva
+   (`https://<tu-proyecto>.vercel.app`).
+
+### Variables de entorno de Vercel
+
+| Variable | Obligatoria | Secreto | Ejemplo |
+|---|---|---|---|
+| `DJANGO_API_URL` | Sí | No | `https://<tu-servicio>.onrender.com/api/v1` — sin ella el BFF falla en cada petición en vez de hablar en silencio con `localhost` |
+| `BFF_SHARED_SECRET` | Sí | **Sí** | El mismo valor exacto que pusiste en Render. Nunca con prefijo `NEXT_PUBLIC_` (eso lo expondría al navegador) |
+| `NEXT_PUBLIC_LANGUAGE_SELECTOR_ENABLED` | No | No | Selector de idioma de la UI, **en el build**: encendido salvo que valga `false` (entonces toda la UI en español). Si la cambias, hay que redesplegar. Pon el mismo valor que `LANGUAGE_SELECTOR_ENABLED` en Render |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | No | No | Avisos (sección 7b): la misma clave **pública** que `VAPID_PUBLIC_KEY` en Render. Se lee **en el build**: tras ponerla o cambiarla, redespliega. Sin ella, Perfil → Avisos dice que están apagados |
+| `CRON_SECRET` | No | **Sí** | Avisos (sección 7b): cadena aleatoria de 32+ caracteres. Vercel la manda sola a las tareas de `vercel.json` (`Authorization: Bearer …`); sin ella, `/api/cron/*` responde 503 y no sale ningún aviso programado |
+| `NODE_ENV` | — | — | La pone Vercel sola (`production`); no la definas a mano |
+
+---
+
+## 4. Volver a Render: `FRONTEND_URL` final
+
+Con la URL de Vercel ya definitiva, vuelve a las variables de entorno del
+servicio de Render y corrige `FRONTEND_URL` con el dominio real. Guarda —
+Render reinicia el servicio solo. Esto es lo que hace que los enlaces de
+verificación de email y de recuperar contraseña apunten al sitio correcto.
+
+---
+
+## 5. Crear el primer superusuario
+
+En el dashboard de Render, pestaña **Shell** del servicio `fightlab-backend`:
+
+```bash
+python manage.py createsuperuser
+```
+
+Con ese usuario entras en `https://<tu-servicio>.onrender.com/<ADMIN_URL>`
+(la ruta que pusiste en `ADMIN_URL`, no `/admin/`).
+
+---
+
+## 6. Smoke test
+
+Antes de invitar a nadie, comprueba de un tirón que la cadena completa
+funciona:
+
+- [ ] `GET /health` en Render → `200`.
+- [ ] La app carga en la URL de Vercel y se ve el login.
+- [ ] Registro con un email que **esté** en `BETA_ALLOWED_EMAILS` → `201` y
+      llega el email de verificación de verdad (revisa spam la primera vez).
+- [ ] Registro con un email que **no** esté en la lista → `403` (beta
+      cerrada).
+- [ ] El enlace del email verifica la cuenta y el login entra con cookies.
+- [ ] Subir y borrar una foto de progreso.
+- [ ] Guardar un dato de nutrición/agua/peso, cerrar sesión, volver a entrar
+      (o entrar desde otro dispositivo) y comprobar que sigue ahí — confirma
+      que el backup en servidor funciona, no solo el `localStorage`.
+- [ ] Registrar una sesión de gimnasio o MMA y comprobar que aparece en el
+      historial y en la carga semanal.
+- [ ] *Recuperar contraseña* de punta a punta (pedirla, abrir el enlace,
+      poner una nueva, entrar con ella).
+- [ ] Si hay `ANTHROPIC_API_KEY`: el chat del coach responde de verdad
+      ("IA real"); si no la hay, responde `503` limpio (no un error 500).
+- [ ] Entrar en `/<ADMIN_URL>` con el superusuario del paso 5.
+
+---
+
+## 6b. Base de evidencia del coach
+
+El coach integrado (`backend/vendor/ai-personal-coach`, app `coaching`) lee sus reglas y fuentes
+de evidencia de la base de datos. **Se cargan solas al arrancar el contenedor**: el `CMD` del
+`Dockerfile` lanza `python manage.py boot`, que en un solo proceso hace `migrate`,
+`createcachetable` y `sync_knowledge --on-start` (y `seed_demo` en el entorno de prueba). No hay
+que hacer nada a mano.
+
+- Guarda una huella (sha256) de los archivos de cada conjunto (`upstream`: el `knowledge/` del
+  coach; `fightlab`: `backend/knowledge_fightlab/`; `translations-es`: las traducciones al español
+  de esas reglas, `backend/knowledge_translations/es/`) en la tabla `coaching_knowledgesync`. Si no
+  cambió, no carga nada: la comprobación tarda unos 30 ms (más lo que tarda Django en arrancar un
+  proceso). Si cambió (el primer arranque con el coach, o un despliegue que toca la
+  evidencia), la carga entera tarda unos 20 s en local y algo más en Render; solo pasa en ese
+  arranque.
+- Si falla, lo deja en el log de Render (`No se pudo cargar la base de evidencia ...` o
+  `sync_knowledge ha fallado`), no guarda la huella (se reintenta en el siguiente arranque) y
+  gunicorn arranca igual: la app funciona, pero los chips del coach salen sin grado de evidencia y
+  las citas `[[regla:…]]` del chat no encuentran reglas hasta que se cargue.
+- `KNOWLEDGE_SYNC_ON_START=False` en Render la desactiva (por defecto está encendida; no hace falta
+  definir la variable).
+- Para forzarla a mano (por ejemplo desde tu PC contra Neon, con la `DATABASE_URL` solo en esa
+  terminal): `cd backend && PYTHONPATH=vendor/ai-personal-coach python manage.py sync_knowledge --force`.
+  `load_knowledge` (con `--dir knowledge_fightlab --origin fightlab` para el anexo) sigue existiendo
+  para cargas sueltas.
+- **Las traducciones al español de las reglas también se cargan solas** en el mismo arranque, detrás
+  de las reglas: vienen en archivos del repo (`backend/knowledge_translations/es/`, ver su README),
+  sin llamar a ninguna API. Se recargan si cambian sus archivos o si se recargó alguna regla; una
+  traducción cuyo texto en inglés cambió queda "desfasada" y la app muestra la regla en inglés con
+  "Sin traducir" hasta que se actualice el archivo. A mano: `manage.py load_translations --lang es`
+  (con `--dry-run` para ver qué haría). `manage.py translate_rules` (que llama a la API de Anthropic
+  y cuesta dinero) no se usa ni se lanza solo.
+- Otro conjunto (otro idioma, por ejemplo) se añade en `coaching/knowledge_sync.py`
+  (`knowledge_sets()`), detrás de los de reglas.
+
+**Antes del primer despliegue del coach en `main`:** el ensayo de la migración con el esquema de
+producción está en `backend/scripts/migration_rehearsal/` (README). Conviene hacer una copia de
+Neon (*Branches → Create branch*) justo antes, para poder volver atrás.
+
+---
+
+## Entorno de prueba (usuario de demostración) — NUNCA en producción
+
+Para enseñar la app en el móvil sin tocar producción: un Preview de Vercel, un servicio de Render
+**aparte** y una base de datos de Neon **vacía y aparte** (otro proyecto u otra rama de Neon sin
+datos reales). En ese servicio de prueba, y solo ahí, se definen dos variables más:
+
+| Variable | Secreto | Ejemplo |
+|---|---|---|
+| `DEMO_USER_EMAIL` | No | `demo@fightlab.test` |
+| `DEMO_USER_PASSWORD` | **Sí** | Una contraseña larga, solo para esta cuenta |
+| `DEMO_SEED_ALLOWED` | No | `true`. Con `DEBUG=False` (Render) `seed_demo` se niega sin ella, aunque estén las otras dos |
+
+En cada arranque, `python manage.py boot` lanza `seed_demo` después de `sync_knowledge`, solo si
+hay `DEMO_USER_EMAIL`:
+
+- **Sin `DEMO_USER_EMAIL` y `DEMO_USER_PASSWORD` no hace nada** (una línea en el log lo dice). Por
+  eso en el servicio de producción no deben existir nunca.
+- **Con `DEBUG=False` (Render, también el servicio de prueba) además hace falta
+  `DEMO_SEED_ALLOWED=true`**, puesto a propósito: si no, se niega y lo dice en el log. Es una
+  segunda llave para que unas variables de demo copiadas por error a producción no creen una
+  cuenta con contraseña conocida.
+- Con ellas crea (o actualiza) esa cuenta, activa y con el email verificado, con datos
+  inventados: perfil de adulto (hombre, objetivo de pérdida, región `es`), cribado sin nada que
+  señalar, 4 semanas de check-ins con pesajes que bajan, 16 sesiones de MMA, deportes y gimnasio
+  (con series), un plan semanal aplicado, una revisión y un menú de 7 días hecho con el proveedor
+  simulado (sin LLM ni API).
+- Es idempotente: si la cuenta ya tiene un bloque de datos, no lo repite. Cambiar
+  `DEMO_USER_PASSWORD` y reiniciar cambia la contraseña de la cuenta de demostración.
+- Solo toca la cuenta que él mismo creó (tabla `users_demoaccount`). Si ya hay una cuenta real con
+  ese email, no la toca y lo dice en el log.
+- La contraseña no sale nunca en el log. Si un bloque falla, lo registra y el arranque sigue.
+- Se entra con ese email y esa contraseña aunque no esté en `BETA_ALLOWED_EMAILS`: esa lista solo
+  se mira al **registrarse**.
+
+Los datos se calculan respecto al día del primer arranque: con el paso de los días la semana actual
+se queda sin sesiones nuevas. Para recrearlos, borra la cuenta (en el admin de Django del servicio
+de prueba, o vaciando su base) y reinicia el servicio.
+
+---
+
+## 7. Instalar la PWA
+
+FightLab Pro es una PWA instalable, sin pasar por las tiendas de apps.
+
+**Android (Chrome):** abre la URL de Vercel → menú ⋮ → *Añadir a pantalla de
+inicio* / *Instalar app*. Queda como un icono normal, a pantalla completa.
+
+**iPhone (Safari):** abre la URL → botón compartir (el cuadrado con la
+flecha hacia arriba) → *Añadir a pantalla de inicio*. En iOS **tiene que ser
+Safari**: Chrome/Firefox en iPhone no pueden instalar PWAs (limitación de
+Apple, no de la app).
+
+---
+
+## 7b. Avisos en el móvil (Web Push, opcional)
+
+Sustituyen a los recordatorios de ParteDiario: la víspera (si mañana hay algo
+que preparar del menú o del plan), la revisión de los martes y, si la persona
+los enciende, pesarse y la movilidad. Todo es opcional: sin las variables de
+abajo los avisos quedan apagados, Perfil → Avisos lo explica y el resto de la
+app funciona igual.
+
+**Cómo funcionan.** El navegador se suscribe con la clave pública VAPID y
+manda su suscripción al backend (`PushSubscription`). Vercel Cron llama a una
+ruta del BFF, `/api/cron/tick`, a unas horas fijas (las 8 tareas de
+`frontend/vercel.json`); la ruta está protegida con `CRON_SECRET` y llama al
+backend (`POST /api/v1/cron/reminders`) con `BFF_SHARED_SECRET`. El backend
+mira, para cada persona y con la zona horaria de su perfil, qué aviso le toca
+en ese tick y lo envía firmado con la clave privada (`pywebpush`). Cada aviso
+se apunta y no se repite el mismo día aunque el cron llegue dos veces.
+
+**Horas.** Cada aviso tiene su hora local, las de ParteDiario: pesarse a las
+8:00, la revisión de la semana los martes a las 10:00, la movilidad a las
+18:00 y la víspera a las 22:00. En el plan Hobby de Vercel cada tarea corre
+como mucho una vez al día, a una hora UTC fija y **en cualquier minuto de esa
+hora** (±59 min, según la documentación de Vercel de julio de 2026). Por eso
+hay una tarea en cada hora UTC que cae en esas horas en España, con y sin
+horario de verano:
+
+| Aviso | Hora local | Tick en invierno (UTC+1) | Tick en verano (UTC+2) |
+|---|---|---|---|
+| Pesarse | 8:00–8:59 | `0 7 * * *` | `0 6 * * *` |
+| Revisión (martes) | 10:00–10:59 | `0 9 * * *` | `0 8 * * *` |
+| Movilidad | 18:00–18:59 | `0 17 * * *` | `0 16 * * *` |
+| Víspera | 22:00–22:59 | `0 21 * * *` | `0 20 * * *` |
+
+Son 8 tareas y no 24 (una por hora) a propósito: cada tick despierta el
+backend de Render free, y sus 750 horas gratis al mes se comparten con el
+servicio de prueba. En los ticks que no le tocan a nadie el backend no envía
+nada. A quien tenga en su perfil otra zona horaria, cada aviso le llega en el
+tick más cercano a su hora de entre los que caen ese día en su zona (antes o
+después), pero no se pierde; Perfil → Avisos también lo explica. Si se lanza
+una tarea a mano fuera de esas horas, no sale ningún aviso.
+
+Las horas UTC de las tareas son las de `TICK_HOURS_UTC` en
+`backend/notifications/reminders.py`; un test comprueba que coinciden con
+`frontend/vercel.json`.
+
+**Dónde funcionan** (también lo explica la app): en Android, con Chrome (la
+PWA instalada o abierta en el navegador); en iPhone y iPad, **solo** con la
+app añadida a la pantalla de inicio y con iOS 16.4 o posterior.
+
+### Pasos (una vez)
+
+1. **Crea las claves en tu PC**, en cualquier carpeta (no hace falta el repo):
+
+   ```bash
+   npx web-push generate-vapid-keys
+   ```
+
+   Saca dos líneas: `Public Key` y `Private Key`. Guárdalas en tu gestor de
+   contraseñas. **No las subas a git**: el repo es público. Si alguna vez se
+   filtra la privada, genera un par nuevo y repite los pasos 2 y 3 (las
+   suscripciones antiguas dejan de valer y cada persona vuelve a activar los
+   avisos en Perfil → Avisos).
+2. **Render** → servicio del backend → *Environment* → añade:
+   - `VAPID_PUBLIC_KEY` = la `Public Key`
+   - `VAPID_PRIVATE_KEY` = la `Private Key`
+   - `VAPID_SUBJECT` = `https://<tu-proyecto>.vercel.app` (o un `mailto:` del
+     proyecto; nunca tu correo personal)
+
+   Guarda: Render redespliega solo.
+3. **Vercel** → proyecto → *Settings* → *Environment Variables* (Production):
+   - `NEXT_PUBLIC_VAPID_PUBLIC_KEY` = la misma `Public Key`
+   - `CRON_SECRET` = una cadena aleatoria, por ejemplo la salida de
+     `python -c "import secrets; print(secrets.token_urlsafe(32))"`
+   - Comprueba que `BFF_SHARED_SECRET` ya está (es la misma que en Render).
+
+   Redespliega (*Deployments* → el último → *Redeploy*): la clave pública se
+   lee en el build y las tareas de `vercel.json` se registran al desplegar.
+4. **Comprueba las tareas:** Vercel → proyecto → *Settings* → *Cron Jobs*
+   tiene que listar 8 tareas a `/api/cron/tick` (a las 6, 7, 8, 9, 16, 17, 20
+   y 21 UTC). Desde ahí se pueden lanzar a mano (*Run*): solo envían algo si
+   es la hora de algún aviso; en *Logs* sale cuántos se enviaron (solo
+   recuentos, sin datos de nadie).
+5. **En el móvil:** abre la app → Perfil → Avisos → *Activar los avisos
+   aquí* → acepta el permiso → *Mandar uno de prueba*.
+
+Variables nuevas, en resumen: en Render `VAPID_PUBLIC_KEY`,
+`VAPID_PRIVATE_KEY` y `VAPID_SUBJECT`; en Vercel
+`NEXT_PUBLIC_VAPID_PUBLIC_KEY` y `CRON_SECRET`. Todas opcionales.
+
+---
+
+## 7c. Fotos de tickets en Cloudflare R2 (opcional, fase 12)
+
+La lista de la compra deja guardar la foto de cada ticket. Las fotos van a
+**Cloudflare R2** (10 GB gratis), no a Neon. Sin las variables `R2_*` la subida
+queda apagada y la app lo dice; el resto de la lista funciona igual.
+
+**Cómo funciona.**
+
+- **Bucket privado**, sin acceso público ni dominio público. Las fotos se ven
+  con **URLs firmadas** que caducan (10 min por defecto,
+  `R2_SIGNED_URL_SECONDS`) y que solo pide el dueño del ticket a través del
+  backend (`GET /api/v1/coach/tickets/<id>/url`).
+- **Compresión y límite**: el móvil reduce y comprime la foto (unos 300 KB)
+  antes de subirla; el backend rechaza lo que pase de 2 MB y la vuelve a
+  guardar como JPEG sin EXIF ni GPS. Un contador de uso avisa a los
+  superusuarios (por correo y en el log) cuando las fotos pasan del 80 % de
+  los 10 GB gratis; en el admin de Django, *Ticket photos* enseña el total.
+- **Borrado**: al borrar un ticket se borra su foto de R2, y al borrar la
+  cuenta, todas las del usuario.
+- **Pruebas**: con un almacenamiento falso en memoria; ninguna llamada real a
+  R2. **Ninguna credencial va en el repo**, que es público.
+
+Variables (backend, en Render; ninguna va en Vercel ni con `NEXT_PUBLIC_`):
+
+| Variable | Qué es |
+|---|---|
+| `R2_ACCOUNT_ID` | ID de la cuenta de Cloudflare (sale en la URL del panel y en R2 → Overview) |
+| `R2_ACCESS_KEY_ID` | Access Key ID del token de API de R2 |
+| `R2_SECRET_ACCESS_KEY` | Secret Access Key del mismo token (secreto) |
+| `R2_BUCKET` | Nombre del bucket, p. ej. `fightlab-tickets` |
+| `R2_SIGNED_URL_SECONDS` | Opcional, caducidad de las URLs firmadas (por defecto 600) |
+
+### Pasos (ya tienes cuenta de Cloudflare)
+
+1. Cloudflare → **R2 Object Storage** → **Create bucket** → nombre
+   `fightlab-tickets`, ubicación automática o UE. No actives el acceso público
+   ni un dominio personalizado.
+2. R2 → **Manage R2 API Tokens** → **Create API token** → permiso **Object
+   Read & Write**, limitado a ese bucket → crear. Copia el **Access Key ID** y
+   el **Secret Access Key**: el secreto solo se ve una vez.
+3. En Render, en el servicio del backend (el de prueba primero), añade las
+   variables de la tabla y redespliega.
+4. **En el móvil:** Nutrición → Menú → Compra → *Tickets* → haz una foto. Si
+   sale "La subida de fotos de tickets no está configurada", revisa que las
+   cuatro primeras variables estén en el servicio que usa la app.
+
+El cliente S3 es `boto3` (Apache-2.0), versión fijada en
+`backend/requirements.txt`; son ruedas Python puras y la imagen
+`python:3.12-slim` las instala sin paquetes del sistema.
+
+---
+
+## Límites del plan gratis
+
+- **Render se duerme.** Un web service free de Render se para tras **15
+  minutos** sin tráfico, y la siguiente petición tarda **~50 segundos** en
+  "despertarlo" (cold start: arranca el contenedor entero). La app lo tapa
+  con un aviso discreto ("Despertando el servidor…") que aparece si la
+  respuesta tarda más de 3 s y desaparece solo en cuanto contesta; mientras
+  tanto, la app sigue funcionando con lo que ya tenga en `localStorage`
+  (fecha, peso, nutrición del día…), así que no se queda congelada. Componente:
+  `frontend/components/server-warmup.tsx`. Arrancar en un solo proceso (`manage.py boot`) acorta
+  el cold start: en local, con la base ya migrada, el paso previo a gunicorn bajó de ~16 s a ~7 s.
+- **Render free: 512 MB de RAM.** gunicorn va con 2 workers que se reciclan cada ~500 peticiones
+  (`--max-requests 500 --max-requests-jitter 50`), y una foto PNG/WebP/GIF no pasa de 6 MP
+  (~60 MB al decodificarla); las JPEG se decodifican ya reducidas y aceptan hasta 40 MP.
+- **Neon: 0.5 GB.** De sobra para texto y metadatos de una beta; las fotos se
+  comprimen antes de subir. Si se llena, hay que pasar a un plan de pago o
+  limpiar datos de prueba.
+- **Cuotas de IA por usuario.** `AI_DAILY_QUOTA_CHAT` (por defecto 50
+  mensajes/día) y `AI_DAILY_QUOTA_FOOD` (por defecto 20 fotos/día) evitan que
+  una persona agote el presupuesto de IA de toda la beta. `AI_GLOBAL_DAILY_TOKEN_BUDGET` (por
+  defecto 2 000 000 tokens/día) frena a todos a la vez. El texto del LLM del plan y la revisión
+  (`PLAN_NARRATIVE_ENABLED`) va apagado; encendido, gasta de la cuota del chat.
+- **Límite de gasto en Anthropic.** Además de las cuotas por usuario, pon un
+  límite de gasto mensual en la consola de Anthropic (Settings → Limits) como
+  red de seguridad: las cuotas de arriba acotan el uso normal, pero un límite
+  de gasto corta cualquier escenario que no se haya previsto.
+- **Vercel Cron (Hobby): cada tarea, una vez al día como mucho**, y puede
+  salir en cualquier minuto de su hora (sección 7b). Los avisos usan ocho, y
+  cada una despierta el backend de Render. La función de cada tarea tiene 60 s: el primer
+  intento espera hasta 45 s a que Render despierte y, si no llega, se
+  reintenta con lo que quede.
+- **Brevo: 300 emails/día.** De sobra para invitar y verificar a un grupo de
+  beta pequeño. El remitente tiene que ser una dirección que hayas verificado
+  tú mismo en Brevo (no un dominio propio, salvo que lo verifiques con DNS).
+
+---
+
+## Invitar a alguien
+
+Dos formas:
+
+1. **La normal:** añade su email a `BETA_ALLOWED_EMAILS` en Render (separado
+   por comas de los que ya haya) y guarda — Render redespliega solo. Esa
+   persona ya puede registrarse por su cuenta y verificar su email.
+2. **Directa desde el admin:** entra en `/<ADMIN_URL>`, crea el usuario a
+   mano (email + contraseña) y márcalo activo. Salta el email de
+   verificación — útil si Brevo está caído o para dar acceso inmediato en una
+   demo.
+
+---
+
+## Problemas comunes
+
+- **El registro se queda colgado o da 502/504.** Symptom típico de intentar
+  enviar el email por SMTP en el plan free de Render: desde 2025 Render
+  bloquea el tráfico saliente a los puertos SMTP (25/465/587) en los web
+  services free. Por eso el envío va por la API HTTP de Brevo
+  (`EMAIL_PROVIDER=brevo`), no por SMTP — si ves este error, comprueba que
+  `EMAIL_PROVIDER` y `BREVO_API_KEY` están puestos y no quedó `EMAIL_BACKEND`
+  apuntando a SMTP.
+- **Login o registro dan 429 a las primeras de cambio, para todo el mundo a
+  la vez.** Falta `BFF_SHARED_SECRET`, está vacío, o no es idéntico en Render
+  y en Vercel. Sin él, todas las peticiones de auth comparten el contador de
+  la IP de salida de Vercel: 10 intentos por minuto para toda la beta junta,
+  no por persona.
+- **El login funciona por la app pero un curl directo a la URL de Render se
+  salta el límite de intentos.** Revisa que `NUM_PROXIES=1` (no `2`) — con la
+  URL pública de Render solo hay un proxy de confianza real por delante de
+  gunicorn.
+- **Verificar el email y luego el login da 401 "No active account found".**
+  El usuario se registró dos veces antes de verificar (típico: pulsó "Crear
+  cuenta" otra vez porque tardaba, o por el cold start de Render). Es el
+  mecanismo anti-secuestro de cuenta funcionando como debe: la segunda
+  petición invalida la contraseña del primer intento. Solución: que use
+  *Recuperar contraseña* con ese mismo email.
+- **La app tarda ~50 s en la primera petición del día.** No es un fallo, es
+  el cold start de Render en el plan free — ver
+  [Límites del plan gratis](#límites-del-plan-gratis).
+- **iPhone no ofrece "Instalar app".** Tiene que abrirse con Safari, no con
+  Chrome/Firefox — ver [Instalar la PWA](#7-instalar-la-pwa).
+- **El chat del coach o la foto de comida dan 503 "IA no configurada".**
+  Falta `ANTHROPIC_API_KEY` en Render, o se ha agotado la cuota diaria del
+  usuario (`AI_DAILY_QUOTA_CHAT`/`AI_DAILY_QUOTA_FOOD`) — en ese caso el
+  mensaje lo dice explícitamente en vez de dar un 503 genérico.
+- **`createsuperuser` no aparece o la Shell no responde.** La Shell de Render
+  solo está disponible con el servicio despierto: espera al cold start (ver
+  arriba) y reintenta.
+
+---
+
+## IP del cliente y throttling (verificado en la documentación de Vercel)
+
+Fuente: <https://vercel.com/docs/headers/request-headers> (revisada el 2026-10-21).
+
+- `x-forwarded-for`: IP pública del cliente. Vercel **sobrescribe** esta cabecera y no reenvía IPs externas, para evitar el spoofing (solo en Enterprise con *Trusted Proxy* se puede conservar una propia).
+- `x-real-ip`: "idéntica" a `x-forwarded-for`.
+- `x-vercel-forwarded-for`: idéntica a `x-forwarded-for`, pero no se sobrescribe si hay un proxy delante de Vercel.
+- Vercel sobrescribe estas cabeceras en su borde; eso es una propiedad de la plataforma, no de nuestro código.
+
+Consecuencias en el código:
+
+- El BFF (`frontend/lib/auth-forward.ts`) toma la IP de `x-real-ip` y, si falta, de `x-vercel-forwarded-for`. **Nunca** del primer salto de `x-forwarded-for`.
+- La reenvía a Django en `X-Bff-Client-Ip` junto con `X-Bff-Secret`; Django solo la acepta si el secreto coincide (comparación con `hmac.compare_digest`).
+- Sin esas cabeceras (llamada directa a la URL de Render) Django usa `NUM_PROXIES=1`, es decir el último salto de `X-Forwarded-For`, el que añade Render; lo que anteponga el cliente no cuenta.
+- Si algún día se pone un proxy/CDN propio delante de Vercel, `x-real-ip` pasa a ser la IP de ese proxy: habría que revisar esta decisión.
+- **Solo es de fiar en Vercel**, que sobrescribe estas cabeceras. En cualquier otro host, incluido `next dev`, el cliente controla `x-real-ip` y `x-vercel-forwarded-for`, y podría elegir su propio cubo de throttle. No despliegues el BFF fuera de Vercel con `BFF_SHARED_SECRET` sin revisar esto antes.
+- En local (`next dev`) además esas cabeceras normalmente no existen, así que no se manda IP y se aplica el throttle estándar.
+
+## Tests y CI
+
+**Un comando:** `make test` desde la raíz (necesita Docker, Python 3.12 y pnpm).
+Levanta un Postgres propio (`fightlab-test-db`, `postgres:15`) en
+`127.0.0.1:54329` con su `DATABASE_URL`, sin tocar el 5432 de nada más ni leer
+el `.env` del repo, y ejecuta `pytest`, `makemigrations --check --dry-run`,
+`check --deploy` (entorno de producción de mentira), eslint, `tsc --noEmit` y
+vitest. No hace falta ningún secreto. Primera vez: `make venv` (crea `.venv`
+con `backend/requirements-dev.txt`). Otros objetivos: `make test-backend`,
+`make test-frontend`, `make test-e2e`, `make db-down`. El puerto se cambia con
+`TEST_DB_PORT=...`.
+
+**Python 3.12** en los tres sitios: `backend/Dockerfile`, `.github/workflows/ci.yml`
+y esta guía. Si se sube de versión, se cambian los tres a la vez.
+
+**pnpm desde la raíz:** `pnpm lint` / `pnpm test` en la raíz del repo fallan con
+`ERR_PNPM_NO_PKG_MANIFEST` porque el `package.json` está en `frontend/`. Usa
+`pnpm --dir frontend lint` (o `cd frontend`); los objetivos del `Makefile` ya lo hacen.
+
+**E2E móvil (Playwright):** `frontend/e2e/mock/` (`pnpm test:e2e`,
+`playwright.config.ts`), proyectos a 320, 360 y 390 px. No
+necesita backend: `e2e/mock/fixtures.ts` (`loginAsTestUser`) siembra las cookies
+`fl_refresh`/`fl_access` y `flp_owner_uid` en localStorage, y mockea `/api/proxy/*`.
+Primera vez: `pnpm --dir frontend exec playwright install chromium`. En local
+arranca `next dev` en el 3100; con `CI=1` usa `next start` (hace falta `next build` antes).
+
+**E2E del coach contra Django de verdad:** `frontend/e2e/*.spec.ts` (`pnpm e2e`,
+`playwright.real.config.ts`): onboarding con cribado, objetivos y pesaje, check-in, plan y
+revisión semanal, combate. Necesitan el backend migrado y arrancado, `next build && next start`
+y el Chrome o Edge instalados (`E2E_CHANNEL=msedge`); los pasos están en `frontend/e2e/README.md`.
+No van en el CI.
+
+**GitHub Actions** (`.github/workflows/ci.yml`, en push a `main`/`staging`/`feat/beta-cloud`/`feat/beta-coach` y en
+cada PR): job `backend` (Postgres 15 como servicio, `pytest -q`,
+`makemigrations --check --dry-run`, `check --deploy`) y job `frontend` (eslint,
+`tsc`, vitest, `next build`, Playwright). No usa secretos.
+
+**Protección de rama (hacer a mano en GitHub):** Settings → Branches → regla para
+`main` (y `staging`): *Require status checks to pass before merging* con los checks
+`backend` y `frontend`, y *Require branches to be up to date*. Sin esto, el CI
+avisa pero no bloquea el merge.
+
+**Smoke contra Anthropic (opt-in):** `backend/ai/tests/test_smoke_live.py` comprueba
+que `AI_MODEL_CHAT` y `AI_MODEL_VISION` responden. Se salta salvo con
+`RUN_LIVE_SMOKE=1` y clave (esta puede venir del `.env`; la variable explícita
+evita llamadas reales en un `pytest` normal):
+`cd backend && RUN_LIVE_SMOKE=1 ANTHROPIC_API_KEY=sk-... pytest ai/tests/test_smoke_live.py`.
+
+**Límites a tener en cuenta:** `make test` no ejecuta `next build` ni Playwright
+(sí lo hace el CI), así que verde en local no garantiza verde en CI: antes de
+subir, `make test-e2e` y `pnpm --dir frontend build`. Los *warnings* de eslint no
+hacen fallar el CI (solo los errores).
