@@ -19,6 +19,7 @@ ese día aunque el cron llegue dos veces.
 - `review`: los martes, si la semana anterior aún no está revisada (como ParteDiario desde la
   v1.9.2: el lunes se cocina y el peso aún arrastra el fin de semana).
 """
+import logging
 from datetime import UTC, date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
@@ -32,6 +33,8 @@ from profiles.models import UserProfile
 
 from . import push
 from .models import PushSubscription, ReminderLog, ReminderPrefs
+
+logger = logging.getLogger(__name__)
 
 # convention (FightLab, las horas de ParteDiario): hora local de cada aviso.
 TARGET_HOURS = {"weigh": 8, "review": 10, "mobility": 18, "eve": 22}
@@ -197,38 +200,57 @@ def _claim(profile, kind: str, day) -> ReminderLog | None:
         return None  # ya se envió hoy
 
 
+def _send_one(profile, kind: str, local: datetime, tick: datetime, tz, counts: dict) -> None:
+    """Un aviso de un perfil en este tick: lo cuenta en `counts`."""
+    if tick_for(local.date(), TARGET_HOURS[kind], tz) != tick:
+        counts["not_due"] += 1
+        return
+    message = BUILDERS[kind](profile.user, local)
+    if message is None:
+        counts["skipped"] += 1
+        return
+    log = _claim(profile, kind, local.date())
+    if log is None:
+        counts["already_sent"] += 1
+        return
+    try:
+        result = push.send_to_profile(profile, message)
+    except Exception:
+        log.delete()  # no se ha enviado: otro tick de hoy puede reintentarlo
+        raise
+    if result["ok"]:
+        counts["sent"] += 1
+    else:
+        log.delete()  # no llegó a ningún navegador: otro tick de hoy puede reintentarlo
+        counts["failed"] += 1
+
+
 def run(now: datetime | None = None) -> dict:
     """Envía los avisos a los que les toca en este tick. Devuelve los recuentos (sin datos
-    personales)."""
+    personales). Un perfil o un aviso que falla se registra (`errors`) y el tick sigue con los
+    demás (fix G1-10)."""
     now = now or timezone.now()
     tick = current_tick(now)
-    counts = {"profiles": 0, "sent": 0, "skipped": 0, "not_due": 0, "already_sent": 0, "failed": 0}
+    counts = {"profiles": 0, "sent": 0, "skipped": 0, "not_due": 0, "already_sent": 0, "failed": 0, "errors": 0}
     if not push.configured():
         return {"enabled": False, "tick": tick.isoformat(), **counts}
     profile_ids = PushSubscription.objects.values_list("profile_id", flat=True).distinct()
     for profile in UserProfile.objects.filter(pk__in=list(profile_ids)).select_related("user"):
         counts["profiles"] += 1
-        tz = _tz(profile)
-        local = timezone.localtime(now, tz)
-        prefs = prefs_for(profile)
+        try:
+            tz = _tz(profile)
+            local = timezone.localtime(now, tz)
+            prefs = prefs_for(profile)
+        except Exception:
+            logger.exception("avisos: el perfil %s ha fallado", profile.pk)
+            counts["errors"] += 1
+            continue
         for kind in KINDS:
             if not getattr(prefs, kind):
                 continue
-            if tick_for(local.date(), TARGET_HOURS[kind], tz) != tick:
-                counts["not_due"] += 1
-                continue
-            message = BUILDERS[kind](profile.user, local)
-            if message is None:
-                counts["skipped"] += 1
-                continue
-            log = _claim(profile, kind, local.date())
-            if log is None:
-                counts["already_sent"] += 1
-                continue
-            result = push.send_to_profile(profile, message)
-            if result["ok"]:
-                counts["sent"] += 1
-            else:
-                log.delete()  # no llegó a ningún navegador: otro tick de hoy puede reintentarlo
-                counts["failed"] += 1
+            try:
+                _send_one(profile, kind, local, tick, tz, counts)
+            except Exception:
+                logger.exception("avisos: '%s' del perfil %s ha fallado", kind, profile.pk)
+                counts["errors"] += 1
     return {"enabled": True, "tick": tick.isoformat(), **counts}
