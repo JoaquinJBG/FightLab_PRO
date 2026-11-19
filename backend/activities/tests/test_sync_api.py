@@ -90,7 +90,7 @@ def test_sync_item_invalido_no_envenena_el_lote(auth_client):
         {"rpe": 11},
         {"kcal": 50_000},
         {"kind": "YOGA"},
-        {"started_at": "2019-12-31T23:00:00Z"},  # antes del suelo
+        {"started_at": "1999-12-31T23:00:00Z"},  # antes del suelo
         {"note": "x" * 2001},
         {"detail": {"blob": "x" * 9000}},  # > 8 KB
     ],

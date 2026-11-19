@@ -40,14 +40,18 @@ from django.utils import timezone
 
 from activities import contract
 from activities.models import Activity, ImportedRoutine, SetLog
+from activities.serializers import STARTED_AT_FLOOR
 from activities.sets import MAX_KG, MAX_REPS, MAX_SETS_PER_SESSION
 
 from .bridge.importers import ImportFileError, Parsed
 
 MAX_IMPORT_SETS = 20_000
-# Antes de esta fecha casi seguro es un error de formato (las apps de gimnasio no existían).
-IMPORT_FLOOR = datetime(2000, 1, 1, tzinfo=dt_timezone.utc)
-FUTURE_SKEW = timedelta(days=1)  # el día local del archivo puede ir por delante del UTC
+# Antes de esta fecha casi seguro es un error de formato (las apps de gimnasio no existían). Es el
+# mismo suelo que el registro y la edición de sesiones (`activities.serializers`).
+IMPORT_FLOOR = STARTED_AT_FLOOR
+# El día local del archivo puede ir por delante del UTC. El registro de la app solo deja 10 min
+# (`activities.serializers.FUTURE_SKEW`): allí la hora la pone el reloj del móvil, no un archivo.
+FUTURE_SKEW = timedelta(days=1)
 MAX_DISTANCE_KM = 1000
 MAX_DURATION_S = 86_400
 MAX_INDEX = 32_767  # PositiveSmallIntegerField

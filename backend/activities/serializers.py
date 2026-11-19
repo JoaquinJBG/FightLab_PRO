@@ -12,7 +12,9 @@ from .models import SET_TYPES, Activity, SetLog
 MAX_DETAIL_CHARS = 8_192
 MAX_NOTE_CHARS = 2_000
 MAX_SETS = 300
-STARTED_AT_FLOOR = datetime(2020, 1, 1, tzinfo=dt_timezone.utc)
+# El mismo suelo que la importación (`coaching.imports.IMPORT_FLOOR`): antes de 2000 casi seguro es
+# un error de formato o de reloj; después, un historial de otra app (Hevy, Strong) que vale.
+STARTED_AT_FLOOR = datetime(2000, 1, 1, tzinfo=dt_timezone.utc)
 FUTURE_SKEW = timedelta(minutes=10)
 
 

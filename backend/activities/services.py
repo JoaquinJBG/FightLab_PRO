@@ -87,19 +87,10 @@ def activity_update(*, activity: Activity, data: dict) -> tuple[Activity | None,
     gimnasio, sus series (las nuevas sustituyen a todas). Devuelve (actividad, None) o
     (None, errores): nada cambia si algo no es válido."""
     fields = {k: data[k] for k in ("title", "started_at", "duration_sec", "rpe", "note") if k in data}
-    base = {
-        "client_id": activity.external_id or "edit-00000000",
-        "kind": activity.kind,
-        "title": activity.title,
-        "started_at": activity.started_at,
-        "duration_sec": activity.duration_sec,
-        "rpe": activity.rpe,
-        "note": activity.note,
-        **fields,
-    }
-    if "started_at" not in fields and base["started_at"] is not None:
-        base["started_at"] = base["started_at"].isoformat()
-    ser = SyncItemSerializer(data=base)
+    # Solo se validan los campos editados: una sesión importada puede tener una fecha que el
+    # registro normal no acepta (un día por delante, por la zona del archivo) y cambiarle el título
+    # no debe tocarla ni fallar (fix G1-3).
+    ser = SyncItemSerializer(data=fields, partial=True)
     errors = {} if ser.is_valid() else {k: v for k, v in ser.errors.items() if k in fields}
     sets = None
     if "sets" in data:
