@@ -392,8 +392,10 @@ if not DEBUG and not BFF_SHARED_SECRET:
 VAPID_PUBLIC_KEY = env("VAPID_PUBLIC_KEY", default="").strip()
 VAPID_PRIVATE_KEY = env("VAPID_PRIVATE_KEY", default="").strip()
 VAPID_SUBJECT = env("VAPID_SUBJECT", default="").strip()
+# Opcional: un valor malo no tumba el arranque (fix G1-7). Se registra y los avisos quedan apagados.
 if VAPID_SUBJECT and not VAPID_SUBJECT.startswith(("mailto:", "https://")):
-    raise ImproperlyConfigured("VAPID_SUBJECT debe empezar por mailto: o https://")
+    logger.error("VAPID_SUBJECT debe empezar por mailto: o https://: los avisos quedan apagados")
+    VAPID_SUBJECT = ""
 
 # --- Fotos de tickets en Cloudflare R2 (F12) ---
 # Solo en el backend (Render), nunca en Vercel ni con NEXT_PUBLIC_. Sin las cuatro primeras la
@@ -403,9 +405,14 @@ R2_ACCOUNT_ID = env("R2_ACCOUNT_ID", default="").strip()
 R2_ACCESS_KEY_ID = env("R2_ACCESS_KEY_ID", default="").strip()
 R2_SECRET_ACCESS_KEY = env("R2_SECRET_ACCESS_KEY", default="").strip()
 R2_BUCKET = env("R2_BUCKET", default="").strip()
-R2_SIGNED_URL_SECONDS = env.int("R2_SIGNED_URL_SECONDS", default=600)
-if not 60 <= R2_SIGNED_URL_SECONDS <= 3600:
-    raise ImproperlyConfigured("R2_SIGNED_URL_SECONDS va de 60 a 3600 segundos")
+_r2_seconds = env("R2_SIGNED_URL_SECONDS", default="600").strip()
+# Opcional: un valor malo no tumba el arranque (fix G1-7). Se registra y la subida queda apagada.
+if _r2_seconds.isascii() and _r2_seconds.isdigit() and 60 <= int(_r2_seconds) <= 3600:
+    R2_SIGNED_URL_SECONDS = int(_r2_seconds)
+else:
+    logger.error("R2_SIGNED_URL_SECONDS va de 60 a 3600 segundos: la subida de tickets queda apagada")
+    R2_SIGNED_URL_SECONDS = 600
+    R2_ACCOUNT_ID = R2_ACCESS_KEY_ID = R2_SECRET_ACCESS_KEY = R2_BUCKET = ""
 # "r2" (por defecto) o "memory": almacenamiento falso en memoria, solo para pruebas.
 TICKETS_STORAGE = env("TICKETS_STORAGE", default="r2")
 

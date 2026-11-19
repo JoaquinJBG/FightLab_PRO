@@ -64,7 +64,37 @@ services:
         value: "50"
       - key: AI_DAILY_QUOTA_FOOD
         value: "20"
+      # Freno global de tokens al día; sin valor, 2 000 000 (settings). sync:false para no pisar
+      # lo que se ajuste en el panel al sincronizar el blueprint.
       - key: AI_GLOBAL_DAILY_TOKEN_BUDGET
-        value: "2000000"
+        sync: false
+      # Texto del LLM en el plan y la revisión (de pago). Sin valor, apagado (False).
+      - key: PLAN_NARRATIVE_ENABLED
+        sync: false
+      # Opcionales: sin ellas la función queda apagada y la app lo explica. Un valor malo
+      # (VAPID_SUBJECT sin mailto:/https://, R2_SIGNED_URL_SECONDS fuera de 60-3600) no tumba
+      # el arranque: se registra el error y esa función se apaga.
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_SUBJECT
+        sync: false
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET
+        sync: false
+      - key: R2_SIGNED_URL_SECONDS
+        sync: false
+      # Contacto del proyecto para Open Food Facts (escáner); sin él, el escáner no consulta OFF.
+      - key: COACH_OFF_CONTACT
+        sync: false
+      # Carga de la base de evidencia al arrancar (manage.py boot); sin valor, True.
+      - key: KNOWLEDGE_SYNC_ON_START
+        sync: false
       - key: DJANGO_LOG_LEVEL
         value: INFO
