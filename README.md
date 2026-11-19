@@ -10,17 +10,25 @@ unifica la ciencia del entrenamiento, el seguimiento de nutrición y peso, y un
 
 ## ✨ Qué hace
 
-- **Motor fisiológico de carga.** Registras tus sesiones (sparring, grappling,
-  fuerza, cardio) y el sistema calcula la carga de entrenamiento (sRPE), la
-  monotonía, la tensión y el **ACWR** (ratio carga aguda/crónica) para prevenir
-  lesiones.
-- **Nutrición.** Objetivos de kcal y macros calculados con tu peso, altura y edad
-  (Mifflin-St Jeor + objetivo perder/mantener/ganar), diario, agua y seguimiento
-  de peso de cara al pesaje. Los macros periodizados por bloque de entrenamiento
-  están en la hoja de ruta, no en la app actual.
-- **Coach IA (Anthropic Claude).** Chat y briefing con tu contexto real (carga
-  frente a tu rango personal, recuperación, peso) y **kcal a partir de una foto
-  del plato**. La generación de rutinas y dietas con IA aún no está disponible.
+- **Coach integrado con evidencia.** Motor de cálculo vendorizado
+  ([*AI personal coach*](https://github.com/matgarfer499/ai-personal-coach)) más un anexo propio
+  para deportes de combate: plan semanal, check-in diario, revisión semanal y reglas con su grado de
+  evidencia y sus fuentes. Funciona sin IA; el chat con Claude es opcional.
+- **Seguridad primero.** Un único estado de seguridad (golpe en la cabeza, lesión o dolor nuevo,
+  PAR-Q) que leen todas las pantallas: Hoy, Coach, Carga, plan, Mi rutina, Deportes y el chat.
+  Mientras está activo, ninguna propone nada vigoroso.
+- **Gimnasio al nivel de Hevy.** Rutinas con carpetas, superseries, calentamiento, RIR o RPE,
+  tipos de serie, descanso por ejercicio, calculadora de discos, récords (peso, e1RM, volumen y
+  reps), historial, calendario y progreso. Biblioteca de ejercicios e importación desde Hevy (CSV).
+- **Carga de entrenamiento.** sRPE, monotonía, tensión y banda personal / ACWR con los deportes,
+  MMA y gimnasio en un solo registro de actividad.
+- **Nutrición sin nutricionista.** Objetivos de kcal y macros, diario, agua y peso. Menús
+  semanales comprobados día a día contra tus objetivos, batch cooking, lista de la compra por
+  sección, catálogo de tu súper, escáner de código de barras y menús hechos **con tu propia IA**
+  (copias el contexto, pegas la respuesta; coste 0 para el servidor).
+- **Hoy.** Una pantalla con lo que toca: plan, comidas del menú (marcarlas suma al diario),
+  avisos push y accesos rápidos. Funciona sin conexión y envía lo pendiente al volver la red.
+- **Importar el historial** del antiguo «Entrenador IA» (CSV y JSON).
 
 ## 📱 Producto
 
@@ -32,41 +40,50 @@ a pantalla completa como una app nativa, **sin pasar por App Store / Play Store*
 
 | Capa | Tecnología |
 |------|------------|
-| Backend | Django 5 + Django REST Framework, patrón Services/Selectors |
+| Backend | Django 6 + Django REST Framework, patrón Services/Selectors |
 | Auth | JWT (`djangorestframework-simplejwt`) sobre un `CustomUser` por email |
-| Frontend | Next.js (App Router) + TypeScript, TanStack Query, Zod, Tailwind |
+| Frontend | Next.js 16 (App Router) + React 19 + TypeScript, next-intl (es/en), TanStack Query, Zod, Tailwind |
 | Patrón web | BFF: Next.js proxya a la API y guarda los tokens en cookies `httpOnly` |
-| IA | Anthropic Claude (texto + visión) |
+| Coach | Motor *AI personal coach* vendorizado + base de evidencia en la BD |
+| IA (opcional) | Anthropic Claude (chat y foto→kcal); los menús usan un proveedor simulado o tu propia IA |
 | Datos | PostgreSQL |
 | Infra | Docker + Docker Compose (perfiles dev/prod) |
 
-## 🗺️ Hoja de ruta por módulos
+## 🗺️ Estado por módulos
 
-| # | Módulo | Contenido | Estado |
-|---|--------|-----------|--------|
-| **M1** | Core / Auth | CustomUser, JWT + verificación email, recuperación de contraseña, beta cerrada por invitación, perfil y biometría | ✅ En producción (beta) |
-| **M2** | Entrenamiento | Deportes, MMA, Gimnasio (registro estilo Hevy), calendario, motor de carga (sRPE + banda personal / ACWR), readiness | 🟡 Beta: gimnasio, deportes y MMA reales; crear rutina con IA y rutinas de entrenador, pendientes |
-| **M3** | Nutrición | Diario, macros calculados, agua, recientes/copiar de ayer, foto→kcal, corte de peso básico | 🟡 Beta: diario y objetivos reales; macros periodizados y objetivo adaptativo, pendientes |
-| **M4** | Coach IA | Chat y briefing con Claude real, memoria persistente del coach, límites de uso diarios por usuario | 🟡 Beta: el chat y la foto son reales; la IA aún no aprende de tu feedback ni genera planes |
+| # | Módulo | Estado |
+|---|--------|--------|
+| **M1** | Core / Auth: CustomUser, JWT, verificación de email, recuperación de contraseña, beta por invitación, perfil y biometría | ✅ |
+| **M2** | Entrenamiento: gimnasio estilo Hevy, rutinas, importación de Hevy, deportes, MMA, calendario, carga (sRPE, banda personal / ACWR) | ✅ Beta. Pendiente: rutinas generadas con IA |
+| **M3** | Nutrición: diario, objetivos, menús comprobados, batch cooking, compra, catálogo del súper, escáner, menús con tu IA | ✅ Beta. Pendiente: macros periodizados por bloque |
+| **M4** | Coach: plan, check-in, revisión semanal, reglas con evidencia, estado de seguridad único, chat (reglas o Claude) | ✅ Beta |
+| **M5** | Hoy, avisos push, modo sin conexión e importación del Entrenador IA | ✅ Beta |
 
-> Los datos se sincronizan con la cuenta (no solo `localStorage`). Lo que está
-> pendiente se detalla en la checklist de [`docs/guia-usuario.md`](docs/guia-usuario.md).
+> Los datos viven en la cuenta (no solo en `localStorage`). La checklist de estado real está en
+> [`docs/guia-usuario.md`](docs/guia-usuario.md); el plan vigente, en
+> [`docs/superpowers/plans/2026-11-03-sustituir-entrenador-ia.md`](docs/superpowers/plans/2026-11-03-sustituir-entrenador-ia.md).
 
 ## 📂 Estructura del repositorio
 
 ```
 fightlab-pro/
-├── backend/                # API Django/DRF
-│   ├── core/               # proyecto (settings, urls)
-│   ├── users/              # CustomUser + auth (M1)
-│   ├── profiles/           # UserProfile + BiometricsLog (M1)
-│   ├── requirements.txt
-│   └── Dockerfile
-├── frontend/               # PWA Next.js (App Router) — BFF + M1-M4
-├── docker-compose.yml      # db (PostgreSQL) + backend
-└── docs/superpowers/
-    ├── specs/              # especificaciones de diseño
-    └── plans/              # planes de implementación
+├── backend/                  # API Django/DRF
+│   ├── core/                 # proyecto (settings, urls)
+│   ├── users/ profiles/      # auth, perfil y biometría (M1)
+│   ├── activities/           # registro de actividad, carga y récords
+│   ├── exercises/ routines/  # biblioteca de ejercicios, rutinas e importación de Hevy
+│   ├── coaching/             # coach: plan, check-in, revisión, menús, seguridad
+│   ├── ai/                   # chat y foto→kcal con Claude (opcional)
+│   ├── notifications/        # avisos push (Web Push)
+│   ├── tickets/              # fotos de tickets (Cloudflare R2)
+│   ├── userstate/            # estado de la app sincronizado
+│   ├── knowledge_fightlab/   # anexo de evidencia propio (combate)
+│   ├── knowledge_translations/  # reglas traducidas al español
+│   └── vendor/ai-personal-coach/  # motor del coach (MIT / CC BY 4.0)
+├── frontend/                 # PWA Next.js (App Router), BFF y service worker
+├── docker-compose.yml        # db (PostgreSQL) + backend
+├── render.yaml               # blueprint del backend en Render
+└── docs/                     # despliegue, guía de usuario, specs, planes y pruebas
 ```
 
 ## 🚀 Puesta en marcha (desarrollo)
