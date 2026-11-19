@@ -95,9 +95,10 @@ def test_command_on_start_can_be_switched_off(settings, monkeypatch):
 def test_dockerfile_runs_it_on_start_without_blocking_gunicorn():
     from pathlib import Path
 
+    # El CMD lanza `manage.py boot`, que llama a sync_knowledge --on-start sin parar el arranque
+    # (users/tests/test_boot.py).
     cmd = (Path(__file__).resolve().parents[2] / "Dockerfile").read_text(encoding="utf-8")
-    assert "sync_knowledge --on-start ||" in cmd
-    assert cmd.index("sync_knowledge") < cmd.index("gunicorn core.wsgi")
+    assert cmd.index("manage.py boot") < cmd.index("gunicorn core.wsgi")
 
 
 # --- Traducciones al español (conjunto "translations-es") ---
