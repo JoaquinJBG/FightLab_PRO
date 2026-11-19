@@ -88,7 +88,7 @@ class MenuContextView(_MenuAiView):
             except ValueError:
                 return Response({"code": "start_invalid", "detail": msg("menu_start_invalid")}, status=status.HTTP_400_BAD_REQUEST)
         raw_days = q.get("days", str(menu_context.DEFAULT_DAYS))
-        days = int(raw_days) if raw_days.isdigit() else 0
+        days = int(raw_days) if raw_days.isascii() and raw_days.isdigit() else 0
         if not 1 <= days <= menu_context.MAX_DAYS:
             return Response({"code": "days_invalid", "detail": msg("menu_ai_days_invalid", max=menu_context.MAX_DAYS)}, status=status.HTTP_400_BAD_REQUEST)
         meals = _meals(q.get("meals", "")) if q.get("meals") else list(menus.DEFAULT_MEALS)

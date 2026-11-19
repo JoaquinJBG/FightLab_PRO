@@ -15,4 +15,4 @@ def custom_key_owned(profile, key: str | None) -> bool:
     except ImportError:
         return True
     raw = key[len(CUSTOM_PREFIX):]
-    return raw.isdigit() and CustomExercise.objects.filter(pk=int(raw), profile=profile).exists()
+    return raw.isascii() and raw.isdigit() and CustomExercise.objects.filter(pk=int(raw), profile=profile).exists()

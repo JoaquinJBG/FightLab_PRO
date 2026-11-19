@@ -10,7 +10,7 @@ from core.messages import msg
 from .models import SET_TYPES, Routine, RoutineFolder
 
 # Contrato de F17: `cat:<slug en inglés>` o `custom:<id>`; nulo para un nombre antiguo sin clave.
-EXERCISE_KEY_RE = re.compile(r"^(cat:[a-z0-9]+(?:-[a-z0-9]+)*|custom:[1-9]\d*)$")
+EXERCISE_KEY_RE = re.compile(r"^(cat:[a-z0-9]+(?:-[a-z0-9]+)*|custom:[1-9][0-9]*)$")
 
 # Topes técnicos (no de producto): evitan cuerpos absurdos, no limitan a nadie real.
 MAX_EXERCISES = 100

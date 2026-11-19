@@ -50,7 +50,7 @@ class ExerciseDetailView(APIView):
     def get(self, request, key: str):
         if key.startswith(catalog.CUSTOM_PREFIX):
             raw = key[len(catalog.CUSTOM_PREFIX):]
-            if not raw.isdigit():
+            if not (raw.isascii() and raw.isdigit()):
                 return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
             ex = get_object_or_404(CustomExercise, pk=int(raw), profile=request.user.profile)
             return Response(catalog.serialize_custom(ex))

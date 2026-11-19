@@ -46,7 +46,7 @@ class ActivitySerializer(serializers.ModelSerializer):
 
 
 # Clave de ejercicio del contrato de F17: `cat:<slug>` (biblioteca) o `custom:<id>` (propio).
-EXERCISE_KEY_RE = r"^(cat:[a-z0-9][a-z0-9-]{0,150}|custom:\d{1,12})$"
+EXERCISE_KEY_RE = r"^(cat:[a-z0-9][a-z0-9-]{0,150}|custom:[0-9]{1,12})$"
 # `dropset` es el nombre de Hevy y del coach; el contrato de F17 lo llama `drop`.
 SET_TYPE_ALIASES = {"dropset": "drop"}
 MAX_SET_NOTES = 1_000

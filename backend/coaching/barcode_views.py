@@ -24,7 +24,7 @@ from .menu_views import OFF_ATTRIBUTION
 from .menus import MenuInvalid
 from .safety_views import _today
 
-CODE = re.compile(r"\d{8,14}")
+CODE = re.compile(r"[0-9]{8,14}")
 MAX_G = 100  # g por 100 g: no puede haber más
 MAX_KCAL = 900  # la grasa pura (9 kcal/g), como `coach.off.MAX_KCAL_PER_100G`
 
