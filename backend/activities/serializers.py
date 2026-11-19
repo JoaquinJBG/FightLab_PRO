@@ -12,7 +12,9 @@ from .models import SET_TYPES, Activity, SetLog
 MAX_DETAIL_CHARS = 8_192
 MAX_NOTE_CHARS = 2_000
 MAX_SETS = 300
-STARTED_AT_FLOOR = datetime(2020, 1, 1, tzinfo=dt_timezone.utc)
+# El mismo suelo que la importación (`coaching.imports.IMPORT_FLOOR`): antes de 2000 casi seguro es
+# un error de formato o de reloj; después, un historial de otra app (Hevy, Strong) que vale.
+STARTED_AT_FLOOR = datetime(2000, 1, 1, tzinfo=dt_timezone.utc)
 FUTURE_SKEW = timedelta(minutes=10)
 
 
@@ -44,7 +46,7 @@ class ActivitySerializer(serializers.ModelSerializer):
 
 
 # Clave de ejercicio del contrato de F17: `cat:<slug>` (biblioteca) o `custom:<id>` (propio).
-EXERCISE_KEY_RE = r"^(cat:[a-z0-9][a-z0-9-]{0,150}|custom:\d{1,12})$"
+EXERCISE_KEY_RE = r"^(cat:[a-z0-9][a-z0-9-]{0,150}|custom:[0-9]{1,12})$"
 # `dropset` es el nombre de Hevy y del coach; el contrato de F17 lo llama `drop`.
 SET_TYPE_ALIASES = {"dropset": "drop"}
 MAX_SET_NOTES = 1_000

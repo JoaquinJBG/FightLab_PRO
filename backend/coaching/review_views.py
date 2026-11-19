@@ -17,9 +17,10 @@ from rest_framework.views import APIView
 from core.messages import msg
 
 from . import checkin
+from . import plan as plans
 from . import review as reviews
 from .models import WeeklyReview
-from .plan_narrative import write_narrative
+from .plan_narrative import attach, write_narrative
 from .review_narrative import write_review_narrative
 from .safety_views import _lang, _today
 from .targets import reasons_data
@@ -70,11 +71,11 @@ class ReviewView(APIView):
         data = serializer.validated_data
         try:
             review = reviews.generate(
-                user, today, data.get("week_end") or reviews.default_week_end(today), set(data.get("signs", [])),
-                lang, narrate=write_review_narrative,
+                user, today, data.get("week_end") or reviews.default_week_end(today), set(data.get("signs", []))
             )
         except reviews.ReviewInvalid as exc:
             return _invalid(exc)
+        attach(review, reviews.review_data(review, lang), lang, write_review_narrative, user)
         return Response(reviews.review_data(review, lang), status=status.HTTP_201_CREATED)
 
 
@@ -87,14 +88,13 @@ class ReviewAcceptView(APIView):
         serializer.is_valid(raise_exception=True)
         lang = _lang()
         try:
-            review = reviews.accept(
-                request.user, review, serializer.validated_data["accept"], _today(request.user.profile), lang,
-                narrate=write_narrative,
-            )
+            review = reviews.accept(request.user, review, serializer.validated_data["accept"], _today(request.user.profile))
         except reviews.ReviewInvalid as exc:
             return _invalid(exc)
         except reviews.ReviewConflict as exc:
             return Response({"code": exc.code, "reasons": reasons_data(exc.reasons, lang)}, status=status.HTTP_409_CONFLICT)
+        if review.plan is not None:  # el plan nuevo ya está guardado; su texto va fuera de la transacción
+            attach(review.plan, plans.plan_data(review.plan, lang), lang, write_narrative, request.user)
         return Response(reviews.review_data(review, lang))
 
 

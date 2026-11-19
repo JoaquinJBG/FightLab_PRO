@@ -453,20 +453,14 @@ def build(user, today: date, week_end: date, signs: set[str]) -> dict:
 
 
 @transaction.atomic
-def generate(user, today: date, week_end: date, signs: set[str], lang: str = "es", narrate=None) -> WeeklyReview:
-    """Genera y guarda la revisión (pendiente). `narrate(review_data, lang) -> str` solo escribe
-    `narrative`, después de guardar los números."""
+def generate(user, today: date, week_end: date, signs: set[str]) -> WeeklyReview:
+    """Genera y guarda la revisión (pendiente). El texto del LLM (`narrative`) se escribe después,
+    fuera de esta transacción (`plan_narrative.attach`)."""
     fields = build(user, today, week_end, signs)
     WeeklyReview.objects.filter(
         profile=user.profile, week_end=week_end, status=WeeklyReview.Status.PENDING
     ).delete()
-    review = WeeklyReview.objects.create(profile=user.profile, **fields)
-    if narrate is not None:
-        text = narrate(review_data(review, lang), lang)
-        if text:
-            review.narrative = text
-            review.save(update_fields=["narrative"])
-    return review
+    return WeeklyReview.objects.create(profile=user.profile, **fields)
 
 
 def latest(user) -> WeeklyReview | None:
@@ -505,7 +499,7 @@ def next_plan_week(review: WeeklyReview, today: date) -> date:
 
 
 @transaction.atomic
-def accept(user, review: WeeklyReview, kinds: list[str], today: date, lang: str = "es", narrate=None) -> WeeklyReview:
+def accept(user, review: WeeklyReview, kinds: list[str], today: date) -> WeeklyReview:
     """Acepta las propuestas `kinds` (o ninguna: solo se registra el TDEE). Con algún cambio
     aceptado se genera un `WeeklyPlan` nuevo (borrador) para la semana siguiente."""
     if review.status == WeeklyReview.Status.ACCEPTED:
@@ -535,9 +529,7 @@ def accept(user, review: WeeklyReview, kinds: list[str], today: date, lang: str 
 
     if review.accepted:
         try:
-            plan = plans.generate(
-                user, today, plans.PlanRequest(week_start=review.plan_week_start), lang, narrate=narrate
-            )
+            plan = plans.generate(user, today, plans.PlanRequest(week_start=review.plan_week_start))
         except plans.PlanBlocked:  # con `no_training` no hay plan; lo aceptado queda guardado
             plan = None
         if plan is not None:

@@ -230,7 +230,6 @@ def password_reset_request(*, email: str) -> None:
     transaction.on_commit(functools.partial(_send_password_reset_email, user))
 
 
-@transaction.atomic
 def password_reset_email(*, uid: str, token: str) -> str | None:
     """El email de la cuenta de un enlace de recuperación válido (F27 de la prueba en móvil).
 
@@ -244,6 +243,7 @@ def password_reset_email(*, uid: str, token: str) -> str | None:
     return user.email
 
 
+@transaction.atomic
 def password_reset_confirm(*, uid: str, token: str, password: str) -> None:
     """Validate the uid/token pair and set the new password.
 

@@ -34,6 +34,9 @@ USER app
 
 EXPOSE 8000
 
-# La base de evidencia se carga solo si cambió (rápido si no); si falla, se registra y se arranca igual.
-# seed_demo solo hace algo con DEMO_USER_EMAIL y DEMO_USER_PASSWORD (entorno de prueba, nunca producción).
-CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py createcachetable && (python manage.py sync_knowledge --on-start || echo 'sync_knowledge ha fallado: se arranca sin recargar la base de evidencia') && (python manage.py seed_demo || echo 'seed_demo ha fallado: se arranca sin usuario de demostración') && gunicorn core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 90"]
+# `manage.py boot` (users/management/commands/boot.py), en un solo proceso: migrate, createcachetable,
+# sync_knowledge --on-start (la base de evidencia, solo si cambió) y, con DEMO_USER_EMAIL, seed_demo
+# (entorno de prueba; con DEBUG=False exige DEMO_SEED_ALLOWED=true). Si sync_knowledge o seed_demo
+# fallan se registra y gunicorn arranca igual; si falla migrate, no. --max-requests recicla cada
+# worker tras ~500 peticiones (con jitter, no los dos a la vez) para que la RAM no crezca sin fin.
+CMD ["sh", "-c", "python manage.py boot && exec gunicorn core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 90 --max-requests 500 --max-requests-jitter 50"]

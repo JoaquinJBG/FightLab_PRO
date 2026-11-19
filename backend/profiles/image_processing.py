@@ -32,8 +32,9 @@ from PIL import Image
 MAX_SIDE_PX = 1600
 # Tope de píxeles de ENTRADA (ancho x alto) antes de decodificar.
 MAX_INPUT_PIXELS = 40_000_000  # 40 MP, p. ej. ~6500x6150 (JPEG, decodifica escalado)
-# Sin decodificación escalada el pico medido es ~10 B/px (24 MP -> 246 MB): 12 MP ≈ 120 MB.
-MAX_INPUT_PIXELS_NON_JPEG = 12_000_000
+# Sin decodificación escalada el pico medido es ~10 B/px (24 MP -> 246 MB): 6 MP ≈ 60 MB, que con
+# 2 workers en los 512 MB de Render free deja margen (fix G1-8; antes 12 MP ≈ 120 MB).
+MAX_INPUT_PIXELS_NON_JPEG = 6_000_000
 TARGET_MAX_BYTES = 500 * 1024
 JPEG_QUALITY_START = 82
 JPEG_QUALITY_FLOOR = 40

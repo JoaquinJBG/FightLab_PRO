@@ -18,8 +18,20 @@ DEFAULT_LIMIT = 50
 MAX_RECORD_EXERCISES = 50
 
 
+# Fechas que aceptan el historial y el calendario: fuera, 400 (antes `to=9999-12-31` o
+# `month=9999-12` desbordaban al sumar un día o un mes y daban 500).
+MIN_DATE = date(2000, 1, 1)
+MAX_DATE = date(2100, 12, 31)
+MAX_OFFSET = 100_000
+
+
 def _date(raw: str | None) -> date | None:
-    return date.fromisoformat(raw) if raw else None
+    if not raw:
+        return None
+    value = date.fromisoformat(raw)
+    if not MIN_DATE <= value <= MAX_DATE:
+        raise ValueError("fuera de rango")
+    return value
 
 
 class ActivityListView(APIView):
@@ -36,6 +48,8 @@ class ActivityListView(APIView):
             return Response({"detail": msg("limit_invalid")}, status=status.HTTP_400_BAD_REQUEST)
         try:
             offset = max(0, int(request.query_params.get("offset", "0")))
+            if offset > MAX_OFFSET:
+                raise ValueError("offset fuera de rango")
         except ValueError:
             return Response({"detail": msg("offset_invalid")}, status=status.HTTP_400_BAD_REQUEST)
         try:
@@ -134,7 +148,8 @@ class ActivityCalendarView(APIView):
         raw = request.query_params.get("month", "")
         try:
             year, month = (int(x) for x in raw.split("-"))
-            date(year, month, 1)
+            if not MIN_DATE <= date(year, month, 1) <= MAX_DATE:
+                raise ValueError("fuera de rango")
         except ValueError:
             return Response({"detail": msg("month_invalid")}, status=status.HTTP_400_BAD_REQUEST)
         days = selectors.calendar_days(user=request.user, year=year, month=month, tzname=request.query_params.get("tz"))

@@ -318,6 +318,8 @@ def parse_pasted(value) -> menu_import.ParsedMenu:
             raise menu_import.ImportInvalid(
                 "paste_not_json", f"line {exc.lineno}, column {exc.colno}: {exc.msg}", line=exc.lineno, column=exc.colno
             ) from None
+        except RecursionError:  # anidado sin fin
+            raise menu_import.ImportInvalid("import_invalid", "json") from None
     elif value is None:
         raise menu_import.ImportInvalid("paste_empty", "menu")
     else:

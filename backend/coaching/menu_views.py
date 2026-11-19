@@ -70,7 +70,7 @@ class MenuView(APIView):
 
     def get(self, request):
         raw = request.query_params.get("id", "")
-        plan_id = int(raw) if raw.isdigit() else None
+        plan_id = int(raw) if raw.isascii() and raw.isdigit() else None
         return Response(menus.state(request.user, _today(request.user.profile), _lang(), plan_id))
 
     def post(self, request):
@@ -318,7 +318,7 @@ class ProductLookupView(_OffThrottled):
 
 
 class ProductAddSerializer(serializers.Serializer):
-    barcode = serializers.RegexField(r"^\d{8,14}$")
+    barcode = serializers.RegexField(r"^[0-9]{8,14}$")
     chain = serializers.CharField(max_length=80, required=False, allow_blank=True, default="")
     name = serializers.CharField(max_length=200, required=False, allow_blank=True, default="")
     per = serializers.ChoiceField(list(foods.PER_UNITS), required=False, allow_null=True, default=None)

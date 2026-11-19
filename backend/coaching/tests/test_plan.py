@@ -259,13 +259,14 @@ def test_saved_plan_is_the_same_with_and_without_llm(today_fixed):
     user = make_user()
     log_session(user, TODAY - timedelta(days=3), [bench(60, 10)])
     request = plans.PlanRequest(gym_days=["mon", "thu"])
-    without = plans.generate(user, TODAY, request, "es", narrate=None)
+    without = plans.generate(user, TODAY, request)
     snapshot = {f: getattr(without, f) for f in STORED}
 
-    def fake(plan_data, lang):
+    def fake(plan_data, lang, user):
         return "Semana con 2 sesiones de cuerpo completo y 60 kg en press banca."
 
-    with_llm = plans.generate(user, TODAY, request, "es", narrate=fake)
+    with_llm = plans.generate(user, TODAY, request)
+    plan_narrative.attach(with_llm, plans.plan_data(with_llm, "es"), "es", fake, user)
     assert with_llm.narrative.startswith("Semana")
     assert {f: getattr(with_llm, f) for f in STORED} == snapshot
     assert without.narrative == ""
@@ -277,21 +278,23 @@ def test_narrative_with_numbers_not_in_the_plan_is_dropped():
     assert not plan_narrative.numbers_ok("sube a 65 kg", plan)
 
 
-@override_settings(ANTHROPIC_API_KEY="")
+@override_settings(ANTHROPIC_API_KEY="", PLAN_NARRATIVE_ENABLED=True)
 def test_no_api_key_means_no_llm_call():
     with mock.patch("ai.services._client") as client:
-        assert plan_narrative.write_narrative({"x": 1}, "es") == ""
+        assert plan_narrative.write_narrative({"x": 1}, "es", make_user()) == ""
     client.assert_not_called()
 
 
-@override_settings(ANTHROPIC_API_KEY="test-key")
+@override_settings(ANTHROPIC_API_KEY="test-key", PLAN_NARRATIVE_ENABLED=True)
 def test_llm_text_with_foreign_numbers_is_discarded():
-    reply = mock.Mock(content=[mock.Mock(text="Levanta 999 kg")])
+    user = make_user()
+    usage = mock.Mock(input_tokens=10, output_tokens=5)
+    reply = mock.Mock(content=[mock.Mock(text="Levanta 999 kg")], usage=usage)
     with mock.patch("ai.services._client") as client:
         client.return_value.messages.create.return_value = reply
-        assert plan_narrative.write_narrative({"load_kg": 60}, "es") == ""
+        assert plan_narrative.write_narrative({"load_kg": 60}, "es", user) == ""
         reply.content = [mock.Mock(text="Mantén 60 kg")]
-        assert plan_narrative.write_narrative({"load_kg": 60}, "es") == "Mantén 60 kg"
+        assert plan_narrative.write_narrative({"load_kg": 60}, "es", user) == "Mantén 60 kg"
 
 
 # ---------------------------------------------------------------- aplicar

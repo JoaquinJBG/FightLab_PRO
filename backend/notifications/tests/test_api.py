@@ -16,8 +16,9 @@ SECRET = "bff-secret-de-prueba"
 CRON = "/api/v1/cron/reminders"
 
 
-def subscribe(client, endpoint=FCM):
-    return client.post("/api/v1/me/push/subscribe", {"endpoint": endpoint, "keys": browser_keys()}, format="json")
+def subscribe(client, endpoint=FCM, keys=None):
+    body = {"endpoint": endpoint, "keys": keys or browser_keys()}
+    return client.post("/api/v1/me/push/subscribe", body, format="json")
 
 
 def test_requires_auth():
@@ -49,12 +50,26 @@ def test_subscribe_is_an_upsert_by_endpoint(vapid):
     assert res.status_code == 201
     body = res.json()
     assert body["configured"] is True and body["public_key"] == vapid and body["devices"] == 1
-    subscribe(client)  # el navegador lo vuelve a mandar al abrir la app
+    keys = browser_keys()
+    subscribe(client, keys=keys)  # el navegador lo vuelve a mandar al abrir la app (y puede rotar las claves)
     assert PushSubscription.objects.filter(profile=user.profile).count() == 1
-    # El mismo navegador con otra cuenta: la suscripción pasa a la otra.
+    # El mismo navegador con otra cuenta (mismo endpoint y mismas claves): pasa a la otra.
     other = make_user()
-    subscribe(client_for(other))
+    assert subscribe(client_for(other), keys=keys).status_code == 201
     assert PushSubscription.objects.get(endpoint=FCM).profile == other.profile
+
+
+def test_an_endpoint_of_another_profile_with_other_keys_is_409(vapid):
+    # Fix G1-11: quien solo conoce el endpoint de otro no se queda con sus avisos ni cambia sus claves.
+    owner, intruder = make_user(), make_user()
+    keys = browser_keys()
+    subscribe(client_for(owner), keys=keys)
+    res = subscribe(client_for(intruder), keys=browser_keys())
+    assert res.status_code == 409 and res.json()["code"] == "endpoint_taken"
+    sub = PushSubscription.objects.get(endpoint=FCM)
+    assert sub.profile == owner.profile and (sub.p256dh, sub.auth) == (keys["p256dh"], keys["auth"])
+    half = {**browser_keys(), "p256dh": keys["p256dh"]}  # solo una de las dos claves
+    assert subscribe(client_for(intruder), keys=half).status_code == 409
 
 
 @pytest.mark.parametrize(

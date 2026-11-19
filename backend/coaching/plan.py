@@ -645,19 +645,14 @@ def build(user, today: date, request: PlanRequest) -> dict:
 
 
 @transaction.atomic
-def generate(user, today: date, request: PlanRequest, lang: str = "es", narrate=None) -> WeeklyPlan:
-    """Genera y guarda un borrador. `narrate(plan_data, lang) -> str` escribe solo `narrative`."""
+def generate(user, today: date, request: PlanRequest) -> WeeklyPlan:
+    """Genera y guarda un borrador. El texto del LLM (`narrative`) se escribe después, fuera de
+    esta transacción (`plan_narrative.attach`)."""
     fields = build(user, today, request)
     WeeklyPlan.objects.filter(
         profile=user.profile, week_start=fields["week_start"], status=WeeklyPlan.Status.DRAFT
     ).delete()
-    plan = WeeklyPlan.objects.create(profile=user.profile, status=WeeklyPlan.Status.DRAFT, **fields)
-    if narrate is not None:
-        text = narrate(plan_data(plan, lang), lang)
-        if text:
-            plan.narrative = text
-            plan.save(update_fields=["narrative"])
-    return plan
+    return WeeklyPlan.objects.create(profile=user.profile, status=WeeklyPlan.Status.DRAFT, **fields)
 
 
 @transaction.atomic

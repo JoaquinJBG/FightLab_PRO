@@ -89,7 +89,7 @@ def is_edited(routine: Routine) -> bool:
 
 def _plan_id(routine: Routine) -> int | None:
     parts = routine.source_ref.split(":")
-    return int(parts[1]) if len(parts) == 3 and parts[0] == "plan" and parts[1].isdigit() else None
+    return int(parts[1]) if len(parts) == 3 and parts[0] == "plan" and parts[1].isascii() and parts[1].isdigit() else None
 
 
 def status_data(user) -> dict:

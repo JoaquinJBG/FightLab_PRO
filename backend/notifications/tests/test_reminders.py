@@ -223,3 +223,54 @@ def test_without_vapid_nothing_runs(settings):
     result = reminders.run(at(THU, 17))
     assert result["enabled"] is False and result["sent"] == 0
     assert not send.called
+
+
+def test_a_broken_reminder_does_not_stop_the_others(caplog):
+    # Fix G1-10: un aviso que falla en un perfil se registra y el tick sigue con los demás.
+    broken = person(eve=False, mobility=True)
+    ok = person(eve=False, mobility=True)
+    real = reminders.BUILDERS["mobility"]
+
+    def builder(user, local):
+        if user.pk == broken.pk:
+            raise RuntimeError("dato roto")
+        return real(user, local)
+
+    with mock.patch.dict(reminders.BUILDERS, {"mobility": builder}):
+        result = reminders.run(at(THU, 17))
+    assert [(p, t) for p, t, *_ in sent()] == [(ok.profile.pk, "Movilidad")]
+    assert result["sent"] == 1 and result["errors"] == 1
+    assert "dato roto" in caplog.text
+    assert not ReminderLog.objects.filter(profile=broken.profile).exists()  # otro tick puede reintentarlo
+
+
+def test_a_broken_send_does_not_stop_the_others(caplog):
+    first = person(eve=False, mobility=True)
+    second = person(eve=False, mobility=True)
+
+    def flaky(profile, payload):
+        if profile.pk == first.profile.pk:
+            raise RuntimeError("push roto")
+        return {"ok": 1, "gone": 0, "error": 0}
+
+    send.side_effect = flaky
+    result = reminders.run(at(THU, 17))
+    assert result["sent"] == 1 and result["errors"] == 1
+    assert {c.args[0].pk for c in send.call_args_list} == {first.profile.pk, second.profile.pk}
+    assert not ReminderLog.objects.filter(profile=first.profile).exists()
+
+
+def test_a_broken_profile_does_not_stop_the_others(caplog):
+    first = person(eve=False, mobility=True)
+    second = person(eve=False, mobility=True)
+    real = reminders.prefs_for
+
+    def prefs(profile):
+        if profile.pk == first.profile.pk:
+            raise RuntimeError("perfil roto")
+        return real(profile)
+
+    with mock.patch("notifications.reminders.prefs_for", prefs):
+        result = reminders.run(at(THU, 17))
+    assert [p for p, *_ in sent()] == [second.profile.pk]
+    assert result["errors"] == 1 and "perfil roto" in caplog.text

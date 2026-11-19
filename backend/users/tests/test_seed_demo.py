@@ -119,7 +119,25 @@ def test_the_demo_user_can_log_in_even_outside_the_beta_allowlist(settings):
 
 
 def test_the_container_runs_it_on_start_without_blocking_gunicorn():
+    # El CMD lanza `manage.py boot`, que llama a seed_demo sin parar el arranque (users/tests/test_boot.py).
     dockerfile = (Path(__file__).resolve().parents[2] / "Dockerfile").read_text(encoding="utf-8")
     cmd = next(line for line in dockerfile.splitlines() if line.startswith("CMD "))
-    assert "seed_demo ||" in cmd
-    assert cmd.index("sync_knowledge") < cmd.index("seed_demo") < cmd.index("gunicorn core.wsgi")
+    assert cmd.index("manage.py boot") < cmd.index("gunicorn core.wsgi")
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("allowed", [None, "", "false", "1"])
+def test_without_debug_it_refuses_unless_explicitly_allowed(settings, allowed):
+    # Fix G1-5: con DEBUG=False (producción) no crea nada salvo DEMO_SEED_ALLOWED=true a propósito.
+    settings.DEBUG = False
+    env = dict(ENV) if allowed is None else {**ENV, "DEMO_SEED_ALLOWED": allowed}
+    result = seed_demo(env=env)
+    assert result.status == "refused" and "DEMO_SEED_ALLOWED" in result.message
+    assert not get_user_model().objects.exists()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("allowed", ["true", "True", " TRUE "])
+def test_without_debug_it_seeds_when_explicitly_allowed(settings, allowed):
+    settings.DEBUG = False
+    assert seed_demo(env={**ENV, "DEMO_SEED_ALLOWED": allowed}).status == "created"

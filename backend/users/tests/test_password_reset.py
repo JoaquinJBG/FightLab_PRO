@@ -1,3 +1,5 @@
+from unittest import mock
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.core import mail
@@ -87,6 +89,17 @@ def test_password_reset_confirm_sets_new_password(verified_user):
     password_reset_confirm(uid=uid, token=token, password="pw-new-strong-999")
     verified_user.refresh_from_db()
     assert verified_user.check_password("pw-new-strong-999")
+
+
+@pytest.mark.django_db
+def test_password_reset_confirm_is_atomic(verified_user):
+    # Si cerrar las sesiones abiertas falla, la contraseña nueva no se queda a medias (fix G1-4).
+    uid, token = generate_password_reset_uid_and_token(verified_user)
+    with mock.patch("users.services._blacklist_all_outstanding_tokens", side_effect=RuntimeError("boom")):
+        with pytest.raises(RuntimeError):
+            password_reset_confirm(uid=uid, token=token, password="pw-new-strong-999")
+    verified_user.refresh_from_db()
+    assert verified_user.check_password("pw-strong-123")
 
 
 @pytest.mark.django_db

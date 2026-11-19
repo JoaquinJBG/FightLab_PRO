@@ -58,7 +58,7 @@ class TicketListView(APIView):
 
     def get(self, request):
         plan = request.query_params.get("plan")
-        plan_id = int(plan) if plan and plan.isdigit() else None
+        plan_id = int(plan) if plan and plan.isascii() and plan.isdigit() else None
         return Response(services.list_data(request.user, plan_id))
 
     def post(self, request):

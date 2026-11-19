@@ -1,10 +1,10 @@
 """Llamadas a las APIs de las otras ramas de F17 por su contrato HTTP, sin red (rama H).
 
-Importar de Hevy crea ejercicios propios (rama E, `POST gym/exercises/custom`) y rutinas (rama R,
-`POST gym/routines`). Se llama a sus vistas como lo haría la app, con una petición interna
-autenticada como el usuario: así H solo depende del contrato (rutas y cuerpos) y no de cómo las
-otras ramas guardan sus datos. Si una ruta no existe (la app aún no está), devuelve None y quien
-llama lo cuenta como «no disponible», sin romper la importación.
+Importar de Hevy crea ejercicios propios (rama E) y rutinas (rama R). Los ejercicios propios se
+leen y se crean en bloque con el modelo de E (`exercise_keys`): pasar por su vista con una
+petición interna por nombre era un DoS con un CSV de miles de nombres (fix G1-2). `call` queda
+para llamar a una vista por su contrato HTTP: si la ruta no existe (la app aún no está), devuelve
+None y quien llama lo cuenta como «no disponible», sin romper la importación.
 """
 from __future__ import annotations
 
@@ -15,6 +15,8 @@ API_PREFIX = "/api/v1/"
 # Un ejercicio propio creado al importar: el CSV no trae su músculo.
 IMPORTED_MUSCLE = "full_body"
 IMPORTED_NOTE = "Importado de Hevy: revisa sus músculos y su material."
+# Ejercicios propios nuevos que puede crear una sola importación (fix G1-2).
+MAX_NEW_EXERCISES_PER_IMPORT = 300
 _factory = APIRequestFactory()
 
 
@@ -50,31 +52,66 @@ def legacy_key(name: str) -> str | None:
         return None
 
 
-def _norm(text: str) -> str:
+def norm_name(text: str) -> str:
     return " ".join(text.lower().split())
 
 
-def exercise_key_for(user, name: str, *, create: bool, cache: dict[str, str | None]) -> str | None:
-    """La clave de un ejercicio importado: la del catálogo si se conoce; si no, la de un ejercicio
-    propio del usuario con ese nombre (como los ejercicios personalizados de Hevy), que se crea si
-    no existe y `create`. None si la biblioteca no está."""
-    norm = _norm(name)
-    if norm in cache:
-        return cache[norm]
-    key = legacy_key(name)
-    if key is None:
-        listed = call(user, "GET", "gym/exercises", {"q": name[:80]})
-        if listed and listed[0] == 200 and isinstance(listed[1], list):
-            key = next((e["key"] for e in listed[1] if e.get("custom") and _norm(e.get("name", "")) == norm), None)
-        if key is None and create:
-            # Hevy no dice el músculo: «cuerpo completo» y una nota para que el usuario lo cambie.
-            made = call(user, "POST", "gym/exercises/custom", {
-                "name": name[:120], "primary_muscles": [IMPORTED_MUSCLE], "notes": IMPORTED_NOTE,
-            })
-            if made and made[0] == 201 and isinstance(made[1], dict):
-                key = made[1].get("key")
-    cache[norm] = key
-    return key
+class ExerciseLimit(Exception):
+    """Una importación que crearía demasiados ejercicios propios: `code` y el tope (`limit`)."""
+
+    def __init__(self, code: str, limit: int):
+        super().__init__(code)
+        self.code = code
+        self.limit = limit
+
+
+def exercise_keys(user, names, *, create: bool) -> dict[str, str | None]:
+    """La clave de cada ejercicio importado, por su nombre normalizado (`norm_name`): la del
+    catálogo si se conoce; si no, la de un ejercicio propio del usuario con ese nombre (como los
+    personalizados de Hevy), que se crea si no existe y `create`. None si la biblioteca no está.
+
+    Los ejercicios propios se leen una sola vez y los nuevos se crean en bloque, directamente con el
+    modelo (sin pasar por la vista: un CSV con miles de nombres hacía miles de peticiones internas).
+    Lanza `ExerciseLimit` antes de crear nada si pasaría de `MAX_NEW_EXERCISES_PER_IMPORT` nuevos o
+    del tope de ejercicios propios por perfil (`exercises.models.MAX_CUSTOM_EXERCISES`)."""
+    out: dict[str, str | None] = {}
+    unknown: dict[str, str] = {}
+    for name in names:
+        norm = norm_name(name)
+        if not norm or norm in out or norm in unknown:
+            continue
+        key = legacy_key(name)
+        if key is None:
+            unknown[norm] = " ".join(name.split())[:120]
+        else:
+            out[norm] = key
+    if not unknown:
+        return out
+    try:
+        from exercises.models import MAX_CUSTOM_EXERCISES, CustomExercise
+    except ImportError:
+        return {**out, **dict.fromkeys(unknown)}
+    mine: dict[str, str] = {}
+    owned = 0
+    for pk, name in CustomExercise.objects.filter(profile=user.profile).order_by("id").values_list("id", "name"):
+        owned += 1
+        mine.setdefault(norm_name(name), f"custom:{pk}")
+    missing = [n for n in unknown if n not in mine]
+    if len(missing) > MAX_NEW_EXERCISES_PER_IMPORT:
+        raise ExerciseLimit("too_many_exercises", MAX_NEW_EXERCISES_PER_IMPORT)
+    if owned + len(missing) > MAX_CUSTOM_EXERCISES:
+        raise ExerciseLimit("too_many_custom_exercises", MAX_CUSTOM_EXERCISES)
+    out.update({n: mine.get(n) for n in unknown})
+    if create and missing:
+        # Hevy no dice el músculo: «cuerpo completo» y una nota para que el usuario lo cambie.
+        made = CustomExercise.objects.bulk_create(
+            CustomExercise(
+                profile=user.profile, name=unknown[n], primary_muscles=[IMPORTED_MUSCLE], notes=IMPORTED_NOTE
+            )
+            for n in missing
+        )
+        out.update({n: ex.key for n, ex in zip(missing, made)})
+    return out
 
 
 def create_routine(user, payload: dict, *, source_ref: str = "") -> int | None:

@@ -73,6 +73,11 @@ class PushSubscribeView(APIView):
         ser.is_valid(raise_exception=True)
         data = ser.validated_data
         profile = request.user.profile
+        # Fix G1-11: un endpoint de otro perfil solo pasa a este si trae las mismas claves (es el
+        # mismo navegador con otra cuenta); conocer solo el endpoint no basta para quedárselo.
+        taken = PushSubscription.objects.filter(endpoint=data["endpoint"]).exclude(profile=profile).first()
+        if taken is not None and (taken.p256dh, taken.auth) != (data["keys"]["p256dh"], data["keys"]["auth"]):
+            return Response({"code": "endpoint_taken"}, status=status.HTTP_409_CONFLICT)
         PushSubscription.objects.update_or_create(
             endpoint=data["endpoint"],
             defaults={

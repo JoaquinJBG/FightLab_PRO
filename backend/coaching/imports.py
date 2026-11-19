@@ -40,14 +40,18 @@ from django.utils import timezone
 
 from activities import contract
 from activities.models import Activity, ImportedRoutine, SetLog
+from activities.serializers import STARTED_AT_FLOOR
 from activities.sets import MAX_KG, MAX_REPS, MAX_SETS_PER_SESSION
 
 from .bridge.importers import ImportFileError, Parsed
 
 MAX_IMPORT_SETS = 20_000
-# Antes de esta fecha casi seguro es un error de formato (las apps de gimnasio no existían).
-IMPORT_FLOOR = datetime(2000, 1, 1, tzinfo=dt_timezone.utc)
-FUTURE_SKEW = timedelta(days=1)  # el día local del archivo puede ir por delante del UTC
+# Antes de esta fecha casi seguro es un error de formato (las apps de gimnasio no existían). Es el
+# mismo suelo que el registro y la edición de sesiones (`activities.serializers`).
+IMPORT_FLOOR = STARTED_AT_FLOOR
+# El día local del archivo puede ir por delante del UTC. El registro de la app solo deja 10 min
+# (`activities.serializers.FUTURE_SKEW`): allí la hora la pone el reloj del móvil, no un archivo.
+FUTURE_SKEW = timedelta(days=1)
 MAX_DISTANCE_KM = 1000
 MAX_DURATION_S = 86_400
 MAX_INDEX = 32_767  # PositiveSmallIntegerField
@@ -207,13 +211,15 @@ def import_sets(user, parsed: Parsed, *, dry_run: bool = False) -> dict:
     for s, e in performed:
         sessions[(s.source, s.start_time)].append((s, e))
 
-    keys: dict[str, str | None] = {}
     now = timezone.now()
     created = updated = added = duplicates = 0
     days = []
     # Rutinas (Hevy): las sesiones de cada título; la rutina junta los ejercicios de todas.
     by_title: dict[str, list[tuple[datetime, list[dict]]]] = defaultdict(list)
     lang = getattr(profile, "language", None) or "es"
+    # Primero, las sesiones que se importan y los ejercicios de sus series válidas: las claves se
+    # buscan (y los ejercicios propios nuevos se crean) de una vez, con sus topes (fix G1-2).
+    kept = []
     for (source, start), items in sorted(sessions.items(), key=lambda kv: kv[0][1]):
         started = start.replace(tzinfo=tz)
         if not IMPORT_FLOOR <= started <= now + FUTURE_SKEW:
@@ -222,10 +228,17 @@ def import_sets(user, parsed: Parsed, *, dry_run: bool = False) -> dict:
         if len(items) > MAX_SETS_PER_SESSION:
             warnings["session_truncated"] += 1
             items = items[:MAX_SETS_PER_SESSION]
+        kept.append((source, start, started, items))
+    names = [s.exercise.strip() for *_, items in kept for s, e in items if _row(s, Counter(), e) is not None]
+    try:
+        keys = contract.exercise_keys(user, names, create=not dry_run)
+    except contract.ExerciseLimit as exc:
+        raise ImportFileError(exc.code, {"max": exc.limit}) from exc
+    for source, start, started, items in kept:
         sets = [s for s, _ in items]
         rows = []
         for s, e in items:
-            key = contract.exercise_key_for(user, s.exercise.strip(), create=not dry_run, cache=keys)
+            key = keys.get(contract.norm_name(s.exercise.strip()))
             # R4-5: con pareja en el catálogo, el nombre es el del catálogo (en el idioma de la
             # cuenta), no el que traía el CSV («Pull Up» → «Dominadas»).
             row = _row(s, warnings, e, key, contract.catalog_name(key, lang, s.exercise.strip()))

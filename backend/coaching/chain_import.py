@@ -40,7 +40,7 @@ DEFAULT_CHAIN = "Mercadona"
 MAX_ROWS = 10_000  # convention: la tabla puntuada completa ronda las 2.000 filas
 EXAMPLES = 5  # líneas de ejemplo por motivo de descarte
 DIFF_EXAMPLES = 10
-EAN = re.compile(r"\d{8,14}")
+EAN = re.compile(r"[0-9]{8,14}")
 REF = re.compile(r"[\w.-]{1,40}")
 # convention: rangos posibles por 100 g (la grasa es lo más denso: 900 kcal) y precio por kg.
 LIMITS = {"kcal": 900, "price_per_kg": 1000}
@@ -110,6 +110,13 @@ def _number(text: str, decimal_comma: bool) -> float | None:
 
 
 def parse(data: bytes) -> Parsed:
+    try:
+        return _parse(data)
+    except csv.Error as exc:  # p. ej. un campo más largo que `csv.field_size_limit()`
+        raise ImportFileError("bad_csv", {"detail": str(exc)[:120]}) from None
+
+
+def _parse(data: bytes) -> Parsed:
     if len(data) > MAX_IMPORT_BYTES:
         raise ImportFileError("too_large", {"mb": MAX_IMPORT_BYTES // (1024 * 1024)})
     text = _decode(data)

@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from . import catalog
-from .models import CustomExercise
+from .models import MAX_CUSTOM_EXERCISES, CustomExercise
 from .serializers import CustomExerciseSerializer, _msg
 from .vocab import EQUIPMENT, MUSCLES
 
@@ -50,7 +50,7 @@ class ExerciseDetailView(APIView):
     def get(self, request, key: str):
         if key.startswith(catalog.CUSTOM_PREFIX):
             raw = key[len(catalog.CUSTOM_PREFIX):]
-            if not raw.isdigit():
+            if not (raw.isascii() and raw.isdigit()):
                 return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
             ex = get_object_or_404(CustomExercise, pk=int(raw), profile=request.user.profile)
             return Response(catalog.serialize_custom(ex))
@@ -73,6 +73,11 @@ class CustomExerciseCreateView(APIView):
     def post(self, request):
         ser = CustomExerciseSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
+        if CustomExercise.objects.filter(profile=request.user.profile).count() >= MAX_CUSTOM_EXERCISES:
+            return Response(
+                {"code": "too_many_custom_exercises", "detail": _msg("too_many_custom", n=MAX_CUSTOM_EXERCISES)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         ex = ser.save(profile=request.user.profile)
         return Response(catalog.serialize_custom(ex), status=status.HTTP_201_CREATED)
 

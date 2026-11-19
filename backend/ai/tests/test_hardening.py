@@ -93,6 +93,28 @@ def test_png_por_encima_del_tope_no_jpeg_se_rechaza(user_and_client):
     assert "demasiados píxeles" in resp.data["detail"]
 
 
+@pytest.mark.django_db
+def test_png_de_8_megapixeles_ya_pasa_del_tope_no_jpeg(user_and_client):
+    # Fix G1-8: el tope sin decodificación escalada baja a 6 MP (~60 MB de pico, no ~120 MB),
+    # que con 2 workers en los 512 MB del plan free de Render deja margen.
+    _, client = user_and_client
+    with patch("ai.services._client") as provider:  # si pasara el tope, nunca a la red
+        resp = _post_food(client, _png((3200, 2500), mode="1"))  # 8 MP
+    provider.assert_not_called()
+    assert resp.status_code == 400
+    assert "demasiados píxeles" in resp.data["detail"]
+
+
+def test_gunicorn_recicla_los_workers():
+    from pathlib import Path
+
+    cmd = next(
+        line for line in (Path(__file__).resolve().parents[2] / "Dockerfile").read_text(encoding="utf-8").splitlines()
+        if line.startswith("CMD ")
+    )
+    assert "--max-requests 500" in cmd and "--max-requests-jitter 50" in cmd
+
+
 def _webp(size, mode="RGB", **kwargs) -> bytes:
     buf = BytesIO()
     Image.new(mode, size).save(buf, format="WEBP", **kwargs)

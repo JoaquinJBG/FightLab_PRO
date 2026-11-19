@@ -23,8 +23,8 @@ Necesitas:
   [Vercel](https://vercel.com) (las tres tienen plan gratis, sin tarjeta).
 - Una cuenta en [Brevo](https://www.brevo.com) (antes Sendinblue) para el envío
   de emails — también gratis, sin tarjeta.
-- El repo en GitHub con la rama `feat/beta-cloud` (o la rama/tag que vayas a
-  desplegar).
+- El repo en GitHub con la rama de producción `main` (o la rama/tag que vayas a
+  desplegar; un entorno de prueba usa `staging`).
 - Una cuenta de Anthropic con una API key, si quieres que el coach y el
   análisis de fotos de comida usen IA real (opcional: sin clave, esos
   endpoints responden un 503 limpio en vez de fallar mal).
@@ -68,7 +68,7 @@ vive en la raíz del repo (`runtime: docker`, `rootDir: backend`,
 `healthCheckPath: /health`, plan `free`).
 
 1. En el dashboard de Render: **New → Blueprint**.
-2. Conecta el repo de GitHub y elige la rama `feat/beta-cloud`.
+2. Conecta el repo de GitHub y elige la rama `main` (producción).
 3. Render lee `render.yaml` y propone el servicio `fightlab-backend`. Las
    variables marcadas `sync: false` en el blueprint quedan en blanco: hay que
    rellenarlas a mano (ver la tabla de abajo). Las que tienen `value:` en el
@@ -78,9 +78,17 @@ vive en la raíz del repo (`runtime: docker`, `rootDir: backend`,
    `https://fightlab-beta.vercel.app`, el nombre que le vayas a dar al
    proyecto de Vercel) — se corrige en el paso 4 de más abajo.
 5. Despliega. La primera build tarda unos minutos (instala dependencias,
-   compila la imagen Docker). Al arrancar, el contenedor aplica las
-   migraciones, crea la tabla de caché y carga la base de evidencia del coach si cambió (ver 6b) solas.
+   compila la imagen Docker). Al arrancar, el contenedor lanza `python manage.py boot`
+   (un solo proceso): aplica las migraciones, crea la tabla de caché, carga la base de
+   evidencia del coach si cambió (ver 6b) y, solo con `DEMO_USER_EMAIL`, el usuario de
+   demostración. Después arranca gunicorn.
 6. Comprueba `https://<tu-servicio>.onrender.com/health` → debe dar `200`.
+
+**La rama de producción es `main`.** Si el servicio ya existía apuntando a otra rama (por ejemplo
+`feat/beta-cloud`), cámbiala a mano en los dos sitios:
+
+- **Render** → el servicio `fightlab-backend` → **Settings → Branch** = `main`.
+- **Vercel** → el proyecto → **Settings → Git → Production Branch** = `main`.
 
 ### Variables de entorno de Render
 
@@ -121,18 +129,29 @@ Salvo que se diga lo contrario, el valor es texto plano (no secreto) y va como
 | `DATA_UPLOAD_MAX_MEMORY_SIZE` / `FILE_UPLOAD_MAX_MEMORY_SIZE` | No | No | `10485760` (10 MB) por defecto — límite de subida de fotos |
 | `VAPID_PUBLIC_KEY` | No | No | Avisos con Web Push (sección 7b). La clave **pública** de `npx web-push generate-vapid-keys`; la misma que `NEXT_PUBLIC_VAPID_PUBLIC_KEY` en Vercel. Sin las tres `VAPID_*`, los avisos quedan apagados y la app lo explica |
 | `VAPID_PRIVATE_KEY` | No | **Sí** | La clave **privada** del mismo par. Solo va en Render, nunca en Vercel ni en git |
-| `VAPID_SUBJECT` | No | No | Contacto del proyecto para los servicios de push: la URL de la app (`https://<tu-proyecto>.vercel.app`) o un `mailto:` del proyecto. Nunca un correo personal (el repo es público y el valor viaja en cada aviso). Tiene que empezar por `https://` o `mailto:` o el backend no arranca |
+| `VAPID_SUBJECT` | No | No | Contacto del proyecto para los servicios de push: la URL de la app (`https://<tu-proyecto>.vercel.app`) o un `mailto:` del proyecto. Nunca un correo personal (el repo es público y el valor viaja en cada aviso). Tiene que empezar por `https://` o `mailto:`: si no, el backend arranca igual, deja el error en el log y los avisos quedan apagados |
 | `R2_ACCOUNT_ID` | No | No | Fotos de tickets en Cloudflare R2 (sección 7c). El ID de la cuenta de Cloudflare. Sin las cuatro `R2_*` obligatorias, la subida de tickets queda apagada y la app lo explica |
 | `R2_ACCESS_KEY_ID` | No | No | Access Key ID del token de API de R2 (sección 7c) |
 | `R2_SECRET_ACCESS_KEY` | No | **Sí** | Secret Access Key del mismo token. Solo va en Render, nunca en Vercel ni en git |
 | `R2_BUCKET` | No | No | Nombre del bucket privado, p. ej. `fightlab-tickets` |
-| `R2_SIGNED_URL_SECONDS` | No | No | Caducidad de las URLs firmadas de las fotos, de 60 a 3600 s. `600` (10 min) por defecto |
+| `R2_SIGNED_URL_SECONDS` | No | No | Caducidad de las URLs firmadas de las fotos, de 60 a 3600 s. `600` (10 min) por defecto. Un valor fuera de rango o no numérico no tumba el arranque: queda en el log y la subida de tickets se apaga |
+| `AI_GLOBAL_DAILY_TOKEN_BUDGET` | No | No | Freno global de coste: tokens (entrada + salida) de todos los usuarios en el día. Al pasarlo, la IA responde `503` hasta mañana. `2000000` por defecto; `0` o menos lo desactiva |
+| `PLAN_NARRATIVE_ENABLED` | No | No | `False` por defecto. `True` hace que el plan semanal y la revisión lleven unas frases escritas por el LLM (de pago): cada texto gasta una unidad de la cuota del chat, cuenta para `AI_GLOBAL_DAILY_TOKEN_BUDGET` y hay un máximo de 10 por hora y usuario. Apagado, el plan sale igual, sin ese texto |
 | `PORT` | — | — | La pone Render sola; no la definas |
 
-> `render.yaml` de este repo trae ya fijas `DEBUG`, `NUM_PROXIES`, `AI_MODEL_CHAT`,
-> `AI_MODEL_VISION` y `DJANGO_LOG_LEVEL`. El resto de variables `sync: false`
-> se rellenan a mano en el dashboard de Render la primera vez; en despliegues
-> siguientes quedan guardadas y no hay que repetirlas.
+> `render.yaml` de este repo trae ya fijas (`value:`) `DEBUG` (`False`), `NUM_PROXIES` (`1`),
+> `CORS_ALLOWED_ORIGINS` (vacía), `EMAIL_PROVIDER` (`brevo`), `EMAIL_TIMEOUT` (`10`),
+> `AI_MODEL_CHAT` y `AI_MODEL_VISION` (`claude-sonnet-5`), `AI_DAILY_QUOTA_CHAT` (`50`),
+> `AI_DAILY_QUOTA_FOOD` (`20`) y `DJANGO_LOG_LEVEL` (`INFO`): al sincronizar el blueprint pisan lo
+> que haya en el panel. Declara con `sync: false` (Render no las rellena ni las pisa) las
+> obligatorias (`SECRET_KEY`, `ALLOWED_HOSTS`, `ADMIN_URL`, `DATABASE_URL`, `FRONTEND_URL`,
+> `CSRF_TRUSTED_ORIGINS`, `BETA_ALLOWED_EMAILS`, `BFF_SHARED_SECRET`, `BREVO_API_KEY`,
+> `DEFAULT_FROM_EMAIL`, `ANTHROPIC_API_KEY`) y las opcionales `AI_GLOBAL_DAILY_TOKEN_BUDGET`,
+> `PLAN_NARRATIVE_ENABLED`, `VAPID_*`, `R2_*`, `COACH_OFF_CONTACT` y `KNOWLEDGE_SYNC_ON_START`
+> (vacías, valen su valor por defecto). Se rellenan a mano en el dashboard de Render la primera
+> vez; en despliegues siguientes quedan guardadas y no hay que repetirlas. Las del entorno de
+> prueba (`DEMO_USER_EMAIL`, `DEMO_USER_PASSWORD`, `DEMO_SEED_ALLOWED`) no están en el blueprint a
+> propósito: solo se añaden a mano en el servicio de prueba.
 
 ---
 
@@ -212,18 +231,19 @@ funciona:
 
 ---
 
-## 6b. Base de evidencia del coach (tras desplegar `feat/beta-coach`)
+## 6b. Base de evidencia del coach
 
 El coach integrado (`backend/vendor/ai-personal-coach`, app `coaching`) lee sus reglas y fuentes
 de evidencia de la base de datos. **Se cargan solas al arrancar el contenedor**: el `CMD` del
-`Dockerfile` lanza `python manage.py sync_knowledge --on-start` después de `migrate` y
-`createcachetable`. No hay que hacer nada a mano.
+`Dockerfile` lanza `python manage.py boot`, que en un solo proceso hace `migrate`,
+`createcachetable` y `sync_knowledge --on-start` (y `seed_demo` en el entorno de prueba). No hay
+que hacer nada a mano.
 
 - Guarda una huella (sha256) de los archivos de cada conjunto (`upstream`: el `knowledge/` del
   coach; `fightlab`: `backend/knowledge_fightlab/`; `translations-es`: las traducciones al español
   de esas reglas, `backend/knowledge_translations/es/`) en la tabla `coaching_knowledgesync`. Si no
   cambió, no carga nada: la comprobación tarda unos 30 ms (más lo que tarda Django en arrancar un
-  proceso). Si cambió (el primer arranque de `feat/beta-coach`, o un despliegue que toca la
+  proceso). Si cambió (el primer arranque con el coach, o un despliegue que toca la
   evidencia), la carga entera tarda unos 20 s en local y algo más en Render; solo pasa en ese
   arranque.
 - Si falla, lo deja en el log de Render (`No se pudo cargar la base de evidencia ...` o
@@ -246,7 +266,7 @@ de evidencia de la base de datos. **Se cargan solas al arrancar el contenedor**:
 - Otro conjunto (otro idioma, por ejemplo) se añade en `coaching/knowledge_sync.py`
   (`knowledge_sets()`), detrás de los de reglas.
 
-**Antes del primer despliegue de `feat/beta-coach`:** el ensayo de la migración con el esquema de
+**Antes del primer despliegue del coach en `main`:** el ensayo de la migración con el esquema de
 producción está en `backend/scripts/migration_rehearsal/` (README). Conviene hacer una copia de
 Neon (*Branches → Create branch*) justo antes, para poder volver atrás.
 
@@ -262,11 +282,17 @@ datos reales). En ese servicio de prueba, y solo ahí, se definen dos variables 
 |---|---|---|
 | `DEMO_USER_EMAIL` | No | `demo@fightlab.test` |
 | `DEMO_USER_PASSWORD` | **Sí** | Una contraseña larga, solo para esta cuenta |
+| `DEMO_SEED_ALLOWED` | No | `true`. Con `DEBUG=False` (Render) `seed_demo` se niega sin ella, aunque estén las otras dos |
 
-En cada arranque, después de `sync_knowledge`, el contenedor lanza `python manage.py seed_demo`:
+En cada arranque, `python manage.py boot` lanza `seed_demo` después de `sync_knowledge`, solo si
+hay `DEMO_USER_EMAIL`:
 
-- **Sin esas dos variables no hace nada** (una línea en el log lo dice). Por eso en el servicio de
-  producción no deben existir nunca.
+- **Sin `DEMO_USER_EMAIL` y `DEMO_USER_PASSWORD` no hace nada** (una línea en el log lo dice). Por
+  eso en el servicio de producción no deben existir nunca.
+- **Con `DEBUG=False` (Render, también el servicio de prueba) además hace falta
+  `DEMO_SEED_ALLOWED=true`**, puesto a propósito: si no, se niega y lo dice en el log. Es una
+  segunda llave para que unas variables de demo copiadas por error a producción no creen una
+  cuenta con contraseña conocida.
 - Con ellas crea (o actualiza) esa cuenta, activa y con el email verificado, con datos
   inventados: perfil de adulto (hombre, objetivo de pérdida, región `es`), cribado sin nada que
   señalar, 4 semanas de check-ins con pesajes que bajan, 16 sesiones de MMA, deportes y gimnasio
@@ -451,13 +477,19 @@ El cliente S3 es `boto3` (Apache-2.0), versión fijada en
   respuesta tarda más de 3 s y desaparece solo en cuanto contesta; mientras
   tanto, la app sigue funcionando con lo que ya tenga en `localStorage`
   (fecha, peso, nutrición del día…), así que no se queda congelada. Componente:
-  `frontend/components/server-warmup.tsx`.
+  `frontend/components/server-warmup.tsx`. Arrancar en un solo proceso (`manage.py boot`) acorta
+  el cold start: en local, con la base ya migrada, el paso previo a gunicorn bajó de ~16 s a ~7 s.
+- **Render free: 512 MB de RAM.** gunicorn va con 2 workers que se reciclan cada ~500 peticiones
+  (`--max-requests 500 --max-requests-jitter 50`), y una foto PNG/WebP/GIF no pasa de 6 MP
+  (~60 MB al decodificarla); las JPEG se decodifican ya reducidas y aceptan hasta 40 MP.
 - **Neon: 0.5 GB.** De sobra para texto y metadatos de una beta; las fotos se
   comprimen antes de subir. Si se llena, hay que pasar a un plan de pago o
   limpiar datos de prueba.
 - **Cuotas de IA por usuario.** `AI_DAILY_QUOTA_CHAT` (por defecto 50
   mensajes/día) y `AI_DAILY_QUOTA_FOOD` (por defecto 20 fotos/día) evitan que
-  una persona agote el presupuesto de IA de toda la beta.
+  una persona agote el presupuesto de IA de toda la beta. `AI_GLOBAL_DAILY_TOKEN_BUDGET` (por
+  defecto 2 000 000 tokens/día) frena a todos a la vez. El texto del LLM del plan y la revisión
+  (`PLAN_NARRATIVE_ENABLED`) va apagado; encendido, gasta de la cuota del chat.
 - **Límite de gasto en Anthropic.** Además de las cuotas por usuario, pon un
   límite de gasto mensual en la consola de Anthropic (Settings → Limits) como
   red de seguridad: las cuotas de arriba acotan el uso normal, pero un límite
