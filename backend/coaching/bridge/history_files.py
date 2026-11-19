@@ -202,7 +202,7 @@ def _json_day(o: dict, out: ParsedFile) -> DayRecord | None:
 def parse_backup(name: str, text: str) -> ParsedFile:
     try:
         root = json.loads(text)
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, RecursionError):  # RecursionError: anidado sin fin
         raise ImportFileError("not_json") from None
     if not isinstance(root, dict) or root.get("kind") != BACKUP_KIND:
         raise ImportFileError("not_backup")

@@ -457,12 +457,12 @@ def parse_file(name: str, raw: bytes) -> ParsedMenu:
     if stripped.startswith("{"):
         try:
             data = json.loads(text)
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, RecursionError):  # RecursionError: anidado sin fin
             raise ImportInvalid("import_invalid", "json") from None
         return parse_schema1(data)
     try:
         data = yaml.safe_load(text)
-    except yaml.YAMLError:
+    except (yaml.YAMLError, RecursionError):
         raise ImportInvalid("import_invalid", "yaml") from None
     if isinstance(data, dict) and data.get("schema") == 1:
         return parse_schema1(data)

@@ -110,6 +110,13 @@ def _number(text: str, decimal_comma: bool) -> float | None:
 
 
 def parse(data: bytes) -> Parsed:
+    try:
+        return _parse(data)
+    except csv.Error as exc:  # p. ej. un campo más largo que `csv.field_size_limit()`
+        raise ImportFileError("bad_csv", {"detail": str(exc)[:120]}) from None
+
+
+def _parse(data: bytes) -> Parsed:
     if len(data) > MAX_IMPORT_BYTES:
         raise ImportFileError("too_large", {"mb": MAX_IMPORT_BYTES // (1024 * 1024)})
     text = _decode(data)

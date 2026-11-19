@@ -417,11 +417,11 @@ def cardio_for(user, day: date) -> dict:
 def add_cardio(user, day: date, today: date, kind: str, minutes, intensity: str | None) -> Activity:
     check_day(day, today)
     errors = {}
-    if kind not in CARDIO_TYPES:
+    if not isinstance(kind, str) or kind not in CARDIO_TYPES:
         errors["type"] = f"must be one of: {', '.join(CARDIO_TYPES)}"
     if isinstance(minutes, bool) or not isinstance(minutes, int) or not CARDIO_MINUTES[0] <= minutes <= CARDIO_MINUTES[1]:
         errors["minutes"] = f"must be a whole number between {CARDIO_MINUTES[0]} and {CARDIO_MINUTES[1]}"
-    if intensity is not None and intensity not in INTENSITY_VALUE:
+    if intensity is not None and (not isinstance(intensity, str) or intensity not in INTENSITY_VALUE):
         errors["intensity"] = "must be moderate or vigorous"
     if errors:
         raise ValidationError(errors)
