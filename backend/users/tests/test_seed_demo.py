@@ -123,3 +123,21 @@ def test_the_container_runs_it_on_start_without_blocking_gunicorn():
     cmd = next(line for line in dockerfile.splitlines() if line.startswith("CMD "))
     assert "seed_demo ||" in cmd
     assert cmd.index("sync_knowledge") < cmd.index("seed_demo") < cmd.index("gunicorn core.wsgi")
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("allowed", [None, "", "false", "1"])
+def test_without_debug_it_refuses_unless_explicitly_allowed(settings, allowed):
+    # Fix G1-5: con DEBUG=False (producción) no crea nada salvo DEMO_SEED_ALLOWED=true a propósito.
+    settings.DEBUG = False
+    env = dict(ENV) if allowed is None else {**ENV, "DEMO_SEED_ALLOWED": allowed}
+    result = seed_demo(env=env)
+    assert result.status == "refused" and "DEMO_SEED_ALLOWED" in result.message
+    assert not get_user_model().objects.exists()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("allowed", ["true", "True", " TRUE "])
+def test_without_debug_it_seeds_when_explicitly_allowed(settings, allowed):
+    settings.DEBUG = False
+    assert seed_demo(env={**ENV, "DEMO_SEED_ALLOWED": allowed}).status == "created"

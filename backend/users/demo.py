@@ -1,6 +1,7 @@
 """Usuario de demostración para un entorno de prueba (`manage.py seed_demo`). NUNCA en producción.
 
-Solo actúa con `DEMO_USER_EMAIL` y `DEMO_USER_PASSWORD` en el entorno. Crea (o actualiza) esa
+Solo actúa con `DEMO_USER_EMAIL` y `DEMO_USER_PASSWORD` en el entorno y, con `DEBUG=False`, además
+`DEMO_SEED_ALLOWED=true` puesto a propósito (si no, se niega). Crea (o actualiza) esa
 cuenta, activa y verificada, y le pone datos inventados para que la app no esté vacía: perfil,
 cribado limpio, 4 semanas de check-ins con pesajes, sesiones de MMA, deportes y gimnasio (con
 series), un plan semanal aplicado, una revisión y un menú de la semana (con el proveedor simulado).
@@ -15,6 +16,7 @@ import os
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
@@ -25,6 +27,8 @@ logger = logging.getLogger(__name__)
 
 EMAIL_ENV = "DEMO_USER_EMAIL"
 PASSWORD_ENV = "DEMO_USER_PASSWORD"
+# Con DEBUG=False (producción, staging en Render) solo actúa con esta variable a "true".
+ALLOWED_ENV = "DEMO_SEED_ALLOWED"
 
 PROFILE = {
     "date_of_birth": date(1994, 3, 12),
@@ -62,6 +66,9 @@ def seed_demo(today: date | None = None, env=os.environ) -> SeedResult:
     password = env.get(PASSWORD_ENV) or ""
     if not email or not password:
         return SeedResult("skipped", f"sin {EMAIL_ENV} y {PASSWORD_ENV}: no se crea ningún usuario de demostración")
+    # Fix G1-5: con DEBUG=False (producción) hace falta pedirlo a propósito.
+    if not settings.DEBUG and (env.get(ALLOWED_ENV) or "").strip().lower() != "true":
+        return SeedResult("refused", f"DEBUG=False sin {ALLOWED_ENV}=true: no se crea ningún usuario de demostración")
 
     User = get_user_model()
     user = User.objects.filter(email__iexact=email).first()
