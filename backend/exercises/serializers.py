@@ -15,6 +15,7 @@ _MESSAGES = {
         "primary_required": "Elige al menos un músculo principal.",
         "list_too_long": "Demasiados elementos (máximo {n}).",
         "not_a_list": "Se espera una lista.",
+        "too_many_custom": "Ya tienes {n} ejercicios propios, el máximo. Borra alguno para crear otro.",
     },
     "en": {
         "name_blank": "Give the exercise a name.",
@@ -23,6 +24,7 @@ _MESSAGES = {
         "primary_required": "Choose at least one primary muscle.",
         "list_too_long": "Too many items (maximum {n}).",
         "not_a_list": "A list is expected.",
+        "too_many_custom": "You already have {n} custom exercises, the maximum. Delete one to create another.",
     },
 }
 

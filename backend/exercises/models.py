@@ -2,9 +2,12 @@ from django.db import models
 
 from profiles.models import UserProfile
 
+# Ejercicios propios por perfil (fix G1-2): la API y la importación de Hevy no crean más.
+MAX_CUSTOM_EXERCISES = 1000
+
 
 class CustomExercise(models.Model):
-    """Ejercicio propio del usuario (F17), sin límite de número, como en Hevy Pro.
+    """Ejercicio propio del usuario (F17), hasta `MAX_CUSTOM_EXERCISES` por perfil.
 
     Su clave es `custom:<id>` (`exercises.catalog.custom_key`). Los músculos y el material son
     listas de slugs de `exercises.vocab`: el serializer los valida. El catálogo de la biblioteca

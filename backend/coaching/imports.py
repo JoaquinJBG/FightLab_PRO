@@ -207,13 +207,15 @@ def import_sets(user, parsed: Parsed, *, dry_run: bool = False) -> dict:
     for s, e in performed:
         sessions[(s.source, s.start_time)].append((s, e))
 
-    keys: dict[str, str | None] = {}
     now = timezone.now()
     created = updated = added = duplicates = 0
     days = []
     # Rutinas (Hevy): las sesiones de cada título; la rutina junta los ejercicios de todas.
     by_title: dict[str, list[tuple[datetime, list[dict]]]] = defaultdict(list)
     lang = getattr(profile, "language", None) or "es"
+    # Primero, las sesiones que se importan y los ejercicios de sus series válidas: las claves se
+    # buscan (y los ejercicios propios nuevos se crean) de una vez, con sus topes (fix G1-2).
+    kept = []
     for (source, start), items in sorted(sessions.items(), key=lambda kv: kv[0][1]):
         started = start.replace(tzinfo=tz)
         if not IMPORT_FLOOR <= started <= now + FUTURE_SKEW:
@@ -222,10 +224,17 @@ def import_sets(user, parsed: Parsed, *, dry_run: bool = False) -> dict:
         if len(items) > MAX_SETS_PER_SESSION:
             warnings["session_truncated"] += 1
             items = items[:MAX_SETS_PER_SESSION]
+        kept.append((source, start, started, items))
+    names = [s.exercise.strip() for *_, items in kept for s, e in items if _row(s, Counter(), e) is not None]
+    try:
+        keys = contract.exercise_keys(user, names, create=not dry_run)
+    except contract.ExerciseLimit as exc:
+        raise ImportFileError(exc.code, {"max": exc.limit}) from exc
+    for source, start, started, items in kept:
         sets = [s for s, _ in items]
         rows = []
         for s, e in items:
-            key = contract.exercise_key_for(user, s.exercise.strip(), create=not dry_run, cache=keys)
+            key = keys.get(contract.norm_name(s.exercise.strip()))
             # R4-5: con pareja en el catálogo, el nombre es el del catálogo (en el idioma de la
             # cuenta), no el que traía el CSV («Pull Up» → «Dominadas»).
             row = _row(s, warnings, e, key, contract.catalog_name(key, lang, s.exercise.strip()))
