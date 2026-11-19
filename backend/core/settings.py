@@ -193,6 +193,8 @@ REST_FRAMEWORK = {
         "password-reset": "5/hour",
         "ai-chat": "20/hour",
         "ai-food": "10/hour",
+        # Texto del LLM en el plan y la revisión (`PLAN_NARRATIVE_ENABLED`), por usuario.
+        "plan-narrative": "10/hour",
         "activities-sync": "30/min",
         "user-state": "60/min",
         "resend": "5/hour",
@@ -446,6 +448,10 @@ AI_DAILY_QUOTA_FOOD = env.int("AI_DAILY_QUOTA_FOOD", default=20)
 # Freno global de coste: tokens (entrada + salida) de todos los usuarios en el
 # día local. Al superarlo, los endpoints de IA responden 503 hasta mañana. <= 0 lo desactiva.
 AI_GLOBAL_DAILY_TOKEN_BUDGET = env.int("AI_GLOBAL_DAILY_TOKEN_BUDGET", default=2_000_000)
+# Texto del LLM en el plan y la revisión semanal (`coaching/plan_narrative.py`). Cuesta dinero: va
+# apagado salvo que se encienda a propósito. Encendido gasta cuota del chat, cuenta para el
+# presupuesto global y pasa por el throttle `plan-narrative`.
+PLAN_NARRATIVE_ENABLED = env.bool("PLAN_NARRATIVE_ENABLED", default=False)
 # Traducción de las reglas de evidencia (`manage.py translate_rules`)
 AI_MODEL_TRANSLATE = env("AI_MODEL_TRANSLATE", default=AI_MODEL_CHAT)
 

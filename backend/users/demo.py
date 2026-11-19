@@ -189,7 +189,7 @@ def _plan(user, today: date) -> str:
 
     if WeeklyPlan.objects.filter(profile=user.profile, status=WeeklyPlan.Status.ACTIVE).exists():
         return "ya estaba"
-    draft = plan.generate(user, today, plan.PlanRequest(), lang="es")
+    draft = plan.generate(user, today, plan.PlanRequest())
     plan.apply(user, draft, today)
     return "aplicado"
 
@@ -200,7 +200,7 @@ def _review(user, today: date) -> str:
 
     if WeeklyReview.objects.filter(profile=user.profile).exists():
         return "ya estaba"
-    review.generate(user, today, review.default_week_end(today), set(), lang="es")
+    review.generate(user, today, review.default_week_end(today), set())
     return "creada"
 
 

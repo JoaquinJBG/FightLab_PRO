@@ -2,7 +2,7 @@
 
 Como en el plan (`plan_narrative.py`): el LLM solo redacta sobre la revisión ya guardada, no
 cambia ningún número y, si el texto trae un número que no está en la revisión, se descarta.
-Sin `ANTHROPIC_API_KEY` no se llama a nada y la revisión va sin texto.
+Apagado por defecto (`PLAN_NARRATIVE_ENABLED`), con la misma cuota, presupuesto y throttle.
 """
 from .plan_narrative import narrate
 
@@ -20,5 +20,5 @@ SYSTEM = (
 HIDDEN = ("id", "created_at", "narrative", "engine_sha", "plan_id")
 
 
-def write_review_narrative(review: dict, lang: str) -> str:
-    return narrate(SYSTEM, {k: v for k, v in review.items() if k not in HIDDEN}, lang, "review")
+def write_review_narrative(review: dict, lang: str, user=None) -> str:
+    return narrate(SYSTEM, {k: v for k, v in review.items() if k not in HIDDEN}, lang, "review", user)

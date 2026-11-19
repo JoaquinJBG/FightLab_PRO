@@ -16,7 +16,7 @@ from core.messages import msg
 
 from . import plan as plans
 from .models import WeeklyPlan
-from .plan_narrative import write_narrative
+from .plan_narrative import attach, write_narrative
 from .safety_views import _lang, _today
 from .targets import reasons_data
 
@@ -73,13 +73,13 @@ class PlanView(APIView):
         serializer.is_valid(raise_exception=True)
         user, lang = request.user, _lang()
         try:
-            plan = plans.generate(
-                user, _today(user.profile), plans.PlanRequest(**serializer.validated_data), lang, narrate=write_narrative
-            )
+            plan = plans.generate(user, _today(user.profile), plans.PlanRequest(**serializer.validated_data))
         except plans.PlanBlocked as exc:
             return Response(_blocked(exc, lang), status=status.HTTP_409_CONFLICT)
         except plans.PlanInvalid as exc:
             return Response({"code": exc.code, "detail": msg(f"plan_{exc.code}")}, status=status.HTTP_400_BAD_REQUEST)
+        # Ya guardado (la transacción de `generate` está cerrada): el texto del LLM va aparte.
+        attach(plan, plans.plan_data(plan, lang), lang, write_narrative, user)
         return Response(plans.plan_data(plan, lang), status=status.HTTP_201_CREATED)
 
 

@@ -20,7 +20,7 @@ from rest_framework.test import APIClient
 from activities.models import Activity
 from coaching import plan as plans
 from coaching import review as reviews
-from coaching import review_narrative
+from coaching import plan_narrative, review_narrative
 from coaching.bridge.adapters import to_coach_profile
 from coaching.models import DailyCheckin, KnowledgeRule, WeeklyPlan, WeeklyReview
 from coaching.targets import _key
@@ -437,32 +437,37 @@ def test_pending_review_for_the_same_week_is_replaced(today_fixed):
 
 def test_saved_review_is_the_same_with_and_without_llm(today_fixed):
     user = _proposing_user()
-    without = reviews.generate(user, TODAY, TODAY, {"joint_aches"}, "es", narrate=None)
+    without = reviews.generate(user, TODAY, TODAY, {"joint_aches"})
     snapshot = {f: getattr(without, f) for f in STORED}
 
-    def fake(data, lang):
+    def fake(data, lang, user):
         return "Semana revisada: el press banca está estancado."
 
-    with_llm = reviews.generate(user, TODAY, TODAY, {"joint_aches"}, "es", narrate=fake)
+    with_llm = reviews.generate(user, TODAY, TODAY, {"joint_aches"})
+    plan_narrative.attach(with_llm, reviews.review_data(with_llm, "es"), "es", fake, user)
     assert with_llm.narrative.startswith("Semana")
     assert {f: getattr(with_llm, f) for f in STORED} == snapshot
     assert without.narrative == ""
 
 
 def test_review_narrative_without_api_key_calls_nothing():
-    with override_settings(ANTHROPIC_API_KEY=""), mock.patch("ai.services._client") as client:
-        assert review_narrative.write_review_narrative({"x": 1}, "es") == ""
+    user = make_user()
+    with override_settings(ANTHROPIC_API_KEY="", PLAN_NARRATIVE_ENABLED=True), mock.patch("ai.services._client") as client:
+        assert review_narrative.write_review_narrative({"x": 1}, "es", user) == ""
     client.assert_not_called()
 
 
 def test_review_narrative_with_foreign_numbers_is_discarded():
+    user = make_user()
+    usage = mock.Mock(input_tokens=10, output_tokens=5)
     fake = mock.Mock()
-    fake.messages.create.return_value = mock.Mock(content=[mock.Mock(text="Baja a 1500 kcal")])
-    with override_settings(ANTHROPIC_API_KEY="test"), mock.patch("ai.services._client", return_value=fake):
-        assert review_narrative.write_review_narrative({"kcal": 2037}, "es") == ""
-    fake.messages.create.return_value = mock.Mock(content=[mock.Mock(text="Objetivo de 2037 kcal")])
-    with override_settings(ANTHROPIC_API_KEY="test"), mock.patch("ai.services._client", return_value=fake):
-        assert review_narrative.write_review_narrative({"kcal": 2037}, "es") == "Objetivo de 2037 kcal"
+    fake.messages.create.return_value = mock.Mock(content=[mock.Mock(text="Baja a 1500 kcal")], usage=usage)
+    enabled = override_settings(ANTHROPIC_API_KEY="test", PLAN_NARRATIVE_ENABLED=True)
+    with enabled, mock.patch("ai.services._client", return_value=fake):
+        assert review_narrative.write_review_narrative({"kcal": 2037}, "es", user) == ""
+    fake.messages.create.return_value = mock.Mock(content=[mock.Mock(text="Objetivo de 2037 kcal")], usage=usage)
+    with enabled, mock.patch("ai.services._client", return_value=fake):
+        assert review_narrative.write_review_narrative({"kcal": 2037}, "es", user) == "Objetivo de 2037 kcal"
 
 
 # ---------------------------------------------------------------- evidencia antigua (7.4)
