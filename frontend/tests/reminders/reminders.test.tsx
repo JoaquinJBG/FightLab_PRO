@@ -102,6 +102,23 @@ describe("Perfil → Avisos", () => {
     ua.mockRestore();
   });
 
+  it("409 endpoint_taken: dice que el navegador ya recibe avisos de otra cuenta", async () => {
+    pushBrowser();
+    routes();
+    const base = (globalThis.fetch as unknown as (i: RequestInfo | URL, o?: RequestInit) => Promise<Response>);
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) =>
+      String(input).split("?")[0] === "/api/proxy/me/push/subscribe"
+        ? ({ ok: false, status: 409, json: async () => ({ code: "endpoint_taken" }) } as Response)
+        : base(input, init)));
+    renderApp(<RemindersSettings />);
+    const enable = await screen.findByTestId("reminders-enable");
+    await waitFor(() => expect((enable as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.click(enable);
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Este navegador ya recibe avisos de otra cuenta. Cierra sesión allí o desactívalos.",
+    );
+  });
+
   it("activar pide permiso, suscribe con la clave VAPID y se lo manda al backend", async () => {
     const { pushManager, notification } = pushBrowser();
     const calls: Calls = [];

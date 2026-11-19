@@ -122,7 +122,7 @@ export class CatalogueError extends Error {
 }
 
 export const CATALOGUE_ERROR_CODES = [
-  "missing_file", "too_large", "not_csv", "unknown_columns", "empty_file", "bad_encoding", "too_many_rows",
+  "missing_file", "too_large", "not_csv", "unknown_columns", "empty_file", "bad_encoding", "too_many_rows", "bad_csv",
 ] as const;
 
 /** Lo que se comprueba antes de subir nada. */

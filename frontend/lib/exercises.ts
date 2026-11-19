@@ -157,6 +157,8 @@ export class ExerciseApiError extends Error {
   constructor(
     public status: number,
     public fields: Record<string, string[]> = {},
+    /** Código de error del backend (`too_many_custom_exercises`…), si lo trae. */
+    public code: string = "",
   ) {
     super(String(status));
   }
@@ -164,15 +166,17 @@ export class ExerciseApiError extends Error {
 
 async function errorFrom(res: Response): Promise<ExerciseApiError> {
   let fields: Record<string, string[]> = {};
+  let code = "";
   try {
     const body = await res.json();
     if (body && typeof body === "object") {
+      if (typeof (body as { code?: unknown }).code === "string") code = (body as { code: string }).code;
       fields = Object.fromEntries(
         Object.entries(body as Record<string, unknown>).map(([k, v]) => [k, Array.isArray(v) ? v.map(String) : [String(v)]]),
       );
     }
   } catch { /* sin cuerpo */ }
-  return new ExerciseApiError(res.status, fields);
+  return new ExerciseApiError(res.status, fields, code);
 }
 
 export async function fetchExercises(params: ExerciseFilter & { lang?: string } = {}): Promise<Exercise[]> {

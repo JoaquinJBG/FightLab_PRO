@@ -2854,6 +2854,8 @@
       "bad_date": "Hay una fecha que no se entiende ({value}). Usa AAAA-MM-DD.",
       "no_sets": "El archivo no tiene ninguna serie hecha.",
       "too_many_sets": "Demasiadas series en un archivo (máx. {max}). Divídelo en varios.",
+      "too_many_exercises": "El archivo trae más de 300 ejercicios nuevos. Divídelo en varios.",
+      "too_many_custom_exercises": "Tienes el máximo de 1000 ejercicios propios. Borra alguno y vuelve a probar.",
       "invalid": "No se ha podido leer el archivo.",
       "throttled": "Demasiados intentos seguidos. Espera un minuto.",
       "server": "No se ha podido subir. Prueba otra vez."
@@ -3185,6 +3187,7 @@
       "testSent": "Enviado. Si no llega en un minuto, revisa que las notificaciones de la app estén permitidas.",
       "testFailed": "No se ha podido enviar. Prueba a desactivar y activar otra vez.",
       "devices": "{count, plural, =0 {Ningún dispositivo activado} one {# dispositivo activado} other {# dispositivos activados}} en tu cuenta.",
+      "endpointTaken": "Este navegador ya recibe avisos de otra cuenta. Cierra sesión allí o desactívalos.",
       "error": "No se han podido activar los avisos. Prueba otra vez."
     },
     "kinds": {
@@ -3333,6 +3336,7 @@
       "empty_file": "El archivo está vacío.",
       "bad_encoding": "No se puede leer el texto del archivo (guárdalo como UTF-8).",
       "too_many_rows": "El archivo tiene más de {max} filas.",
+      "bad_csv": "El CSV no se puede leer.",
       "throttled": "Demasiados intentos seguidos. Espera un minuto.",
       "server": "No se ha podido completar. Inténtalo de nuevo."
     },
@@ -3491,6 +3495,7 @@
       "saving": "Guardando…",
       "nameRequired": "Pon un nombre al ejercicio.",
       "primaryRequired": "Elige al menos un músculo principal.",
+      "tooManyCustom": "Tienes el máximo de 1000 ejercicios propios. Borra alguno para crear otro.",
       "error": "No se pudo guardar. Inténtalo de nuevo."
     },
     "detail": {

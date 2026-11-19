@@ -26,7 +26,7 @@ const readPermission = (): Permission => (typeof Notification === "undefined" ? 
 // "denied" / "blocked": se pidió el permiso y no quedó concedido. Chrome puede dejarlo en
 // `default` sin preguntar (notificaciones apagadas en Android: "blocked") o en `denied`; en los
 // dos casos se explica cómo activarlo (F8 de la prueba en móvil).
-type Notice = "error" | "denied" | "blocked" | "testSent" | "testFailed" | null;
+type Notice = "error" | "endpointTaken" | "denied" | "blocked" | "testSent" | "testFailed" | null;
 
 const section = "glass rise mt-4 p-4";
 
@@ -108,8 +108,9 @@ export function RemindersSettings() {
       } else {
         setNotice(permission === "denied" ? "denied" : "blocked");
       }
-    } catch {
-      setNotice("error");
+    } catch (err) {
+      const e = err as { status?: number; body?: { code?: string } };
+      setNotice(e?.status === 409 && e.body?.code === "endpoint_taken" ? "endpointTaken" : "error");
     } finally {
       setBusy(false);
     }

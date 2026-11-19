@@ -32,7 +32,7 @@ export class ImportError extends Error {
 
 export const IMPORT_ERROR_CODES = [
   "missing_file", "too_large", "not_csv", "empty_file", "encoding", "unknown_format", "ambiguous_format",
-  "missing_columns", "decimal_comma", "not_a_number", "not_whole", "bad_date", "no_sets", "too_many_sets", "invalid",
+  "missing_columns", "decimal_comma", "not_a_number", "not_whole", "bad_date", "no_sets", "too_many_sets", "too_many_exercises", "too_many_custom_exercises", "invalid",
 ] as const;
 
 export function useImportSets() {

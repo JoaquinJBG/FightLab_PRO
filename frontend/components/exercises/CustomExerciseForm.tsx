@@ -65,6 +65,10 @@ export function CustomExerciseForm({
       await qc.invalidateQueries({ queryKey: ["exercise", saved.key] });
       onSaved(saved);
     } catch (err) {
+      if (err instanceof ExerciseApiError && err.code === "too_many_custom_exercises") {
+        setErrors({ form: t("form.tooManyCustom") });
+        return;
+      }
       const fields = err instanceof ExerciseApiError ? err.fields : {};
       const mapped = Object.fromEntries(Object.entries(fields).map(([k, v]) => [k, v[0]]));
       setErrors(Object.keys(mapped).length ? mapped : { form: t("form.error") });

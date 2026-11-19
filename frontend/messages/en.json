@@ -2854,6 +2854,8 @@
       "bad_date": "A date could not be read ({value}). Use YYYY-MM-DD.",
       "no_sets": "The file has no completed sets.",
       "too_many_sets": "Too many sets in one file (max {max}). Split it into several.",
+      "too_many_exercises": "The file has more than 300 new exercises. Split it into several.",
+      "too_many_custom_exercises": "You have the maximum of 1000 custom exercises. Delete one and try again.",
       "invalid": "The file could not be read.",
       "throttled": "Too many attempts in a row. Wait a minute.",
       "server": "The upload failed. Try again."
@@ -3185,6 +3187,7 @@
       "testSent": "Sent. If it doesn't arrive within a minute, check that the app's notifications are allowed.",
       "testFailed": "Couldn't send it. Try turning them off and on again.",
       "devices": "{count, plural, =0 {No devices turned on} one {# device turned on} other {# devices turned on}} on your account.",
+      "endpointTaken": "This browser already gets notifications from another account. Sign out there or turn them off.",
       "error": "Couldn't turn on reminders. Try again."
     },
     "kinds": {
@@ -3333,6 +3336,7 @@
       "empty_file": "The file is empty.",
       "bad_encoding": "The file's text cannot be read (save it as UTF-8).",
       "too_many_rows": "The file has more than {max} rows.",
+      "bad_csv": "The CSV could not be read.",
       "throttled": "Too many attempts in a row. Wait a minute.",
       "server": "Could not finish. Try again."
     },
@@ -3491,6 +3495,7 @@
       "saving": "Saving…",
       "nameRequired": "Give the exercise a name.",
       "primaryRequired": "Choose at least one primary muscle.",
+      "tooManyCustom": "You have the maximum of 1000 custom exercises. Delete one to create another.",
       "error": "Couldn't save. Try again."
     },
     "detail": {
