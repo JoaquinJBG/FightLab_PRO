@@ -7,6 +7,7 @@ import { ArrowUpRight } from "@/components/icons";
 import { credentials } from "@/lib/schemas";
 import { resetActivityUid } from "@/lib/activities";
 import { claimDeviceForCurrentUser } from "@/lib/user-state";
+import { clearSessionState } from "@/lib/session-state";
 
 export default function LoginPage() {
   const t = useTranslations("auth");
@@ -37,6 +38,7 @@ export default function LoginPage() {
       });
       if (res.ok) {
         resetActivityUid(); // que nada se encole a nombre del usuario anterior de este móvil
+        clearSessionState(); // ni el chat del coach u otro estado de pestaña de la cuenta anterior
         await claimDeviceForCurrentUser(); // si los datos locales eran de otra cuenta, se borran antes de entrar
         // Carga completa: el login ha puesto la cookie con el idioma del perfil y el layout raíz
         // tiene que volver a leer los textos (con router.push se quedaría el idioma del navegador).

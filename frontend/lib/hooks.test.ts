@@ -26,6 +26,9 @@ vi.mock("./user-state", () => ({
   }),
 }));
 
+const pushCalls = vi.hoisted(() => ({ disable: vi.fn(async () => {}) }));
+vi.mock("./push", () => ({ disablePush: pushCalls.disable }));
+
 import {
   ApiError,
   clearDeviceState,
@@ -137,6 +140,16 @@ describe("performLogout / finishLogout (useLogout)", () => {
 
     expect(uid).toBe("42"); // capturado antes de que nada lo borre
     expect(calls).toEqual(["flushActivities", "flushUserState", "logout-fetch"]);
+  });
+
+  test("performLogout da de baja el push ANTES de cerrar sesión; si falla, no bloquea el logout", async () => {
+    pushCalls.disable.mockImplementationOnce(async () => {
+      calls.push("disablePush");
+      throw new Error("boom");
+    });
+    await expect(performLogout()).resolves.toBe("42");
+    expect(calls.indexOf("disablePush")).toBeGreaterThanOrEqual(0);
+    expect(calls.indexOf("disablePush")).toBeLessThan(calls.indexOf("logout-fetch"));
   });
 
   test("si el logout falla en la red, performLogout NO rechaza y devuelve el uid", async () => {
@@ -253,6 +266,12 @@ describe("handleSessionExpired (401 global)", () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  test("sesión caducada: borra el estado de pestaña (chat del coach) del dueño", async () => {
+    sessionStorage.setItem("flp_coach_chat", "[1]");
+    await handleSessionExpired({ clear: () => {} }, () => {});
+    expect(sessionStorage.getItem("flp_coach_chat")).toBeNull();
   });
 
   test("isUnauthorized solo reconoce un ApiError 401", () => {

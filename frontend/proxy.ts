@@ -9,6 +9,7 @@ const PROTECTED = [
   "/coach",
   "/profile",
   "/biometrics",
+  "/checkin",
   "/onboarding",
   "/ui",
 ];
@@ -35,6 +36,7 @@ export const config = {
     "/coach/:path*",
     "/profile/:path*",
     "/biometrics/:path*",
+    "/checkin/:path*",
     "/onboarding",
     "/ui/:path*",
   ],
