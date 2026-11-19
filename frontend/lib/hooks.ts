@@ -37,6 +37,7 @@ import {
 import { resetActivityUid, cachedActivityUid, flushActivities } from "./activities";
 import { flushUserState, resetUserStateQueue } from "./user-state";
 import { clearSessionState } from "./session-state";
+import { disablePush } from "./push";
 import { PHOTO_TOO_LARGE } from "./compress-image";
 
 // Claves flp_* que son preferencias del DISPOSITIVO (no del usuario): sobreviven
@@ -266,6 +267,11 @@ export async function performLogout(flushBudgetMs: number = LOGOUT_FLUSH_BUDGET_
   const flush = Promise.allSettled([flushActivities(), flushUserState()]);
   // Si el backend se cuelga, el logout no espera: lo pendiente queda en las colas persistidas.
   await Promise.race([flush, new Promise<void>((resolve) => setTimeout(resolve, flushBudgetMs))]);
+  // Avisos: baja de la suscripción push (navegador y servidor) ANTES de cerrar sesión, porque
+  // el POST necesita la cookie. Mejor esfuerzo: si falla, el logout sigue.
+  try {
+    await Promise.race([disablePush(), new Promise<void>((resolve) => setTimeout(resolve, flushBudgetMs))]);
+  } catch { /* sin red / sin push: no bloquea la salida */ }
   await requestLogout();
   return uid;
 }
@@ -285,6 +291,7 @@ export async function handleSessionExpired(
   if (window.location.pathname.startsWith("/login")) return;
   sessionExpiredHandled = true;
   await requestLogout();
+  clearSessionState(); // el chat del coach (flp_*) es del dueño anterior: que no lo herede quien entre
   qc.clear();
   resetUserStateQueue();
   resetActivityUid();
