@@ -148,7 +148,7 @@ Para depurar con el móvil conectado, `chrome://inspect` y la guía oficial de G
 
 1. Cambia lo que quieras en la web: se actualiza sola, **no hace falta recompilar el APK** para cambios de la web.
    Solo recompilas si cambia algo de la propia app (icono, color, nombre, dominio, Bubblewrap).
-2. Sube `appVersionCode` (entero que debe crecer siempre) y, si quieres, `appVersionName` en
+2. Sube `appVersionCode` (entero que debe crecer siempre) y, si quieres, `appVersion` en
    `mobile\twa\twa-manifest.template.json`.
 3. Recompila con `.\build.ps1 -Host_ TU-DOMINIO` y **la misma llave**. Instala el APK nuevo encima
    del anterior (no hace falta desinstalar). Con otra llave, Android lo rechaza.

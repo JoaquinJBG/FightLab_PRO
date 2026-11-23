@@ -1,4 +1,4 @@
-<#
+﻿<#
   Compila el APK de FightLab (TWA). Uso, desde mobile\twa:
     .\build.ps1 -Host_ mi-app.vercel.app
   o con la variable:  $env:FIGHTLAB_HOST = "mi-app.vercel.app"; .\build.ps1
@@ -20,11 +20,12 @@ if (-not $env:BUBBLEWRAP_KEYSTORE_PASSWORD) {
   $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($sec)
   try { $plain = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr) }
   finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr) }
-  # Solo vive en el entorno de este proceso. keytool con PKCS12 usa la misma para la llave.
+  # Solo vive en el entorno de este proceso.
   $env:BUBBLEWRAP_KEYSTORE_PASSWORD = $plain
-  if (-not $env:BUBBLEWRAP_KEY_PASSWORD) { $env:BUBBLEWRAP_KEY_PASSWORD = $plain }
   $plain = $null
 }
+# keytool con PKCS12: la llave usa la misma contraseña que la keystore, salvo que se indique otra.
+if (-not $env:BUBBLEWRAP_KEY_PASSWORD) { $env:BUBBLEWRAP_KEY_PASSWORD = $env:BUBBLEWRAP_KEYSTORE_PASSWORD }
 
 try {
   node (Join-Path $PSScriptRoot "build.mjs")

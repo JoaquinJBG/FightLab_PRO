@@ -13,8 +13,8 @@
 
 import { spawn, spawnSync } from "node:child_process";
 import { createServer } from "node:http";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, statSync, createReadStream } from "node:fs";
-import { dirname, join, resolve, normalize, extname } from "node:path";
+import { existsSync, mkdirSync, rmdirSync, symlinkSync, readFileSync, rmSync, writeFileSync, statSync, createReadStream } from "node:fs";
+import { delimiter, dirname, join, resolve, normalize, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -38,11 +38,26 @@ const keystore = (process.env.FIGHTLAB_KEYSTORE ?? "").trim();
 if (!keystore) fail("falta FIGHTLAB_KEYSTORE (ruta de tu keystore, fuera del repo).");
 if (!existsSync(keystore)) fail(`no existe la keystore: ${keystore}`);
 const alias = (process.env.FIGHTLAB_KEY_ALIAS ?? "fightlab").trim();
-const jdk = (process.env.FIGHTLAB_JDK || process.env.JAVA_HOME || "").trim();
+let jdk = (process.env.FIGHTLAB_JDK || process.env.JAVA_HOME || "").trim();
 if (!jdk || !existsSync(join(jdk, "bin", process.platform === "win32" ? "javac.exe" : "javac")))
   fail("falta un JDK 17 (JAVA_HOME o FIGHTLAB_JDK apuntando a la carpeta del JDK, con bin/javac).");
 const sdk = (process.env.FIGHTLAB_SDK || process.env.ANDROID_HOME || process.env.ANDROID_SDK_ROOT || "").trim();
 if (!sdk || !existsSync(sdk)) fail("falta el Android SDK (ANDROID_HOME o FIGHTLAB_SDK apuntando a su carpeta).");
+// Bubblewrap llama a java y al SDK sin comillas: con espacios en la ruta (p. ej. «Program Files») falla.
+if (/\s/.test(sdk)) fail("el Android SDK debe estar en una ruta sin espacios, p. ej. C:/Android/sdk.");
+if (/\s/.test(jdk)) {
+  // El JDK sí se puede salvar con un enlace (junction) sin espacios dentro de build/home.
+  const link = join(homeDir, "jdk");
+  mkdirSync(homeDir, { recursive: true });
+  try { rmdirSync(link); } catch { /* no existía */ }
+  symlinkSync(jdk, link, "junction");
+  jdk = link;
+  if (/\s/.test(jdk)) fail("la carpeta del repo tiene espacios: mueve el repo o instala el JDK en una ruta sin espacios.");
+}
+
+// Bubblewrap solo da por buena una carpeta de SDK con `tools/` o `bin/` en la raíz (diseño antiguo del SDK).
+// Un SDK normal (cmdline-tools/latest) no la tiene: se crea `tools/` vacía, sin efectos en Gradle.
+if (!existsSync(join(sdk, "tools")) && !existsSync(join(sdk, "bin"))) mkdirSync(join(sdk, "tools"));
 
 const run = (cmd, args, opts = {}) => {
   const r = spawnSync(cmd, args, { stdio: "inherit", shell: process.platform === "win32" && cmd === "npm", ...opts });
@@ -64,7 +79,7 @@ if (!existsSync(join(here, "node_modules", "@bubblewrap", "cli"))) {
 const bubblewrap = join(here, "node_modules", "@bubblewrap", "cli", "bin", "bubblewrap.js");
 
 // --- entorno aislado: no toca ~/.bubblewrap ni ~/.gradle del usuario ---
-rmSync(projectDir, { recursive: true, force: true });
+rmSync(projectDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 500 });
 mkdirSync(join(homeDir, ".bubblewrap"), { recursive: true });
 mkdirSync(projectDir, { recursive: true });
 writeFileSync(
@@ -89,6 +104,7 @@ await new Promise((ok) => server.listen(0, "127.0.0.1", ok));
 const iconsBase = `http://127.0.0.1:${server.address().port}`;
 
 let ok = false;
+let stopGradle = () => {};
 try {
   // --- manifest de Bubblewrap a partir de la plantilla ---
   const manifest = readFileSync(join(here, "twa-manifest.template.json"), "utf8")
@@ -105,15 +121,27 @@ try {
     JAVA_HOME: jdk,
     ANDROID_HOME: sdk,
     ANDROID_SDK_ROOT: sdk,
+    // Gradle (Java) ignora USERPROFILE: su caché va a build/home para no tocar ~/.gradle.
+    GRADLE_USER_HOME: join(homeDir, ".gradle"),
     BUBBLEWRAP_SKIP_VERSION_CHECK: "1",
   };
-  const bw = (...args) => runAsync(process.execPath, [bubblewrap, ...args], { env, cwd: buildDir });
+  // Bubblewrap llama a `gradlew.bat` a secas (con cwd = proyecto). Con NoDefaultCurrentDirectoryInExePath
+  // puesto, Windows no busca en el directorio actual: se añade el proyecto al PATH (sea «Path» o «PATH»).
+  const pathKey = Object.keys(env).find((k) => k.toLowerCase() === "path") ?? "PATH";
+  env[pathKey] = `${projectDir}${delimiter}${env[pathKey] ?? ""}`;
+  // El daemon de Gradle deja ficheros bloqueados en build/ (y gasta RAM): se para al acabar.
+  stopGradle = () => {
+    if (existsSync(join(projectDir, "gradlew.bat")) || existsSync(join(projectDir, "gradlew")))
+      spawnSync(process.platform === "win32" ? "gradlew.bat" : "./gradlew", ["--stop"], { env, cwd: projectDir, shell: true, stdio: "ignore" });
+  };
+  const bw = (...args) => runAsync(process.execPath, [bubblewrap, ...args], { env, cwd: projectDir });
 
   // `update` con --skipVersionUpgrade: respeta appVersionCode de la plantilla (Bubblewrap, si no, lo sube solo).
   await bw("update", `--manifest=${manifestOut}`, `--directory=${projectDir}`, "--skipVersionUpgrade");
   await bw("build", `--manifest=${manifestOut}`, `--directory=${projectDir}`);
   ok = true;
 } finally {
+  stopGradle();
   server.close();
 }
 
