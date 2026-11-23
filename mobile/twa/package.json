@@ -1,0 +1,12 @@
+{
+  "name": "fightlab-twa",
+  "private": true,
+  "version": "1.0.0",
+  "description": "App Android (TWA) de FightLab con Bubblewrap. Ver README.md.",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@bubblewrap/cli": "1.27.0"
+  }
+}
