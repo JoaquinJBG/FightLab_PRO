@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { gateView } from "@/components/onboarding-gate";
 
-const base = { isLoading: false, isError: false, incomplete: false, slow: false };
+const base = { isLoading: false, isError: false, incomplete: false, slow: false, retrying: false };
 const dashboard = { ...base, pathname: "/dashboard" };
 
 describe("gateView", () => {
@@ -13,10 +13,11 @@ describe("gateView", () => {
     }
   });
 
-  test("fuera de /training: esqueleto al cargar, reintento si tarda ≥10 s o falla", () => {
+  test("fuera de /training: esqueleto al cargar, «despertando» si tarda, error si falla sin margen", () => {
     expect(gateView({ ...dashboard, isLoading: true })).toBe("skeleton");
-    expect(gateView({ ...dashboard, isLoading: true, slow: true })).toBe("slow");
+    expect(gateView({ ...dashboard, isLoading: true, slow: true })).toBe("waking");
     expect(gateView({ ...dashboard, isError: true })).toBe("error");
+    expect(gateView({ ...dashboard, isError: true, retrying: true })).toBe("waking");
     expect(gateView(dashboard)).toBe("children");
   });
 

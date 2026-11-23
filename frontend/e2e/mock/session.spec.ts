@@ -34,9 +34,17 @@ test("con el perfil tardando 30 s, /training/gym/session se puede usar de inmedi
   await expect(page.getByRole("button", { name: "Reintentar" })).toBeHidden();
 });
 
-test("fuera de /training, un perfil que falla muestra reintento (no 'Cargando…' eterno)", async ({ page, session }) => {
+test("fuera de /training, un perfil que falla (403, sin reintento posible) muestra reintento (no 'Cargando…' eterno)", async ({ page, session }) => {
+  void session;
+  await page.route("**/api/proxy/me/profile", (route) => route.fulfill({ status: 403, body: "{}" }));
+  await page.goto("/dashboard");
+  await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
+});
+
+test("un perfil que falla con 500 enseña «Despertando el servidor…» y reintenta solo", async ({ page, session }) => {
   void session;
   await page.route("**/api/proxy/me/profile", (route) => route.fulfill({ status: 500, body: "{}" }));
   await page.goto("/dashboard");
-  await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: "Despertando el servidor…" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Reintentar" })).toBeHidden();
 });

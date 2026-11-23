@@ -1,0 +1,44 @@
+name: Keep awake
+
+# Mantiene despierto el backend de Render (plan free: se duerme a los 15 min sin
+# tráfico y tarda ~1 min en volver). Cada 10 min llama a /api/wake de Vercel, que
+# a su vez llama a <backend>/health. Así no hay que guardar la URL de Render aquí.
+#
+# Límites (fuentes oficiales, comprobadas en nov-2026):
+# - Actions es gratis con runners estándar en repos públicos:
+#   https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions
+# - `schedule` puede retrasarse con carga alta (sobre todo al inicio de cada hora),
+#   el mínimo son 5 min, solo corre en la rama por defecto (main) y en repos públicos
+#   se DESACTIVA tras 60 días sin actividad en el repo (hay que reactivarlo a mano
+#   en la pestaña Actions o hacer un commit):
+#   https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows
+# - Render free: 750 h/mes por workspace; un servicio 24/7 (~730 h) cabe, dos no.
+#   Render no habla de pings, solo dice que se duerme tras 15 min sin tráfico entrante:
+#   https://render.com/docs/free
+# Si GitHub se retrasa demasiado, alternativa: cron-job.org (ver docs/DEPLOY.md).
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: keep-awake
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Despertar backend
+        # Falle o no, el job no rompe nada más (continue-on-error + exit 0).
+        continue-on-error: true
+        run: |
+          curl --silent --show-error --fail \
+            --max-time 70 --retry 2 --retry-delay 5 --retry-all-errors \
+            https://fight-lab-pro.vercel.app/api/wake || echo "wake falló (no crítico)"
+          exit 0

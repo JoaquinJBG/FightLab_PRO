@@ -2424,7 +2424,8 @@
       "sending": "{count, plural, one {Sending # pending change…} other {Sending # pending changes…}}"
     },
     "gate": {
-      "slow": "The server is taking a while to respond.",
+      "waking": "Waking up the server…",
+      "wakingBody": "After a while without use, the server can take up to a minute to wake up. We keep retrying on our own.",
       "error": "Couldn't load your profile.",
       "retry": "Try again"
     }

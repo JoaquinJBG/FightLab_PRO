@@ -479,6 +479,27 @@ El cliente S3 es `boto3` (Apache-2.0), versión fijada en
   (fecha, peso, nutrición del día…), así que no se queda congelada. Componente:
   `frontend/components/server-warmup.tsx`. Arrancar en un solo proceso (`manage.py boot`) acorta
   el cold start: en local, con la base ya migrada, el paso previo a gunicorn bajó de ~16 s a ~7 s.
+- **Mantenerlo despierto (gratis).** Al abrir la app, el frontend llama una vez a `/api/wake`
+  (ruta de Next sin auth y `no-store`, hasta ~58 s) que hace `GET <origen de DJANGO_API_URL>/health`
+  desde el servidor: no hay que configurar nada ni publicar la URL de Render. Además
+  `.github/workflows/keep-awake.yml` la llama cada 10 min (`workflow_dispatch` para probarla a mano:
+  pestaña *Actions* → *Keep awake* → *Run workflow*). Si aun así el backend duerme, el gate de la app
+  enseña «Despertando el servidor…» y reintenta solo (2, 4, 8, 15 s…) hasta ~90 s antes de dar error.
+  Límites, con fuente oficial:
+  - GitHub Actions es **gratis con runners estándar en repos públicos**
+    ([docs](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions)).
+  - El `schedule` **puede retrasarse** con carga alta (sobre todo al inicio de cada hora), el mínimo es
+    5 min, solo corre en la rama por defecto (`main`) y en repos públicos **se desactiva tras 60 días
+    sin actividad** en el repo: reactívalo en *Actions* o haz un commit
+    ([docs](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows)).
+  - Render free da **750 h/mes por workspace** y no acumula las no usadas: un servicio despierto 24/7
+    (~730 h) cabe; **dos no** (se quedarían sin horas a final de mes)
+    ([docs](https://render.com/docs/free)). Render no menciona los pings: solo dice que se duerme tras
+    15 min sin tráfico entrante, así que cualquier petición HTTP lo mantiene despierto. Mantén un solo
+    servicio gratis despierto en el workspace.
+  - **Alternativa si GitHub se retrasa mucho:** un cron externo gratis, p. ej. cron-job.org (cuenta
+    gratuita, tarea cada 5-10 min con `GET https://fight-lab-pro.vercel.app/api/wake`, timeout 60 s).
+    Es un servicio de terceros: no pongas en él ninguna credencial (la ruta no la necesita).
 - **Render free: 512 MB de RAM.** gunicorn va con 2 workers que se reciclan cada ~500 peticiones
   (`--max-requests 500 --max-requests-jitter 50`), y una foto PNG/WebP/GIF no pasa de 6 MP
   (~60 MB al decodificarla); las JPEG se decodifican ya reducidas y aceptan hasta 40 MP.
