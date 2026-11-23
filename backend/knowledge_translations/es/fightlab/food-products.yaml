@@ -1,0 +1,39 @@
+# Traducción al español de backend/knowledge_fightlab/food-products.md, de FightLab Pro
+# (Joaquín J Beltrán García), CC BY 4.0. Ver LICENSE-CONTENT.md.
+# Formato y cómo se actualiza: backend/knowledge_translations/README.md.
+# status: machine = traducción sin revisar por una persona.
+
+lang: es
+origin: fightlab
+file: food-products
+rules:
+- key: food-products/rate-packaged-products-with-nutri-score-and-uk-traffic-lights
+  source_hash: 01bce0a953ae50c90e0e64819e170c4d9ad00c0625469b572ea6a1534d873ad6
+  status: machine
+  heading: Valora los productos envasados con el Nutri-Score y el semáforo del Reino Unido
+  rule_text: |-
+    FightLab valora un producto envasado con dos esquemas públicos. La nota Nutri-Score (de la A a la E, algoritmo de 2023) se toma tal como la da el archivo del usuario u Open Food Facts; FightLab no la recalcula. El semáforo de la etiqueta frontal del Reino Unido colorea el azúcar, la grasa saturada, la sal y la grasa por 100 g en los alimentos y por 100 ml en las bebidas: alto es más de 22,5 g de azúcar, 5 g de saturada y 1,5 g de sal por 100 g en los alimentos, y más de 11,25 g, 2,5 g y 0,75 g por 100 ml en las bebidas. Convención de FightLab: bueno es Nutri-Score A o B sin rojo en azúcar, saturada ni sal (sin nota, solo si se conocen los tres y ninguno está en rojo); evitar es Nutri-Score D o E, rojo en azúcar o en saturada, o dos rojos; regular es lo demás; sin datos es sin nota y con algún valor que falta; no aplica son el alcohol, los refrescos, el café y las infusiones, la comida infantil, las chuches, los edulcorantes y los condimentos. El azúcar de la fruta entera o desecada no cuenta como rojo, salvo que el nombre diga azúcar, almíbar, chocolate o miel. La valoración se presenta como una lectura de la etiqueta por 100 g, no como un juicio sobre una ración o una dieta.
+  applies_to: |-
+    Alimentos y bebidas envasados con etiqueta nutricional, valorados por 100 g o 100 ml. No la fruta, verdura, carne o pescado a granel sin etiqueta, ni la dieta entera de una persona.
+  conflicts: |-
+    Los dos esquemas clasifican productos, no personas: un producto que sale evitar y se come en poca cantidad, como un queso curado en un bocadillo, puede caber en un plan. El semáforo usa el azúcar total y no separa el añadido del de la leche o la fruta; la excepción de la fruta es una convención de FightLab que la guía no hace. El Nutri-Score de 2023 se aplica desde fechas distintas en cada país, así que etiquetas antiguas y algunas bases de datos pueden llevar todavía la nota anterior. Los umbrales que juntan los dos esquemas en bueno, regular y evitar son una convención de FightLab sin pruebas de resultados en salud detrás.
+- key: food-products/rate-oils-nuts-and-seeds-by-nutri-score-alone
+  source_hash: b7390c830c7f1c01257e073084a70db87455d4a1da8832695a545fa9f3a1dcb0
+  status: machine
+  heading: Valora los aceites, frutos secos y semillas solo por el Nutri-Score
+  rule_text: |-
+    En los aceites, frutos secos y semillas, FightLab no cuenta el semáforo de la grasa saturada y se fía de la nota Nutri-Score. Sin nota, un producto así sale sin datos, no bueno.
+  applies_to: |-
+    Aceites vegetales, frutos secos, semillas y cremas de frutos secos, valorados por 100 g (algunas tiendas etiquetan los aceites por 100 ml; FightLab mantiene la unidad de la etiqueta).
+  conflicts: |-
+    El trato de esta categoría sale del informe del comité, un consenso técnico de los propios autores del esquema, no de ensayos con resultados en salud. Saber si un producto es de esta categoría depende de la categoría de la tienda, de las etiquetas de categoría de Open Food Facts o, sin ninguna, de palabras del nombre, lo que puede clasificar mal algún producto.
+- key: food-products/flag-labels-whose-energy-does-not-match-the-macros
+  source_hash: ade60fbfbb49cf2f3a4851ad24bc30fe76b128aa740b8d420104e06c955a901d
+  status: machine
+  heading: Marca las etiquetas cuya energía no cuadra con los macros
+  rule_text: |-
+    FightLab marca un producto para revisar cuando las kcal por 100 g que declara se apartan más de un 15 % de 4 kcal por gramo de proteína e hidratos, 9 por gramo de grasa y 2 por gramo de fibra (las diferencias de menos de 8 kcal se dan por buenas). La marca no cambia la valoración: avisa de que la etiqueta o el archivo pueden tener un error. Los productos que no aplican no se comprueban.
+  applies_to: |-
+    Etiquetas de la UE y del Reino Unido expresadas por 100 g o 100 ml.
+  conflicts: |-
+    Los polialcoholes, el eritritol, el alcohol y los ácidos orgánicos tienen otros factores, así que los edulcorantes, las chuches sin azúcar y las bebidas con alcohol pueden salir marcados aunque la etiqueta esté bien. La fibra que la etiqueta no declara también agranda la diferencia en las legumbres.

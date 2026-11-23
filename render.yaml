@@ -1,0 +1,100 @@
+# Blueprint de Render para el backend de FightLab Pro.
+# https://render.com/docs/blueprint-spec
+#
+# El frontend (Next.js) no va aquí: se despliega en Vercel.
+services:
+  - type: web
+    name: fightlab-backend
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        sync: false
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: ADMIN_URL
+        sync: false
+      - key: NUM_PROXIES
+        # Solo se usa como fallback (sin BFF_SHARED_SECRET, o si alguien
+        # llama directo a *.onrender.com sin pasar por el BFF de Vercel):
+        # en ese camino hay UN único proxy de confianza (el borde de
+        # Render). Con 2 aquí, cualquiera podría saltarse el throttle de
+        # login/register/reset inventándose X-Forwarded-For.
+        value: "1"
+      - key: DATABASE_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        value: ""
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: BETA_ALLOWED_EMAILS
+        sync: false
+      # Secreto compartido con el BFF de Next (mismo valor en Vercel): sin
+      # él, el throttle de auth no distingue visitantes detrás del BFF.
+      - key: BFF_SHARED_SECRET
+        sync: false
+      # Render free bloquea el SMTP saliente (25/465/587): el envío va por
+      # la API HTTP de Brevo vía django-anymail. 'resend' es la alternativa
+      # si se cambia de proveedor (RESEND_API_KEY, sync:false, opcional).
+      - key: EMAIL_PROVIDER
+        value: brevo
+      - key: BREVO_API_KEY
+        sync: false
+      - key: EMAIL_TIMEOUT
+        value: "10"
+      - key: DEFAULT_FROM_EMAIL
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: AI_MODEL_CHAT
+        value: claude-sonnet-5
+      - key: AI_MODEL_VISION
+        value: claude-sonnet-5
+      # Cuota por usuario y freno global de coste (ver backend/core/settings.py).
+      # Los timeouts de la IA no se tocan aquí: su orden frente al BFF y a
+      # gunicorn está fijado en settings y comprobado por test.
+      - key: AI_DAILY_QUOTA_CHAT
+        value: "50"
+      - key: AI_DAILY_QUOTA_FOOD
+        value: "20"
+      # Freno global de tokens al día; sin valor, 2 000 000 (settings). sync:false para no pisar
+      # lo que se ajuste en el panel al sincronizar el blueprint.
+      - key: AI_GLOBAL_DAILY_TOKEN_BUDGET
+        sync: false
+      # Texto del LLM en el plan y la revisión (de pago). Sin valor, apagado (False).
+      - key: PLAN_NARRATIVE_ENABLED
+        sync: false
+      # Opcionales: sin ellas la función queda apagada y la app lo explica. Un valor malo
+      # (VAPID_SUBJECT sin mailto:/https://, R2_SIGNED_URL_SECONDS fuera de 60-3600) no tumba
+      # el arranque: se registra el error y esa función se apaga.
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_SUBJECT
+        sync: false
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET
+        sync: false
+      - key: R2_SIGNED_URL_SECONDS
+        sync: false
+      # Contacto del proyecto para Open Food Facts (escáner); sin él, el escáner no consulta OFF.
+      - key: COACH_OFF_CONTACT
+        sync: false
+      # Carga de la base de evidencia al arrancar (manage.py boot); sin valor, True.
+      - key: KNOWLEDGE_SYNC_ON_START
+        sync: false
+      - key: DJANGO_LOG_LEVEL
+        value: INFO

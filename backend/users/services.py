@@ -1,54 +1,159 @@
+import functools
+import logging
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.mail import send_mail
 from django.db import transaction
 from django.template.loader import render_to_string
 
-from .tokens import generate_email_verification_token, verify_email_verification_token
+from .tokens import (
+    check_password_reset_token,
+    generate_email_verification_token,
+    generate_password_reset_uid_and_token,
+    get_user_from_password_reset_uid,
+    verify_email_verification_token,
+)
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
+
+
+def is_beta_email_allowed(email: str) -> bool:
+    """Beta cerrada por invitación.
+
+    BETA_ALLOWED_EMAILS vacía + DEBUG -> se permite todo (dev local).
+    BETA_ALLOWED_EMAILS vacía + DEBUG=False -> no se permite ningún registro.
+
+    Decisión consciente: si BETA_ALLOWED_EMAILS SÍ tiene contenido, la lista
+    manda también en DEBUG (no solo en producción). Así se puede probar
+    localmente el comportamiento real de la beta cerrada (los rechazos, el
+    403) sin tener que apagar DEBUG. Solo cuando la lista está vacía se usa
+    DEBUG para decidir "todo permitido" (dev sin configurar) frente a "nada
+    permitido" (producción sin configurar, fail-closed).
+    """
+    allowed = settings.BETA_ALLOWED_EMAILS
+    if not allowed:
+        return settings.DEBUG
+    return email.strip().lower() in allowed
 
 
 def _send_verification_email(user) -> None:
+    """Envía el email de verificación.
+
+    Nunca deja escapar una excepción: un fallo del proveedor de email (SMTP
+    bloqueado, API caída, credenciales que faltan...) no debe tumbar la
+    petición de registro/reenvío que la llama ni, si se llama desde dentro
+    de una transacción, revertirla. El usuario siempre puede pedir el
+    reenvío desde /verify-email/resend si el correo no llega.
+    """
     token = generate_email_verification_token(user)
     link = f"{settings.FRONTEND_URL}/verify-email?token={token}"
-    html = render_to_string("users/verify_email.html", {"verification_link": link})
-    send_mail(
-        subject="Verifica tu cuenta de FightLab Pro",
-        message=(
-            f"Bienvenido a FightLab Pro. Verifica tu correo:\n\n{link}\n\n"
-            "Este enlace vence en 24 horas."
-        ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        html_message=html,
-    )
+    try:
+        html = render_to_string("users/verify_email.html", {"verification_link": link})
+        send_mail(
+            subject="Verifica tu cuenta de FightLab Pro",
+            message=(
+                f"Bienvenido a FightLab Pro. Verifica tu correo:\n\n{link}\n\n"
+                "Este enlace vence en 24 horas."
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html,
+        )
+    except Exception:
+        logger.exception("No se pudo enviar el email de verificación al usuario %s", user.pk)
     if settings.DEBUG:
         # Enlace limpio y copiable en consola (el email de dev va en quoted-printable).
         print(f"\n[DEV] Verificación para {user.email}:\n{link}\n", flush=True)
 
 
+def _send_account_exists_email(user) -> None:
+    """Aviso al dueño de una cuenta verificada que alguien intentó registrar."""
+    link = f"{settings.FRONTEND_URL}/login"
+    try:
+        send_mail(
+            subject="Ya tienes una cuenta en FightLab Pro",
+            message=(
+                "Alguien intentó crear una cuenta con este correo, pero ya tienes una.\n\n"
+                f"Entra aquí: {link}\n\n"
+                "Si olvidaste la contraseña, usa «Recuperar contraseña». "
+                "Si no fuiste tú, ignora este email."
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+        )
+    except Exception:
+        logger.exception("No se pudo enviar el aviso de cuenta existente al usuario %s", user.pk)
+
+
 @transaction.atomic
-def user_create(*, email: str, password: str):
+def user_create(*, email: str, password: str, language: str | None = None):
     """Create an inactive user and send the verification email.
 
-    Si ya existe una cuenta con ese email pero SIN verificar, no es un error:
-    se actualiza la contraseña y se reenvía el enlace de verificación (así el
-    usuario que se quedó a medias puede recuperar el acceso simplemente
-    volviendo a registrarse). Si la cuenta ya está verificada, sí es un error.
+    `language` es el de la petición de registro (`Accept-Language`); queda en el perfil
+    y, si no es uno de los idiomas de la app, se usa el español (spec §6.2). Con
+    `LANGUAGE_SELECTOR_ENABLED` apagado, siempre español. Solo se fija en un alta
+    nueva: un re-registro no cambia nada de una cuenta que ya existe.
+
+    Si ya existe una cuenta con ese email pero SIN verificar, no es un
+    error de "email duplicado": se reenvía el enlace de verificación y se
+    responde igual que un alta nueva (201, sin enumerar). NO se toca la
+    contraseña ya guardada. El caso más común con diferencia es el propio
+    usuario legítimo pulsando "Crear cuenta" dos veces (el primer email
+    tarda, o coincide con el cold start de Render): tocar la contraseña en
+    ese caso dejaba al usuario sin poder entrar nunca tras verificar, sin
+    ninguna pista de qué había pasado (ver VerifyEmailView/needs_password
+    para el caso, ya heredado, de una cuenta sin contraseña utilizable).
+
+    Riesgo residual (documentado, no mitigado con más lógica): si alguien
+    registra ANTES que la víctima el email de otra persona (tiene que estar
+    invitado en BETA_ALLOWED_EMAILS) con una contraseña propia, esa cuenta
+    queda con la contraseña del atacante hasta que la víctima intente
+    entrar por primera vez y descubra que no puede (no hay enumeración de
+    "ya registrado", así que solo lo notaría al fallar el login, no al
+    registrarse). El atacante no puede verificar el email ajeno (el enlace
+    solo le llega a quien tiene acceso al buzón de la víctima), así que no
+    hay secuestro silencioso de una cuenta que la víctima ya usa, pero sí
+    de una cuenta que aún no ha estrenado. En la beta cerrada (invitación
+    explícita, pocos usuarios, ventana corta hasta el primer login) se
+    acepta este riesgo en vez de reintroducir el problema anterior
+    (invalidar contraseñas a ciegas). Si la cuenta ya está verificada, la
+    respuesta es la misma y el aviso va solo al buzón del dueño.
     """
+    email = email.strip().lower()
     existing = User.objects.filter(email=email).first()
     if existing is not None:
+        # Mismo coste de hash que un alta nueva, para que el tiempo de
+        # respuesta no delate si el email existe.
+        make_password(password)
         if existing.is_email_verified:
-            raise ValueError("A user with this email already exists")
-        existing.set_password(password)
-        existing.save(update_fields=["password", "updated_at"])
-        _send_verification_email(existing)
+            # Aviso por email en vez de error, para no enumerar cuentas.
+            transaction.on_commit(functools.partial(_send_account_exists_email, existing))
+        else:
+            transaction.on_commit(functools.partial(_send_verification_email, existing))
         return existing
 
     user = User.objects.create_user(email=email, password=password, is_active=False)
-    _send_verification_email(user)
+    _profile_language_set(user, language)
+    transaction.on_commit(functools.partial(_send_verification_email, user))
     return user
+
+
+def _profile_language_set(user, language: str | None) -> None:
+    from profiles.models import DEFAULT_LANGUAGE, LANGUAGES, UserProfile
+
+    code = (language or "").split("-")[0].lower()
+    # Con el selector apagado todo el mundo empieza en español.
+    if not settings.LANGUAGE_SELECTOR_ENABLED or code not in dict(LANGUAGES):
+        code = DEFAULT_LANGUAGE
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+    if profile.language != code:
+        profile.language = code
+        profile.save(update_fields=["language"])
 
 
 @transaction.atomic
@@ -70,10 +175,101 @@ def email_verify(*, token: str):
 
 def verification_resend(*, email: str) -> None:
     """Resend the verification email if the user exists and is unverified."""
-    try:
-        user = User.objects.get(email=email)
-    except User.DoesNotExist:
+    email = email.strip().lower()
+    # iexact: cubre cuentas guardadas con mayúsculas en la parte local del
+    # email (alta desde el admin, createsuperuser), que normalize_email no
+    # toca.
+    user = User.objects.filter(email__iexact=email).first()
+    if user is None:
         return  # do not leak which emails exist
     if user.is_email_verified:
         return
-    _send_verification_email(user)
+    transaction.on_commit(functools.partial(_send_verification_email, user))
+
+
+def _send_password_reset_email(user) -> None:
+    """Envía el email de recuperación de contraseña.
+
+    Igual que _send_verification_email: nunca deja escapar una excepción del
+    proveedor de email, para no tumbar la petición ni (llamada dentro de un
+    @transaction.atomic) revertir nada.
+    """
+    uid, token = generate_password_reset_uid_and_token(user)
+    link = f"{settings.FRONTEND_URL}/reset-password?uid={uid}&token={token}"
+    try:
+        html = render_to_string("users/password_reset.html", {"reset_link": link})
+        send_mail(
+            subject="Recupera tu contraseña de FightLab Pro",
+            message=(
+                f"Hemos recibido una solicitud para restablecer tu contraseña:\n\n{link}\n\n"
+                "Si no fuiste tú, ignora este email."
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html,
+        )
+    except Exception:
+        logger.exception("No se pudo enviar el email de recuperación al usuario %s", user.pk)
+    if settings.DEBUG:
+        print(f"\n[DEV] Recuperación de contraseña para {user.email}:\n{link}\n", flush=True)
+
+
+def password_reset_request(*, email: str) -> None:
+    """Send the reset link if an active account with that email exists.
+
+    Nunca informa de si el email existe: la vista siempre responde 200.
+    """
+    email = email.strip().lower()
+    # iexact: mismo motivo que en verification_resend (mayúsculas guardadas
+    # fuera del flujo de registro normal).
+    user = User.objects.filter(email__iexact=email).first()
+    if user is None:
+        return
+    if not user.is_active:
+        return
+    transaction.on_commit(functools.partial(_send_password_reset_email, user))
+
+
+def password_reset_email(*, uid: str, token: str) -> str | None:
+    """El email de la cuenta de un enlace de recuperación válido (F27 de la prueba en móvil).
+
+    La pantalla de nueva contraseña lo pone en un campo de usuario oculto para que el gestor de
+    contraseñas del navegador sepa de qué cuenta es. Quien tiene un enlace válido ya ha leído el
+    correo de esa cuenta, así que no descubre nada nuevo; con un enlace malo no se dice nada.
+    """
+    user = get_user_from_password_reset_uid(uid)
+    if user is None or not check_password_reset_token(user, token):
+        return None
+    return user.email
+
+
+@transaction.atomic
+def password_reset_confirm(*, uid: str, token: str, password: str) -> None:
+    """Validate the uid/token pair and set the new password.
+
+    La fuerza de la contraseña se valida aquí (no en el serializer) porque
+    UserAttributeSimilarityValidator necesita el usuario para poder rechazar
+    una contraseña igual o parecida a su email, y el usuario solo se conoce
+    tras resolver el uid.
+    """
+    user = get_user_from_password_reset_uid(uid)
+    if user is None or not check_password_reset_token(user, token):
+        raise ValueError("Invalid or expired reset link")
+    try:
+        validate_password(password, user)
+    except DjangoValidationError as exc:
+        raise ValueError(" ".join(exc.messages)) from exc
+    user.set_password(password)
+    user.save(update_fields=["password", "updated_at"])
+    _blacklist_all_outstanding_tokens(user)
+
+
+def _blacklist_all_outstanding_tokens(user) -> None:
+    """Cierra cualquier sesión abierta (refresh vivos) tras cambiar la contraseña."""
+    from rest_framework_simplejwt.token_blacklist.models import (
+        BlacklistedToken,
+        OutstandingToken,
+    )
+
+    for outstanding in OutstandingToken.objects.filter(user=user):
+        BlacklistedToken.objects.get_or_create(token=outstanding)

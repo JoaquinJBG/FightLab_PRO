@@ -1,0 +1,1257 @@
+# Traducción al español de knowledge/nutrition.md de AI personal coach, de matgarfer499
+# (https://github.com/matgarfer499/ai-personal-coach), CC BY 4.0.
+# Cambios: FightLab Pro (Joaquín J Beltrán García) ha traducido las reglas al español; la
+# traducción se publica también bajo CC BY 4.0. Ver LICENSE-CONTENT.md.
+# Formato y cómo se actualiza: backend/knowledge_translations/README.md.
+# status: machine = traducción sin revisar por una persona.
+
+lang: es
+origin: upstream
+file: nutrition
+rules:
+- key: nutrition/default-rmr-equation-mifflin-st-jeor
+  source_hash: 2643d606c69a90d8291effe902bb8db9d377f0cc1d3e127b2aecb17d8de5b769
+  status: machine
+  heading: 'Ecuación de RMR por defecto: Mifflin-St Jeor'
+  rule_text: |-
+    Usa Mifflin-St Jeor (MSJ) como RMR de partida por defecto para adultos corrientes, sobre todo cuando la composición corporal se desconoce o no es fiable. MSJ en su forma específica por sexo: RMR (kcal/día) = 10 × peso (kg) + 6.25 × altura (cm) - 5 × edad (años) + 5 en hombres, y la misma con - 161 en lugar de + 5 en mujeres. Presenta el resultado al cliente como una estimación de partida con un error de alrededor de ±10% (unas ±150-200 kcal en un adulto típico), no como una medición, y calíbralo con la tendencia de peso real de 2-4 semanas.
+  applies_to: |-
+    Adultos sanos ambulatorios, de normopeso a obesidad, en muestras sobre todo de blancos norteamericanos. No validada en obesidad grave, poblaciones clínicas, deportistas, personas mayores ni muchos grupos étnicos, que estaban infrarrepresentados.
+  conflicts: |-
+    El sesgo de grupo es casi nulo, pero el error individual es grande e impredecible. La exactitud cae en la obesidad: Madden 2016 encontró que la ecuación de la OMS era la más exacta de media con IMC ≥25/≥30 y la de Henry con IMC ≥40, aunque Mifflin fue la más precisa. Durante y después de perder peso en personas con exceso de peso, Harris-Benedict mostró el menor sesgo, pero los intervalos de predicción fueron amplios. Para la obesidad grave, véase "Sobrepeso y obesidad: elección de la ecuación".
+- key: nutrition/overweight-and-obesity-equation-choice
+  source_hash: ce493a7fae03c0aea1ae13053cf6a49385fc260d273780c9f9c38698b9f2e8ae
+  status: machine
+  heading: 'Sobrepeso y obesidad: elección de la ecuación'
+  rule_text: |-
+    Con clientes con IMC 30-40, empieza con MSJ. Con IMC ≥40, calcula también Harris-Benedict (o la de la OMS) y toma el rango entre ellas y MSJ como la banda de partida plausible. No cambies a una ecuación con FFM (Cunningham, Katch-McArdle) en la obesidad, sobre todo con una FFM de báscula inteligente. Recurre antes a la recalibración con la tendencia de peso.
+  applies_to: |-
+    Adultos sanos con sobrepeso u obesidad. El metaanálisis sobre obesidad grave abarcó edades de 28-55 años e IMC de 40-62, y la mayoría de los estudios incluidos tenían alto riesgo de sesgo.
+  conflicts: |-
+    Las fuentes no coinciden en cuál es la mejor ecuación: Madden encontró que Mifflin era la más precisa, pero la de la OMS y la de Henry las más exactas de media; Campos se inclina por Harris-Benedict/OMS por su sesgo con IMC ≥40 y señala que el rendimiento puede variar entre los distintos grados de obesidad.
+- key: nutrition/older-adults-equations-overestimate
+  source_hash: ce0c5a94da52d848d992f390f432c689ed15df88ab7cf096537d50ad42fc5fab
+  status: machine
+  heading: 'Mayores: las ecuaciones sobrestiman'
+  rule_text: |-
+    Con clientes de más de unos 65 años, usa MSJ como punto de partida, pero cuenta con que alrededor del 40% de las personas se desvíen más de un 10%, con tendencia a sobrestimar las necesidades. Si procede un déficit (véase "Entrenamiento de fuerza durante cualquier dieta, sobre todo en mayores"), que sea conservador; sigue el peso de cerca, recalibra con la tendencia y vigila una pérdida no buscada de masa magra, sobre todo si el apetito o la masa muscular son bajos.
+  applies_to: |-
+    Personas mayores sanas que viven en la comunidad. Los datos de personas institucionalizadas (emergente, 4 estudios observacionales) proceden de residentes en centros de larga estancia y puede que no sean aplicables a mayores sanos que entrenan fuerza.
+  conflicts: |-
+    MSJ es la mejor a nivel de grupo y Harris-Benedict la mejor a nivel individual, así que las dos métricas no coinciden. Ninguna ecuación fue a la vez exacta y precisa.
+- key: nutrition/trained-clients-cunningham-or-ten-haaf
+  source_hash: 95fb825dab166e23c734af7e6b82d08f94f83557b60ccd4af968089518d09b2b
+  status: machine
+  heading: 'Clientes entrenados: Cunningham o ten Haaf'
+  rule_text: |-
+    Con un cliente que entrena con regularidad y tiene una medición de FFM creíble (DXA o pletismografía por desplazamiento de aire), Cunningham es una alternativa razonable a MSJ. Sin datos de composición corporal, usa la ecuación de ten Haaf basada en el peso: REE (kJ/d) = 49.940 × kg + 2459.053 × m - 34.014 × edad + 799.257 × (hombre = 1) + 122.502; divide entre 4.184 para pasar a kcal. Cuenta con que MSJ sea menos exacta en personas entrenadas y, en cualquier caso, recalibra con la tendencia de peso.
+  applies_to: |-
+    Deportistas adultos y personas que hacen ejercicio recreativo, sobre todo jóvenes (muestra de ten Haaf de 18-35 años), en muestras neerlandesas, estadounidenses y europeas. Encajan peor quienes van al gimnasio con una masa muscular corriente. No lo generalices a adultos mayores o sedentarios ni a la obesidad.
+  conflicts: |-
+    Los autores afirman que no hay ninguna ecuación cuya superioridad esté garantizada. La heterogeneidad fue alta (I² 80-93%) en todas salvo en ten Haaf (I² 0%). Estudios individuales encontraron que Cunningham sobrestimaba en torno a un 10% (ciclistas varones) y un 17% (jugadores de rugby league varones) e infraestimaba en torno a un 16% (deportistas de resistencia de élite mujeres); sobrestimó de forma significativa (ES 0.97) en los estudios que siguieron una preparación de la prueba según las buenas prácticas. En 187 deportistas universitarios, las 10 ecuaciones, Cunningham incluida, infraestimaron el RMR (mejor RMSE de unas 404 kcal en hombres). Los resultados dependen del sexo, el nivel de entrenamiento y el protocolo de medición.
+- key: nutrition/very-muscular-or-physique-trained-clients
+  source_hash: 6d033f8d09a7ea51bf9af4c1485abda72c94816a7e37b16cac1a332e55ad4aef
+  status: machine
+  heading: Clientes muy musculados o con entrenamiento de físico
+  rule_text: |-
+    Con clientes inusualmente musculados, cuenta con que las ecuaciones estándar infraestimen. Parte de Cunningham o ten Haaf (basadas en FFM) cuando la FFM esté medida, o de las ecuaciones de Tinsley (RMR = 24.8 × peso corporal + 10, o RMR = 25.9 × FFM + 284 kcal/d), y prepárate para corregir al alza con la tendencia de peso. Durante una fase de ganancia magra, no vuelvas a calcular una ecuación para seguir los cambios del RMR; usa en su lugar la ingesta frente a la tendencia de peso.
+  applies_to: |-
+    Hombres y mujeres entrenados en fuerza o deportistas de físico, en muestras estadounidenses pequeñas de un solo laboratorio. Úsalo solo con quienes van al gimnasio a nivel avanzado y están muy musculados.
+  conflicts: |-
+    Muestras pequeñas y sin validación externa de las nuevas ecuaciones. Fields 2023 encontró que incluso las ecuaciones con FFM infraestimaban en deportistas universitarios.
+- key: nutrition/katch-mcardle
+  source_hash: 1cb844b4f4cf497774d66548029c7c1e8354a9d0e28eee7a450e526f97452977
+  status: machine
+  heading: Katch-McArdle
+  rule_text: |-
+    Usa Katch-McArdle solo como estimación alternativa cuando la FFM esté medida de forma creíble, y nunca la presentes como más exacta que MSJ para adultos corrientes. Si los resultados de Katch-McArdle y de MSJ de una app difieren en más de un 10%, toma el punto medio y deja que decida la tendencia de peso. No uses los cambios del RMR calculados con ecuaciones o con dispositivos de BIA para diagnosticar una "adaptación metabólica".
+  applies_to: |-
+    Adultos sanos, en muestras pequeñas y específicas de cada población (adultos caribeños, exdeportistas portugueses); el ensayo chino de pérdida de peso no tuvo calorimetría de referencia.
+  conflicts: |-
+    Su exactitud depende por completo del dato de FFM. Ninguna revisión sistemática la evalúa por sí sola, y los resultados son contradictorios entre poblaciones.
+- key: nutrition/ffm-versus-body-weight-equations-for-atypical-body-composition
+  source_hash: b1262117c57095ff3323facd892e60d9bd7d410cfbaddbb705855b556c3f737d
+  status: machine
+  heading: |-
+    Ecuaciones con FFM frente a ecuaciones con peso corporal para composiciones corporales atípicas
+  rule_text: |-
+    Cuando la composición corporal de un cliente es atípica para su peso (muy musculado, o con mucha grasa con un IMC normal) y la FFM procede de un método aceptable, contrasta MSJ con una ecuación con FFM. Si no coinciden, parte de la estimación con FFM y luego recalibra con la tendencia de peso.
+  applies_to: |-
+    Adultos sanos con distintos niveles de actividad (EE. UU., n=50) y adultos alemanes de unos 35-37 años (n=104). Muestras pequeñas y transversales.
+  conflicts: |-
+    Las ecuaciones con FFM fueron algo menos exactas en hombres. Las ecuaciones con FFM publicadas difieren mucho entre sí, lo que refleja su especificidad según la población y el investigador, así que ninguna ecuación con FFM sirve para todo el mundo.
+- key: nutrition/body-fat-measurement-error-carries-into-rmr
+  source_hash: 2bb94304bc9284a2ce5e3786d3541e40ebd3d84165917ebb2a6fb1c2f99e8bc5
+  status: machine
+  heading: El error de medida de la grasa corporal se traslada al RMR
+  rule_text: |-
+    Alimenta una ecuación con FFM solo con grasa corporal obtenida por DXA, BodPod, BIA de calidad de investigación u octopolar, o pliegues cutáneos bien medidos. Si el único dato procede de una báscula inteligente de pie a pie o de un dispositivo de mano, usa MSJ en su lugar. Nunca vuelvas a estimar el RMR a partir de los cambios semanales de grasa corporal de una báscula inteligente. Para el seguimiento, usa el mismo dispositivo en condiciones estandarizadas.
+  applies_to: |-
+    Adultos sanos de 19-50 años (estudio de dispositivos), adultos con un IMC medio de unos 26 (n=104) y hombres jóvenes, delgados y entrenados (n=30). Las cifras en kcal son cálculos aritméticos a partir de pendientes publicadas, no resultados medidos.
+  conflicts: |-
+    El error varía mucho según el dispositivo y la persona, y las medias de grupo ocultan errores individuales mayores. La buena concordancia entre BIA y DXA procede de un dispositivo espectroscópico en hombres jóvenes y delgados, y no es aplicable a básculas baratas ni a la obesidad. La evidencia procede de estudios de validación aislados.
+- key: nutrition/activity-multipliers-pal
+  source_hash: a107f19ff9d52ee1c002035ee78627efa17bc9918f9b0646675b9a73e6f0b097
+  status: machine
+  heading: Multiplicadores de actividad (PAL)
+  rule_text: |-
+    Multiplica el RMR estimado por un PAL: alrededor de 1.4-1.5 (hasta 1.6) para trabajadores de oficina con poco ejercicio o unas pocas sesiones cortas a la semana; alrededor de 1.6-1.75 para trabajadores de oficina que entrenan casi todos los días durante alrededor de 1 hora; 1.7-1.9 solo para trabajos físicamente activos o ejercicio moderado-vigoroso diario más mucho movimiento a lo largo del día. Nunca uses 1.2 con adultos ambulatorios, no pases de alrededor de 2.0 con quienes van al gimnasio de forma recreativa y nunca superes 2.4. Trata el resultado como una primera estimación que hay que corregir tras 2-4 semanas de datos de peso.
+  applies_to: |-
+    Adultos sanos. El PAL de la FAO se define respecto al BMR y el PAL por DLW respecto al REE, mientras que las apps multiplican una estimación del RMR, así que los factores son aproximadamente comparables. Las personas muy inactivas, enfermas o dependientes pueden quedar por debajo de 1.40.
+  conflicts: |-
+    Las bandas son categorías de población, y asignar a una persona a una de ellas es subjetivo. Los escalones 1.375/1.55/1.725 de las apps son una convención, no están validados frente a DLW, y el suelo de 1.4-1.5 es una inferencia a partir de la guía. Sumado al error de ±10% del RMR, el TDEE puede desviarse varios cientos de kcal/día.
+- key: nutrition/self-reported-activity-is-noisy
+  source_hash: fddcd515c579538e3fe203600ef9a4b9d0e2bebb1f4830328ff8dbfff9cd455a
+  status: machine
+  heading: La actividad autodeclarada tiene mucho ruido
+  rule_text: |-
+    No apliques una corrección general de "restar un nivel de actividad". Desconfía de los minutos autodeclarados de ejercicio moderado a vigoroso, pregunta por la ocupación y los pasos diarios, elige el multiplicador plausible más bajo cuando tengas dudas y deja que la tendencia de peso corrija el error individual.
+  applies_to: |-
+    Poblaciones adultas generales que usan cuestionarios. La autoclasificación en los desplegables de las apps no se ha validado frente a DLW.
+  conflicts: |-
+    Los minutos de MVPA se sobredeclaran, pero la energía total de la actividad no muestra un sesgo constante; la dirección varió según el método, el nivel de actividad y el sexo. El error es individual e impredecible.
+- key: nutrition/pal-free-starting-models
+  source_hash: 46edc6fa7fe8d496d421e3740ef0019d9d322f3fa698863e8564ac46c8eda504
+  status: machine
+  heading: Modelos de partida sin PAL
+  rule_text: |-
+    Cuando un cliente no puede describir su actividad de forma fiable, un modelo sin PAL derivado de DLW (la calculadora de necesidades energéticas de Pennington) es un punto de partida defendible en lugar de RMR × multiplicador. Complétalo con al menos 4 semanas de recalibración con la tendencia de peso.
+  applies_to: |-
+    Adultos estadounidenses de la base de datos de Pennington y de conjuntos de validación independientes. Alrededor de un tercio de la varianza del TEE queda sin explicar a nivel individual.
+  conflicts: |-
+    La validación difirió según el estudio y el sexo. Ningún ensayo muestra que supere a RMR × PAL en los resultados del coaching.
+- key: nutrition/exercise-calories-do-not-add-linearly
+  source_hash: 7e3412fcd756096ea9cab92a7bd0abceffeca8887ac441477526a2582f26fc49
+  status: machine
+  heading: Las calorías del ejercicio no se suman de forma lineal
+  rule_text: |-
+    Cuando un cliente añade cardio, no lo subas un nivel de actividad completo ni sumes todas las calorías que indica el reloj. De media, solo una parte de las calorías gastadas con el ejercicio se traduce en pérdida de peso debido a la compensación, y cuánto varía mucho entre personas, así que no vuelvas a comer más de alrededor de la mitad de las calorías de ejercicio estimadas; la tendencia de peso es la calibración real. El entrenamiento de fuerza parece compensarse menos, pero aun así compruébalo. Anima a mantener los pasos fuera del ejercicio durante un déficit.
+  applies_to: |-
+    Sobre todo adultos en programas aeróbicos supervisados (Flanagan: edad media de unos 48 años, IMC de unos 34, baja forma física). Los datos de entrenamiento de fuerza son más escasos, y la generalización a quienes van al gimnasio delgados y entrenados es incierta.
+  conflicts: |-
+    El debate entre el modelo restringido y el aditivo sigue abierto. Alrededor de la mitad de las personas compensa y la otra mitad no (relacionado con el TDEE de partida, r=-0.50). Los mecanismos no coinciden: algunas revisiones describen descensos del REE y de la actividad fuera del ejercicio, sobre todo en déficit, mientras que Flanagan no encontró adaptación en reposo.
+- key: nutrition/recalibrate-tdee-from-the-weight-trend
+  source_hash: 7b8e15de05c5dfc1cad336bf81d194baa29b844b101ae8fdd7babf62bb0a8b52
+  status: machine
+  heading: Recalibra el TDEE con la tendencia de peso
+  rule_text: |-
+    Parte de ecuación × multiplicador conservador. Pésate en las mismas condiciones y registra la ingesta de forma constante. El pesaje diario promediado por semanas da la tendencia más limpia y es lo que prefiere la herramienta de tendencia; el pesaje semanal es aceptable; pesarse nunca es obligatorio, y no hay ningún pesaje cuando se aplica la regla de trastornos alimentarios (véase "Cribado de trastornos alimentarios: preguntas breves como señal de alerta"). A las 2 semanas, comprueba solo la dirección. Tras 4 o más semanas, calcula el TDEE observado = ingesta media registrada - (cambio de peso de la tendencia × densidad energética ÷ días), y sustituye con él la estimación de la ecuación. Ajusta la ingesta en escalones de unas 100-200 kcal/d y vuelve a comprobar tras otras 2-4 semanas. Trata las calorías registradas como "unidades de calorías registradas" y mantén constante el método de registro.
+  applies_to: |-
+    Adultos en fases de pérdida de peso o de mantenimiento (participantes en restricción calórica de CALERIE; adultos simulados para la precisión). Las cifras de precisión suponen pesaje diario; con pesaje semanal, cuenta con una estimación con más ruido y deja pasar más semanas antes de ajustar.
+  conflicts: |-
+    Por debajo de unas 4 semanas el CI supera las 300 kcal/d, así que los ajustes a 2 semanas tienen mucho ruido. El método validado usa solo el peso; el cálculo con la ingesta registrada de esta regla no está validado y supone un sesgo de registro constante, que varía mucho entre personas. Las apps comerciales de TDEE adaptativo no tienen validación revisada por pares en las fuentes revisadas. La tendencia de peso no distingue la grasa de los líquidos, el glucógeno o el músculo, así que los principiantes que empiezan con el entrenamiento de fuerza y las mujeres con cambios de líquidos ligados al ciclo deberían usar también el perímetro de cintura y fotos. El tamaño de escalón de 100-200 kcal es una heurística práctica.
+- key: nutrition/read-the-scale-with-weekly-averages
+  source_hash: 50331d4ba853d13133145990a26c9a20d46b2a89501952a123b88177a81ab32d
+  status: machine
+  heading: Lee la báscula con medias semanales
+  rule_text: |-
+    Nunca ajustes las calorías a partir de uno o dos pesajes. El pesaje diario es opcional; el semanal es aceptable. Pésate en condiciones estándar (por la mañana, después de ir al baño y antes de comer), usa medias móviles de 7 días (si te pesas a diario) o comparaciones en el mismo día de la semana, y compara las medias semanales a lo largo de 2-4 semanas. Trata una subida del lunes de hasta alrededor del 0.5% del peso corporal como ruido, y cuenta con saltos transitorios tras las vacaciones o tras días con mucha sal o muchos hidratos de carbono.
+  applies_to: |-
+    Adultos que usan báscula. NoHoW: adultos europeos que habían perdido ≥5% de su peso partiendo de un IMC ≥25; Orsama: adultos con IMC de 20-33.5 y de 25-62 años. El umbral del 0.5% se extrapola a partir de medias de grupo.
+  conflicts: |-
+    El ritmo difirió según el sexo, el país, el IMC y la edad. Los cambios de líquidos por la creatina, los días con muchos hidratos, el sodio o el ciclo menstrual pueden ocultar el cambio de grasa durante 1-2 semanas; estas fuentes no cubren los cambios ligados al ciclo.
+- key: nutrition/expected-weight-change-the-3500-kcal-rule-is-wrong
+  source_hash: d89b01cb895635533b63349526d1423d44d43ddbf80267bbfc85e53907c54a50
+  status: machine
+  heading: 'Cambio de peso esperable: la regla de las 3500 kcal es errónea'
+  rule_text: |-
+    No prometas una pérdida lineal a partir de un déficit fijo (por ejemplo, 500 kcal/día = 0.45 kg/semana para siempre). Explica a los clientes que la pérdida se ralentiza a medida que baja el peso, incluso con una adherencia perfecta. Haz la previsión con un modelo dinámico (NIH Body Weight Planner o las herramientas de Pennington) o simplemente fija esa expectativa, y vuelve a estimar la ingesta tras cada ~5% de cambio del peso corporal o siempre que la tendencia se estanque durante 3-4 semanas. Al recalibrar, usa una densidad energética muy por debajo de 7700 kcal/kg en las primeras semanas (agua y glucógeno) y con clientes delgados. En una meseta, recalcula el TDEE a partir de la tendencia actual en lugar de dar por hecho un "daño metabólico". Usa la regla de las 3500 kcal solo para cálculos aproximados a corto plazo.
+  applies_to: |-
+    Adultos que están perdiendo peso, sobre todo con sobrepeso u obesidad. Las predicciones se basan en modelos y están validadas a nivel de grupo.
+  conflicts: |-
+    Las personas con más grasa corporal pierden más con el mismo cambio de ingesta y tardan más en llegar a una meseta. Las trayectorias individuales se desvían por la adherencia, los cambios de líquidos y la termogénesis adaptativa.
+- key: nutrition/deficit-size-for-weight-loss-overweight-and-obesity
+  source_hash: ac180b83c6e7db305ee40989375823ee1ad52a869cbbfea2c1754b358adf044d
+  status: machine
+  heading: Tamaño del déficit para perder peso (sobrepeso y obesidad)
+  rule_text: |-
+    Para adultos con sobrepeso u obesidad, fija un déficit de alrededor de 500-750 kcal/día (hasta alrededor de un 30% por debajo del TDEE estimado), individualizado a partir del TDEE estimado en lugar de rangos fijos de kcal. Plantea el objetivo inicial como un 5-10% del peso corporal en unos 6 meses, y explica al cliente que incluso un 3-5% mantenido mejora los marcadores de salud. Con clientes delgados, usa un déficit menor o un ritmo en porcentaje del peso corporal (véase "Ritmo de pérdida para clientes delgados y entrenados").
+  applies_to: |-
+    Adultos con sobrepeso u obesidad en programas clínicos y de estilo de vida (EE. UU.). No está pensado para personas delgadas y entrenadas que intentan conservar músculo.
+  conflicts: |-
+    Los rangos fijos de kcal pueden ser demasiado agresivos para personas pequeñas, mayores o muy activas, y demasiado generosos para personas grandes; la guía señala que suelen ajustarse. Prevalece la regla de ingesta mínima de este archivo (nunca por debajo de unas 1,200 kcal/día en mujeres o 1,500 kcal/día en hombres sin supervisión clínica), y los usuarios de GLP-1 no reciben un déficit impuesto por el coach (véase "Usuarios de GLP-1: proteína, entrenamiento y señales de alarma"). La guía no da un ritmo de pérdida semanal en kg; los ritmos semanales que aparecen en otras partes de este archivo son convenciones o proceden de otras fuentes. La guía es de 2013 y es anterior a las recomendaciones de la era de la farmacoterapia.
+- key: nutrition/deficit-size-when-keeping-or-building-muscle
+  source_hash: c4f5fc7cebe30e54a1cb58c020e54da76095927c68b58b3fbdbf35fd99e2e34b
+  status: machine
+  heading: Tamaño del déficit para mantener o ganar músculo
+  rule_text: |-
+    Con clientes que quieren conservar o ganar músculo mientras pierden grasa, mantén el déficit en unas 500 kcal/día o por debajo, con proteína alta y entrenamiento de fuerza durante todo el proceso. Explícales que la fuerza suele seguir subiendo con un déficit moderado aunque la ganancia muscular se estanque. Evita los déficits largos y agresivos en cualquier persona cuyo objetivo principal sea el músculo.
+  applies_to: |-
+    Adultos que hacen entrenamiento de fuerza en ECA de ≥3 semanas; el resumen no indicaba el nivel de entrenamiento ni la composición corporal. No es específico de deportistas de élite.
+  conflicts: |-
+    El umbral de 500 kcal/día es una media de estudios heterogéneos, no un punto de corte individual. Los principiantes y las personas con más grasa corporal a menudo ganan masa magra en déficit, y las personas delgadas pueden necesitar déficits menores (extrapolación).
+- key: nutrition/prefer-gradual-over-rapid-loss
+  source_hash: 72de6472b6f03a930e992ab32825d399951e1fc618b0a81083342a27d5a474ef
+  status: machine
+  heading: Prefiere una pérdida gradual a una rápida
+  rule_text: |-
+    Prefiere una pérdida gradual a una rápida para perder más grasa y que el RMR baje menos. No digas a los clientes que hacer dieta más rápido les "quemará el músculo": en esta evidencia la diferencia de FFM no fue significativa. El entrenamiento de fuerza y una proteína adecuada importan más para la masa magra que la velocidad por sí sola.
+  applies_to: |-
+    Adultos con sobrepeso u obesidad (estudios hasta octubre de 2019). La evidencia en personas delgadas o entrenadas es más escasa.
+  conflicts: |-
+    El tamaño del efecto publicado sobre el RMR y su intervalo de confianza son incoherentes entre sí (el intervalo no contiene la estimación puntual), así que aquí no se da ninguna magnitud del RMR. El metaanálisis no define un ritmo. En personas delgadas y entrenadas, la velocidad puede importar más para la masa magra.
+- key: nutrition/rate-of-loss-for-lean-trained-clients
+  source_hash: a64a0473b857670ac021221ba2bf88e900e436aca8edba811db2a3771bdda9dd
+  status: machine
+  heading: Ritmo de pérdida para clientes delgados y entrenados
+  rule_text: |-
+    Con clientes delgados y entrenados que quieren conservar el músculo, apunta a alrededor de un 0.5-1% del peso corporal por semana, acercándote al extremo más lento a medida que estén más definidos. Los clientes con más grasa que perder pueden ir hacia el extremo más rápido.
+  applies_to: |-
+    Competidores delgados, sobre todo hombres jóvenes. Generalizarlo a quienes van al gimnasio de forma corriente es una extrapolación.
+  conflicts: |-
+    Es una revisión narrativa basada en pocos ensayos, no una declaración de posicionamiento. En personas con sobrepeso, el ritmo de pérdida no produjo una diferencia significativa de FFM (véase "Prefiere una pérdida gradual a una rápida").
+- key: nutrition/adaptive-thermogenesis-is-real-but-modest
+  source_hash: 89acc51d05ccf110047776bcdc054470a6ab79a2eee9e5d384799031c6319637
+  status: machine
+  heading: La termogénesis adaptativa es real pero modesta
+  rule_text: |-
+    Explica a los clientes que el metabolismo sí se adapta, pero de forma modesta (normalmente menos de unas 100 kcal/día en reposo) y en parte reversible. Cuando la pérdida de grasa se estanque, mira primero si la ingesta ha ido subiendo poco a poco, si han bajado el NEAT y los pasos y si el cuerpo es más pequeño, no un "daño metabólico". Usa fases de mantenimiento en el nuevo peso para dejar que la adaptación se disipe.
+  applies_to: |-
+    Adultos con sobrepeso u obesidad. Los datos en personas delgadas y entrenadas son más escasos, y la adaptación puede ser mayor en estados de mucha delgadez.
+  conflicts: |-
+    Cómo cuantificarla es objeto de debate (Martins 2020 recibió comentarios críticos), y la variación entre personas es grande (DE ~110-130 kcal/d). No se cubren las adaptaciones mayores en contextos de pérdida extrema.
+- key: nutrition/resistance-training-during-any-diet-especially-for-older-adults
+  source_hash: bc31e343e6c31529d11d55d38c61853f7a1f9695974fcb950e52253fede37141
+  status: machine
+  heading: Entrenamiento de fuerza durante cualquier dieta, sobre todo en mayores
+  rule_text: |-
+    Cualquier cliente en déficit debería hacer entrenamiento de fuerza al menos 2-3 veces por semana durante toda la dieta; las personas mayores empiezan con 2 días por semana y pasan a 3 si la recuperación lo permite. No fijes un déficit a personas mayores (unos 65+) salvo que tengan obesidad con un problema de salud relacionado con el peso; en ese caso, usa un déficit modesto más entrenamiento de fuerza, nunca pérdida de peso solo con dieta, con la proteína como en "Mayores: objetivos de proteína" (al menos 1.0-1.2 g/kg/día, 1.2-1.6 g/kg/día si entrenan fuerza). Controla la fuerza y la funcionalidad, no solo el peso de la báscula.
+  applies_to: |-
+    Adultos de más de 50 años con sobrepeso u obesidad; el análisis del entrenamiento abarca solo a mayores con obesidad, en ECA supervisados. Es probable que la dirección sea aplicable a adultos más jóvenes, pero la magnitud es específica.
+  conflicts: |-
+    Solo 6 ECA de entrenamiento, así que la magnitud es imprecisa. Las dietas de los ensayos tenían sobre todo alrededor de un 15% de proteína, así que el efecto del entrenamiento se demostró sin proteína alta. Ninguno de los dos metaanálisis compara directamente entrenamiento y proteína. El punto de partida de 2 veces/semana es una extrapolación de ensayos de 3 veces/semana y coincide con la progresión para mayores del archivo de fuerza. Comprueba la función renal y las comorbilidades en este grupo.
+- key: nutrition/surplus-size-for-muscle-gain
+  source_hash: 742add6e90409b218ebcb22d1e55d7e504dee3f9676cafe3fa90784da60909f7
+  status: machine
+  heading: Tamaño del superávit para ganar músculo
+  rule_text: |-
+    Para ganar músculo, usa un superávit modesto (alrededor de un 5-20% por encima del mantenimiento, no más de alrededor de un 20%) y apunta a alrededor de un 0.25-0.5% del peso corporal por semana. Los principiantes y quienes vuelven a entrenar fuerza pueden situarse cerca del extremo superior, y los levantadores avanzados cerca del inferior; empieza por el extremo bajo, porque los superávits prescritos tienden a desviarse al alza. Cuenta con que un superávit pequeño planificado se desvíe al alza, así que sigue el peso medio semanal en lugar de fiarte del objetivo de kcal. Si la cintura o los pliegues suben más deprisa de lo que mejoran la fuerza y las medidas, reduce el superávit.
+  applies_to: |-
+    Hombres entrenados, sobre todo jóvenes (2 mujeres de 17, edad media de unos 27 años). Generalizarlo a principiantes, mujeres y personas mayores es una extrapolación; los autores del ECA sugieren que las personas menos entrenadas podrían beneficiarse de superávits mayores.
+  conflicts: |-
+    Las dos fuentes dan rangos que se solapan (10-20% en la revisión narrativa, 5-20% según los autores del ECA). Las recomendaciones son opinión de expertos; el único ensayo es pequeño, con poca potencia estadística, y no alcanzó los superávits prescritos. Otro estudio (Smith et al.) encontró que la ganancia de peso predecía la ganancia de FFM. El superávit ideal probablemente depende de los años de entrenamiento, la grasa corporal, la genética y el programa.
+- key: nutrition/body-recomposition
+  source_hash: f706ccfa6fa63d0d420f65678cd30cdeff576ff8e31da89672d6779659ad5854
+  status: machine
+  heading: Recomposición corporal
+  rule_text: |-
+    Con principiantes, personas que vuelven a entrenar fuerza y clientes con más grasa corporal, la recomposición es razonable: come en torno al mantenimiento o con un déficit pequeño (claramente por debajo de 500 kcal/día), entrena de forma progresiva y mantén la proteína alta. Sigue la cintura, las fotos y la fuerza, no solo el peso de la báscula. Con levantadores delgados y experimentados que buscan el máximo músculo, cuenta con una recomposición lenta y plantéate una fase de superávit modesto.
+  applies_to: |-
+    Sobre todo adultos no entrenados, desentrenados y con sobrepeso; personas entrenadas según una revisión narrativa. No se aborda específicamente a las personas mayores.
+  conflicts: |-
+    La evidencia en población entrenada es narrativa, y el umbral procede de una sola metarregresión. El error de medida de la composición corporal (BIA, hidratación en DXA) puede crear u ocultar una recomposición aparente. El efecto se reduce con el nivel de entrenamiento y la delgadez.
+- key: nutrition/diet-breaks
+  source_hash: 6015c6b12e540bff99a2db0c77eae810d4cd7e9175b7065f9a18461cd35f7da4
+  status: machine
+  heading: Pausas en la dieta
+  rule_text: |-
+    Ofrece pausas en la dieta (1-2 semanas en el mantenimiento estimado tras cada 2-3 semanas de déficit, los protocolos estudiados) como herramienta para la adherencia y el hambre, sobre todo en dietas largas o con clientes con mucha hambre. No las vendas como una forma de acelerar la pérdida de grasa o de proteger el músculo en personas entrenadas, y deja claro que alargan el tiempo total hasta el objetivo. No se han estudiado bloques de déficit más largos entre pausas.
+  applies_to: |-
+    Adultos con sobrepeso u obesidad y adultos entrenados en fuerza (ICECAP: edad media de 28.7 años, 32 mujeres de 61). MATADOR abarca solo a hombres con obesidad (edad media de unos 40 años).
+  conflicts: |-
+    MATADOR e ICECAP no coinciden en la eficiencia. El efecto agrupado sobre el RMR no figuraba en el resumen y probablemente es pequeño, y el metaanálisis tiene una corrección que no se pudo comprobar. Las afirmaciones de que las pausas "reinician el metabolismo" van más allá de la evidencia.
+- key: nutrition/refeeds-and-cheat-meals
+  source_hash: 740de3eab2d8509c244fa5e18fa3919c3f6fef23bf65e7a14eecce8a0e27c4b8
+  status: machine
+  heading: Recargas y comidas libres
+  rule_text: |-
+    No prescribas recargas ni comidas libres por motivos metabólicos. Si un cliente quiere un día planificado con más calorías como desahogo psicológico, encájalo en el presupuesto energético semanal y vigila si aparece una ingesta con pérdida de control.
+  applies_to: |-
+    Estudios pequeños y cortos en mujeres con sobrepeso, adultos sanos y unos pocos culturistas varones.
+  conflicts: |-
+    Las afirmaciones de que las recargas "aumentan la leptina o el metabolismo" no tienen respaldo. Los efectos psicológicos varían, y a algunas personas les pueden perjudicar.
+- key: nutrition/baseline-protein-requirement
+  source_hash: 2b00da426f2abf55d1faae176ac5855345c7b9220e420e2c00130c9e0a0170fa
+  status: machine
+  heading: Necesidad básica de proteína
+  rule_text: |-
+    Toma 0.83 g/kg/día como el suelo de referencia para cualquier adulto, y señala las ingestas habituales por debajo de esa cifra, sobre todo por debajo de 0.66 g/kg/día. Con clientes que entrenan fuerza, apunta más alto (véase "Objetivo diario de proteína para quienes entrenan fuerza"). Explica que la ingesta de referencia oficial y los objetivos deportivos responden a preguntas distintas y no se contradicen.
+  applies_to: Adultos europeos sanos de todas las edades, España incluida.
+  conflicts: |-
+    La EFSA consideró que los datos eran insuficientes para fijar un valor aparte para las personas mayores y señaló que varios estudios sugieren que pueden necesitar más; las sociedades de geriatría recomiendan más (véase "Mayores: objetivos de proteína").
+- key: nutrition/daily-protein-target-for-people-who-lift
+  source_hash: 93e4af2f551d5774b7d1b1c7ef3874b1468e2ec85bc8cd2f3c2aee3da5f08211
+  status: machine
+  heading: Objetivo diario de proteína para quienes entrenan fuerza
+  rule_text: |-
+    Por defecto, usa alrededor de 1.6 g/kg/día, la estimación a partir de la cual la proteína extra deja de añadir masa libre de grasa medible, con 1.4-2.2 g/kg/día como rango aceptable. Acércate a 2.0-2.2 en déficit o para tener margen de seguridad. Las personas mayores, los usuarios de GLP-1 y cualquier persona con enfermedad renal siguen sus propias reglas ("Mayores: objetivos de proteína", "Usuarios de GLP-1: proteína, entrenamiento y señales de alarma", "Enfermedad renal crónica"). No subas de unos 2.2 g/kg/día para ganar músculo en mantenimiento o en superávit. Usa el peso corporal con clientes delgados o de normopeso; con clientes con obesidad, basa el objetivo en la masa libre de grasa o en el peso objetivo (una heurística práctica).
+  applies_to: |-
+    Adultos sanos que hacen entrenamiento de fuerza estructurado, principiantes incluidos. Edad media de la muestra de Morton: 35 ± 20; solo 10 de 49 estudios en personas entrenadas; la evidencia en mujeres y en personas con obesidad es más escasa.
+  conflicts: |-
+    El punto de inflexión es impreciso (CI amplio, no significativo), por eso esta regla tiene grado moderado, y las mesetas individuales varían. Tagawa 2021 describe un beneficio continuado más pequeño hasta 3.5 g/kg/d en lugar de una meseta clara. El autor sénior de Morton y varios autores de Nunes declaran vínculos con la industria láctea o de la nutrición.
+- key: nutrition/keep-the-protein-effect-in-proportion
+  source_hash: 0f974f5a7320f81c4042b55203ef297fcd074e0c8b819fbb7023d9dbca080b7c
+  status: machine
+  heading: Mantén el efecto de la proteína en su justa medida
+  rule_text: |-
+    Presenta la proteína como un apoyo del entrenamiento, no como el motor principal. El mayor rendimiento se obtiene al subir las ingestas bajas (por debajo de 1.2-1.3 g/kg) hasta el objetivo. Por encima de unos 1.6 g/kg, la adherencia, la progresión del entrenamiento y la energía total importan más que los gramos extra. No vendas los batidos de proteína como la clave de los resultados.
+  applies_to: |-
+    Adultos en ECA de semanas a meses. Los efectos a largo plazo (años) no se miden directamente.
+  conflicts: |-
+    Tagawa (5 de 7 autores empleados por Meiji) encuentra un pequeño beneficio continuado; Morton encuentra una meseta en torno a 1.6. Ambos coinciden en que el beneficio es pequeño. Varios autores declaran financiación de la industria.
+- key: nutrition/who-benefits-most-from-extra-protein
+  source_hash: fba749b2592a60daed9dc8768a7a04f7278e9c7ddbe9fd13e050ced4d6e9a100
+  status: machine
+  heading: Quién se beneficia más de la proteína extra
+  rule_text: |-
+    Prioriza los objetivos de proteína más altos para clientes que entrenan con constancia o que están a dieta. En principiantes de verdad, el beneficio extra por encima de una ingesta adecuada es pequeño e incierto, así que pon el entrenamiento primero y trata ~1.4-1.6 g/kg como algo sensato más que obligatorio. Con un cliente sedentario que no está en déficit, llegar a la ingesta de referencia y empezar a entrenar importa mucho más que una proteína alta. Los clientes mayores siguen beneficiándose, pero necesitan entrenamiento más una ingesta diaria más alta.
+  applies_to: |-
+    Adultos sanos. Las comparaciones entre entrenados y no entrenados y por edad son entre estudios, no directas; el subgrupo de entrenamiento de Hudson es minúsculo.
+  conflicts: |-
+    Las covariables de la metarregresión pueden tener factores de confusión. El menor efecto con la edad refleja una respuesta muscular más débil, lo que aboga por más proteína en las personas mayores, no por menos.
+- key: nutrition/protein-during-fat-loss
+  source_hash: 5c30171bc14ad86c015848faa5cb42dd83ce062cf3d2b19121483d52607e47c6
+  status: machine
+  heading: Proteína durante la pérdida de grasa
+  rule_text: |-
+    Durante la pérdida de grasa, mantén la proteína en alrededor de 1.8-2.2 g/kg/día en quienes entrenan fuerza de forma corriente y sigue con el entrenamiento de fuerza. Reserva alrededor de 2.3-3.1 g/kg de masa libre de grasa para clientes delgados y entrenados en déficits agresivos. Con clientes con más grasa corporal, calcula a partir de la masa libre de grasa o del peso objetivo; con principiantes con sobrepeso en un déficit modesto, ~1.6-2.0 g/kg más entrenamiento probablemente basta. Esta regla no se aplica a usuarios de GLP-1 o de tirzepatida (véase "Usuarios de GLP-1: proteína, entrenamiento y señales de alarma": 1.2-1.6 g/kg/día salvo que el clínico indique otra cosa) ni a nadie con enfermedad renal (véase "Enfermedad renal crónica").
+  applies_to: |-
+    Adultos en un déficit deliberado. Los valores más altos proceden de muestras pequeñas de deportistas delgados, sobre todo hombres; el ensayo de Longland usó un déficit y una carga de entrenamiento extremos.
+  conflicts: |-
+    "1 g por libra" o >2.5 g/kg para cualquiera que haga dieta va más allá de la evidencia. El rango de 1.8-2.2 g/kg es una extrapolación entre fuentes, no un valor estudiado; no se encontró ningún ensayo de búsqueda de dosis en principiantes con sobrepeso.
+- key: nutrition/older-adults-protein-targets
+  source_hash: a0a59e930f85645b36763e54a8dd046f25e5e021d2143dee7f4e8ed4c38d6c2c
+  status: machine
+  heading: 'Mayores: objetivos de proteína'
+  rule_text: |-
+    Con clientes de más de unos 65 años, toma 1.0-1.2 g/kg/día como mínimo; en quienes entrenan fuerza, apunta a 1.2-1.6 g/kg/día. No empujes a los clientes mayores a 2.0-2.2 g/kg/día. Combina siempre la proteína con entrenamiento de fuerza. Pregunta por enfermedad renal antes de subir la proteína; con cualquier enfermedad renal crónica diagnosticada, el objetivo lo fija el nefrólogo o el dietista-nutricionista renal (véase "Enfermedad renal crónica").
+  applies_to: |-
+    Adultos de más de 65 años; Nunes incluyó solo a adultos sanos sin obesidad. Los valores para las edades de 50-65 años están extrapolados.
+  conflicts: |-
+    La EFSA mantiene 0.83 g/kg para las personas mayores. La revisión exploratoria sobre proteína elaborada para las NNR 2023 indica que los estudios de cohortes prospectivos sugieren hasta 1.2-1.5 g/kg/día (alrededor del 15-20 E%) como ingesta óptima para las personas mayores, y que varios grupos de expertos sugieren 1.0-1.2 g/kg/día para mayores sanos; esto es sobre todo observacional, y la misma revisión cita ensayos y una revisión sistemática neerlandesa que no encuentran evidencia suficiente de que más proteína aporte beneficios para la salud en mayores que ya comen al menos 0.8 g/kg/día. Sirvió de base para las NNR 2023, pero no es su texto de recomendación formal. La masa magra añadida es pequeña (SMD 0.22).
+- key: nutrition/protein-distribution-across-meals
+  source_hash: a538ea51c1ce3dd7499c6f3e2e904bf29ca4119a3deb7fb3f32d380b7738f59c
+  status: machine
+  heading: Reparto de la proteína entre comidas
+  rule_text: |-
+    Usa la proteína por comida (alrededor de 0.3-0.4 g/kg, unos 25-40 g en la mayoría de los adultos, repartida en 3-5 comidas) como forma práctica de llegar al total diario, no como una necesidad aparte. Si un cliente solo puede hacer 2-3 comidas, céntrate en el total diario.
+  applies_to: |-
+    Adultos que entrenan fuerza; los datos por comida proceden sobre todo de adultos jóvenes. Las personas mayores pueden necesitar dosis mayores por comida.
+  conflicts: |-
+    La evidencia a largo plazo no muestra que un reparto uniforme supere a uno desigual cuando los totales diarios coinciden: una revisión sistemática (15 estudios, adultos de 20-85 años) encontró que el reparto uniforme se asociaba a más masa muscular solo en 3 de 7 estudios (observacionales), a la fuerza en 2 de 7 y a la síntesis de proteínas en 1 de 6; en dos ECA de 16 semanas durante la pérdida de peso con proteína total adecuada (41 adultos que entrenaban fuerza con 90 g/día, 30/30/30 g frente a 10/20/60 g; 43 mujeres, reparto uniforme frente a concentrado por la noche), el reparto no cambió la composición corporal. Trabajos más recientes con trazadores también ponen en duda el techo por comida (véase la regla siguiente). No prometas masa magra extra por un reparto uniforme.
+- key: nutrition/myth-only-20-30-g-of-protein-per-meal-can-be-used
+  source_hash: ee39f61cc509bd2a8db9a452caa4d3986c1f998e3b47f2eb6cf324719d5a7134
+  status: machine
+  heading: 'Mito: solo se aprovechan 20-30 g de proteína por comida'
+  rule_text: |-
+    No digas a los clientes que la proteína por encima de 25-30 g por comida se desperdicia. Las comidas con mucha proteína (por ejemplo, con ayuno intermitente o dos comidas al día) son aceptables si se cumple el total diario. Repartir la ingesta sigue siendo una opción sensata por defecto.
+  applies_to: |-
+    Hombres jóvenes sanos tras un ejercicio de fuerza de cuerpo completo; un único estudio agudo. Los autores dicen que puede no ser extrapolable a mujeres ni a personas mayores.
+  conflicts: |-
+    Choca con la idea anterior de que la síntesis llega a su máximo con ~20-25 g por comida. No se ha estudiado si las dosis mayores producen más músculo a lo largo de meses. Uno de los coautores es empleado de FrieslandCampina.
+- key: nutrition/protein-timing-and-the-anabolic-window
+  source_hash: 175833a3efdfb162e2c5b9d0beec028a2f6a6eb3741c30d370a1628ef019f6e4
+  status: machine
+  heading: Momento de la proteína y la "ventana anabólica"
+  rule_text: |-
+    No exijas un batido de proteína justo después de entrenar. Asegúrate de que se cumple el total diario y de que haya una comida con proteína en las pocas horas antes o después de la sesión, según convenga.
+  applies_to: Adultos sanos que hacen entrenamiento de fuerza, sobre todo jóvenes.
+  conflicts: |-
+    Las personas mayores y quienes entrenan en ayunas a primera hora de la mañana pueden beneficiarse más de tomar proteína poco después de entrenar; es plausible, pero no está demostrado.
+- key: nutrition/upper-intake-and-kidney-health
+  source_hash: 47d9cdfd9dc9de396f742dcd90d5322d47198e0f8cbf5350e0ea33feef795377
+  status: machine
+  heading: Ingesta máxima y salud renal
+  rule_text: |-
+    Las ingestas de hasta unos 2.2 g/kg/día son razonables para quienes entrenan fuerza y están sanos, sin necesidad de asustar a los clientes con sus riñones. No subas de unos 2.2-2.5 g/kg/día sin un motivo, porque los datos de seguridad a largo plazo por encima de esa cifra son escasos. Haz cribado de enfermedad renal crónica, diabetes con afectación renal o antecedentes de cálculos renales, y deriva a esos clientes antes de subir la proteína.
+  applies_to: |-
+    Adultos sanos sin enfermedad renal. Los ensayos duraron sobre todo meses; los datos de >3 g/kg proceden de 14 hombres jóvenes entrenados.
+  conflicts: |-
+    Los ~1.7 g/kg de la EFSA quedan por debajo de los objetivos deportivos habituales, lo que refleja una falta de datos, no una prueba de daño. Las personas con enfermedad renal crónica ya existente pueden tener que limitar la proteína (véase "Enfermedad renal crónica").
+- key: nutrition/plant-versus-animal-protein
+  source_hash: 1ca9e76d00261d4255f82c38a07fb1f23d7ad7413543b57a5d59e6792dfe6721
+  status: machine
+  heading: Proteína vegetal frente a animal
+  rule_text: |-
+    Los clientes vegetarianos y veganos pueden alcanzar los mismos objetivos. Apunta al menos al objetivo de proteína por defecto (alrededor de 1.6 g/kg/día, dentro del rango habitual de 1.4-2.2) a partir de fuentes variadas (soja, legumbres, seitán, combinaciones de cereales y legumbres o proteína vegetal en polvo), repartida entre comidas, con raciones ricas en leucina (~700-3000 mg de leucina por toma). La ligera ventaja de la proteína animal no debe imponerse a las preferencias o la ética del cliente.
+  applies_to: |-
+    Adultos sanos con una proteína total en general por encima de la RDA. El estudio de entrenamiento se hizo en 38 hombres jóvenes no entrenados con dietas de libre elección. Las comparaciones de Messina eran ensayos con suplementos.
+  conflicts: |-
+    Los metaanálisis discrepan en parte sobre los adultos más jóvenes, con una posible pequeña ventaja de la proteína animal. La evidencia sobre dietas veganas a base de alimentos completos y en personas mayores es limitada.
+- key: nutrition/protein-powder-is-a-convenience-not-a-requirement
+  source_hash: 129823d2c39a20eb670aa988455c46a7ff651d340797e4b604ae93f8df717b7d
+  status: machine
+  heading: La proteína en polvo es una comodidad, no una necesidad
+  rule_text: |-
+    Fija primero el objetivo diario de proteína, repartido en 3-4 comidas de unos 20-40 g. Sugiere whey u otra proteína en polvo solo cuando con la comida sola cueste llegar al objetivo (apetito, presupuesto, tiempo, dieta vegetariana). Si no, las legumbres, los lácteos, los huevos, el pescado y la carne sirven perfectamente. Las cifras de 2.3-3.1 g/kg de la ISSN se refieren a personas entrenadas en déficit y no son un consejo general.
+  applies_to: |-
+    Adultos sanos que hacen entrenamiento de fuerza. El beneficio disminuye con la edad. Los clientes con enfermedad renal necesitan orientación médica.
+  conflicts: |-
+    El efecto medio es pequeño. El autor sénior de Morton declara financiación de un consejo de productores lácteos y los autores de la ISSN tienen vínculos con la industria.
+- key: nutrition/very-high-protein-intakes-and-supplement-dose
+  source_hash: a8314c6e7b52cd6ce9c16b29b4a9ca6e82cd0ea7e4343db4e2fb0233bb201f97
+  status: machine
+  heading: Ingestas de proteína muy altas y dosis de suplemento
+  rule_text: |-
+    No prescribas más de 3 g/kg/día como estrategia para perder grasa. Si se usa un suplemento, alrededor de una ración (~25-35 g) al día junto con entrenamiento de fuerza suele bastar. Prioriza la proteína de alimentos completos.
+  applies_to: |-
+    Adultos sanos que hacen ejercicio. El subgrupo de personas mayores (9 ensayos) es pequeño y su clasificación puede ser inestable.
+  conflicts: |-
+    Los autores consideran exploratoria la estimación de la dosis y califican las comparaciones con proteína vegetal de certeza baja a muy baja. En adultos de 65+ años, la ventaja del whey se redujo y la caseína quedó mejor clasificada. Entre los autores de la ISSN hay vínculos con la industria de suplementos; los autores del metaanálisis en red declaran no tener ninguno.
+- key: nutrition/macronutrient-ranges-for-health
+  source_hash: d84cfcfddf8e43e2a818ec7a1934e4f344f5d8c6504c9eb20610b97c227297ce
+  status: machine
+  heading: Rangos de macronutrientes para la salud
+  rule_text: |-
+    Una vez fijada la proteína, sitúa los hidratos de carbono y la grasa dentro de aproximadamente el 45-60% y el 20-35% de la energía, ajustados según las preferencias y el volumen de entrenamiento. Mantén la grasa saturada por debajo del 10% de la energía y la grasa trans al mínimo. Salirse de estos rangos (por ejemplo, con una dieta baja en hidratos) es aceptable cuando lo justifican la adherencia y las preferencias, no como un método superior para perder grasa.
+  applies_to: |-
+    Adultos sanos; son rangos de salud poblacional, no objetivos de aporte de energía para el rendimiento deportivo.
+  conflicts: |-
+    La OMS limita la grasa total al 30%, mientras que la EFSA llega al 35%. Las dietas altas en proteína pueden llevar los hidratos o la grasa hacia la parte baja de los rangos, lo cual está bien si la fibra y la calidad de la grasa siguen siendo adecuadas.
+- key: nutrition/carbohydrate-by-training-load
+  source_hash: 05c38207c5a4b116e05010f6591e72af5eb75db0dfadd3534a63f3dcb9dc455c
+  status: machine
+  heading: Hidratos de carbono según la carga de entrenamiento
+  rule_text: |-
+    Fija los hidratos de carbono en g/kg a partir de la carga de entrenamiento real, no como un porcentaje fijo. Un cliente típico de gimnasio que entrena unas 3-5 h por semana está en el nivel ligero (alrededor de 3-5 g/kg/día) y puede bajar más en déficit si lo prefiere. Usa 5-7 g/kg solo con alrededor de 1 h/día o más de entrenamiento moderado a duro (normalmente trabajo de acondicionamiento o de resistencia añadido a la fuerza), y más de 6 g/kg solo con un volumen de resistencia real de varias horas. Vuelve a revisarlo cuando cambie el volumen de entrenamiento.
+  applies_to: |-
+    Adultos sanos de 18-65 años. Los niveles más altos proceden de deportistas de resistencia y de deportes de equipo que se alimentan para el rendimiento. No se encontraron pautas aparte en g/kg para personas mayores.
+  conflicts: |-
+    La ISSN es incoherente consigo misma: también dice que los "deportistas y personas activas" deberían comer 5-8 g/kg/día; resuélvelo según las horas reales de entrenamiento. Las necesidades varían con el tamaño corporal, el presupuesto energético, el objetivo y las preferencias.
+- key: nutrition/lifters-do-not-need-high-carbohydrate-diets
+  source_hash: a8521ff755668403c9b90204fa8a3b330b1a0ae1add02eb4a06ee186dfdc706d
+  status: machine
+  heading: Quienes entrenan fuerza no necesitan dietas altas en hidratos
+  rule_text: |-
+    No subas los hidratos de carbono por encima de unos 3-5 g/kg/día solo porque un cliente entrena fuerza. Elige el reparto entre hidratos y grasa dentro del objetivo energético según las preferencias, la adherencia y la saciedad, una vez cubiertos la proteína y el mínimo de grasa. Plantéate más hidratos solo para sesiones de volumen muy alto (más de 10 series duras por grupo muscular), dos sesiones al día o trabajo de resistencia añadido.
+  applies_to: |-
+    Adultos entrenados en fuerza y activos de forma recreativa, sobre todo hombres jóvenes (39 de 49 estudios en personas que entrenan fuerza o en deportistas).
+  conflicts: |-
+    Choca con la cifra de 5-8 g/kg/día de la ISSN, que procede de la investigación en resistencia. Pocos ensayos eran isocalóricos o usaron placebos equiparados.
+- key: nutrition/carbohydrate-around-long-or-fasted-sessions
+  source_hash: 3bbeeb472e8045f1702cc9afc71cf4c523ebfea35bfbc9585c722309be2ebab4
+  status: machine
+  heading: Hidratos de carbono en torno a sesiones largas o en ayunas
+  rule_text: |-
+    Si un cliente entrena en ayunas a primera hora de la mañana o hace sesiones largas (más de unos 45 min con muchas series duras), sugiere un tentempié o una comida con hidratos de carbono antes, o una bebida durante la sesión. No hace falta una dosis grande. En sesiones cortas tras haber comido, el momento de los hidratos importa poco.
+  applies_to: |-
+    Adultos jóvenes, casi todos hombres y en su mayoría entrenados, en sesiones agudas de laboratorio. El resultado es el volumen en una sesión, no las ganancias a largo plazo.
+  conflicts: |-
+    Certeza baja y heterogeneidad alta. No está demostrado que más volumen por sesión lleve a más hipertrofia a largo plazo en quienes entrenan fuerza de forma recreativa.
+- key: nutrition/minimum-dietary-fat
+  source_hash: a5ef3e34412912207e235f77ef935feff4a7f4ee3687c24c42c5162422b1e497
+  status: machine
+  heading: Grasa mínima en la dieta
+  rule_text: |-
+    Mantén la grasa en alrededor del 20% de la energía o por encima, y no por debajo de unos 0.5 g/kg/día durante un periodo largo, también durante un corte de peso; rango por defecto, 20-35%. Si un cliente quiere menos grasa durante un déficit duro, que sea por poco tiempo y asegúrate de que los ácidos grasos esenciales estén cubiertos.
+  applies_to: |-
+    Adultos sanos de ambos sexos, incluidos quienes van al gimnasio de forma recreativa.
+  conflicts: |-
+    Los 0.5-1 g/kg de la ISSN pueden quedar por debajo del 20% de la energía con ingestas altas; usa el mínimo que sea más alto. El suelo del 20% se basa en la adecuación de micronutrientes y ácidos grasos y en el criterio de expertos, no en ensayos de dosis-respuesta.
+- key: nutrition/essential-fatty-acids
+  source_hash: b3fd7db921eec56ae6dde788939d9fe6bc3c85b08ad5fac77ecd9d40c631f78e
+  status: machine
+  heading: Ácidos grasos esenciales
+  rule_text: |-
+    Comprueba que la dieta incluya con regularidad fuentes de ácido alfa-linolénico (nueces, lino, chía, aceite de colza) y pescado azul (por ejemplo, 1-2 raciones a la semana) para acercarse a 250 mg/día de EPA+DHA. Las personas vegetarianas y veganas pueden plantearse un suplemento de EPA/DHA de algas. Prefiere las grasas insaturadas (aceite de oliva virgen extra, frutos secos, pescado) a la mantequilla y las carnes procesadas grasas, sobre todo cuando la grasa total es baja.
+  applies_to: |-
+    Adultos europeos sanos, incluidos el embarazo y la lactancia; valores de referencia poblacionales.
+  conflicts: |-
+    La FAO/OMS fija valores más bajos de ácido linoleico (2-3% de la energía); el de la EFSA refleja las ingestas europeas. Una ingesta adecuada se supone adecuada, no es una necesidad demostrada. La cifra de raciones de pescado es una pauta práctica, no procede de las fuentes.
+- key: nutrition/dietary-fibre
+  source_hash: 3a42865003f82639e58fe54a4385f26b322970a9381f112433a2ab05e10dfdc6
+  status: machine
+  heading: Fibra dietética
+  rule_text: |-
+    Fija un mínimo de al menos 25 g/día de fibra (idealmente 25-35 g) procedente de cereales integrales, legumbres, verduras y fruta, también durante la pérdida de grasa y las fases altas en proteína, más al menos 400 g/día de verduras y fruta. Auméntala poco a poco, con líquidos, para limitar las molestias gastrointestinales.
+  applies_to: |-
+    Adultos sin enfermedades crónicas. Los resultados clínicos duros son observacionales; los efectos sobre el peso, la tensión arterial y el colesterol proceden de ECA.
+  conflicts: |-
+    Las personas con síndrome del intestino irritable (SII) o enfermedad inflamatoria intestinal (EII) pueden necesitar un ajuste individual del tipo y la cantidad de fibra.
+- key: nutrition/free-sugars-limits
+  source_hash: ae71253e37ffe2b2d3e552391e6faeced4e40be75c8e5fb35d888188a12c9c69
+  status: machine
+  heading: 'Azúcares libres: límites'
+  rule_text: |-
+    Presenta los azúcares libres como algo que conviene reducir al mínimo, no como un cupo que haya que llenar. Usa menos del 10% de la energía como límite superior firme y menos del 5% (unos 25 g/día) como ideal, calculados a partir del objetivo del propio cliente (por ejemplo, 50 g con 2000 kcal). Cuenta los zumos, la miel, los siropes, los refrescos y los dulces; no cuentes la fruta entera ni la leche y el yogur naturales. Acciones prioritarias: agua en lugar de bebidas azucaradas, fruta entera en lugar de zumo y lácteos sin azúcar.
+  applies_to: |-
+    Población adulta general de la UE y España. Las bebidas deportivas o los geles durante sesiones largas de resistencia son un uso aparte y deliberado.
+  conflicts: |-
+    El objetivo del 5% es condicional (evidencia más débil). No hay un límite numérico de la UE, así que las cifras de la OMS son el único anclaje cuantitativo. Los estudios de cohortes prospectivos no mostraron relación cuando los azúcares se intercambiaban de forma isocalórica, así que no está claro cuánto del daño se debe solo a la energía extra. Las personas muy activas tienen un margen absoluto mayor.
+- key: nutrition/sugar-and-body-weight-work-through-energy-intake
+  source_hash: 5de21658feff8dbdc556569ab820f14455ae58f32bf6a48668cf4adc7c3d7a4a
+  status: machine
+  heading: El azúcar actúa sobre el peso corporal a través de la ingesta energética
+  rule_text: |-
+    Explica que, a igualdad de calorías, el azúcar no engorda más que otras cosas; lo que hace es facilitar comer de más, sobre todo en forma líquida. Recortar las bebidas azucaradas y los dulces es una de las formas más eficaces y con menos fricción de reducir calorías. Dentro de un objetivo fijado de energía y macronutrientes, una pequeña cantidad de azúcar no perjudica la pérdida de grasa.
+  applies_to: |-
+    Adultos en general (y niños en los datos de cohortes), ensayos a corto y medio plazo.
+  conflicts: |-
+    Los ensayos fueron variados. "El azúcar es tóxico independientemente de las calorías" va más allá de esta evidencia.
+- key: nutrition/low-carb-and-low-fat-give-similar-weight-loss
+  source_hash: 89372db2e7e9ee323e5da955a14cb37f168ae50ee7d901fcea451f6292a52f40
+  status: machine
+  heading: Las dietas bajas en hidratos y bajas en grasa dan una pérdida de peso similar
+  rule_text: |-
+    No vendas las dietas bajas en hidratos ni las bajas en grasa como metabólicamente superiores para perder grasa. Deja que el cliente elija el reparto que pueda mantener, fija un déficit moderado, mantén una proteína adecuada y da preferencia a los alimentos mínimamente procesados en cualquiera de las dos versiones.
+  applies_to: |-
+    Adultos con sobrepeso u obesidad en ensayos de 6-24 meses. Hay menos datos en quienes entrenan fuerza de forma recreativa con normopeso, aunque la lógica del balance energético se mantiene.
+  conflicts: |-
+    Tobias 2015 (53 ECA) encontró que la dieta baja en hidratos superaba a la baja en grasa en 1.15 kg, una diferencia estadísticamente significativa pero clínicamente irrelevante. Las respuestas individuales varían mucho dentro de cada grupo.
+- key: nutrition/no-metabolic-advantage-for-low-carb-at-equal-calories
+  source_hash: fcdd0ab547c57bc656e02286adef561767c8da8d69a0d956ea1ad93cb254895d
+  status: machine
+  heading: Sin ventaja metabólica de las dietas bajas en hidratos a igualdad de calorías
+  rule_text: |-
+    Explica a los clientes que, a igualdad de calorías y de proteína, la proporción entre hidratos de carbono y grasa no cambia de forma relevante la pérdida de grasa. Cualquier beneficio de una dieta baja en hidratos viene de comer menos calorías (apetito, elección de alimentos), no de una "magia de la insulina". Elígela solo si a esa persona le ayuda a comer menos de forma sostenible, y no demonices los hidratos ni la grasa.
+  applies_to: |-
+    Adultos, sobre todo con sobrepeso u obesidad, en estudios cortos y muy controlados en unidad metabólica.
+  conflicts: |-
+    Algunas personas sienten que la dieta baja en hidratos les controla mejor el apetito, y el resultado ad libitum en unidad metabólica puede no mantenerse fuera de ella. El metaanálisis lo hizo un único grupo dentro de una revisión narrativa.
+- key: nutrition/adherence-predicts-results-better-than-diet-type
+  source_hash: 6ba950a5898eff01a966f4a621492fa48a4d6f6c784732280cf028c8756ac588
+  status: machine
+  heading: La adherencia predice los resultados mejor que el tipo de dieta
+  rule_text: |-
+    Haz de la sostenibilidad el criterio principal al elegir una dieta. Pregunta por las preferencias alimentarias, el horario, la cultura y el presupuesto. Sigue la adherencia (registro, revisiones periódicas) como principal métrica del proceso, y cambia el enfoque cuando la adherencia baje en lugar de añadir restricciones.
+  applies_to: |-
+    Adultos con sobrepeso u obesidad en ensayos de pérdida de peso (Dansinger: edad de 22-72 años, IMC de 27-42, con factores de riesgo cardiometabólico).
+  conflicts: |-
+    La adherencia fue autodeclarada y las asociaciones son correlacionales. El patrón que mejor se sigue varía según la persona y no se puede predecir de antemano.
+- key: nutrition/no-single-best-eating-pattern
+  source_hash: e7224efdeb736a1fd1060b6a548bda50f69b9af63c950666641fc3f96c2cbdcd
+  status: machine
+  heading: No hay un único patrón alimentario mejor
+  rule_text: |-
+    Presenta varios patrones basados en la evidencia como opciones válidas y deja que el cliente elija dentro de un núcleo común: sobre todo alimentos mínimamente procesados, abundantes vegetales, grasas saludables y proteína adecuada. No presentes la alimentación mediterránea como una herramienta para perder peso por sí sola, porque sigue necesitando un déficit energético. Deriva a las personas con enfermedades relacionadas con la obesidad o necesidades médicas complejas a un dietista-nutricionista.
+  applies_to: |-
+    Adultos en general, incluidos adultos con obesidad y la prevención cardiovascular.
+  conflicts: |-
+    Tiene grado moderado porque la propia recomendación de personalizar es opinión de expertos (grado D); la afirmación más sólida de que la pérdida de peso es similar entre patrones cuando las calorías coinciden se trata, con grado fuerte, en "Las dietas bajas en hidratos y bajas en grasa dan una pérdida de peso similar". La evidencia de cada patrón difiere según el resultado.
+- key: nutrition/genotype-or-insulin-based-diet-matching
+  source_hash: 4e7cf67b264c0998fb2cdcaf4ae65ea66ee925a5a39d2a7be13130edaa2044b6
+  status: machine
+  heading: Dietas según el genotipo o la insulina
+  rule_text: |-
+    No recomiendes productos de "tipo de dieta" basados en pruebas de ADN o de insulina para elegir entre una dieta baja en hidratos y una baja en grasa. Elige según las preferencias y la adherencia.
+  applies_to: |-
+    Adultos de 18-50 años sin diabetes, con IMC de 28-40. Solo se estudió un panel de genotipos.
+  conflicts: Un resultado nulo claro, pero de un único ensayo y un único panel.
+- key: nutrition/ketogenic-diets-faster-early-loss-higher-ldl
+  source_hash: 35f8fcc6064ab85bea27e72e57eb1561a8b060b831ece603a6dc8eb38f5cef55
+  status: machine
+  heading: 'Dietas cetogénicas: pérdida inicial más rápida, LDL más alto'
+  rule_text: |-
+    Si un cliente quiere hacer keto, trátalo como una opción, no como un requisito. Sugiere un perfil lipídico (LDL, idealmente apoB) al inicio y a los 2-3 meses, sobre todo en clientes delgados o con LDL alto o antecedentes familiares de enfermedad cardiaca. Prioriza las grasas insaturadas, mantén altos la proteína y el entrenamiento de fuerza para proteger la masa magra, y planifica un patrón sostenible a largo plazo.
+  applies_to: |-
+    Adultos, sobre todo con sobrepeso u obesidad, en seguimientos cortos. Las dudas sobre el LDL y la masa magra son mayores en adultos con normopeso (3 ECA pequeños).
+  conflicts: |-
+    El grado fuerte se refiere al aumento del LDL; la pérdida de peso adicional es de calidad moderada y se reduce con el tiempo. Las dietas cetogénicas de muy bajo contenido calórico en la obesidad no empeoraron el LDL ni la masa muscular. La respuesta del LDL varía mucho. No hay ensayos a largo plazo sobre eventos cardiovasculares.
+- key: nutrition/ketogenic-diet-combined-with-training
+  source_hash: 6a4fe85079cfd1ee4787a9849b5ff8b548e7e0c41d4d232fc9198acedd419dae
+  status: machine
+  heading: Dieta cetogénica combinada con entrenamiento
+  rule_text: |-
+    No recomiendes keto como un método mejor para perder grasa o para la recomposición en clientes de gimnasio. Si un cliente la prefiere, puede funcionar como forma de reducir calorías, pero mantén alta la proteína y vigila la fuerza y la calidad del entrenamiento. Explica que la pérdida de peso inicial se debe en parte al glucógeno y al agua.
+  applies_to: Adultos sanos de 18-65 años en ensayos heterogéneos de dieta más ejercicio.
+  conflicts: |-
+    Comparaciones indirectas con intervalos amplios; la mayoría de los IC de masa magra cruzaban el cero. La adherencia a keto varía mucho.
+- key: nutrition/mediterranean-diet-and-cardiovascular-events
+  source_hash: ee0e099ed9c4d8eb5730a2487d31d52af755a0600ead26405d7441b31b1b2506
+  status: machine
+  heading: Dieta mediterránea y eventos cardiovasculares
+  rule_text: |-
+    Recomienda un patrón de tipo mediterráneo (aceite de oliva virgen extra como grasa principal, frutos secos, legumbres, verduras, fruta, cereales integrales, pescado, poca carne procesada) como opción por defecto sólida para la salud cardiovascular, sobre todo en clientes mayores o de alto riesgo. Describe el beneficio como una reducción probable de los eventos cardiovasculares, no como un beneficio demostrado en mortalidad.
+  applies_to: |-
+    Adultos españoles mayores con alto riesgo cardiovascular y pacientes coronarios, en su mayoría hombres. Aplicarlo a usuarios de gimnasio jóvenes y sanos se apoya sobre todo en datos observacionales.
+  conflicts: |-
+    PREDIMED tuvo irregularidades en la aleatorización y se retractó y volvió a publicarse. CORDIOPREV declara financiación de una fundación del aceite de oliva.
+- key: nutrition/mediterranean-diet-risk-factors-and-weight
+  source_hash: 44b0d18547025cdc8410172338c070266cad9ddb213284b4b5789babb4ca6e7d
+  status: machine
+  heading: 'Dieta mediterránea: factores de riesgo y peso'
+  rule_text: |-
+    Usa el patrón mediterráneo para la salud y la adherencia a largo plazo. Cuando el objetivo sea perder grasa, crea igualmente un déficit energético dentro de él, y no prometas una pérdida de peso más rápida solo por el patrón.
+  applies_to: Adultos con sobrepeso u obesidad o con riesgo cardiometabólico.
+  conflicts: |-
+    El 81% de los artículos de base eran de calidad baja o críticamente baja. Mancini lo encontró en general similar a los comparadores en tensión arterial y lípidos durante la pérdida de peso.
+- key: nutrition/intermittent-fasting-and-time-restricted-eating
+  source_hash: fb7e357cd144f2aba62189839914adf7ab497eae722b5d53f9763fc2fdbf67bf
+  status: machine
+  heading: Ayuno intermitente y alimentación con restricción horaria
+  rule_text: |-
+    Ofrece la alimentación con restricción horaria u otros esquemas de ayuno solo como estructura para clientes a los que así les resulte más fácil controlar la ingesta, y fija igualmente un objetivo total de calorías. No atribuyas beneficios en pérdida de grasa más allá del déficit. Evítalo en personas con antecedentes de conducta alimentaria alterada, y coordínate con el clínico en el caso de quien tome medicación hipoglucemiante.
+  applies_to: |-
+    Adultos con sobrepeso u obesidad, muchos con problemas de salud; la mayoría de los ensayos son cortos (mediana de unos 3 meses).
+  conflicts: |-
+    Fernandes-Alves 2026 (30 estudios) observó 1.46 kg más de pérdida con TRE incluso frente a controles isocalóricos; Sun 2025 halló -0.94 kg, pero concluyó que no había beneficio añadido. Los ensayos cortos y un ajuste de calorías imperfecto probablemente explican las diferencias.
+- key: nutrition/time-restricted-eating-and-lean-mass
+  source_hash: bb177d20484cf604c76227577e4bdb747eec35f0babcdfeac6dd6b6a887d0cc2
+  status: machine
+  heading: Alimentación con restricción horaria y masa magra
+  rule_text: |-
+    Si un cliente usa TRE, combínala con entrenamiento de fuerza progresivo y proteína suficiente repartida en al menos 2-3 tomas dentro de la ventana de alimentación. Controla la fuerza y la cintura o la composición corporal, no solo el peso en la báscula. Ten más precaución con las personas mayores.
+  applies_to: |-
+    Adultos con sobrepeso u obesidad y muestras pequeñas de jóvenes entrenados; ensayos cortos; pocos datos en personas mayores.
+  conflicts: |-
+    Los metaanálisis se contradicen. La pérdida de masa magra probablemente depende del tamaño del déficit, la proteína y el entrenamiento más que de la ventana de alimentación, y una parte puede ser agua o glucógeno.
+- key: nutrition/vegetarian-and-vegan-diets-lower-ldl
+  source_hash: c04f19e935dd91e818db74d4c05564af35b7f70f23a3705132e866f059ffbf94
+  status: machine
+  heading: Las dietas vegetarianas y veganas bajan el LDL
+  rule_text: |-
+    Apoya a los clientes que eligen una alimentación vegetariana o vegana. Describe con honestidad el beneficio lipídico como una reducción modesta del LDL, y céntrate en una versión bien planificada a base de alimentos integrales (legumbres, soja, cereales integrales, frutos secos) en lugar de ultraprocesados de origen vegetal.
+  applies_to: Adultos, sanos o con riesgo cardiometabólico.
+  conflicts: |-
+    La estimación de la apoB es imprecisa. Parte del cambio puede deberse a la pérdida de peso o a una menor ingesta de grasa saturada. El posicionamiento de la AND es una síntesis narrativa que se apoya en datos observacionales para los desenlaces duros. La respuesta del LDL varía.
+- key: nutrition/plant-based-diets-and-hard-outcomes
+  source_hash: 91ff2b682a80dd376cac733a15858bd677cfb6eeeff297357e5c3afb7c740207
+  status: machine
+  heading: Dietas basadas en plantas y desenlaces clínicos duros
+  rule_text: |-
+    Describe el beneficio cardiovascular de las dietas basadas en plantas como probable, pero observacional y explicado en parte por un menor peso, tensión arterial y colesterol. No afirmes que reduce la mortalidad global. Asegúrate de que las dietas vegetarianas sean nutricionalmente completas (B12, proteína y micronutrientes suficientes).
+  applies_to: |-
+    Cohortes occidentales, a menudo preocupadas por la salud y en su mayoría de mediana edad.
+  conflicts: |-
+    Son datos observacionales y expuestos a factores de confusión. La señal sobre el ictus procede de una sola cohorte y su causa no está clara.
+- key: nutrition/vitamin-b12-for-vegans-and-vegetarians
+  source_hash: ae91f077937dbfca134747645baca353b7d0f19b59c85ac5f9ea5e487907d47e
+  status: machine
+  heading: Vitamina B12 para veganos y vegetarianos
+  rule_text: |-
+    Para cualquier cliente vegano, y para vegetarianos con poca ingesta de lácteos y huevos, un suplemento regular de B12 o alimentos enriquecidos fiables es innegociable. Sugiere una revisión con el médico de cabecera (B12 sérica, idealmente con holoTC o MMA) si llevan un tiempo sin suplementarse. Deja la dosis al clínico o a la etiqueta del producto.
+  applies_to: |-
+    Adultos veganos y vegetarianos. Las personas mayores también absorben peor la B12 (no se cuantifica aquí).
+  conflicts: |-
+    La B12 sérica por sí sola es un marcador imperfecto. Los veganos de larga duración sin suplementación tienen el mayor riesgo.
+- key: nutrition/ultra-processed-foods-and-energy-intake
+  source_hash: 5d33cddbb1023d858007ed6815ac72c586e5af89265a9a4c2835c334f75255ef
+  status: machine
+  heading: Ultraprocesados e ingesta energética
+  rule_text: |-
+    Construye la dieta principalmente con alimentos mínimamente procesados, lo que por sí solo tiende a reducir la ingesta calórica. No trates una etiqueta NOVA como algo decisivo: el yogur natural, el pan integral, las legumbres en conserva y los batidos de proteína pueden ser útiles. Céntrate en reducir los productos de alta densidad energética e hiperpalatables (bollería, snacks, bebidas azucaradas, comida rápida).
+  applies_to: |-
+    Adultos, sobre todo con sobrepeso u obesidad, en ensayos cortos con comida proporcionada. No se estudió a clientes delgados y entrenados.
+  conflicts: |-
+    Se discute si importa el procesamiento en sí o solo el perfil de nutrientes y la densidad energética. La AESAN atribuye el daño principalmente a los ingredientes más que a las técnicas de procesado. Hall 2019 incluyó solo a 20 personas durante 2 semanas.
+- key: nutrition/ultra-processed-foods-and-health-outcomes
+  source_hash: acb7cdc57f49f2b28d4aa4f1fb2e846c68893bc3962dbd7e31c76adb396c82e5
+  status: machine
+  heading: Ultraprocesados y desenlaces de salud
+  rule_text: |-
+    Describe una ingesta alta de ultraprocesados como asociada de forma constante a peores desenlaces cardiometabólicos y de salud mental y a una mayor mortalidad, sobre todo en datos observacionales con certeza baja. Evita los mensajes alarmistas o absolutos. Mensaje práctico: alimentos mínimamente procesados como base y ultraprocesados de alta densidad energética como consumo ocasional.
+  applies_to: |-
+    Poblaciones adultas generales en estudios observacionales; no hay datos específicos del ejercicio.
+  conflicts: |-
+    Confusión residual por la calidad de la dieta y el nivel socioeconómico. NOVA agrupa alimentos muy distintos. La AESAN atribuye el daño a los ingredientes más que al procesado.
+- key: nutrition/aesan-food-based-guidance-for-spain
+  source_hash: b0c5d6f221219d279d254cc3e6fa58e354277e67084c4185ca83161a5a7d7f1c
+  status: machine
+  heading: Pautas de la AESAN basadas en alimentos para España
+  rule_text: |-
+    Para clientes en España, construye los planes de comidas sobre estas frecuencias semanales y tradúcelas a comidas españolas concretas: lentejas o garbanzos 4 o más veces por semana; pescado 3 o más veces (sardinas, caballa, salmón); carne no más de 3 veces por semana, sobre todo pollo o conejo, con los embutidos como consumo ocasional; una verdura y una fruta en cada comida principal; aceite de oliva como grasa para cocinar y aliñar; pan integral o arroz ajustados a los objetivos calóricos. En clientes que buscan perder grasa, limita los cereales a 4 raciones/día.
+  applies_to: |-
+    Adultos españoles en general; pautas de salud pública que integran además la sostenibilidad ambiental. Los deportistas o los clientes con problemas médicos pueden necesitar ajustes, por ejemplo más proteína procedente de legumbres, lácteos, huevos y pescado.
+  conflicts: |-
+    El límite de carne se refiere a la carne total; las cifras de carne roja y procesada que cita el informe proceden de otros marcos (pirámide mediterránea, EAT-Lancet). Los límites de carne y lácteos responden en parte a criterios ambientales. Los objetivos altos de proteína pueden requerir una planificación deliberada para no superar el tope de carne.
+- key: nutrition/self-monitoring
+  source_hash: 360a0099709c3b437df0407746344e40637baf1f924cc579e79b022d9494b8b6
+  status: machine
+  heading: Autorregistro
+  rule_text: |-
+    Fomenta un autorregistro sencillo y sostenible: registrar la comida en una app (aunque sea de forma parcial o con fotos), pesarse con regularidad valorando la tendencia semanal y registrar las sesiones de entrenamiento. Cuenta con que la implicación bajará, así que reduce el registro al mínimo que el cliente vaya a mantener en lugar de exigir registros perfectos. Usa los datos para dar feedback, no para juzgar. No insistas en el registro con clientes con antecedentes de conducta alimentaria alterada; derívalos.
+  applies_to: |-
+    Adultos con sobrepeso u obesidad en programas conductuales, en su mayoría mujeres blancas; por extensión, a quienes entrenan fuerza de forma recreativa.
+  conflicts: |-
+    Es sobre todo evidencia de asociación. Los efectos de las apps proceden de apps multicomponente. Se desconoce la frecuencia óptima. El registro puede aumentar la ansiedad o las conductas obsesivas en algunas personas (véase "Registro de calorías y riesgo de trastorno alimentario").
+- key: nutrition/meal-planning
+  source_hash: 92db4730e08982c457b760e5551f87220a751e32e7029f9766ef55cb1af744f6
+  status: machine
+  heading: Planificación de comidas
+  rule_text: |-
+    Ofrece la planificación de comidas como herramienta práctica y opcional: planificar las comidas principales de los próximos días, hacer una lista de la compra, cocinar en lote y congelar, y tener comidas "de emergencia" por defecto. Como criterio de coaching (no evidencia contrastada), empieza con una plantilla semanal sencilla en lugar de un plan rígido día a día y ajústala a lo que el cliente mantenga.
+  applies_to: Voluntarios adultos franceses con peso autodeclarado.
+  conflicts: |-
+    Solo observacional; ningún ECA demuestra que la planificación en sí cause pérdida de peso. Quienes planifican pueden diferir en otras conductas saludables.
+- key: nutrition/logs-under-report-intake
+  source_hash: a96692326dff51da97754624442496922a0878634685c92041630be58fe37640
+  status: machine
+  heading: Los registros infradeclaran la ingesta
+  rule_text: |-
+    Trata cualquier ingesta calórica registrada o recordada como una estimación de mínimos. Asume que el registro de un cliente típico infravalora la ingesta real aproximadamente un 10-30%, posiblemente más. Nunca le digas a un cliente "no puedes estar ganando peso con X kcal" basándote solo en el registro.
+  applies_to: |-
+    Adultos en vida libre en estudios de validación con DLW (EE. UU., Europa, Australia). Instrumentos de investigación, no apps de consumo.
+  conflicts: |-
+    La dirección es constante, pero la magnitud varía mucho, y algunas personas sobredeclaran. Las medias de grupo no pueden aplicarse como corrección fija a una persona.
+- key: nutrition/self-reported-intake-is-poor-for-individuals
+  source_hash: 3301a9493ecd6b9ffc989e8517c75b432fd076648137b957149abc0e9f305413
+  status: machine
+  heading: La ingesta autodeclarada es poco fiable a nivel individual
+  rule_text: |-
+    No calcules el mantenimiento ni el déficit de un cliente a partir de su registro, y no "corrijas" un registro con un factor medio de infradeclaración. Usa los registros para cambiar conductas y detectar patrones; usa la tendencia de peso (más la cintura y las fotos) para valorar el balance energético.
+  applies_to: |-
+    Mujeres posmenopáusicas estadounidenses, mujeres suizas con obesidad y una opinión de expertos; aplicarlo al coaching es una inferencia.
+  conflicts: |-
+    Dhurandhar et al. es un artículo de opinión que generó comentarios, y Prentice et al. encontraron que el autoinforme calibrado es utilizable en epidemiología. El autorregistro sigue ayudando a la adherencia. Algunas personas disciplinadas registran bien, pero eso no puede saberse sin una comprobación objetiva.
+- key: nutrition/under-reporting-rises-with-bmi
+  source_hash: 248618d5720708d7dce3e24be0c55d375eda8f47c56d46d66a2581bf15ff10b2
+  status: machine
+  heading: La infradeclaración aumenta con el IMC
+  rule_text: |-
+    Cuanto más pese el cliente, menos peso hay que dar a su registro de comida como medida de las calorías. En clientes con obesidad, básate en la tendencia de peso desde el principio y usa el registro sobre todo para entender las elecciones de alimentos, los horarios y los patrones.
+  applies_to: |-
+    Adultos estadounidenses, en su mayoría de mediana edad y mayores, con instrumentos de investigación.
+  conflicts: |-
+    La edad y el nivel educativo también predicen la infradeclaración, y algunas personas delgadas que hacen dieta infradeclaran de forma considerable.
+- key: nutrition/i-eat-almost-nothing-and-don-t-lose-weight
+  source_hash: f60d6fd20277d948daf1980086529fc5a946153ebf984db347d524cb8b1a5087
+  status: machine
+  heading: '"Casi no como y no pierdo peso"'
+  rule_text: |-
+    Cuando un cliente diga esto, no concluyas que tiene un metabolismo lento. Asume que la ingesta está infravalorada y la actividad sobrevalorada, y compruébalo con tacto frente a una tendencia de peso de 2-4 semanas. Deriva solo si hay señales de alarma clínicas.
+  applies_to: |-
+    Un subgrupo clínico pequeño y seleccionado de adultos estadounidenses que buscaban tratamiento; la cifra del 47% no es una estimación poblacional.
+  conflicts: |-
+    Un único estudio pequeño, aunque su dirección coincide con la literatura más amplia sobre DLW.
+- key: nutrition/sex-differences-in-under-reporting
+  source_hash: 1e420c461ba8718ac247605965ecc74ca7ca0be9e66e97d09a138bfa12629386
+  status: machine
+  heading: Diferencias por sexo en la infradeclaración
+  rule_text: |-
+    No des por hecho que los registros de las mujeres son menos fiables que los de los hombres, ni al revés. Aplica el mismo escepticismo y la misma comprobación con la tendencia de peso a todo el mundo.
+  applies_to: Adultos en estudios de validación con DLW en países de ingresos altos.
+  conflicts: |-
+    Las fuentes discrepan de verdad. El IMC, hacer dieta y la deseabilidad social importan más que el sexo.
+- key: nutrition/weighing-food-does-not-remove-under-reporting
+  source_hash: 38307bfcf20f03c1749dd37bbf418bf3fc4e659cb63ffa6c92f3d99b08cd4b24
+  status: machine
+  heading: Pesar la comida no elimina la infradeclaración
+  rule_text: |-
+    No prometas que pesarlo todo hace que el registro sea exacto. Pesar corrige el tamaño de las raciones, pero siguen quedando los picoteos olvidados, las bebidas, los aceites, las salsas, lo que se prueba al cocinar y lo que se come el fin de semana. Pregunta específicamente por ello y contrasta igualmente el registro con la tendencia de peso.
+  applies_to: Adultos en vida libre; pocos estudios y muestras pequeñas.
+  conflicts: |-
+    Los estudios controlados con alimentos pesados previamente muestran un error pequeño de las apps, pero evalúan la exactitud de la base de datos, no la declaración habitual, así que los resultados son compatibles.
+- key: nutrition/teach-clients-to-log-well
+  source_hash: 96bba84168c2b52af612229b818ae29b941ec9a3fe655094a0d2bcff19b71413
+  status: machine
+  heading: Enseña a los clientes a registrar bien
+  rule_text: |-
+    Enseña a los clientes a pesar los alimentos de alta densidad calórica, registrar aceites y bebidas, registrar en el momento de comer e incluir los fines de semana. Valora la ingesta a partir de medias de varios días que incluyan el fin de semana (7 días es un mínimo sensato, una inferencia práctica), nunca a partir de un solo día.
+  applies_to: |-
+    Muestras pequeñas de mujeres estadounidenses (n=10 por grupo) y estudios de validación estadounidenses agrupados.
+  conflicts: |-
+    La evidencia sobre la pericia es un único estudio pequeño, e incluso los dietistas-nutricionistas infradeclararon. Lo que se gana con días adicionales es modesto.
+- key: nutrition/tracking-apps-versus-reference-methods
+  source_hash: 74629f5f5503c9d5597d1d966cdcf8f393c38004911bdb9ced8b310d259095b9
+  status: machine
+  heading: Apps de registro frente a métodos de referencia
+  rule_text: |-
+    Cuando la comida se introduce de forma completa y correcta, el total de calorías de una app convencional queda de media a aproximadamente un 5-10% de la ingesta pesada, aunque días sueltos pueden desviarse más. La mayor parte del error en la vida real procede de lo que falta o está mal emparejado, no de la aritmética de la app; una diferencia de unas 200 kcal/d frente a los métodos de referencia es habitual.
+  applies_to: |-
+    Adultos en países de ingresos altos. El metaanálisis usó sobre todo otros métodos de autoinforme como referencia; los ensayos con MyFitnessPal miden el error de estimación, no las omisiones.
+  conflicts: |-
+    Los estudios son heterogéneos, y los resultados con alimentación controlada y en vida libre miden fuentes de error distintas.
+- key: nutrition/crowd-sourced-app-databases
+  source_hash: fa1c333fcae562c0ae10205529efbf440ad95287417594f777d2d5695240e939
+  status: machine
+  heading: Bases de datos de apps alimentadas por los usuarios
+  rule_text: |-
+    Haz que los clientes prefieran las entradas verificadas o procedentes de laboratorio, o el escaneo del código de barras del envase real, frente a las entradas genéricas enviadas por usuarios, y que comprueben que los gramos y las kcal por 100 g son plausibles. Considera poco fiables los totales de sodio, colesterol, grasa saturada, fibra y micronutrientes de las apps de consumo.
+  applies_to: |-
+    Adultos de Bélgica, EE. UU., Canadá y Filipinas, y productos neerlandeses; datos introducidos sobre todo por investigadores.
+  conflicts: |-
+    Los estudios de validación discrepan; los resultados dependen mucho de qué entradas se elijan.
+- key: nutrition/apps-are-unreliable-for-saturated-fat-cholesterol-and-sodium
+  source_hash: 07690c4c2f0679d9d511393bf97300d9e62e9c1ed7f2fa493e5e317fd5840d43
+  status: machine
+  heading: Las apps no son fiables para la grasa saturada, el colesterol y el sodio
+  rule_text: |-
+    No uses los totales de las apps de consumo para controlar la grasa saturada, el colesterol o el sodio de un cliente con una enfermedad cardiometabólica. En su lugar, orienta la elección de alimentos, o usa una base de datos verificada o un dietista-nutricionista.
+  applies_to: |-
+    Principalmente comparaciones de bases de datos (alimentos taiwaneses y estadounidenses).
+  conflicts: |-
+    Las magnitudes proceden de un único estudio centrado en Taiwán y variarán según el país y la cocina; la dirección es constante.
+- key: nutrition/ai-photo-and-image-based-logging
+  source_hash: 118908ed3a58d40a006d66ab57f5677e5689d87f22425081c82c5b27da8885ad
+  status: machine
+  heading: Registro con IA a partir de fotos e imágenes
+  rule_text: |-
+    El registro con fotos o con IA reduce la carga y se puede sugerir para favorecer la adherencia. No consideres su cifra de calorías más fiable que la del registro manual; contrástala con la tendencia de peso de la misma manera.
+  applies_to: |-
+    Mujeres suizas y adultos estadounidenses de 21-65 años; muestras pequeñas; apps concretas.
+  conflicts: |-
+    El rendimiento depende de la app, del análisis humano y de la cocina. SNAQ AG cobró por desarrollar la versión del estudio.
+- key: nutrition/eu-label-rules-and-tolerances
+  source_hash: e37a62267d920b99e80b9c51c7f4e657aff0668ec13db63b286d544ec487c122
+  status: machine
+  heading: Normas de etiquetado de la UE y tolerancias
+  rule_text: |-
+    Explica a los clientes que la cifra de kcal de una etiqueta es una media calculada y que las autoridades de control de la UE toleran desviaciones de alrededor del 20% en los macronutrientes principales en el rango habitual. No discutas por diferencias de 10-20 kcal entre la etiqueta, la app y la báscula. Pesar un alimento etiquetado con una entrada correcta sigue siendo lo más preciso que un cliente puede registrar.
+  applies_to: |-
+    Alimentos envasados vendidos en la UE, incluida España. No se aplica a las normas de EE. UU. ni a la comida de restaurante sin etiquetar.
+  conflicts: |-
+    La guía no es jurídicamente vinculante, y su aplicación varía según el Estado miembro.
+- key: nutrition/measured-label-and-menu-errors
+  source_hash: 0a6924121e3d62ac512915c2116a6a54de7948d266ab4c8c05b724fe9d9388cc
+  status: machine
+  heading: Errores medidos en etiquetas y menús
+  rule_text: |-
+    Las etiquetas de los alimentos envasados son suficientemente buenas para registrar. La comida de restaurante es exacta de media, pero un plato concreto puede desviarse 100+ kcal, y los productos bajos en calorías o "light" tienden a declarar de menos (los productos con energía reducida tenían de media alrededor de un 8-18% más de lo declarado). Registra por separado las guarniciones, las salsas y los extras gratuitos; los clientes que comen fuera a menudo deberían apoyarse más en la tendencia de peso.
+  applies_to: |-
+    Sobre todo alimentos de EE. UU.; un estudio de cumplimiento en la UE (solo sal, grasa y grasa saturada).
+  conflicts: |-
+    Estudios únicos y pequeños; las diferencias en los productos con energía reducida no fueron significativas; las cifras de EE. UU. pueden no ser trasladables a España.
+- key: nutrition/atwater-factors-overstate-whole-almonds
+  source_hash: ea91314e4750d04b60305f971aa527bd373a4d422c083a0ddc07e475e644348c
+  status: machine
+  heading: Los factores de Atwater sobrestiman las almendras enteras
+  rule_text: |-
+    No dejes que los clientes eliminen las almendras enteras para "ahorrar calorías" basándose en la cifra registrada; la energía absorbida probablemente es alrededor de una cuarta parte menor que la registrada. Aplica el escepticismo, en cambio, a la comida de restaurante y a los productos "light", donde los errores suelen ir en la dirección contraria.
+  applies_to: Adultos sanos; solo almendras enteras.
+  conflicts: |-
+    Un único alimento y un único estudio; no se probaron otros frutos secos ni formas procesadas.
+- key: nutrition/eyeballing-portions-versus-weighing
+  source_hash: 2565fec26c823b9d2c1f470ea8448b83737fbc23445697a10a1d356ad493dd38
+  status: machine
+  heading: Estimar las raciones a ojo frente a pesarlas
+  rule_text: |-
+    A los clientes que buscan precisión (un estancamiento o un corte), pídeles que pesen los alimentos de alta densidad calórica (aceites, frutos secos, queso, arroz, pasta, carnes, cremas para untar). Un periodo de pesaje de 1-2 semanas para recalibrar el ojo es una heurística práctica, no un protocolo contrastado. Si no, usa fotos o atlas de referencia y acepta que los registros a ojo tienen un error de aproximadamente ±20-80% por alimento.
+  applies_to: Adultos de Kazajistán y EE. UU. en tareas de laboratorio o con fotos.
+  conflicts: |-
+    El error depende del tipo y el tamaño del alimento; los errores se compensan en parte a lo largo del día, pero no se puede contar con ello. Pesar no corrige las omisiones.
+- key: nutrition/creatine-monohydrate-for-adults-under-50
+  source_hash: 4bbcd40d0490fab32d381f94788fe1d4345e69bc921a3a00070b707a545943b1
+  status: machine
+  heading: Creatina monohidrato para adultos menores de 50 años
+  rule_text: |-
+    Para un cliente que hace entrenamiento de fuerza con regularidad y quiere un suplemento, la creatina monohidrato a 3-5 g/día, todos los días, a cualquier hora que le venga bien, es el primer suplemento de rendimiento que conviene sugerir, y a menudo el único. No necesita bebida con hidratos de carbono. Preséntala como un complemento modesto (alrededor de +1 kg de masa magra a lo largo de un bloque de entrenamiento) que nunca sustituye al entrenamiento, la proteína ni las calorías. Avisa de un pequeño aumento inicial del peso en la báscula que no es grasa.
+  applies_to: |-
+    Adultos sanos menores de 50 años, en su mayoría hombres jóvenes, a lo largo de semanas a meses. Parte de la ganancia de masa magra es agua intracelular. Para personas mayores, véase "Creatina en mayores".
+  conflicts: |-
+    Las conversiones de dosis de las fuentes no coinciden entre sí (0.1 g/kg son unos 7 g a 70 kg, y 0.3 g/kg unos 21 g), así que esta regla prescribe 3-5 g/día en gramos y no usa conversiones por kg. Los autores de la ISSN tienen amplios vínculos con la industria de la creatina; el metaanálisis independiente coincide en la dirección (el 52% de sus estudios con bajo riesgo de sesgo). La respuesta varía entre individuos.
+- key: nutrition/older-adults-protein-per-meal
+  source_hash: 4e349fabdfdb83c17f6266142cef9190fde6e54075bd4b17bb4f542e22a83d6e
+  status: machine
+  heading: 'Mayores: proteína por comida'
+  rule_text: |-
+    En clientes de más de unos 65 años, busca una dosis de proteína por comida mayor que en adultos jóvenes, aproximadamente 0.4 g/kg por comida (unos 28 g para una persona de 70 kg) en las comidas principales. Trátala como un objetivo práctico, no como un umbral, y no cites una cifra de leucina.
+  applies_to: |-
+    Solo hombres sanos, mayores comparados con jóvenes, dosis únicas de proteína de alta calidad en reposo. No se estudiaron mujeres, dosis tras el ejercicio de fuerza ni desenlaces a largo plazo.
+  conflicts: |-
+    Un único análisis retrospectivo de datos agudos de síntesis de proteína muscular con intervalos de confianza amplios; los ensayos a largo plazo sobre la distribución de la proteína no muestran beneficio en la composición corporal cuando los totales diarios coinciden (véase "Reparto de la proteína entre comidas"). El total diario (véase "Mayores: objetivos de proteína") importa más.
+- key: nutrition/creatine-in-older-adults
+  source_hash: 072bc3436223c88d9101d154e298ac511619bf14f7150260f3f54554eed66c1d
+  status: machine
+  heading: Creatina en mayores
+  rule_text: |-
+    En clientes de unos 60+ años que ya hacen entrenamiento de fuerza 2-3 veces por semana, la creatina a 3-5 g/día es un complemento opcional razonable para el músculo y la fuerza de piernas. Preséntala como un efecto pequeño que solo funciona con entrenamiento, y pídeles que lo consulten con su médico si tienen enfermedad renal, toman varios medicamentos o tienen otros problemas de salud.
+  applies_to: |-
+    Personas mayores combinándola con entrenamiento de fuerza 2-3×/semana; no se ha demostrado beneficio sin entrenamiento.
+  conflicts: |-
+    Efectos pequeños, pocos ensayos, IC del tren inferior que toca el cero y una dependencia del tiempo sin explicar.
+- key: nutrition/creatine-safety-and-kidneys
+  source_hash: f03311c59949c67bf548b0e96f92e5e2f644e80bda75db9ad370595e3251ae24
+  status: machine
+  heading: Seguridad de la creatina y riñones
+  rule_text: |-
+    Tranquiliza a los clientes sanos: no se sabe que las dosis habituales de creatina dañen los riñones. Explícales que la creatina eleva la creatinina en sangre, así que deberían comentárselo a su médico antes de un análisis de sangre. No sugieras creatina a nadie con enfermedad renal conocida, eGFR reducida, diabetes con afectación renal o medicación nefrotóxica sin aprobación médica.
+  applies_to: |-
+    Adultos sanos; la mayoría de los ensayos duran menos de 1 año; datos insuficientes en la enfermedad renal.
+  conflicts: |-
+    El artículo de 2025 califica la subida de "transitoria", aunque su subgrupo de >12 semanas fue significativo, y su resumen parece contener un error de unidades. El IC de la eGFR es amplio y se basa en 8 ensayos. Las declaraciones de la ISSN proceden de autores con vínculos con la industria.
+- key: nutrition/creatine-questions-water-hair-cramps-and-loading
+  source_hash: 08968fc39541cadd34035e0d025adf1df8758f72c5f06cc5dfef85bd4c335215
+  status: machine
+  heading: 'Dudas sobre la creatina: agua, pelo, calambres y fase de carga'
+  rule_text: |-
+    Responde con claridad a las dudas habituales sobre la creatina: la fase de carga es opcional (3-5 g/día alcanzan la misma saturación muscular en unas 4 semanas); la carga añade alrededor de 1-3 kg de peso en la báscula al principio, sobre todo agua; no hay buena evidencia de que la creatina cause caída del pelo, deshidratación o calambres a las dosis recomendadas. No digas a las mujeres que van a responder exactamente igual que los hombres.
+  applies_to: |-
+    Adultos sanos a 3-5 g/día; buena parte de la evidencia de base procede de deportistas varones jóvenes.
+  conflicts: |-
+    Es una revisión narrativa, no un posicionamiento; el autor principal es CEO de la ISSN, que recibe patrocinio de la industria de la creatina, y el artículo declara estos vínculos. La preocupación por la caída del pelo se remonta a un único estudio no replicado. La misma revisión señala que las mujeres pueden tener más creatina muscular en reposo, lo que podría explicar respuestas menores en algunos estudios.
+- key: nutrition/caffeine-before-training
+  source_hash: 125746b68643f23cc1f08425b28953cf4e31b7656b3157a7fcb71a41ea2477f2
+  status: machine
+  heading: Cafeína antes de entrenar
+  rule_text: |-
+    La cafeína es opcional. Si un cliente la quiere, lo predeterminado para adultos corrientes es hasta unos 3 mg/kg, 30-60 min antes de entrenar, sin ninguna dosis única por encima de unos 200 mg (EFSA); para 70 kg eso supone unos 150-200 mg, aproximadamente 1-2 expresos. El rango de 3-6 mg/kg es la base de la evidencia ergogénica en personas entrenadas; menciónalo, pero no lo prescribas por defecto. Mantén la ingesta total en 400 mg/día o menos, y en 200 mg/día durante el embarazo (véase "Límites de seguridad de la cafeína"). Evítala a última hora del día si altera el sueño. No la sugieras a personas con ansiedad, palpitaciones, hipertensión o problemas cardiacos, ni a embarazadas, sin consejo médico.
+  applies_to: |-
+    Adultos en general; la mayoría de los ensayos en hombres jóvenes, pocos datos en mujeres y personas mayores.
+  conflicts: |-
+    El rango de rendimiento de la ISSN (3-6 mg/kg, 210-420 mg a 70 kg) supera en su extremo superior el nivel de 200 mg por dosis única de la EFSA, así que lo predeterminado sigue a la EFSA. Grandes diferencias individuales (genética, ingesta habitual, ansiedad, sensibilidad del sueño). Varios autores de la ISSN tienen vínculos con la industria de los suplementos.
+- key: nutrition/caffeine-safety-limits
+  source_hash: 29c59d85240c3e28768d09335e9a2585c527201cf1ae57b2887905fecf900975
+  status: machine
+  heading: Límites de seguridad de la cafeína
+  rule_text: |-
+    Cuenta la cafeína diaria total del café, el té, los refrescos de cola, las bebidas energéticas y los preentrenos, manteniéndola en 400 mg/día o menos y las dosis únicas antes de entrenar en unos 200 mg o menos. Para clientes embarazadas o en lactancia, el límite es de 200 mg/día. Evita la cafeína en las horas previas a acostarse. Desaconseja las bebidas energéticas, no las mezcles nunca con alcohol y comprueba la cafeína por cacito en las etiquetas de los preentrenos.
+  applies_to: |-
+    Adultos sanos. La conclusión de la EFSA sobre el ejercicio no abarca a las embarazadas, a los adultos de mediana edad o mayores que hacen ejercicio intenso ni a las personas con enfermedades o medicación.
+  conflicts: |-
+    La dosis de rendimiento de la ISSN (210-420 mg para 70 kg) puede superar el nivel de 200 mg por dosis única de la EFSA; describe la base de la evidencia en personas entrenadas, no lo predeterminado por el coach (véase "Cafeína antes de entrenar").
+- key: nutrition/vitamin-d
+  source_hash: 559cd4320092079019f668e76e32376c8c3e528e90d8e30b5df7409c0c125d5a
+  status: machine
+  heading: Vitamina D
+  rule_text: |-
+    No recomiendes megadosis de vitamina D ni análisis de sangre rutinarios a adultos sanos para mejorar la salud, el músculo o la pérdida de grasa, y no sugieras suplementos de vitamina D para mejorar la fuerza, la masa muscular o el rendimiento físico. Fomenta las fuentes alimentarias y una exposición solar normal, y deriva para análisis o tratamiento cuando haya factores de riesgo o síntomas. A los clientes de 75 años o más, sugiéreles hablar con su médico sobre la vitamina D diaria. Nunca le digas a un cliente que deje la vitamina D que le ha recetado su médico.
+  applies_to: |-
+    Adultos sin una indicación establecida (tratamiento de la osteoporosis, malabsorción, déficit documentado).
+  conflicts: |-
+    Las dosis y los objetivos óptimos siguen sin estar claros. Las personas que no salen de casa, que van muy tapadas o que viven en latitudes septentrionales pueden tener indicaciones que debe valorar un clínico. Un metaanálisis más antiguo halló un pequeño efecto sobre la fuerza en personas de 65 años o más; en el análisis de 54 ensayos, los estudios en personas con vitamina D baja tampoco mostraron beneficio. Diagnosticar y tratar un déficit corresponde a un clínico. Los análisis sobre el músculo no abarcan a los deportistas entrenados.
+- key: nutrition/omega-3-fish-rather-than-capsules
+  source_hash: 565b55afca87e8537e5b0f9f1bfcfad90861b37eb0efd25cc593d27afdc7837c
+  status: machine
+  heading: 'Omega-3: mejor pescado que cápsulas'
+  rule_text: |-
+    No recomiendes cápsulas de aceite de pescado de forma rutinaria para la salud, la pérdida de grasa o el músculo. Fomenta el consumo regular de pescado, incluido el pescado azul, siguiendo las guías nacionales. Los clientes con triglicéridos altos o enfermedad cardiaca deberían decidir sobre los productos de omega-3 con su médico, sobre todo por encima de 1 g/día.
+  applies_to: |-
+    Adultos con distinto riesgo cardiovascular, en su mayoría mayores (edad media de 65 años en el análisis de fibrilación auricular), así que su aplicación a usuarios jóvenes de gimnasio es indirecta.
+  conflicts: |-
+    La evidencia sobre la ingesta de pescado en sí es escasa. Los productos de EPA a dosis altas con receta son un asunto médico.
+- key: nutrition/supplement-evidence-tiers-issn-2018
+  source_hash: 66afbbb0f49e17db60a1c59ec4a9c83142fe01a31b5d544baa0dd469c8c52bb5
+  status: machine
+  heading: Niveles de evidencia de los suplementos (ISSN 2018)
+  rule_text: |-
+    Usa los niveles de la ISSN 2018 para clasificar los suplementos y, en general, sugiere solo los de categoría I. Categoría I (evidencia fuerte, aparentemente seguros): creatina monohidrato, proteína y aminoácidos esenciales para el músculo; beta-alanina, cafeína, hidratos de carbono, creatina, bicarbonato sódico, fosfato sódico, agua y bebidas deportivas para el rendimiento. Categoría II (evidencia limitada o mixta): por ejemplo BCAA, citrulina y nitratos. Categoría III (poca o ninguna evidencia; no los sugieras): por ejemplo glutamina, arginina, Tribulus terrestris, ácido D-aspártico, CLA y cromo. Excepción: no sugieras HMB para ganar masa muscular, aunque la ISSN lo incluye en la categoría I para desarrollar músculo. La dieta y el entrenamiento van primero; los suplementos son extras opcionales.
+  applies_to: |-
+    Deportistas y adultos activos a nivel recreativo (revisión de la sociedad ISSN); muchos de los ensayos de base son en hombres jóvenes entrenados. Los metaanálisis sobre HMB abarcan adultos de 18-45 años, deportistas entrenados y personas mayores que hacen entrenamiento de fuerza.
+  conflicts: |-
+    La revisión de la ISSN es un posicionamiento de una sociedad más que una revisión sistemática, y la mayoría de los autores declaran vínculos con la industria de los suplementos. En personas mayores que hacen entrenamiento de fuerza, el HMB puede ayudar modestamente a la función física incluso sin más masa magra; la excepción se refiere solo a la masa muscular. El consenso del COI de 2018 cita el nitrato entre los pocos suplementos con buena evidencia, mientras que la ISSN sitúa los nitratos en la categoría II. Las reglas detalladas sobre creatina, cafeína y quemagrasas siguen siendo la referencia; esta regla es la visión general.
+- key: nutrition/fat-burners-weight-loss-pills-and-bcaas
+  source_hash: e334894eba96a94a46d4622e4d0064d946cf967e4aba6fb6d8faec85f14f63fc
+  status: machine
+  heading: Quemagrasas, pastillas para adelgazar y BCAA
+  rule_text: |-
+    Di a los clientes con claridad que los "quemagrasas" y las pastillas para adelgazar, y los productos de BCAA, son un mal uso del dinero para perder grasa o ganar músculo; mejor gastar ese presupuesto en comida (proteína, fruta, verdura). Avisa de que los suplementos pueden estar contaminados o mal etiquetados (estimulantes, sustancias prohibidas), y pregunta por cualquier producto que el cliente ya tome, sobre todo si toma medicación cardiaca, para la tensión arterial o psiquiátrica.
+  applies_to: |-
+    Adultos. El COI se dirige a deportistas de alto rendimiento; la revisión sobre BCAA abarca adultos de 18-72 años con dosis de 1.5-82 g/día.
+  conflicts: |-
+    Algunos productos para adelgazar muestran efectos pequeños, pero la calidad de la evidencia es mala. La revisión sobre BCAA no pudo agrupar los datos y no comparó los BCAA con proteína completa equiparada.
+- key: nutrition/daily-total-water-intake
+  source_hash: 77ffabe0f98e0bd7cf1b9e799b5205e49c7ac1b9008df0b8913c4957249ccf9d
+  status: machine
+  heading: Ingesta total diaria de agua
+  rule_text: |-
+    Usa 2.0 L/día (mujeres) y 2.5 L/día (hombres) de agua total, procedente de bebidas y alimentos, como referencia, no como un objetivo que haya que beber además de la comida. Haz del agua la bebida por defecto, bebe más los días de entrenamiento y cuando haga calor, y usa el color de la orina y la sed como comprobaciones diarias en lugar de contar litros.
+  applies_to: |-
+    Adultos sanos con temperatura y actividad moderadas. No se aplica a la restricción de líquidos por motivos médicos (insuficiencia cardiaca o renal).
+  conflicts: |-
+    Son ingestas adecuadas basadas en datos poblacionales, no necesidades demostradas. Ninguna evidencia muestra que beber muy por encima de ellas ayude a perder grasa o a la salud.
+- key: nutrition/older-adults-and-thirst
+  source_hash: 341112147641f065caabb3b2bc1a1f020ad9cd56ac5f88f9442d81996e1786cb
+  status: machine
+  heading: Mayores y sed
+  rule_text: |-
+    No te fíes solo de la sed en clientes de unos 65 años o más. Ofrece al menos 1.6 L (mujeres) o 2.0 L (hombres) de bebida al día como mínimo, no como un objetivo que haya que forzar. Planifica la bebida a horas fijas (con cada comida, antes y después de entrenar), ten una botella a la vista durante las sesiones y deriva al médico de cabecera si un cliente tiene mareos, confusión o toma diuréticos.
+  applies_to: |-
+    Personas mayores, sobre todo frágiles; el efecto en mayores sanos y activos que van al gimnasio no está cuantificado.
+  conflicts: |-
+    Dos declaraciones de guías, sin un metaanálisis cuantitativo. La restricción de líquidos por motivos médicos (insuficiencia cardiaca o renal, algunos medicamentos) tiene prioridad.
+- key: nutrition/fluid-during-exercise-and-sweat-rate
+  source_hash: 913f7b982342b7d9b939119b61325111550851ae3cde54f80696e6321172bbcc
+  status: machine
+  heading: Líquidos durante el ejercicio y tasa de sudoración
+  rule_text: |-
+    Para una sesión de gimnasio típica de 45-75 min, llega hidratado bebiendo con normalidad durante el día (si hay una clara falta de hidratación, bebe unos 5-7 mL/kg unas 4 h antes, y otros 3-5 mL/kg unas 2 h antes si la orina sigue oscura o no hay), y después bebe según la sed. Para sesiones largas o con calor, pésate antes y después (con la mínima ropa y secado con toalla): una pérdida por debajo del 2% está bien, por encima del 2% significa beber más la próxima vez, y cualquier aumento de peso significa que se ha bebido demasiado.
+  applies_to: |-
+    Evidencia procedente sobre todo del ejercicio de resistencia en hombres jóvenes, a menudo entrenados. Las sesiones cortas de fuerza en un gimnasio fresco rara vez llegan al 2%.
+  conflicts: |-
+    Se califica como moderada porque el ACSM y la DGE discrepan: el umbral del 2% del ACSM frente al 2-4% de la DGE respalda un rango, no un punto de corte nítido. Los planes personalizados del ACSM contrastan con el beber según la sed de la DGE; ambos coinciden en evitar grandes pérdidas y el aumento de peso.
+- key: nutrition/mild-dehydration-and-strength
+  source_hash: 3231907dfad2b42084959373a4f77dee6a883161c2de6e54f4ed9a4bb847f99f
+  status: machine
+  heading: Deshidratación leve y fuerza
+  rule_text: |-
+    Considera que empezar una sesión claramente deshidratado (tras un día caluroso, sauna, resaca o un ayuno largo con poco líquido) supone probablemente una caída de unos pocos puntos porcentuales en la fuerza y en la capacidad de hacer repeticiones, que se corrige bebiendo con normalidad antes. No prescribas "hiperhidratación" ni productos de electrolitos para las sesiones de gimnasio corrientes.
+  applies_to: |-
+    Estudios de laboratorio con deshidratación inducida a propósito; es poco probable que los usuarios de gimnasio corrientes que beben con normalidad lleguen a estos niveles.
+  conflicts: |-
+    El agua perdida no se correlacionó con el rendimiento perdido, así que parte del efecto puede deberse al calor o al ejercicio utilizados para deshidratar a los participantes.
+- key: nutrition/overdrinking-and-hyponatraemia
+  source_hash: c6c52e946e88473ef4132af8a481f831252916abdb1699da61c0c31397c8761f
+  status: machine
+  heading: Beber en exceso e hiponatremia
+  rule_text: |-
+    Nunca digas a los clientes que beban todo lo posible o según un horario fijo sin tener en cuenta la sed. En pruebas largas (de más de unas 2-4 h, como un primer maratón o una caminata larga), deben beber según la sed y no deben terminar pesando más que al empezar. Dolor de cabeza, náuseas, confusión o hinchazón tras beber mucho durante una prueba larga significan buscar atención médica, no beber más agua.
+  applies_to: |-
+    Principalmente pruebas de resistencia prolongadas, sobre todo en participantes recreativos lentos; muy improbable en sesiones de gimnasio.
+  conflicts: |-
+    La evidencia es en gran parte observacional. Un aparente mayor riesgo en las mujeres desapareció al ajustar por IMC y tiempo de carrera. El antiguo consejo de "beber antes de tener sed" se ha abandonado. Un autor de la DGE declaró financiación del European Hydration Institute.
+- key: nutrition/sodium-in-long-sessions-and-rehydration
+  source_hash: 730dd53edc81c859be3b837e098689168302460ce6f2ad96505044e056622ea8
+  status: machine
+  heading: Sodio en sesiones largas y rehidratación
+  rule_text: |-
+    Las sesiones de gimnasio corrientes de menos de unos 60-75 min solo necesitan agua; las comidas normales reponen el sodio. Sugiere una bebida con sodio (unos 400-1,100 mg/L) solo para sesiones de más de 1-2 h aproximadamente, sudoración intensa, calor o costras de sal visibles. Para rehidratarse rápido antes de otra sesión el mismo día, bebe unos 1.5 L por kg perdido, a sorbos y con comida salada.
+  applies_to: |-
+    Evidencia en deportistas de resistencia. En quienes entrenan fuerza de forma recreativa y están a dieta, las bebidas deportivas sobre todo añaden azúcar y energía.
+  conflicts: |-
+    El sodio del sudor varía mucho. Los clientes en tratamiento para la tensión arterial o con restricción de sal no deberían añadir bebidas con sodio sin consejo médico. Los rangos de sodio recomendados difieren entre organismos.
+- key: nutrition/salt-limits
+  source_hash: ebe158121d1c2f8f97e0104099ab7ef044027e1ba9999981f39949aadf660c63
+  status: machine
+  heading: Límites de sal
+  rule_text: |-
+    Apunta a menos de 5 g de sal al día (menos de 2 g de sodio). Enseña a leer las etiquetas: las etiquetas de la UE indican la sal, y sal = sodio × 2.5. Prioriza reducir los embutidos y curados, los platos preparados, los snacks salados, el pan y el queso, y cocinar en casa. Si se usa sal, que sea yodada.
+  applies_to: |-
+    Población adulta general. Quienes sudan mucho en sesiones largas con calor pueden necesitar sodio extra solo en torno al entrenamiento.
+  conflicts: |-
+    Algunos estudios de cohortes observan mayor mortalidad con ingestas de sodio muy bajas, algo que se discute (véase "Reducción de sal en personas normotensas"). Los adultos españoles están muy por encima de 5 g, así que el consejo va en la dirección segura.
+- key: nutrition/salt-reduction-lowers-blood-pressure
+  source_hash: af4b1bebf7496eb63d131f61923d25b38015efaebe4b62798565d131e8777d32
+  status: machine
+  heading: Reducir la sal baja la tensión arterial
+  rule_text: |-
+    Presenta la reducción de sal como una forma demostrada y dependiente de la dosis de bajar la tensión arterial, sobre todo en clientes de más de unos 45 años, con tensión arterial normal-alta o alta, o con antecedentes familiares. El beneficio se acumula a lo largo de semanas. Combínala con pérdida de peso, ejercicio y más fruta y verdura, y nunca la uses para sustituir la medicación prescrita.
+  applies_to: Adultos con o sin hipertensión, en su mayoría de mediana edad.
+  conflicts: |-
+    La sensibilidad a la sal varía; los efectos son pequeños en personas jóvenes normotensas. Heterogeneidad entre ensayos (I² 52-75%).
+- key: nutrition/salt-reduction-in-normotensive-people
+  source_hash: ee716ac196100812d316db21232564f995e1ce36cd026f037ed88d14e28c638c
+  status: machine
+  heading: Reducción de sal en personas normotensas
+  rule_text: |-
+    No vendas en exceso la restricción de sal a clientes jóvenes, delgados y con tensión arterial normal como una gran palanca de salud; preséntala como un beneficio moderado, mayor con hipertensión y a mayor edad. No impulses una restricción extrema (muy por debajo de unos 1.5 g de sodio) sin supervisión médica. El objetivo práctico es pasar de unos 9-11 g hacia 5 g de sal, no llegar a cero.
+  applies_to: |-
+    Sobre todo ECA a corto plazo con grandes contrastes de sodio; la preocupación sobre la mortalidad es observacional y se cita aquí de segunda mano a partir de los antecedentes de la revisión.
+  conflicts: |-
+    Las revisiones discrepan sobre el tamaño del efecto en personas normotensas (los ensayos más largos muestran más). La curva en J se discute, y la OMS mantiene su recomendación fuerte de <2 g de sodio.
+- key: nutrition/potassium-enriched-salt-substitutes
+  source_hash: 06ba9afde9b02ad3aa78910cafa82ad29746232f1cb81e0b34458a569dc8fd0c
+  status: machine
+  heading: Sustitutos de la sal enriquecidos con potasio
+  rule_text: |-
+    Si un cliente sala la comida, es razonable sugerir una sal baja en sodio enriquecida con potasio, pero solo tras confirmar que no tiene enfermedad renal ni toma diuréticos ahorradores de potasio, IECA/ARA-II o suplementos de potasio; si hay dudas, deriva a su médico de cabecera. No sugieras comprimidos de potasio. Recuérdale que la mayor parte de la sal en una dieta española u occidental procede de alimentos procesados y de restaurante.
+  applies_to: |-
+    Adultos sin insuficiencia renal, excluidos el embarazo y los niños. Los datos de desenlaces duros proceden de adultos chinos mayores de alto riesgo con un alto uso de sal en casa.
+  conflicts: |-
+    La OMS la calificó como condicional porque la certeza global era baja y es posible que haya problemas de excreción de potasio sin diagnosticar. Los datos sobre hiperpotasemia eran escasos.
+- key: nutrition/no-protective-level-of-alcohol
+  source_hash: dfcb2eb77f740d0cf87ba82d590ff3246c2c9a3896a125f5e3f10b410387ab23
+  status: machine
+  heading: Ninguna cantidad de alcohol protege
+  rule_text: |-
+    Nunca recomiendes beber por salud ("una copa de vino es buena para el corazón" no está respaldado). Aconseja que cuanto menos, mejor: a los clientes que beben, que reduzcan la frecuencia y la cantidad y eviten los atracones de alcohol, respetando sus decisiones sin moralizar. Deriva a su médico de cabecera si sospechas un consumo problemático.
+  applies_to: Población adulta general; datos observacionales.
+  conflicts: |-
+    Zhao encuentra una asociación nula, no perjudicial, con volúmenes bajos, mientras que el GBD y la OMS concluyen que cero minimiza el riesgo, sobre todo por el cáncer. El riesgo absoluto con ingestas muy bajas es pequeño. Los hallazgos anteriores de curva en J se atribuyen al sesgo de los abstemios y a la elección del grupo de comparación.
+- key: nutrition/spanish-low-risk-limits-and-binge-drinking
+  source_hash: 445db4f7ec738eec2d26ec68f1203c3b5e1e19ffdccab91b5311ce38fc999581
+  status: machine
+  heading: Límites de bajo riesgo en España y consumo intensivo
+  rule_text: |-
+    Cuenta el alcohol en unidades de bebida estándar españolas (UBE, 10 g). Trata 2 UBE/día (hombres) y 1 UBE/día (mujeres) como límites máximos, no como cantidades permitidas, y recomienda al menos 2 días sin alcohol a la semana. Señala como prioridad los atracones de fin de semana (≥6 UBE en hombres, ≥4 UBE en mujeres en una misma ocasión) aunque la media semanal parezca baja. Los clientes embarazadas, en lactancia, menores de 18 años, que vayan a conducir o que tomen medicación que interactúe deberían beber cero; en el caso de la medicación, que lo consulten con su médico o farmacéutico. Durante la pérdida de grasa, apunta a lo mínimo que el cliente vaya a aceptar de forma sostenible.
+  applies_to: |-
+    Adultos en España. Otros países definen la bebida estándar de otra forma (14 g en EE. UU., unidad de 8 g en Reino Unido), así que convierte a gramos.
+  conflicts: |-
+    La diferenciación por sexo procede de la nota de prensa, no de los folletos. Los "criterios de riesgo" clínicos del ministerio (>4 UBE/día en hombres, >2-2.5 en mujeres) son más altos y no deben confundirse con los límites de bajo riesgo.
+- key: nutrition/energy-content-of-alcohol
+  source_hash: 6c111cee2199ec63072a81ff493d5b5ee421d71e87329fd5ebafa35e9df4f3cf
+  status: machine
+  heading: Contenido energético del alcohol
+  rule_text: |-
+    Registra el alcohol a 7 kcal/g (unas 70 kcal por UBE) más los hidratos de carbono de la bebida. Gramos de alcohol = mL × %ABV × 0.789 / 100. Muestra a los clientes el total semanal: 2 cañas al día son unas 140 kcal solo de etanol, aproximadamente 1,000 kcal a la semana.
+  applies_to: Factor energético regulatorio universal.
+  conflicts: |-
+    Parte de la energía del alcohol puede perderse como calor y el metabolismo puede ser distinto en bebedores crónicos importantes; no se revisó ninguna fuente que lo cuantifique, así que cuenta las 7 kcal/g completas.
+- key: nutrition/alcohol-increases-food-intake
+  source_hash: d84031e84f2603a97b7e936b8a8fb4e639a0a23b1e5059214c583a7d3dd20de3
+  status: machine
+  heading: El alcohol aumenta la ingesta de comida
+  rule_text: |-
+    Durante la pérdida de grasa, presupuesta tanto la comida extra como las bebidas: cuenta con que una ocasión de consumo añade en total unas 250+ kcal. Planifica la comida antes de beber, fija de antemano un límite de bebidas, alterna con agua o bebidas sin alcohol, ten a mano comida rica en proteína y de baja densidad energética, y evita beber con el estómago vacío a altas horas de la noche.
+  applies_to: |-
+    Adultos sanos, en su mayoría de 18-37 años, en estudios de laboratorio agudos de una sola ocasión.
+  conflicts: |-
+    Heterogeneidad considerable y efectos de estudios pequeños; algunas personas comen menos cuando beben.
+- key: nutrition/alcohol-and-body-weight
+  source_hash: 67c529842e3ad59892672f7834671d600726a5257ee4353a072d46cff32f3aa9
+  status: machine
+  heading: Alcohol y peso corporal
+  rule_text: |-
+    No afirmes que cualquier cantidad de alcohol hace ganar peso automáticamente, ni que beber poco es inocuo para la pérdida de grasa. Las calorías y la comida extra son reales a corto plazo; el consumo elevado (unas 3+ UBE/día) y los atracones se asocian a más grasa abdominal en datos transversales; dejar el alcohol suele ser una de las formas más fáciles de reducir calorías. Valóralo según la ingesta y el patrón reales del cliente.
+  applies_to: |-
+    Datos observacionales de adultos de distintos países. No se aplica a personas con trastorno por consumo de alcohol, que necesitan derivación.
+  conflicts: |-
+    Los resultados de cohortes y transversales discrepan, con factores de confusión e ingesta autodeclarada. Los consejos populares van más allá de la evidencia en ambas direcciones.
+- key: nutrition/alcohol-after-training
+  source_hash: 7669eaa8f196644c5a13aa80ce3b793a7612ce5d862060fcb582479ca97b4fac
+  status: machine
+  heading: Alcohol después de entrenar
+  rule_text: |-
+    Desaconseja beber mucho después de sesiones de entrenamiento duras, sobre todo en forma de atracón, porque probablemente atenúa la recuperación incluso cuando se toma proteína. Mantén igualmente la comida con proteína después de entrenar. No afirmes que una o dos copas arruinan de forma medible las ganancias; eso no se ha demostrado.
+  applies_to: |-
+    Hombres jóvenes activos, dosis de atracón, una sola sesión aguda, un desenlace sustituto a 8 h.
+  conflicts: |-
+    Un único estudio pequeño; no se han estudiado dosis moderadas, mujeres, personas mayores ni desenlaces a largo plazo.
+- key: nutrition/low-energy-availability-drives-hormonal-disruption
+  source_hash: e93e159626f7f47d3639588b96c39cf58138b27be94adce00c025f94fbfadde1
+  status: machine
+  heading: La baja disponibilidad energética provoca alteraciones hormonales
+  rule_text: |-
+    Al hacer dieta, evita combinar un déficit agresivo con un volumen de entrenamiento alto, y mantén unos hidratos de carbono adecuados a la carga de entrenamiento. Los déficits más pequeños son más seguros, ya que no se ha demostrado ningún punto de corte seguro de disponibilidad energética. No intentes corregir los síntomas hormonales cambiando solo el porcentaje de grasa.
+  applies_to: |-
+    Adultos de ambos sexos que hacen ejercicio; el ensayo de dosis-respuesta encaja razonablemente con mujeres principiantes en el gimnasio, pero no abarca a hombres ni a personas mayores.
+  conflicts: |-
+    El hallazgo de dosis-respuesta es un análisis secundario de un único ensayo pequeño. La susceptibilidad varía según factores moduladores individuales.
+- key: nutrition/reds-red-flags-and-referral
+  source_hash: d98e21b6ab1c50c1ea13255f4f9379f1feb276e677ded46af14b36975d074773
+  status: machine
+  heading: 'REDs: señales de alarma y derivación'
+  rule_text: |-
+    Considera posible una baja disponibilidad energética en cualquiera que combine un volumen de entrenamiento alto con una alimentación restringida, hombres incluidos. Vigila: pérdida de la regla o ciclos irregulares, libido baja o pérdida de las erecciones matutinas, fracturas por estrés o dolor óseo recurrentes, enfermedades frecuentes, fatiga persistente, rendimiento en descenso pese al entrenamiento y preocupación obsesiva por la comida o el peso. Si aparece alguna, deja de aumentar el déficit o la carga de entrenamiento y aconseja acudir a un médico especialista en medicina deportiva. El coach no diagnostica REDs ni aplica la herramienta de evaluación clínica, que requiere análisis de sangre y DXA.
+  applies_to: |-
+    Deportistas de élite y de competición, en su mayoría jóvenes; aplicarlo a usuarios de gimnasio es una extrapolación, ya que la prevalencia y la puntuación no están validadas en ellos.
+  conflicts: |-
+    La prevalencia varía según cómo se estime la disponibilidad energética. Los datos prospectivos de lesiones son autodeclarados y con IC amplios. No está definido si una fase de pérdida de grasa corta y deliberada cuenta como problemática.
+- key: nutrition/no-fixed-energy-availability-threshold
+  source_hash: f230229ca846fdc22681e45da956e4b600dc4db2213bcd9f88670e6b23bb9f92
+  status: machine
+  heading: No hay un umbral fijo de disponibilidad energética
+  rule_text: |-
+    No calcules la disponibilidad energética a partir de la ingesta registrada en una app y el gasto de un wearable para declarar a alguien seguro o en riesgo frente a un punto de corte de 30 kcal/kg de FFM. Usa en su lugar las tendencias: pérdida de peso persistente por debajo de un rango saludable, cambios menstruales, fatiga, intolerancia al frío y pérdida de libido. Cualquiera de ellas implica derivar, diga lo que diga el número calculado.
+  applies_to: |-
+    Mujeres que hacen ejercicio, desde la élite hasta las físicamente activas; evidencia menos directa para hombres y para quienes entrenan fuerza de forma recreativa.
+  conflicts: |-
+    El contenido divulgativo sigue citando 30 kcal/kg de FFM como una línea fija, igual que documentos de consenso más antiguos.
+- key: nutrition/menstrual-dysfunction-stop-and-refer
+  source_hash: 6778b254905c3d7f8698ef1dc3c9dcffae543e6e82a38b92fb0bfc78acc9679c
+  status: machine
+  heading: 'Alteraciones menstruales: para y deriva'
+  rule_text: |-
+    Pregunta a las mujeres que hacen dieta o entrenan duro por su ciclo al principio y con regularidad, y por la anticoncepción hormonal, que lo enmascara. Ante cualquier falta o irregularidad nueva de la regla durante una dieta o un entrenamiento intenso: pregunta por la ingesta, recomienda una visita al médico de cabecera y deja de aumentar el déficit. Si la regla falta durante 3 meses o más, o hay menos de 6 al año: detén el déficit, pasa a mantenimiento o a un pequeño superávit (aproximadamente +300-600 kcal/día), mantén un entrenamiento moderado y deriva a un médico o a ginecología/endocrinología. Nunca presentes la amenorrea como señal de estar lo bastante definida.
+  applies_to: |-
+    Mujeres premenopáusicas que hacen ejercicio (umbrales para adultas); no mujeres peri- ni posmenopáusicas.
+  conflicts: |-
+    Los puntos de corte son criterios de estratificación del riesgo, no diagnósticos; el primer nivel, más bajo (cualquier falta o irregularidad nueva de la regla), es un desencadenante de precaución del coaching, no un umbral de las fuentes. El tiempo de recuperación varía según los antecedentes, la situación de partida y los factores psicosociales.
+- key: nutrition/very-low-fat-diets-and-female-hormones
+  source_hash: 84ee2e9f9ff8aae62a8172fa6013f8382c6c6b0ca68358c2f7574f0c374ff08c
+  status: machine
+  heading: Dietas muy bajas en grasa y hormonas femeninas
+  rule_text: |-
+    No prescribas a las mujeres dietas muy bajas en grasa (por debajo de alrededor del 20% de la energía) a largo plazo. Trata los cambios del ciclo (reglas que faltan o se retrasan, ciclos mucho más largos) como una señal de alerta, causada normalmente por una baja disponibilidad energética más que por el porcentaje de grasa, y responde aumentando la ingesta energética y derivando.
+  applies_to: |-
+    Mujeres en estudios antiguos y pequeños, muchos diseñados para la investigación del cáncer de mama y no en personas que hacen ejercicio.
+  conflicts: |-
+    Los metaanálisis apuntan en direcciones distintas; el estudio de la fase folicular no fue aleatorizado y tuvo un orden fijo. Los efectos pueden estar confundidos por cambios en la energía y la fibra.
+- key: nutrition/low-fat-diets-and-testosterone-in-men
+  source_hash: 603238c0fb68ee7bfb6f3de69b737add42303a37da69f09fa5c82a4bf9b4605e
+  status: machine
+  heading: Dietas bajas en grasa y testosterona en hombres
+  rule_text: |-
+    No prometas que añadir grasa aumentará la testosterona, ni adviertas de que una cantidad moderada de grasa la hundirá. Mantén a los hombres en el 20% de la energía procedente de grasa o más como precaución. Si un cliente varón refiere libido baja, fatiga u otros síntomas de testosterona baja durante un corte agresivo, mira primero el déficit global, el sueño y el nivel de grasa corporal, y deriva en lugar de ajustar solo la grasa.
+  applies_to: |-
+    Sobre todo hombres adultos en ensayos pequeños; ninguno de los dos análisis estudió a personas entrenadas ni déficits energéticos.
+  conflicts: |-
+    Conclusiones opuestas; Whittaker 2021 tiene una fe de erratas cuyo contenido no pudo leerse. Un cambio pequeño dentro del rango normal puede no afectar a la ganancia muscular.
+- key: nutrition/eating-disorder-screening-brief-questions-as-a-prompt
+  source_hash: cdfd786b2d069a83212fef58df24d60ff896c3dab1c19759a9cad7bd53677a47
+  status: machine
+  heading: 'Cribado de trastornos alimentarios: preguntas breves como señal de alerta'
+  rule_text: |-
+    No existe ninguna herramienta de cribado universal obligatoria. En /setup, haz las cinco preguntas de tipo SCOFF como pie para una conversación, nunca como diagnóstico, y vuelve a ellas si aparecen señales de alerta. Cuando una respuesta sea parcial o poco clara, haz una pregunta aclaratoria antes de contarla. Un cribado positivo son 2 o más respuestas afirmativas claras, el punto de corte con el que se midieron las cifras de precisión que siguen; un único sí se anota, pero no es un cribado positivo. Un cribado positivo o cualquier señal de alerta ("Señales de alerta que justifican derivar" en recovery-habits.md, como el vómito autoinducido o una pérdida de peso rápida que preocupó a la persona o a otros) implica que el coach no fija un déficit calórico, objetivos de peso ni pesajes, y recomienda con tacto acudir al médico de cabecera o a un profesional de los trastornos de la conducta alimentaria sin etiquetar a la persona. Una respuesta negativa no descarta un TCA, sobre todo en hombres o con atracones, así que sigue observando la conducta.
+  applies_to: |-
+    Adultos; mejor validado en mujeres jóvenes con anorexia o bulimia; incierto en personas con más peso que buscan adelgazar.
+  conflicts: |-
+    Ningún estudio demuestra que el cribado en sí mejore los desenlaces, por eso las preguntas son un pie para conversar y no un cribado obligatorio. Kutz et al. consideran la evidencia insuficiente para todo el espectro de TCA del DSM-5 en el ámbito comunitario.
+- key: nutrition/eating-disorder-screen-ede-qs
+  source_hash: 2c740491c081e90dde0397dae27f1422a5002da63dd80692f7cbcd623378cf15
+  status: machine
+  heading: 'Cribado de trastornos alimentarios: EDE-QS'
+  rule_text: |-
+    El EDE-QS es opcional, nunca obligatorio, y puede usarse para un seguimiento repetido cuando el cliente está de acuerdo. Trata una puntuación de ≥15 como cualquier respuesta positiva en "Cribado de trastornos alimentarios: preguntas breves como señal de alerta": sin déficit, objetivos de peso ni pesajes, y con una conversación para derivar, nunca un diagnóstico; la mayoría de las personas por encima del punto de corte no tienen un TCA. Una puntuación que sube durante una dieta es motivo para pausar el déficit.
+  applies_to: |-
+    Adultos del Reino Unido, alrededor del 81% mujeres; no validado por separado en hombres ni en personas que buscan adelgazar.
+  conflicts: |-
+    El punto de corte procede de un único reanálisis con diagnóstico de TCA autodeclarado y sin validación externa. El VPP es menor donde los TCA son menos frecuentes.
+- key: nutrition/calorie-tracking-and-eating-disorder-risk
+  source_hash: 65049a5504a8307069d5e5ad19f253208e0a2ba3d6064f679dcdf45db8e7616c
+  status: machine
+  heading: Registro de calorías y riesgo de trastorno alimentario
+  rule_text: |-
+    Ofrece el registro numérico de calorías o macros solo a adultos sin ninguna respuesta positiva ni señal de alerta en las preguntas breves sobre trastornos alimentarios, como algo opcional y limitado en el tiempo, con alternativas no numéricas (método del plato, objetivos de proteína por comida, registro con fotos). No ofrezcas el registro ni ningún pesaje a nadie con una respuesta positiva o una señal de alerta, un TCA previo o signos de registro compulsivo (angustia por saltarse un registro, normas rígidas, ejercicio compensatorio); deja los números y deriva.
+  applies_to: |-
+    Adultos; lo tranquilizador se aplica a muestras de bajo riesgo y supervisadas, y las señales de daño, a adultos jóvenes y a personas con TCA.
+  conflicts: |-
+    La causalidad inversa es plausible. El riesgo se concentra en personas vulnerables más que en la población general.
+- key: nutrition/low-and-very-low-calorie-diets-need-clinical-supervision
+  source_hash: efb97947cc0056aba9cb2d52f56ee099151156278c342dc21fff1a78fe9c9098
+  status: machine
+  heading: Las dietas bajas y muy bajas en calorías requieren supervisión clínica
+  rule_text: |-
+    Nunca prescribas por debajo de unas 1,200 kcal/día para mujeres o 1,500 kcal/día para hombres sin supervisión clínica, y nunca prescribas la sustitución total de la dieta. VLCD (<800 kcal/día) solo bajo supervisión médica. Si el cálculo del déficit da por debajo del mínimo, o el cliente pide una dieta drástica, deriva al médico de cabecera o a un servicio especializado en control de peso. Prioriza los alimentos ricos en micronutrientes cerca del mínimo.
+  applies_to: |-
+    Adultos con sobrepeso u obesidad (guías del Reino Unido y EE. UU.); con más motivo aún a personas con normopeso, que no tienen indicación.
+  conflicts: |-
+    Los programas supervisados como DiRECT funcionan para la remisión de la diabetes tipo 2, así que la cuestión es la supervisión, no la eficacia. Las denominaciones de las guías difieren. El mínimo de 1,500 kcal/día para hombres es pragmático (el extremo inferior del rango dietético de 1,500-1,800 kcal/día de la AHA para hombres en "Tamaño del déficit para perder peso (sobrepeso y obesidad)"), no un umbral de supervisión de una guía; la cifra de 1,800 kcal/día para hombres del documento de recomendaciones sobre GLP-1 es un aviso de suficiencia de micronutrientes, no un mínimo.
+- key: nutrition/total-diet-replacement-minimums
+  source_hash: bc974356adafc36dc9b9e66403d2ce4a5001e53ed11979434bb8bf4ca9391188
+  status: machine
+  heading: Mínimos para la sustitución total de la dieta
+  rule_text: |-
+    Usa estas cifras solo para reconocer protocolos inseguros: una dieta casera por debajo de 600 kcal/día, o un plan muy restringido con menos de unos 75 g de proteína/día, no llega ni siquiera al mínimo de los productos de fórmula médicos. Nunca diseñes un plan de TDR; corresponde a un clínico. No uses la cifra de 30 g de hidratos de carbono para juzgar dietas bajas en hidratos corrientes con energía suficiente.
+  applies_to: |-
+    Productos de fórmula de TDR para adultos con sobrepeso u obesidad en la UE; una norma de producto, no un consejo dietético.
+  conflicts: |-
+    Cita los valores de ácidos grasos de 2021. NICE exige supervisión para cualquier dieta de 1,200 kcal/día o menos, más estricto que el margen de 8 semanas de la UE.
+- key: nutrition/diabetes-on-insulin-or-sulfonylureas
+  source_hash: f616f1be6d61735e1c762cc03ad8a6ba3cc69bf121b5d1bde2176f92065c4cdd
+  status: machine
+  heading: Diabetes con insulina o sulfonilureas
+  rule_text: |-
+    Si alguien tiene diabetes tipo 1, o tipo 2 tratada con insulina o una sulfonilurea (gliclazida, glimepirida, glibenclamida y similares), no empieces un plan con déficit, bajo en hidratos o keto, un ayuno ni un gran aumento del entrenamiento hasta que el clínico que lleva su diabetes haya revisado las dosis. Da solo apoyo general sobre hábitos, y dile que comunique cualquier síntoma de hipoglucemia. Pregunta también por la medicación para la tensión arterial, que puede tener que reducirse a medida que baja el peso.
+  applies_to: |-
+    Adultos con diabetes tipo 1 o tipo 2 con fármacos que pueden causar hipoglucemia. La tipo 2 tratada solo con metformina o solo con dieta tiene menor riesgo, pero igualmente conviene informar al clínico.
+  conflicts: |-
+    No existe un protocolo fijo de reducción de dosis para las dietas de adelgazamiento; las reducciones porcentuales de la ADA proceden de pautas para el ayuno y no son una regla general.
+- key: nutrition/chronic-kidney-disease
+  source_hash: cb8e43e0d159720a9b44e09aab718c2288d044b91e7c66505b42eb1863843052
+  status: machine
+  heading: Enfermedad renal crónica
+  rule_text: |-
+    En el alta inicial, pregunta por enfermedad renal, eGFR baja, proteínas en la orina, trasplante renal, o diabetes o hipertensión con afectación renal conocida. Con cualquier ERC diagnosticada, el objetivo de proteína lo fija el nefrólogo o el dietista-nutricionista renal. No uses los objetivos habituales de proteína de 1.6-2.2 g/kg/día, no subas la proteína por encima de la ingesta de la población general (unos 0.8 g/kg/día) sin aprobación del clínico, y no recomiendes creatina ni suplementos de proteína sin la aprobación de ese clínico.
+  applies_to: |-
+    Adultos con ERC diagnosticada; no demuestra que una ingesta alta de proteína dañe unos riñones sanos.
+  conflicts: |-
+    Esto prevalece sobre los objetivos de proteína para ganar músculo del resto de este archivo. La recomendación de KDIGO es débil/de certeza baja y su tope de 1.3 g/kg es un punto de práctica, por eso el coach deja la cifra al equipo renal en lugar de aplicar cualquiera de las dos.
+- key: nutrition/pregnancy
+  source_hash: 94137f23306bf962f443b73324fa4feb57ffd7c434b397e8eeb6f3fbf4579924
+  status: machine
+  heading: Embarazo
+  rule_text: |-
+    Si una clienta está embarazada, desactiva toda la programación con déficit, ayuno o muy baja en hidratos, orienta solo sobre alimentación saludable y actividad segura, y deja cualquier objetivo de peso a su matrona u obstetra. Si una clienta está planificando un embarazo, no prescribas por tu cuenta cortes agresivos ni muy bajos en hidratos. Si una usuaria de GLP-1 o tirzepatida está embarazada o planifica un embarazo, dile que contacte cuanto antes con quien se lo prescribió.
+  applies_to: |-
+    Personas embarazadas y, en lo relativo a los fármacos, personas en edad fértil que toman GLP-1 o tirzepatida. NG247 no abarca la etapa preconcepcional.
+  conflicts: |-
+    Los clínicos pueden fijar límites de ganancia de peso gestacional para mujeres con obesidad; es un objetivo clínico, no un déficit prescrito por el coach.
+- key: nutrition/breastfeeding
+  source_hash: cd04c35a1d555e3a8ee6a1d007f708f133c95f70f39d33bd418a98c49f31e153
+  status: machine
+  heading: Lactancia
+  rule_text: |-
+    Durante la lactancia: nada de cortes agresivos, VLCD, ayunos ni dietas muy bajas en hidratos. Mantén cualquier déficit moderado; unas 500 kcal/día es el nivel estudiado, y tratarlo como tope es una precaución. Espera a que la lactancia esté bien establecida, para si se ven afectados la producción de leche, la alimentación del bebé o su ganancia de peso, e implica a la matrona, la enfermera de pediatría o el médico de cabecera.
+  applies_to: Adultas lactantes en el posparto; ensayos pequeños y heterogéneos.
+  conflicts: |-
+    Los desenlaces de lactancia fueron autodeclarados. La respuesta de la producción de leche varía.
+- key: nutrition/under-18s
+  source_hash: a76a812b2146b102ff94006027d908d11cdd6af61d36f1269c6d6bb4996cf3fd
+  status: machine
+  heading: Menores de 18 años
+  rule_text: |-
+    Política de producto basada en las pautas citadas (no es una recomendación directa de estas fuentes): los usuarios menores de 18 años quedan fuera del alcance de esta plantilla; derívalos a un profesional pediátrico (pediatra o dietista-nutricionista pediátrico). Mientras tanto: sin objetivos de calorías, déficits, pesajes, objetivos de grasa corporal ni suplementos más allá de la comida. Orienta solo sobre hábitos generales (comidas regulares, proteína y vegetales, sueño, entrenamiento de fuerza y deporte que disfruten) y evita hablar de peso y de cuerpo. Cualquier control del peso pasa por un profesional pediátrico. Si notas señales de conducta alimentaria alterada, anímale a hablar con su padre, madre o cuidador y con su médico de cabecera.
+  applies_to: |-
+    Adolescentes de unos 12-17 años; fuera de la población objetivo, así que esto es una salvaguarda.
+  conflicts: |-
+    NICE permite dietas con control energético dentro de programas dirigidos por clínicos, y la AAP afirma que un tratamiento bien realizado no aumenta el riesgo de TCA. La prohibición del coach protege frente a las dietas sin supervisión. El informe de la AAP es de 2016.
+- key: nutrition/glp-1-and-tirzepatide-lean-mass-loss
+  source_hash: 0c7a92ccb2624bab94b402d223e876568b585402e19aa6d8330dd91632b18a86
+  status: machine
+  heading: 'GLP-1 y tirzepatida: pérdida de masa magra'
+  rule_text: |-
+    Explica a los usuarios de GLP-1 que aproximadamente entre una cuarta parte y dos quintas partes del peso perdido puede ser tejido magro, algo similar a la dieta sola en el grupo placebo de SURMOUNT-1. La composición corporal relativa suele mejorar, pero hay que proteger activamente el músculo y la fuerza. Controla la fuerza y la función (levantamientos clave, prensión, levantarse de la silla), no solo el peso, con especial atención a las personas mayores y a quienes pierden peso muy rápido.
+  applies_to: |-
+    Adultos con obesidad a dosis para la obesidad (SURMOUNT-1: IMC medio de 38, 73% mujeres). Las personas mayores y las personas con poca masa muscular son la principal preocupación, con subgrupos post hoc pequeños.
+  conflicts: |-
+    Laverde 2026 concluye que la pérdida de masa magra no debería considerarse una limitación; Lopes Menezes 2026 no puede descartar una pérdida clínicamente relevante en personas susceptibles. La masa magra por DXA incluye agua y órganos. SURMOUNT-1 fue financiado por el fabricante y tiene una fe de erratas que no pudo comprobarse.
+- key: nutrition/glp-1-users-protein-training-and-red-flags
+  source_hash: 01f3250f67585f31ea359d870c0d3e688ad352771e6b5c8ad4fb7a2627f0f1c4
+  status: machine
+  heading: 'Usuarios de GLP-1: proteína, entrenamiento y señales de alarma'
+  rule_text: |-
+    En usuarios de GLP-1 o tirzepatida, no añadas un déficit impuesto por el coach además del fármaco; el plan de peso es responsabilidad del clínico que lo prescribe, y esto prevalece sobre las reglas generales de déficit de este archivo. Orienta hacia un entrenamiento de fuerza progresivo al menos 3 veces por semana más unos 150 min de cardio moderado, y una proteína de unos 1.2-1.6 g/kg/día u 80-120 g/día salvo que el clínico indique otra cosa (calculada sobre la masa ajustada o la masa libre de grasa en personas con peso corporal elevado), repartida en comidas pequeñas que se adapten al apetito reducido. Si la ingesta baja de unas 1,200 kcal (mujeres) o 1,800 kcal (hombres), el aviso de suficiencia de micronutrientes del documento de recomendaciones, prioriza los alimentos densos en nutrientes y sugiere que hablen de suplementos y de seguimiento con quien se lo prescribe. Haz cribado del riesgo de TCA. Deriva de nuevo a quien lo prescribe ante vómitos persistentes, una ingesta muy baja, mareos, signos de un trastorno alimentario restrictivo, una pérdida de peso muy rápida o planes de embarazo. Nunca aconsejes sobre cambios de dosis.
+  applies_to: |-
+    Adultos con obesidad en tratamiento basado en GLP-1, sobre todo personas mayores y personas con poca fuerza. Puede que haya que reducir la proteína en la ERC (véase "Enfermedad renal crónica").
+  conflicts: |-
+    La regla de no añadir déficit es una inferencia del coach, no la establecen las fuentes. Ningún ECA demuestra todavía que una dosis concreta de proteína más entrenamiento preserve el músculo durante el tratamiento con GLP-1; un consenso Delphi de 2025 afirma que sus recomendaciones son sobre todo indirectas. No hay consenso sobre en qué masa corporal basar la proteína. La cautela del documento de recomendaciones sobre ≥2 g/kg queda por debajo de algunos objetivos deportivos.

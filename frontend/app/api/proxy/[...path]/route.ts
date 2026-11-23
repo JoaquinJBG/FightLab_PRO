@@ -1,19 +1,76 @@
 import { NextResponse } from "next/server";
-import { djangoFetch, djangoUpload } from "@/lib/api";
+import { djangoFetch, djangoRequest } from "@/lib/api";
+import { clientIpHeaders } from "@/lib/auth-forward";
+import { sharedRefresh } from "@/lib/refresh-flight";
 import {
   getAccess,
   getRefresh,
   setAuthCookies,
   setAccessCookie,
   clearAuthCookies,
+  setLangCookie,
 } from "@/lib/cookies";
+import {
+  isPathSafe,
+  isPrefixAllowed,
+  isBodyTooLarge,
+  isOriginAllowed,
+  buildProxyResponse,
+  isRefreshTokenExpiredOrMalformed,
+  classifyGatewayError,
+} from "@/lib/proxy-guard";
+
+// Backend en Render (plan free): hasta ~50 s en frío. Deja margen bajo los 60 s
+// que soporta una función de Vercel (plan Hobby).
+export const maxDuration = 60;
+
+// Solo la primera petición necesita margen para un cold start de Render. Si
+// Django ya respondió (aunque fuera con un 401), ya está despierto: el
+// refresh y el reintento posterior usan un timeout corto para no encadenar
+// hasta 3×55 s, muy por encima de maxDuration.
+const RETRY_TIMEOUT_MS = 15_000;
+
+// Presupuesto total de la petición, con margen bajo maxDuration. Cada paso
+// (petición, refresh, reintento) se recorta a lo que queda, así que el peor
+// caso nunca pasa de aquí; con menos de RETRY_TIMEOUT_MS no se intenta el
+// refresh porque no daría tiempo a completarlo.
+const DEADLINE_MS = 55_000;
 
 async function handle(req: Request, path: string[]) {
-  // Conserva los query params (?tz=, ?kind=, ?limit=…) al reenviar a Django
-  const target = "/" + path.join("/") + new URL(req.url).search;
+  const deadline = Date.now() + DEADLINE_MS;
+  const remaining = () => deadline - Date.now();
+  if (!isPathSafe(path) || !isPrefixAllowed(path)) {
+    return NextResponse.json({ detail: "Ruta no permitida" }, { status: 404 });
+  }
+
+  const selfOrigin = new URL(req.url).origin;
+  if (!isOriginAllowed(req.method, req.headers.get("origin"), selfOrigin)) {
+    return NextResponse.json({ detail: "Origen no permitido" }, { status: 403 });
+  }
+
+  if (isBodyTooLarge(req.headers.get("content-length"))) {
+    return NextResponse.json({ detail: "El cuerpo supera el límite de 10 MB" }, { status: 413 });
+  }
+
+  // Conserva los query params (?tz=, ?kind=, ?limit=…) al reenviar a Django.
+  // Defensa en profundidad: encodeURIComponent además de isPathSafe. Un
+  // segmento ya pasó la allowlist estricta de isSegmentSafe, así que esto no
+  // debería cambiar nada para una ruta legítima, pero evita que cualquier
+  // carácter que se colara igualmente acabe interpretado como separador o
+  // como "." / ".." por el parser de URL de fetch.
+  const target = "/" + path.map(encodeURIComponent).join("/") + new URL(req.url).search;
   const method = req.method;
   const contentType = req.headers.get("content-type") ?? "";
   const isMultipart = contentType.startsWith("multipart/form-data");
+  // La IP real del cliente, firmada con BFF_SHARED_SECRET, para que el
+  // throttling de Django no la confunda con la del propio BFF. Reenviar
+  // X-Forwarded-For tal cual no vale: es una cabecera que controla el
+  // propio cliente, así que cualquiera podría falsificarla para saltarse
+  // el límite si además se llamara directamente al backend público de
+  // Render. Django solo se fía de esta IP cuando viene con el secreto
+  // correcto (ver backend/users/throttling.py); sin BFF_SHARED_SECRET,
+  // clientIpHeaders() devuelve {} y el comportamiento es el de siempre.
+  const ipHeaders = clientIpHeaders(req);
 
   let body: unknown = undefined;
   let form: FormData | null = null;
@@ -28,34 +85,103 @@ async function handle(req: Request, path: string[]) {
     }
   }
 
-  const doReq = (acc: string | null) =>
-    isMultipart && form
-      ? djangoUpload(target, form, acc, method)
-      : djangoFetch(target, { method, body, access: acc });
+  const doReq = (acc: string | null, timeoutMs?: number) =>
+    form
+      ? djangoRequest(target, { method, body: form, access: acc, headers: ipHeaders, timeoutMs })
+      : djangoRequest(target, {
+          method,
+          headers: { "Content-Type": "application/json", ...ipHeaders },
+          body: body !== undefined ? JSON.stringify(body) : undefined,
+          access: acc,
+          timeoutMs,
+        });
 
-  let access = await getAccess();
-  let r = await doReq(access);
+  try {
+    let access = await getAccess();
+    let upstream = await doReq(access, remaining());
 
-  if (r.status === 401) {
-    const refresh = await getRefresh();
-    if (!refresh) {
-      await clearAuthCookies();
-      return NextResponse.json({ detail: "No autenticado" }, { status: 401 });
+    if (upstream.status === 401) {
+      // 504 y no 401: un 401 haría que el cliente cierre sesión por un simple
+      // problema de tiempo.
+      if (remaining() < RETRY_TIMEOUT_MS) {
+        return NextResponse.json(
+          { detail: "El backend ha tardado demasiado en responder" },
+          { status: 504 },
+        );
+      }
+      const refreshBefore = await getRefresh();
+      if (!refreshBefore) {
+        await clearAuthCookies();
+        return NextResponse.json({ detail: "No autenticado" }, { status: 401 });
+      }
+      // 401 solo si el refresh es inservible de verdad; cualquier otro fallo
+      // es 503 (el cliente cierra sesión ante un 401 y se perdería un refresh
+      // aún válido).
+      const refreshUnavailable = () =>
+        NextResponse.json({ code: "refresh_unavailable" }, { status: 503 });
+      let ref: { status: number; data: unknown };
+      try {
+        // Single-flight (F30): las peticiones simultáneas con el mismo refresh comparten uno.
+        ref = await sharedRefresh(refreshBefore, () =>
+          djangoFetch("/auth/refresh", {
+            method: "POST",
+            body: { refresh: refreshBefore },
+            timeoutMs: Math.min(RETRY_TIMEOUT_MS, remaining()),
+            headers: ipHeaders,
+          }),
+        );
+      } catch {
+        return refreshUnavailable();
+      }
+      if (ref.status === 200 && ref.data && typeof ref.data === "object") {
+        const d = ref.data as { access: string; refresh?: string };
+        if (d.refresh) await setAuthCookies(d.access, d.refresh);
+        else await setAccessCookie(d.access);
+        access = d.access;
+        const left = remaining();
+        if (left < RETRY_TIMEOUT_MS) {
+          return NextResponse.json(
+            { detail: "El backend ha tardado demasiado en responder" },
+            { status: 504 },
+          );
+        }
+        upstream = await doReq(access, RETRY_TIMEOUT_MS);
+      } else {
+        // Solo se borran las cookies si el refresh que teníamos ya no sirve
+        // (expirado o mal formado). Una petición concurrente puede haber
+        // rotado fl_refresh justo mientras este refresh fallaba (red, 500 de
+        // Django…); comparar cookies antes/después de esta misma petición no
+        // detecta esa rotación (cookies() ve el jar de ESTA petición, no el
+        // Set-Cookie que puso otra en paralelo), así que en vez de eso se
+        // decodifica el propio token para decidir.
+        const unusable = isRefreshTokenExpiredOrMalformed(refreshBefore);
+        const rejected = ref.status === 401 || ref.status === 400;
+        if (unusable) await clearAuthCookies();
+        if (unusable || rejected) {
+          return NextResponse.json({ detail: "Sesión expirada" }, { status: 401 });
+        }
+        return refreshUnavailable();
+      }
     }
-    const ref = await djangoFetch("/auth/refresh", { method: "POST", body: { refresh } });
-    if (ref.status === 200 && ref.data && typeof ref.data === "object") {
-      const d = ref.data as { access: string; refresh?: string };
-      if (d.refresh) await setAuthCookies(d.access, d.refresh);
-      else await setAccessCookie(d.access);
-      access = d.access;
-      r = await doReq(access);
-    } else {
-      await clearAuthCookies();
-      return NextResponse.json({ detail: "Sesión expirada" }, { status: 401 });
+
+    const res = await buildProxyResponse(upstream);
+    // El idioma guardado en el perfil manda: se copia a la cookie `flp_lang` (spec §6.2).
+    if (res.status === 200 && path.join("/") === "me/profile") {
+      const data: unknown = await res.clone().json().catch(() => null);
+      if (data && typeof data === "object") {
+        await setLangCookie((data as { language?: unknown }).language);
+      }
     }
+    return res;
+  } catch (err) {
+    // Timeout (cold start que no llega a tiempo) o fallo de red al hablar con
+    // Django: sin este catch, el error se propaga como un 500 genérico. Antes
+    // del refresh esto podía además encadenar hasta 3 llamadas de hasta 55 s,
+    // muy por encima de maxDuration=60; RETRY_TIMEOUT_MS ya acorta el refresh
+    // y el reintento.
+    const { status, detail } = classifyGatewayError(err);
+    return NextResponse.json({ detail }, { status });
   }
-
-  return NextResponse.json(r.data ?? {}, { status: r.status });
 }
 
 type Ctx = { params: Promise<{ path: string[] }> };
@@ -66,6 +192,9 @@ export async function POST(req: Request, ctx: Ctx) {
   return handle(req, (await ctx.params).path);
 }
 export async function PATCH(req: Request, ctx: Ctx) {
+  return handle(req, (await ctx.params).path);
+}
+export async function PUT(req: Request, ctx: Ctx) {
   return handle(req, (await ctx.params).path);
 }
 export async function DELETE(req: Request, ctx: Ctx) {

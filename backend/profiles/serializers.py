@@ -1,7 +1,8 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.urls import reverse
 from rest_framework import serializers
 
-from .models import BiometricsLog, ProgressPhoto, UserProfile
+from .models import PROFILE_COACH_FIELDS, BiometricsLog, ProgressPhoto, UserProfile
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -10,6 +11,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = (
             "date_of_birth", "gender", "height_cm",
             "dominant_stance", "preferred_units", "timezone",
+            *PROFILE_COACH_FIELDS,
         )
 
 
@@ -23,22 +25,23 @@ class BiometricsSerializer(serializers.ModelSerializer):
     class Meta:
         model = BiometricsLog
         fields = (
-            "id", "weight_kg", "body_fat_pct", "resting_heart_rate",
+            "id", "weight_kg", "body_fat_pct", "body_fat_method", "resting_heart_rate",
             "sleep_quality_score", "hrv_ms",
             "waist_cm", "hip_cm", "chest_cm", "arm_cm", "thigh_cm", "neck_cm",
             "timestamp", "source", "external_id", "raw_payload",
         )
-        read_only_fields = ("id",)
+        read_only_fields = ("id", "source", "external_id", "raw_payload")
         extra_kwargs = {"timestamp": {"required": False}}
 
 
 class ProgressPhotoSerializer(serializers.ModelSerializer):
-    image = serializers.SerializerMethodField()
+    file_url = serializers.SerializerMethodField()
 
     class Meta:
         model = ProgressPhoto
-        fields = ("id", "image", "taken_at")
+        fields = ("id", "file_url", "taken_at")
 
-    def get_image(self, obj) -> str:
-        # Ruta relativa (/media/...): el frontend la sirve a través de su proxy.
-        return obj.image.url
+    def get_file_url(self, obj) -> str:
+        # Ruta relativa a la API (incluye /api/v1, sin dominio): el frontend la
+        # pide a través de /api/proxy, que reenvía binarios (paquete D).
+        return reverse("photos-file", args=[obj.pk])
