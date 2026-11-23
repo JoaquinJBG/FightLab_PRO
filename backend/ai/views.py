@@ -1,34 +1,170 @@
 import json
+import logging
+from io import BytesIO
 
 import anthropic
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
-from . import services
+from core.messages import msg
+from profiles.image_processing import UnsupportedImageError, UnsupportedImageFormatError, load_bounded
+from userstate.selectors import state_get_many
 
-MAX_PHOTO_BYTES = 8 * 1024 * 1024  # 8 MB
+from . import chat_safety, quota, services
+from .models import AIUsage
+
+logger = logging.getLogger(__name__)
+
+# El límite real de Anthropic para imágenes ronda los 5 MB en base64; nos quedamos
+# por debajo para tener margen y no depender de la codificación exacta.
+MAX_PHOTO_BYTES = 4 * 1024 * 1024  # 4 MB
+# Lado largo recomendado por Anthropic: por encima no mejora la comprensión de la
+# imagen y solo añade tokens (coste) y tiempo de subida.
+MAX_PHOTO_LONG_SIDE = 1568
 MAX_MESSAGES = 20
 MAX_MESSAGE_CHARS = 2000
 MAX_CONTEXT_CHARS = 2000  # el contexto legítimo ocupa ~300; esto frena el abuso de tokens
 # Solo las claves que el frontend envía de verdad: lo demás no entra al prompt
 CONTEXT_KEYS = {
-    "semana_au", "acwr", "acwr_provisional", "dias_historial_carga", "monotonia",
+    "semana_au", "acwr", "semana_vs_media_pct", "dias_para_ratio", "historial_con_huecos",
+    "dias_historial_carga", "monotonia",
     "recuperacion", "peso_kg", "dias_desde_ultimo_peso", "pesaje",
 }
 # Formatos de imagen que acepta la API de Anthropic
 MEDIA_TYPES = {"JPEG": "image/jpeg", "PNG": "image/png", "WEBP": "image/webp", "GIF": "image/gif"}
+FORMATOS_ACEPTADOS_TXT = "JPG, PNG, WebP o GIF"
+_PHOTO_FORMATS = frozenset(MEDIA_TYPES)
+
+_PROVIDER_ERRORS = (services.AIUnavailable, services.AIBadResponse, anthropic.APIError)
+
+
+def _quota_exceeded_response(kind: str) -> Response:
+    limit = quota.limit_for(kind)
+    if kind == AIUsage.Kind.CHAT:
+        detail = msg("ai_quota_chat", limit=limit)
+    else:
+        detail = msg("ai_quota_food", limit=limit)
+    return Response({"detail": detail, "code": "quota_daily"}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+
+def _budget_exceeded_response() -> Response:
+    return Response(
+        {
+            "detail": msg("ai_budget_daily"),
+            "code": "budget_daily",
+        },
+        status=status.HTTP_503_SERVICE_UNAVAILABLE,
+    )
+
+
+def _token_recorder(reservation: quota.Reservation) -> services.UsageSink:
+    def record(input_tokens: int, output_tokens: int) -> None:
+        quota.record_tokens(reservation, input_tokens=input_tokens, output_tokens=output_tokens)
+
+    return record
+
+
+def _provider_error_response(exc: Exception, *, bad_response_detail: str, saturated_detail: str, log_msg: str) -> Response:
+    if isinstance(exc, services.AIUnavailable):
+        return Response({"detail": msg("ai_not_configured")}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+    if isinstance(exc, services.AIBadResponse):
+        return Response({"detail": bad_response_detail}, status=status.HTTP_502_BAD_GATEWAY)
+    if isinstance(exc, anthropic.RateLimitError):
+        return Response({"detail": saturated_detail}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+    if isinstance(exc, anthropic.APITimeoutError):
+        return Response(
+            {"detail": msg("ai_timeout")},
+            status=status.HTTP_504_GATEWAY_TIMEOUT,
+        )
+    logger.exception("%s: %s", log_msg, exc)
+    return Response({"detail": msg("ai_service_error")}, status=status.HTTP_502_BAD_GATEWAY)
+
+
+def _coach_memory_for(profile) -> dict:
+    """Lee la memoria persistente del coach (P0.3) directamente del servidor.
+
+    Se lee de `UserState` (clave `coach_memory`) en vez de confiar en lo que
+    mande el cliente en el cuerpo de la petición: así no depende de que el
+    frontend la reenvíe en cada mensaje y no se puede falsear desde el cliente.
+    """
+    entry = state_get_many(profile=profile, keys=["coach_memory"]).first()
+    if entry is None:
+        return {}
+    memory = services.sanitize_coach_memory(entry.value)
+    if "objetivo_peso_kg" in memory:
+        # Con el pesaje bloqueado (`no_weight_targets`, spec §8.3) el objetivo de peso no llega al modelo.
+        from coaching import weigh_in
+        from coaching.safety_views import _today
+
+        if weigh_in.policy_for(profile.user, _today(profile)).blocked:
+            memory.pop("objetivo_peso_kg")
+    return memory
+
+
+class LiveScopedRateThrottle(ScopedRateThrottle):
+    """``ScopedRateThrottle`` que relee la tasa de los settings en cada petición.
+
+    ``ScopedRateThrottle.THROTTLE_RATES`` se congela como atributo de clase al
+    importar ``rest_framework.throttling`` (lee ``DEFAULT_THROTTLE_RATES`` una
+    sola vez), así que un scope añadido más tarde a ``settings.py`` (paquete A)
+    no se vería nunca si usáramos la clase base tal cual. Aquí lo leemos en
+    caliente (``self.scope`` ya lo rellena ``ScopedRateThrottle.allow_request``
+    a partir de ``view.throttle_scope``) y, si el scope todavía no está
+    configurado, no bloqueamos la beta por eso: la cuota diaria (``ai.quota``,
+    tabla ``AIUsage``) sigue siendo la protección real de coste mientras tanto.
+    """
+
+    def get_rate(self):
+        from django.conf import settings as dj_settings
+
+        rates = (getattr(dj_settings, "REST_FRAMEWORK", None) or {}).get("DEFAULT_THROTTLE_RATES", {})
+        return rates.get(self.scope)
+
+
+def _safety(user, memory: dict | None = None) -> tuple[bool, tuple[str, ...], tuple[str, ...]]:
+    """`refer_gp` de los flags del motor (o un `no_contact` de combate), las notas de seguridad
+    para el prompt y las reglas que esas notas piden citar. Si el motor no puede evaluar el perfil,
+    no hay línea por su parte: el chat no debe caerse por eso.
+
+    Las notas (F26): un golpe en la cabeza activo manda sobre todo lo demás, y una lesión activa
+    (del perfil o la que el atleta contó en «Contarle a mi coach») limita lo que afecta a esa zona."""
+    from coaching import safety_state
+    from coaching.safety_views import _today
+
+    # R4-13: el mismo estado de seguridad que leen todas las pantallas (`coaching.safety_state`)
+    state = safety_state.for_user(user, _today(user.profile))
+    refer_gp = state.engine_ok and state.flags.refer_gp
+    notes: list[str] = []
+    rules: list[str] = []
+    if state.no_contact:
+        notes.append(services.NO_CONTACT_NOTE)
+        rules.extend(services.NO_CONTACT_RULES)
+    areas = [i.area for i in state.injuries]
+    if memory and memory.get("lesion"):
+        areas.append(memory["lesion"])
+    if areas:
+        notes.append(services.injury_note(areas))
+        rules.append(services.INJURY_RULE)
+    if state.level != "ok":
+        notes.append(services.readiness_note(state.level, state.vigorous_blocked_by))
+    if state.fight.no_cut_content:
+        notes.append(services.NO_CUT_NOTE)
+    return refer_gp or state.no_contact, tuple(notes), tuple(rules)
 
 
 class CoachChatView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [LiveScopedRateThrottle]
+    throttle_scope = "ai-chat"
 
     def post(self, request):
         messages = request.data.get("messages")
         context = request.data.get("context") or {}
         if not isinstance(messages, list) or not messages or len(messages) > MAX_MESSAGES:
-            return Response({"detail": "Formato de mensajes inválido."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("chat_bad_messages")}, status=status.HTTP_400_BAD_REQUEST)
         for m in messages:
             if (
                 not isinstance(m, dict)
@@ -36,55 +172,123 @@ class CoachChatView(APIView):
                 or not isinstance(m.get("content"), str)
                 or len(m["content"]) > MAX_MESSAGE_CHARS
             ):
-                return Response({"detail": "Formato de mensajes inválido."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"detail": msg("chat_bad_messages")}, status=status.HTTP_400_BAD_REQUEST)
         if not isinstance(context, dict):
-            return Response({"detail": "Contexto inválido."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("chat_bad_context")}, status=status.HTTP_400_BAD_REQUEST)
         context = {k: v for k, v in context.items() if k in CONTEXT_KEYS}
         if len(json.dumps(context)) > MAX_CONTEXT_CHARS:
-            return Response({"detail": "Contexto demasiado grande."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("chat_context_too_large")}, status=status.HTTP_400_BAD_REQUEST)
 
+        user = request.user
+        if quota.global_budget_exceeded():
+            return _budget_exceeded_response()
+        memory = _coach_memory_for(user.profile)
+        refer_gp, safety_notes, safety_rules = _safety(user, memory)
+        # F3: dolor, lesión, golpe en la cabeza, mareo o fiebre en lo que escribe el atleta: la
+        # regla de seguridad va antes que cualquier consejo de carga.
+        topic = chat_safety.conversation_topic(messages)
+        if topic:
+            safety_notes = (chat_safety.safety_note(topic), *safety_notes)
+            safety_rules = (*chat_safety.RULES[topic], *safety_rules)
+
+        reservation = quota.reserve(user=user, kind=AIUsage.Kind.CHAT)
+        if reservation is None:
+            return _quota_exceeded_response(AIUsage.Kind.CHAT)
+        succeeded = False
         try:
-            reply = services.coach_chat(messages=messages, context=context)
-        except services.AIUnavailable:
-            return Response({"detail": "IA no configurada."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-        except services.AIBadResponse:
-            return Response({"detail": "La IA no devolvió una respuesta válida."}, status=status.HTTP_502_BAD_GATEWAY)
-        except anthropic.APIError:
-            return Response({"detail": "Error del servicio de IA."}, status=status.HTTP_502_BAD_GATEWAY)
-        return Response({"reply": reply})
+            reply = services.coach_chat(
+                messages=messages,
+                context=context,
+                language=user.profile.language,
+                refer_gp=refer_gp,
+                safety_notes=safety_notes,
+                memory=memory,
+                on_usage=_token_recorder(reservation),
+                safety_rules=safety_rules,
+            )
+            succeeded = True
+            return Response({"reply": reply.text, "citations": reply.citations})
+        except _PROVIDER_ERRORS as exc:
+            return _provider_error_response(
+                exc,
+                bad_response_detail=msg("ai_bad_chat_reply"),
+                saturated_detail=msg("ai_saturated_chat"),
+                log_msg="Fallo del SDK de Anthropic en el chat del coach",
+            )
+        finally:
+            if not succeeded:  # cualquier salida sin 2xx, incluida una excepción inesperada
+                quota.refund(reservation)
 
 
 class FoodPhotoView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [LiveScopedRateThrottle]
+    throttle_scope = "ai-food"
 
     def post(self, request):
         image = request.FILES.get("image")
         if image is None:
-            return Response({"detail": "Falta el archivo 'image'."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": msg("image_missing")}, status=status.HTTP_400_BAD_REQUEST)
         if image.size > MAX_PHOTO_BYTES:
-            return Response({"detail": "La imagen supera los 8 MB."}, status=status.HTTP_400_BAD_REQUEST)
-        # Valida el CONTENIDO (no solo la extensión) y saca el formato real.
-        # load() decodifica entera: caza imágenes truncadas (verify() es no-op en
-        # algunos formatos) y activa el límite anti decompression-bomb de Pillow.
-        try:
-            from PIL import Image
+            return Response({"detail": msg("image_too_large", mb=MAX_PHOTO_BYTES // (1024 * 1024))}, status=status.HTTP_400_BAD_REQUEST)
 
-            with Image.open(image) as img:
-                img.load()
-                fmt = img.format
-        except Exception:
-            return Response({"detail": "El archivo no es una imagen válida."}, status=status.HTTP_400_BAD_REQUEST)
-        media_type = MEDIA_TYPES.get(fmt or "")
-        if media_type is None:
-            return Response({"detail": "Formato no soportado: usa JPG, PNG o WebP."}, status=status.HTTP_400_BAD_REQUEST)
-        image.seek(0)  # verify() consume el stream
+        user = request.user
+        # Sin reservar aún: una petición sin cupo no debe pagar el coste de Pillow.
+        if not quota.has_quota(user=user, kind=AIUsage.Kind.FOOD):
+            return _quota_exceeded_response(AIUsage.Kind.FOOD)
+        if quota.global_budget_exceeded():
+            return _budget_exceeded_response()
 
         try:
-            result = services.food_photo_analyze(image_bytes=image.read(), media_type=media_type)
-        except services.AIUnavailable:
-            return Response({"detail": "IA no configurada."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-        except services.AIBadResponse:
-            return Response({"detail": "La IA no devolvió un análisis válido."}, status=status.HTTP_502_BAD_GATEWAY)
-        except anthropic.APIError:
-            return Response({"detail": "Error del servicio de IA."}, status=status.HTTP_502_BAD_GATEWAY)
-        return Response(result)
+            img, _ = load_bounded(image, max_side=MAX_PHOTO_LONG_SIDE, formats=_PHOTO_FORMATS)
+            buf = BytesIO()
+            img.save(buf, format="JPEG", quality=87)
+            photo_bytes = buf.getvalue()
+        except UnsupportedImageFormatError:
+            return Response(
+                {"detail": msg("image_unsupported_formats")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except UnsupportedImageError:
+            return Response(
+                {"detail": msg("image_too_many_pixels")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception:  # los plugins de Pillow lanzan de todo con bytes malformados (struct.error, IndexError...)
+            return Response({"detail": msg("image_invalid")}, status=status.HTTP_400_BAD_REQUEST)
+
+        reservation = quota.reserve(user=user, kind=AIUsage.Kind.FOOD)
+        if reservation is None:
+            return _quota_exceeded_response(AIUsage.Kind.FOOD)
+        succeeded = False
+        try:
+            result = services.food_photo_analyze(
+                image_bytes=photo_bytes, media_type="image/jpeg", on_usage=_token_recorder(reservation)
+            )
+            succeeded = True
+            return Response(result)
+        except _PROVIDER_ERRORS as exc:
+            return _provider_error_response(
+                exc,
+                bad_response_detail=msg("ai_bad_analysis"),
+                saturated_detail=msg("ai_saturated_food"),
+                log_msg="Fallo del SDK de Anthropic en el análisis de comida",
+            )
+        finally:
+            if not succeeded:
+                quota.refund(reservation)
+
+
+class QuotaView(APIView):
+    """Cupo diario restante de cada uso de IA, para que el cliente lo muestre."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(
+            {
+                "date": quota.today().isoformat(),
+                "coach": quota.status_for(user=request.user, kind=AIUsage.Kind.CHAT),
+                "photo": quota.status_for(user=request.user, kind=AIUsage.Kind.FOOD),
+            }
+        )

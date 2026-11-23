@@ -1,9 +1,54 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
+
+const isProd = process.env.NODE_ENV === "production";
+
+// CSP pensada para encajar con Next (App Router): permite 'unsafe-inline' en
+// estilo y script porque Next inyecta bootstrap y estilos inline en el HTML
+// generado, y no usamos nonces. Las fuentes de next/font se autohospedan en
+// el propio origen (se descargan en build), así que no hace falta abrir
+// font-src a dominios externos. img-src admite blob: y data: por las fotos
+// comprimidas en el cliente antes de subirlas, y las URLs firmadas de Cloudflare R2 de las fotos de
+// los tickets (fase 12: bucket privado; la URL la pide el dueño al backend y caduca).
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' blob: data: https://*.r2.cloudflarestorage.com",
+  "font-src 'self' data:",
+  "connect-src 'self'",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join("; ");
+
+const securityHeaders = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Content-Security-Policy", value: CSP },
+  // Vercel ya sirve por HTTPS; refuerza que el navegador nunca baje a HTTP.
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+];
 
 const nextConfig: NextConfig = {
-  // Permite servir el dev server a través del túnel HTTPS (cloudflared) para
-  // probar la PWA en el móvil sin avisos de origen cruzado.
-  allowedDevOrigins: ["*.trycloudflare.com"],
+  // No anunciar que el BFF corre sobre Next.js en la cabecera X-Powered-By.
+  poweredByHeader: false,
+  // Solo en desarrollo: permite servir el dev server a través del túnel HTTPS
+  // (cloudflared) para probar la PWA en el móvil sin avisos de origen cruzado.
+  // En producción no aplica (Vercel sirve desde el dominio propio).
+  ...(isProd ? {} : { allowedDevOrigins: ["*.trycloudflare.com"] }),
+  async headers() {
+    if (!isProd) return [];
+    return [
+      {
+        source: "/:path*",
+        headers: securityHeaders,
+      },
+    ];
+  },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

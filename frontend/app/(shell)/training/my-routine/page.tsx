@@ -1,89 +1,67 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { TrainingIcon, GloveIcon, MoonIcon, ChevronRight } from "@/components/icons";
+import { useLocale, useTranslations } from "next-intl";
+import { ChevronRight } from "@/components/icons";
+import { PlanView } from "@/components/plan/PlanView";
+import { PlanRoutines } from "@/components/routines/PlanRoutines";
+import { intlLocale } from "@/lib/locale";
+import { useWeeklyPlan } from "@/lib/plan";
+import { START_PATH, usePlanRoutines } from "@/lib/routines";
 
-const COACH = { name: "Carlos Méndez", role: "Tu entrenador", updated: "hace 2 días" };
-
-type Day = { day: string; type: "gym" | "mma" | "rest"; focus: string; items: string[] };
-const PLAN: Day[] = [
-  { day: "Lunes", type: "gym", focus: "Empuje", items: ["Press banca 4×8", "Press militar 3×10", "Fondos 3×12", "Extensión tríceps 3×15"] },
-  { day: "Martes", type: "mma", focus: "Boxeo · Técnica", items: ["Calentamiento 10'", "Sombra 3×3'", "Saco técnico 5×3'", "Estiramientos"] },
-  { day: "Miércoles", type: "gym", focus: "Tirón", items: ["Dominadas 4×8", "Remo con barra 4×10", "Curl bíceps 3×12", "Face pull 3×15"] },
-  { day: "Jueves", type: "mma", focus: "Muay Thai · Intensidad", items: ["Calentamiento", "Manoplas 5×3'", "Clinch 4×2'", "Acondicionamiento"] },
-  { day: "Viernes", type: "gym", focus: "Pierna", items: ["Sentadilla 5×5", "Peso muerto rumano 4×8", "Prensa 3×12", "Gemelos 4×15"] },
-  { day: "Sábado", type: "mma", focus: "Sparring", items: ["Calentamiento", "Sparring 5×3'", "Vuelta a la calma"] },
-  { day: "Domingo", type: "rest", focus: "Descanso", items: ["Movilidad y descanso activo"] },
-];
-
-const ICONS = { gym: TrainingIcon, mma: GloveIcon, rest: MoonIcon } as const;
-const TYPE_LABEL = { gym: "Gimnasio", mma: "MMA", rest: "Descanso" } as const;
-
+/* Mi rutina (F17): la carpeta de rutinas que genera el plan del coach, editables como cualquier
+   rutina, y debajo el plan con sus reglas. Sin plan aplicado, la página lleva a prepararlo. */
 export default function MyRoutinePage() {
-  const [done, setDone] = useState<Set<number>>(new Set());
-  const toggle = (i: number) => setDone((s) => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n; });
-  const trainingDays = PLAN.filter((d) => d.type !== "rest").length;
+  const t = useTranslations("training.myRoutine");
+  const tp = useTranslations("weeklyPlan");
+  const locale = intlLocale(useLocale());
+  const { data } = useWeeklyPlan();
+  const plan = data?.active;
+  const { data: generated } = usePlanRoutines(!!plan);
+
+  // Sesión del plan → su rutina generada (`plan:<id>:<sesión>`), si ya está al día.
+  const routineFor = (key: string) =>
+    plan && generated?.in_sync
+      ? generated.routines.find((r) => r.source === "plan" && r.source_ref === `plan:${plan.id}:${key}`)
+      : undefined;
 
   return (
-    <div className="pt-4">
-      <Link href="/training" className="t-label text-muted">← Entreno</Link>
-      <h1 className="t-display mt-2 text-2xl text-ink">Mi rutina</h1>
+    <div className="pt-4 pb-4">
+      <Link href="/training" className="t-label text-muted">{t("back")}</Link>
+      <h1 className="t-display mt-2 text-2xl text-ink">{t("title")}</h1>
 
-      {/* Coach */}
-      <div className="glass neon-edge mt-4 flex items-center gap-3 p-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full glass font-display text-neon">
-          {COACH.name.split(" ").map((p) => p[0]).join("")}
+      {plan ? (
+        <div data-testid="routine-active-plan">
+          <div className="glass neon-edge mt-4 flex items-center justify-between gap-3 p-4">
+            <p className="t-title text-sm text-ink">
+              {tp("routineActive", {
+                date: new Date(`${plan.week_start}T12:00:00`).toLocaleDateString(locale, { day: "numeric", month: "long" }),
+              })}
+            </p>
+            <Link href="/training/plan" className="t-label shrink-0 text-neon">{tp("routineEdit")}</Link>
+          </div>
+          <PlanRoutines planId={plan.id} />
+          <PlanView
+            plan={plan}
+            sessionAction={(s) => {
+              const r = routineFor(s.key);
+              return (
+                <Link
+                  href={r ? START_PATH(r.id) : `/training/gym/session?plan=${s.key}`}
+                  className="btn btn-tonal btn-sm mt-3 w-full"
+                >
+                  {tp("startSession", { key: s.key })}
+                </Link>
+              );
+            }}
+          />
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="t-title text-ink">{COACH.name}</p>
-          <p className="t-body text-xs text-muted">{COACH.role} · actualizada {COACH.updated}</p>
-        </div>
-        <span className="badge badge-neon">{trainingDays} días</span>
-      </div>
-
-      {/* Días */}
-      <div className="mt-4 flex flex-col gap-2.5">
-        {PLAN.map((d, i) => {
-          const Icon = ICONS[d.type];
-          const isDone = done.has(i);
-          const rest = d.type === "rest";
-          return (
-            <div key={d.day} className={`glass p-4 ${isDone ? "opacity-60" : ""}`}>
-              <div className="flex items-center gap-3">
-                <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${rest ? "text-muted bg-[rgba(150,190,255,0.06)]" : "text-neon bg-[rgba(69,233,255,0.07)]"}`}>
-                  <Icon className="h-5 w-5" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="t-title text-ink">{d.day}</p>
-                  <p className="t-body text-xs text-muted">
-                    <span className={rest ? "" : "text-neon"}>{TYPE_LABEL[d.type]}</span> · {d.focus}
-                  </p>
-                </div>
-                {!rest && (
-                  <button onClick={() => toggle(i)} aria-label="Marcar como hecho"
-                    className={`flex h-8 w-8 items-center justify-center rounded-full border text-sm transition-colors ${isDone ? "border-transparent bg-good text-[#03101c]" : "border-[rgba(150,190,255,0.25)] text-muted"}`}>
-                    ✓
-                  </button>
-                )}
-              </div>
-              {!rest && (
-                <ul className="mt-3 flex flex-col gap-1 border-t border-[rgba(150,190,255,0.1)] pt-3">
-                  {d.items.map((it) => (
-                    <li key={it} className="t-body flex items-center gap-2 text-sm text-muted">
-                      <ChevronRight className="h-3 w-3 shrink-0 text-neon" /> {it}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <p className="t-body mt-4 text-center text-xs text-muted">
-        Esta rutina la asigna y edita tu entrenador. El panel del coach llegará más adelante.
-      </p>
+      ) : (
+        <Link href="/training/plan" data-testid="routine-plan-cta" className="glass neon-edge mt-4 flex items-center justify-between gap-3 p-4">
+          <span className="t-title text-sm text-ink">{tp("routineCta")}</span>
+          <ChevronRight className="h-4 w-4 shrink-0 text-neon" />
+        </Link>
+      )}
     </div>
   );
 }

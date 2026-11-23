@@ -5,28 +5,79 @@ Invariantes del port (¡no romper la paridad con el motor local!):
 - Carga por sesión = round(duration_sec/60 × rpe), redondeada ANTES de sumar.
 - Bucket por día LOCAL del tz pedido (el frontend usa el día local del navegador).
 - history_days = días desde la primera actividad con rpe (toda la historia), +1, cap 28.
-- ACWR solo con history_days ≥ 10 y semana > 0; ventana crónica = últimos
-  history_days días (incluida la semana aguda); provisional hasta 28 días.
+- Ratio (ACWR) solo con history_days ≥ 28 y semana > 0; ventana crónica = los 28 días
+  (incluida la semana aguda). Antes, `ratio_days_left` dice cuántos faltan. Los 28 días
+  son una convención de FightLab (combat-sports "Show the load ratio only after 28 days
+  of history"); no hay ratio "provisional".
+- `week_vs_avg_pct`: la semana frente a la media semanal de 4 semanas, en % (lo que se
+  muestra, combat-sports "Present load as a neutral comparison with the recent average").
+- `gaps`: alguna de las 4 semanas sin carga (parón, lesión): el número puede engañar.
 - Monotonía con history_days ≥ 7 y carga en la semana; SD=0 → sin_variacion.
+- band: port 1:1 de computeLoadBand (frontend/lib/load.ts) — mismas ventanas
+  móviles de 7 días, mismo suelo de anchura (10% de mu) y mismos umbrales.
 """
-from datetime import datetime, time, timedelta
+import math
+from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-from django.db.models import F
+from django.db.models import Count, DecimalField, F, Sum
 from django.utils import timezone
 
 from .models import Activity
 
-# Math.round de JS para positivos (half-up); round() de Python es half-even
+LoadBandStatus = str  # "descarga" | "sostenible" | "elevada" | "alta"
+
+# Convención de FightLab: días de historial antes de mostrar el ratio
+RATIO_MIN_DAYS = 28
+
+
+# Math.round de JS = floor(x + 0.5) para CUALQUIER real (round() de Python es
+# half-even y además redondea negativos hacia cero, no hacia +∞: diverge en
+# ambos casos de Math.round).
 def _js_round(x: float) -> int:
-    return int(x + 0.5)
+    return math.floor(x + 0.5)
 
 
-def activity_list(*, user, kind: str | None = None, limit: int = 50):
+# Mismo redondeo; nombre propio donde el valor puede ser negativo (−42.5 → −42)
+_js_round_signed = _js_round
+
+
+def activity_list(*, user, kind: str | None = None, limit: int = 50, offset: int = 0,
+                  since: date | None = None, until: date | None = None, tzname: str | None = None):
+    """Historial del servidor (F17, F1 de raíz): paginado con `offset` y, opcional, entre dos
+    días locales. Cada sesión de gimnasio lleva el resumen de sus series (`SetLog`)."""
     qs = Activity.objects.filter(profile=user.profile)
     if kind:
         qs = qs.filter(kind=kind)
-    return qs[:limit]
+    if since or until:
+        tz = _resolve_tz(user, tzname)
+        if since:
+            qs = qs.filter(started_at__gte=datetime.combine(since, time.min, tzinfo=tz))
+        if until:
+            qs = qs.filter(started_at__lt=datetime.combine(until + timedelta(days=1), time.min, tzinfo=tz))
+    qs = qs.annotate(
+        _sets=Count("sets"),
+        _exercises=Count("sets__exercise_index", distinct=True),
+        _volume=Sum(F("sets__weight_kg") * F("sets__reps"), output_field=DecimalField(max_digits=14, decimal_places=2)),
+    )
+    return qs[offset:offset + limit]
+
+
+def calendar_days(*, user, year: int, month: int, tzname: str | None = None) -> dict[str, dict[str, int]]:
+    """Días del mes (locales) con sesiones, y cuántas de cada tipo."""
+    tz = _resolve_tz(user, tzname)
+    first = date(year, month, 1)
+    nxt = date(year + (month == 12), month % 12 + 1, 1)
+    start = datetime.combine(first, time.min, tzinfo=tz)
+    end = datetime.combine(nxt, time.min, tzinfo=tz)
+    days: dict[str, dict[str, int]] = {}
+    for started, kind in Activity.objects.filter(
+        profile=user.profile, started_at__gte=start, started_at__lt=end
+    ).values_list("started_at", "kind"):
+        key = started.astimezone(tz).date().isoformat()
+        bucket = days.setdefault(key, {})
+        bucket[kind] = bucket.get(kind, 0) + 1
+    return dict(sorted(days.items()))
 
 
 def _resolve_tz(user, tzname: str | None) -> ZoneInfo:
@@ -38,6 +89,57 @@ def _resolve_tz(user, tzname: str | None) -> ZoneInfo:
         except Exception:
             continue
     return ZoneInfo("UTC")
+
+
+def compute_load_band(daily28: list[int], week_au: int, history_days: int) -> dict | None:
+    """Banda de carga tipo Strava: sitúa la carga de la semana en curso dentro
+    del rango de las semanas previas del propio atleta. Port 1:1 de
+    computeLoadBand (frontend/lib/load.ts): mismas ventanas, mismo suelo de
+    anchura y mismos umbrales. None si no hay al menos una semana de baseline
+    antes de la semana actual."""
+    if history_days < 14:
+        return None
+
+    # Ventanas móviles de 7 días que terminan ANTES de la semana en curso
+    # (índices 21..27), acotadas al historial real.
+    d0 = 28 - history_days  # primer índice con datos reales
+    first_end = max(6, d0 + 6)  # primer día-fin con ventana completa dentro del historial
+    samples: list[float] = []
+    for e in range(first_end, 21):  # e en firstEnd..20 inclusive
+        samples.append(sum(daily28[e - 6:e + 1]))
+    if not samples:
+        return None
+
+    mu = sum(samples) / len(samples)
+    if mu <= 0:
+        return None  # baseline sin carga: nada que comparar
+
+    variance = sum((v - mu) ** 2 for v in samples) / len(samples)
+    sigma = variance ** 0.5
+    sigma_eff = max(sigma, 0.1 * mu)  # suelo de anchura (estabilidad visual, no umbral de seguridad)
+
+    low = mu - sigma_eff
+    high = mu + sigma_eff
+    overreach = mu + 2 * sigma_eff
+
+    status: LoadBandStatus
+    if week_au < low:
+        status = "descarga"
+    elif week_au <= high:
+        status = "sostenible"
+    elif week_au <= overreach:
+        status = "elevada"
+    else:
+        status = "alta"
+
+    return {
+        "week_au": _js_round(week_au),
+        "low": max(0, _js_round(low)),
+        "high": _js_round(high),
+        "overreach": _js_round(overreach),
+        "status": status,
+        "provisional": history_days < 28,
+    }
 
 
 def load_metrics(*, user, tzname: str | None = None) -> dict:
@@ -54,8 +156,9 @@ def load_metrics(*, user, tzname: str | None = None) -> dict:
 
     first_started = base.order_by("started_at").values_list("started_at", flat=True).first()
     empty = {
-        "week_au": 0, "daily7": [0] * 7, "acwr": None, "provisional": True,
-        "monotonia": None, "tension": None, "sin_variacion": False, "history_days": 0,
+        "week_au": 0, "daily7": [0] * 7, "acwr": None, "week_vs_avg_pct": None,
+        "ratio_days_left": RATIO_MIN_DAYS, "gaps": False, "monotonia": None, "tension": None, "sin_variacion": False, "history_days": 0,
+        "band": None,
     }
     if first_started is None:
         return empty
@@ -78,13 +181,14 @@ def load_metrics(*, user, tzname: str | None = None) -> dict:
     week_au = sum(daily7)
 
     acwr = None
-    provisional = True
-    if history_days >= 10 and week_au > 0:
-        chronic_window = daily28[-history_days:]
-        chronic_avg = sum(chronic_window) / history_days
-        if chronic_avg > 0:
-            acwr = round(week_au / 7 / chronic_avg, 3)
-            provisional = history_days < 28
+    week_vs_avg_pct = None
+    gaps = False
+    if history_days >= RATIO_MIN_DAYS and week_au > 0:
+        chronic_avg = sum(daily28) / 28
+        ratio = week_au / 7 / chronic_avg
+        acwr = round(ratio, 3)
+        week_vs_avg_pct = _js_round_signed((ratio - 1) * 100)
+        gaps = any(sum(daily28[i:i + 7]) == 0 for i in range(0, 28, 7))
 
     monotonia = None
     tension = None
@@ -96,10 +200,12 @@ def load_metrics(*, user, tzname: str | None = None) -> dict:
             monotonia = round(mean_daily / sd, 2)
             tension = _js_round(week_au * mean_daily / sd)
         else:
-            sin_variacion = True  # cero variación = monotonía máxima (riesgo), no "sin datos"
+            sin_variacion = True  # cero variación = monotonía máxima, no "sin datos"
+
+    band = compute_load_band(daily28, week_au, history_days)
 
     return {
-        "week_au": week_au, "daily7": daily7, "acwr": acwr, "provisional": provisional,
-        "monotonia": monotonia, "tension": tension, "sin_variacion": sin_variacion,
-        "history_days": history_days,
+        "week_au": week_au, "daily7": daily7, "acwr": acwr, "week_vs_avg_pct": week_vs_avg_pct,
+        "ratio_days_left": max(0, RATIO_MIN_DAYS - history_days), "gaps": gaps, "monotonia": monotonia, "tension": tension, "sin_variacion": sin_variacion,
+        "history_days": history_days, "band": band,
     }

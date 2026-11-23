@@ -1,10 +1,23 @@
-django>=5.0
-djangorestframework
-django-cors-headers
-django-environ
-psycopg2-binary
-djangorestframework-simplejwt
-pytest
-pytest-django
-Pillow
-anthropic
+Django==6.0.5
+djangorestframework==3.17.1
+django-cors-headers==4.9.0
+django-environ==0.13.0
+django-anymail==15.2
+psycopg2-binary==2.9.12
+djangorestframework-simplejwt==5.5.1
+Pillow==12.2.0
+anthropic==0.109.1
+gunicorn==26.2.0
+whitenoise==6.12.0
+PyYAML==6.0.3
+# PDF del menú y la lista de la compra (fase 8.5). Licencia BSD; rueda Python pura, sin paquetes del sistema.
+reportlab==5.1.0
+# Avisos con Web Push (fase 11). Licencia MPL-2.0 (como py-vapid; http-ece es MIT). Ruedas
+# manylinux para todo salvo http-ece, que es Python puro: python:3.12-slim lo instala sin
+# paquetes del sistema.
+pywebpush==2.5.0
+# Fotos de tickets en Cloudflare R2 (fase 12), por su API de S3. Licencia Apache-2.0 (boto3,
+# botocore y s3transfer; jmespath y urllib3 son MIT). Todo son ruedas Python puras
+# (py3-none-any): python:3.12-slim lo instala sin paquetes del sistema.
+boto3==1.40.61
+botocore==1.40.61

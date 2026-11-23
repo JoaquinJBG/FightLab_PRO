@@ -18,6 +18,12 @@ ENV/
 .env
 .env.*
 !.env.example
+# Token personal de la skill de menús (F14) y los archivos de trabajo con datos del usuario:
+# van en ~/.config/fightlab/ o en una carpeta temporal, nunca en el repositorio.
+.fightlab/
+fightlab-token*
+fightlab-context*.json
+fightlab-menu*.json
 
 # ---- Node / Next.js (frontend) ----
 node_modules/
@@ -53,3 +59,13 @@ test-results/
 
 # Fotos subidas en dev
 backend/media/
+
+# ---- Catálogos de cadena (fase 13): datos sin licencia para redistribuir ----
+# Se importan en la cuenta de cada usuario desde su PC y nunca van al repo (es público).
+# Los tests usan CSV inventados escritos en el propio test.
+mercadona*.csv
+*mercadona*.csv
+*Mercadona*.csv
+*-puntuada.csv
+catalogo-cadena*.csv
+numi*.json

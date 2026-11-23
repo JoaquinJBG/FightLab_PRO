@@ -52,3 +52,14 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.email
+
+
+class DemoAccount(models.Model):
+    """Marca la cuenta que crea `manage.py seed_demo` (solo en un entorno de prueba). Sin esta
+    fila, el comando nunca toca una cuenta con el mismo email: sería la de una persona real."""
+
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="demo_account")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"DemoAccount<{self.user_id}>"

@@ -1,0 +1,335 @@
+import { afterEach, describe, test, expect, beforeEach, vi } from "vitest";
+
+// vi.mock se hoistea sobre los imports de más abajo, así que "./hooks" (y lo
+// que importa de "./activities"/"./user-state") ya carga con estos stubs.
+// Registra el orden de llamadas en `calls` para comprobar la secuencia real
+// que sigue el logout (vaciar colas -> solo entonces cerrar sesión).
+const calls: string[] = [];
+
+vi.mock("./activities", () => ({
+  cachedActivityUid: vi.fn(() => "42"),
+  resetActivityUid: vi.fn(() => {
+    calls.push("resetActivityUid");
+  }),
+  flushActivities: vi.fn(async () => {
+    calls.push("flushActivities");
+    return true;
+  }),
+}));
+
+vi.mock("./user-state", () => ({
+  flushUserState: vi.fn(async () => {
+    calls.push("flushUserState");
+  }),
+  resetUserStateQueue: vi.fn(() => {
+    calls.push("resetUserStateQueue");
+  }),
+}));
+
+const pushCalls = vi.hoisted(() => ({ disable: vi.fn(async () => {}) }));
+vi.mock("./push", () => ({ disablePush: pushCalls.disable }));
+
+import {
+  ApiError,
+  clearDeviceState,
+  finishLogout,
+  handleQueryError,
+  handleSessionExpired,
+  isUnauthorized,
+  performLogout,
+  resetSessionExpiredGuard,
+} from "./hooks";
+
+describe("clearDeviceState (useLogout)", () => {
+  beforeEach(() => localStorage.clear());
+
+  test("borra las claves flp_* del dispositivo", () => {
+    localStorage.setItem("flp_activities", "[1]");
+    localStorage.setItem("flp_mma", "[1]");
+    localStorage.setItem("flp_gym_sessions", "[1]");
+    localStorage.setItem("flp_weigh", "{}");
+    localStorage.setItem("flp_uid", "42");
+    localStorage.setItem("otra_clave_no_flp", "no se toca");
+
+    clearDeviceState("42");
+
+    expect(localStorage.getItem("flp_activities")).toBeNull();
+    expect(localStorage.getItem("flp_mma")).toBeNull();
+    expect(localStorage.getItem("flp_gym_sessions")).toBeNull();
+    expect(localStorage.getItem("flp_weigh")).toBeNull();
+    expect(localStorage.getItem("flp_uid")).toBeNull();
+    expect(localStorage.getItem("otra_clave_no_flp")).toBe("no se toca"); // ni se plantea: no es flp_*
+  });
+
+  test("conserva las preferencias no personales del dispositivo", () => {
+    localStorage.setItem("flp_round_cfg", JSON.stringify({ rounds: 5 }));
+    localStorage.setItem("flp_gym_rest", "90");
+    localStorage.setItem("flp_activities", "[1]");
+
+    clearDeviceState("42");
+
+    expect(localStorage.getItem("flp_round_cfg")).not.toBeNull();
+    expect(localStorage.getItem("flp_gym_rest")).not.toBeNull();
+    expect(localStorage.getItem("flp_activities")).toBeNull();
+  });
+
+  test("borra la cola pendiente del uid que cierra sesión", () => {
+    localStorage.setItem("flp_pending_acts_42", "[1]");
+    localStorage.setItem("flp_pending_dels_42", "[1]");
+
+    clearDeviceState("42");
+
+    expect(localStorage.getItem("flp_pending_acts_42")).toBeNull();
+    expect(localStorage.getItem("flp_pending_dels_42")).toBeNull();
+  });
+
+  test("NO borra la cola pendiente de OTRO uid (móvil compartido)", () => {
+    localStorage.setItem("flp_pending_acts_99", "[1]"); // otra cuenta, aún sin subir
+    localStorage.setItem("flp_pending_dels_99", "[1]");
+
+    clearDeviceState("42");
+
+    expect(localStorage.getItem("flp_pending_acts_99")).toBe("[1]");
+    expect(localStorage.getItem("flp_pending_dels_99")).toBe("[1]");
+  });
+
+  test("sin uid conocido, no arriesga ninguna cola pendiente", () => {
+    localStorage.setItem("flp_pending_acts_42", "[1]");
+
+    clearDeviceState(null);
+
+    expect(localStorage.getItem("flp_pending_acts_42")).toBe("[1]");
+  });
+
+  test("borra la cola pendiente de user-state del uid que cierra sesión", () => {
+    localStorage.setItem("flp_pending_state_42", "[1]");
+
+    clearDeviceState("42");
+
+    expect(localStorage.getItem("flp_pending_state_42")).toBeNull();
+  });
+
+  test("NO borra la cola pendiente de user-state de OTRO uid (móvil compartido)", () => {
+    localStorage.setItem("flp_pending_state_99", "[1]"); // otra cuenta, aún sin subir
+
+    clearDeviceState("42");
+
+    expect(localStorage.getItem("flp_pending_state_99")).toBe("[1]");
+  });
+});
+
+describe("performLogout / finishLogout (useLogout)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    calls.length = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        calls.push("logout-fetch");
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      }),
+    );
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  test("vacía primero la cola de activities y la de user-state, y solo entonces llama a /api/auth/logout", async () => {
+    const uid = await performLogout();
+
+    expect(uid).toBe("42"); // capturado antes de que nada lo borre
+    expect(calls).toEqual(["flushActivities", "flushUserState", "logout-fetch"]);
+  });
+
+  test("performLogout da de baja el push ANTES de cerrar sesión; si falla, no bloquea el logout", async () => {
+    pushCalls.disable.mockImplementationOnce(async () => {
+      calls.push("disablePush");
+      throw new Error("boom");
+    });
+    await expect(performLogout()).resolves.toBe("42");
+    expect(calls.indexOf("disablePush")).toBeGreaterThanOrEqual(0);
+    expect(calls.indexOf("disablePush")).toBeLessThan(calls.indexOf("logout-fetch"));
+  });
+
+  test("si el logout falla en la red, performLogout NO rechaza y devuelve el uid", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        calls.push("logout-fetch");
+        throw new Error("offline");
+      }),
+    );
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    await expect(performLogout()).resolves.toBe("42");
+    err.mockRestore();
+    expect(calls).toEqual(["flushActivities", "flushUserState", "logout-fetch"]);
+  });
+
+  test("backend colgado: performLogout no espera al flush más allá del presupuesto y cierra sesión", async () => {
+    const { flushActivities } = await import("./activities");
+    vi.mocked(flushActivities).mockImplementationOnce(() => new Promise<boolean>(() => {}));
+    const t0 = Date.now();
+    await expect(performLogout(50)).resolves.toBe("42");
+    expect(Date.now() - t0).toBeLessThan(2_000);
+    expect(calls).toContain("logout-fetch");
+  });
+
+  test("finishLogout cancela la cola de user-state (resetUserStateQueue) ANTES de limpiar el dispositivo", () => {
+    localStorage.setItem("flp_pending_state_42", "[1]"); // simula algo que no se pudo subir
+    const nav = vi.fn((url: string) => calls.push(`nav ${url}`));
+    sessionStorage.setItem("flp_coach_chat", "[]");
+
+    finishLogout("42", nav);
+
+    // R3-9: la conversación del coach de esta pestaña no pasa a la cuenta siguiente
+    expect(sessionStorage.getItem("flp_coach_chat")).toBeNull();
+    // Sin qc.clear(): vaciar la caché con las vistas montadas las hacía volver a pedir datos (401)
+    expect(calls).toEqual(["resetUserStateQueue", "resetActivityUid", "nav /login"]);
+    // resetUserStateQueue no toca localStorage: clearDeviceState es quien lo hace
+    expect(localStorage.getItem("flp_pending_state_42")).toBeNull();
+  });
+
+  test("F15: tras cerrar sesión a propósito, un 401 rezagado no lleva a /login?reason=expired", async () => {
+    resetSessionExpiredGuard();
+    const nav = vi.fn();
+    finishLogout("42", nav);
+    expect(nav).toHaveBeenCalledWith("/login"); // sin ?reason=expired: no ha caducado
+    const expiredNav = vi.fn();
+    handleQueryError({ clear: () => {} }, new ApiError("401", 401), expiredNav);
+    await Promise.resolve();
+    expect(expiredNav).not.toHaveBeenCalled();
+    expect(calls.filter((c) => c === "logout-fetch")).toHaveLength(0); // ni un segundo logout
+    resetSessionExpiredGuard();
+  });
+
+  test("F15: borra las copias de las pantallas del service worker", async () => {
+    const deleted: string[] = [];
+    vi.stubGlobal("caches", {
+      keys: async () => ["flp-pages-v1", "flp-static-v1", "flp-shell-v1"],
+      delete: async (n: string) => { deleted.push(n); return true; },
+    });
+    finishLogout("42", () => {});
+    await vi.waitFor(() => expect(deleted).toEqual(["flp-pages-v1"]));
+  });
+});
+
+describe("applyProfileUpdate", () => {
+  test("deja en caché el perfil guardado para que el guard de onboarding no lea el viejo", async () => {
+    const { QueryClient } = await import("@tanstack/react-query");
+    const { applyProfileUpdate } = await import("./hooks");
+    const qc = new QueryClient();
+    // Perfil incompleto cacheado cuando el guard mandó al usuario a /onboarding.
+    qc.setQueryData(["profile"], { date_of_birth: null, height_cm: null });
+    const saved = {
+      date_of_birth: "1995-04-02",
+      gender: "M",
+      height_cm: 178,
+      dominant_stance: null,
+      preferred_units: "metric",
+      timezone: "Europe/Madrid",
+      // Perfil ampliado del coach: el servidor lo devuelve siempre
+      equation_sex: null, goal: null, experience: null, activity_level: null, language: "es",
+      region: null, emergency_number: null, medications: [], medications_other: [], conditions: [],
+      conditions_other: [], disciplines: [], training_frequency: null, goal_weight_kg: null,
+      goal_date: null, weight_class: null, weigh_in_at: null,
+    };
+    applyProfileUpdate(qc, saved);
+    const cached = qc.getQueryData<{ date_of_birth: string | null; height_cm: number | null }>(["profile"]);
+    expect(cached?.date_of_birth).toBe("1995-04-02");
+    expect(cached?.height_cm).toBe(178);
+  });
+
+  test("si la respuesta no encaja con el schema, borra la caché para forzar una lectura nueva", async () => {
+    const { QueryClient } = await import("@tanstack/react-query");
+    const { applyProfileUpdate } = await import("./hooks");
+    const qc = new QueryClient();
+    qc.setQueryData(["profile"], { date_of_birth: null, height_cm: null });
+    applyProfileUpdate(qc, { raro: true });
+    expect(qc.getQueryData(["profile"])).toBeUndefined();
+  });
+});
+
+describe("handleSessionExpired (401 global)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    calls.length = 0;
+    resetSessionExpiredGuard();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        calls.push("logout-fetch");
+        return new Response("{}", { status: 200 });
+      }),
+    );
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  test("sesión caducada: borra el estado de pestaña (chat del coach) del dueño", async () => {
+    sessionStorage.setItem("flp_coach_chat", "[1]");
+    await handleSessionExpired({ clear: () => {} }, () => {});
+    expect(sessionStorage.getItem("flp_coach_chat")).toBeNull();
+  });
+
+  test("isUnauthorized solo reconoce un ApiError 401", () => {
+    expect(isUnauthorized(new ApiError("401", 401))).toBe(true);
+    expect(isUnauthorized(new ApiError("500", 500))).toBe(false);
+    expect(isUnauthorized(new Error("401"))).toBe(false);
+  });
+
+  test("varios 401 a la vez: un solo logout y una sola navegación a /login?reason=expired, sin borrar datos locales", async () => {
+    localStorage.setItem("flp_weigh", "{}");
+    localStorage.setItem("flp_gym_live", "{\"sets\":[1]}");
+    localStorage.setItem("flp_live_session", "{}");
+    localStorage.setItem("flp_gym_sessions", "[1]");
+    localStorage.setItem("flp_pending_acts_42", "[1]");
+    localStorage.setItem("flp_pending_state_42", "[1]");
+    const nav = vi.fn();
+    const qc = { clear: () => calls.push("qc.clear") };
+
+    await Promise.all([1, 2, 3].map(() => handleSessionExpired(qc, nav)));
+
+    expect(nav).toHaveBeenCalledTimes(1);
+    expect(nav).toHaveBeenCalledWith("/login?reason=expired");
+    expect(calls.filter((c) => c === "logout-fetch")).toHaveLength(1);
+    expect(localStorage.getItem("flp_weigh")).toBe("{}");
+    expect(localStorage.getItem("flp_gym_live")).toBe("{\"sets\":[1]}");
+    expect(localStorage.getItem("flp_live_session")).toBe("{}");
+    expect(localStorage.getItem("flp_gym_sessions")).toBe("[1]");
+    expect(localStorage.getItem("flp_pending_acts_42")).toBe("[1]");
+    expect(localStorage.getItem("flp_pending_state_42")).toBe("[1]");
+  });
+
+  test("handleQueryError: un 503 (o cualquier no-401) no desloguea, no navega y no borra nada", async () => {
+    localStorage.setItem("flp_gym_live", "{}");
+    const nav = vi.fn();
+    const qc = { clear: vi.fn() };
+
+    for (const status of [503, 500, 429, 404]) handleQueryError(qc, new ApiError(String(status), status), nav);
+    handleQueryError(qc, new Error("401"), nav);
+    await Promise.resolve();
+
+    expect(nav).not.toHaveBeenCalled();
+    expect(qc.clear).not.toHaveBeenCalled();
+    expect(calls).not.toContain("logout-fetch");
+    expect(localStorage.getItem("flp_gym_live")).toBe("{}");
+  });
+
+  test("handleQueryError: un 401 sí cierra la sesión", async () => {
+    const nav = vi.fn();
+    handleQueryError({ clear: () => {} }, new ApiError("401", 401), nav);
+    await vi.waitFor(() => expect(nav).toHaveBeenCalledWith("/login?reason=expired"));
+  });
+
+  test("aunque la petición de logout falle, limpia y navega igualmente", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("offline"); }));
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const nav = vi.fn();
+    await handleSessionExpired({ clear: () => {} }, nav);
+    expect(nav).toHaveBeenCalledWith("/login?reason=expired");
+    err.mockRestore();
+  });
+});
