@@ -12,6 +12,21 @@ No hay código de la app aparte: todo sigue siendo la web.
 **Regla de oro:** la llave de firma y su contraseña son TUYAS y no entran nunca al repo (es público).
 Este repo no tiene ninguna.
 
+## Atajo: todo de una vez (en este PC)
+
+Con el JDK y el SDK de `C:l	wa\sdk` ya listos, desde `mobile	wa`:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\hazlo-todo.ps1
+```
+
+El script hace todo esto:
+1. Crea tu llave si no existe. La contraseña la eliges y escribes tú. Guarda el archivo y la contraseña en tu gestor de contraseñas.
+2. Compila el APK para `fight-lab-pro.vercel.app`. Para otro dominio, usa `-Host_ <dominio>`.
+3. Deja el APK en `C:l	wa\FightLab.apk` y la huella SHA-256 en `C:l	wa\FightLab-sha256.txt`.
+
+Después pon esa huella en Vercel como `ANDROID_CERT_SHA256` y haz Redeploy. Instala el APK (paso 4) y compruébalo (paso 5).
+
 ## 0. Qué necesitas (una sola vez)
 
 1. **Node 20 o superior** (ya lo tienes si trabajas en el frontend). Comprueba: `node -v`.
