@@ -31,6 +31,8 @@ test("importar el historial: revisar, elegir qué hacer con el conflicto e impor
   });
 
   await page.goto("/profile");
+  await page.getByTestId("import-hub-link").click();
+  await page.waitForURL("**/profile/import-hub");
   await page.getByTestId("history-import-link").click();
   await page.waitForURL("**/profile/import");
   await page.getByTestId("history-files").setInputFiles({

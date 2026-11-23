@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import NutritionPage from "@/app/(shell)/nutrition/page";
+import WeighInPage from "@/app/(shell)/nutrition/weigh-in/page";
 import { PROFILE, SAFETY, TARGETS, WEIGH_IN, CATALOGS, mockApi, renderApp, type Routes } from "../support/app";
 
 const base = (extra: Routes = {}): Routes => ({
@@ -36,23 +37,44 @@ describe.each([
     const name = (b: Element) => (b.getAttribute("aria-label") || b.getAttribute("title") || b.textContent || "").trim();
     const unnamed = Array.from(container.querySelectorAll("button")).filter((b) => !name(b)).map((b) => b.outerHTML.slice(0, 160));
     expect(unnamed).toEqual([]);
-    // El objetivo elegido se anuncia (aria-pressed), como las comidas de Hoy
+  });
+
+  it("el objetivo (ahora en Objetivo y pesaje) anuncia el elegido con aria-pressed", async () => {
+    mockApi(base());
+    renderApp(<WeighInPage />, locale);
+    await screen.findByTestId("goal-block");
     const pressed = ["perder", "mantener", "ganar"].map((g) => screen.queryByTestId(`goal-${g}`)?.getAttribute("aria-pressed"));
     expect(pressed.filter((p) => p === "true")).toHaveLength(1);
   });
 
-  it("lleva un chip de evidencia junto a las kcal, la proteína, la grasa y la fibra", async () => {
+  it("la portada ya no lleva el selector de objetivo: sale en Objetivo y pesaje", async () => {
+    mockApi(base());
+    renderApp(<NutritionPage />, locale);
+    await screen.findByText(/\/ 2600 kcal/);
+    expect(screen.queryByTestId("goal-block")).toBeNull();
+    expect(screen.queryByTestId("targets-details")).toBeNull();
+    expect(screen.getByTestId("weigh-card").getAttribute("href")).toBe("/nutrition/weigh-in");
+    expect(screen.getByTestId("menu-card").getAttribute("href")).toBe("/nutrition/menu");
+  });
+
+  it("la portada lleva el chip de las kcal; las reglas de proteína, grasa y fibra, en Objetivo y pesaje", async () => {
     mockApi(base());
     renderApp(<NutritionPage />, locale);
     await screen.findByText(/\/ 2600 kcal/);
     expect(within(screen.getByTestId("kcal-rule")).getByTestId("evidence-chip").getAttribute("data-grade")).toBe("moderate");
-    expect(within(screen.getByTestId("macros")).getAllByTestId("evidence-chip")).toHaveLength(2); // proteína y grasa
-    expect(screen.getAllByTestId("evidence-chip").some((c) => c.getAttribute("data-grade") === "strong")).toBe(true); // fibra
+    expect(within(screen.getByTestId("macros")).queryAllByTestId("evidence-chip")).toHaveLength(0); // compacta
+    cleanup();
+    mockApi(base());
+    renderApp(<WeighInPage />, locale);
+    const details = await screen.findByTestId("targets-details");
+    const grades = within(details).getAllByTestId("evidence-chip").map((c) => c.getAttribute("data-grade"));
+    expect(grades.length).toBeGreaterThanOrEqual(5); // kcal (2), proteína, grasa y fibra
+    expect(grades).toContain("strong"); // fibra
   });
 
   it("dice qué ecuación se ha usado y por qué, con la regla", async () => {
     mockApi(base());
-    renderApp(<NutritionPage />, locale);
+    renderApp(<WeighInPage />, locale);
     const details = await screen.findByTestId("targets-details");
     expect(within(details).getByTestId("targets-equation").getAttribute("data-equation")).toBe("ten_haaf");
     expect(details.textContent).toContain(cat.details.equations.ten_haaf);
@@ -84,12 +106,26 @@ describe("bloqueos del servidor en Nutrición (spec §8.3)", () => {
     const blocked = await screen.findByTestId("deficit-blocked");
     expect(within(blocked).getByTestId("safety-reason").getAttribute("data-code")).toBe("eating_disorder_screen");
     expect(within(blocked).getByTestId("safety-footer").textContent).toBe("LÍNEA DE DERIVACIÓN");
-    expect((screen.getByTestId("goal-perder") as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.queryByTestId("goal-perder")).toBeNull(); // el selector vive en Objetivo y pesaje
+  });
+
+  it("con no_deficit y sin pesaje, el selector de Objetivo y pesaje deja Perder y Ganar bloqueados", async () => {
+    mockApi(
+      base({
+        "/api/proxy/coach/safety": { body: { ...SAFETY, flags: { no_deficit: true, no_weight_targets: true } } },
+        "/api/proxy/coach/targets": { body: { ...TARGETS, goal: "fat_loss", deficit_blocked: true } },
+        "/api/proxy/coach/weigh-in": { body: { ...WEIGH_IN, blocked: true, deficit_blocked: true } },
+        "/api/proxy/me/profile": { body: { ...PROFILE, goal: "fat_loss" } },
+      }),
+    );
+    renderApp(<WeighInPage />);
+    await screen.findByTestId("goal-block");
+    await waitFor(() => expect((screen.getByTestId("goal-perder") as HTMLButtonElement).disabled).toBe(true));
     expect((screen.getByTestId("goal-ganar") as HTMLButtonElement).disabled).toBe(true); // no_weight_targets
     expect((screen.getByTestId("goal-mantener") as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it("con no_weight_targets no se ve nada de pesaje (ni la tarjeta ni el aviso de peso antiguo)", async () => {
+  it("con no_weight_targets no se ve nada de pesaje (ni sus datos ni el aviso de peso antiguo)", async () => {
     mockApi(
       base({
         "/api/proxy/coach/targets": { body: { ...TARGETS, weight: { kg: 70, date: "2026-08-01", stale_days: 90 } } },
@@ -98,7 +134,8 @@ describe("bloqueos del servidor en Nutrición (spec §8.3)", () => {
     );
     renderApp(<NutritionPage />);
     await screen.findByText(/\/ 2600 kcal/);
-    expect(screen.queryByTestId("weigh-card")).toBeNull();
+    // El acceso a Objetivo y pesaje sigue (ahí está el objetivo), pero sin datos de pesaje
+    expect(screen.getByTestId("weigh-card").textContent).not.toMatch(/kg|Pesaje en/);
     expect(screen.queryByTestId("stale-weight")).toBeNull();
   });
 
@@ -202,7 +239,21 @@ describe("datos que faltan (409 del motor)", () => {
     expect((await screen.findByTestId("deficit-blocked")).textContent).toContain("menor de 18");
     expect(screen.queryByTestId("goal-perder")).toBeNull();
     expect(screen.queryByTestId("targets-details")).toBeNull();
-    expect(screen.queryByTestId("weigh-card")).toBeNull();
+    expect(screen.getByTestId("weigh-card").textContent).not.toMatch(/kg|Pesaje en/);
+  });
+
+  it("un menor de 18 tampoco ve el selector de objetivo en Objetivo y pesaje", async () => {
+    mockApi(
+      base({
+        "/api/proxy/coach/targets": {
+          body: { ...TARGETS, blocked: { code: "no_calorie_targets", reason_code: "under_18" }, kcal: null, macros: null, equation: null, rules: {}, reasons: [], deficit_blocked: true },
+        },
+        "/api/proxy/coach/weigh-in": { body: { ...WEIGH_IN, blocked: true } },
+      }),
+    );
+    renderApp(<WeighInPage />);
+    await screen.findByTestId("weigh-blocked");
+    await waitFor(() => expect(screen.queryByTestId("goal-perder")).toBeNull());
   });
 });
 
@@ -237,6 +288,7 @@ describe("F6: el diario dice de dónde sale cada entrada", () => {
     renderApp(<NutritionPage />);
     await screen.findByText(/\/ 2600 kcal/);
     expect(screen.getAllByText("667 kcal").length).toBeGreaterThan(0); // el menú suma con lo demás
+    fireEvent.click(screen.getByRole("button", { name: /Desayuno/ })); // la fila se abre para ver las entradas
     const sources = screen.getAllByTestId("diary-source");
     expect(sources.map((s) => s.dataset.source)).toEqual(["menu", "manual", "photo"]);
     expect(sources[0].textContent).toContain("Del menú: marcada «Hecha» en Hoy");

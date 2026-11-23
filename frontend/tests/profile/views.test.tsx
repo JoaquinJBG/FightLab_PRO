@@ -17,6 +17,8 @@ vi.mock("@/lib/hooks", () => ({
   useMe: () => ({ data: { id: 1, email: "ana@example.com", role: "ATHLETE" } }),
   useProfile: () => ({ data: state.profile }),
   useLogout: () => ({ mutateAsync: vi.fn() }),
+  useDisciplines: () => ({ gym: true, combat: true }),
+  useSetDiscipline: () => ({ mutate: vi.fn(), isError: false }),
   useUpdateProfile: () => ({ isPending: false, isError: false, isSuccess: true, mutateAsync: (p: unknown) => state.mutate(p), error: null }),
 }));
 

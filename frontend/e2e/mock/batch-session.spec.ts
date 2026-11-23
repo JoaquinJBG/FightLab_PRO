@@ -14,6 +14,7 @@ test("sesión de batch a pantalla completa con temporizador por paso y por apara
     route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ products: [] }) }));
 
   await page.goto("/nutrition/menu");
+  await page.getByTestId("menu-tab-batch").click();
   const card = page.getByTestId("batch-session");
   await expect(card).toContainText("50 min");
   await card.getByTestId("batch-open").click();

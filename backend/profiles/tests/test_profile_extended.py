@@ -153,3 +153,32 @@ def test_language_is_spanish_while_the_selector_is_off(settings):
     user = get_user_model().objects.get(email="off@b.com")
     assert user.profile.language == "es"
 
+
+
+@pytest.mark.django_db
+def test_show_gym_and_combat_default_true(auth_client):
+    body = auth_client.get("/api/v1/me/profile").data
+    assert body["show_gym"] is True and body["show_combat"] is True
+
+
+@pytest.mark.django_db
+def test_patch_toggles_show_gym_and_combat(auth_client):
+    res = auth_client.patch("/api/v1/me/profile", {"show_gym": False}, format="json")
+    assert res.status_code == 200
+    assert res.data["show_gym"] is False and res.data["show_combat"] is True
+    res = auth_client.patch("/api/v1/me/profile", {"show_combat": False, "show_gym": True}, format="json")
+    assert res.data["show_gym"] is True and res.data["show_combat"] is False
+    assert auth_client.get("/api/v1/me/profile").data["show_combat"] is False
+
+
+@pytest.mark.django_db
+def test_other_user_cannot_change_my_switches(auth_client):
+    other = _verified(email="other@b.com")
+    other_client = APIClient()
+    login = other_client.post("/api/v1/auth/login", {"email": "other@b.com", "password": "pw-strong-123"}, format="json")
+    other_client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
+    other_client.patch("/api/v1/me/profile", {"show_gym": False, "show_combat": False}, format="json")
+    mine = auth_client.get("/api/v1/me/profile").data
+    assert mine["show_gym"] is True and mine["show_combat"] is True
+    other.profile.refresh_from_db()
+    assert other.profile.show_gym is False

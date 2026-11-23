@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import MenuPage from "@/app/(shell)/nutrition/menu/page";
+import MenuSettingsPage from "@/app/(shell)/nutrition/menu/settings/page";
 import AddFoodPage from "@/app/(shell)/nutrition/add/page";
 import { CATALOGS, TARGETS, mockApi, renderApp } from "../support/app";
 import { splitWords, type Menu, type MenuState } from "@/lib/menu";
@@ -86,6 +87,7 @@ describe.each(["es", "en"] as const)("Menú y compra (%s)", (locale) => {
     const rejected = screen.getByTestId("menu-rejected-day");
     expect(rejected.textContent).toContain(cat.flags.kinds.allergy);
     expect(screen.getByTestId("menu-taste-flags").textContent).toContain("onion");
+    fireEvent.click(screen.getByTestId("menu-tab-shopping")); // la compra va en su pestaña
     const shopping = screen.getByTestId("shopping-list");
     expect(within(shopping).getAllByTestId("shopping-item")).toHaveLength(2);
     expect(shopping.textContent).toContain(cat.shopping.any);
@@ -139,13 +141,35 @@ describe.each(["es", "en"] as const)("Menú y compra (%s)", (locale) => {
     expect(screen.queryByTestId("menu-form")).toBeNull();
   });
 
+  it("Ajustes del menú agrupa Mi cocina, Mi IA, los gustos y los productos; la pantalla del menú ya no los lleva", async () => {
+    mockApi({ "/api/proxy/coach/menu": { body: state() }, "/api/proxy/coach/products": { body: { products: [] } } });
+    const { unmount } = renderApp(<MenuSettingsPage />, locale);
+    expect(screen.getByTestId("menu-settings-kitchen").getAttribute("href")).toBe("/profile/kitchen");
+    expect(screen.getByTestId("menu-settings-myAi").getAttribute("href")).toBe("/profile/my-ai");
+    expect(await screen.findByTestId("tastes-form")).toBeTruthy();
+    expect(screen.getByTestId("products-card")).toBeTruthy();
+    unmount();
+    renderApp(<MenuPage />, locale);
+    await screen.findByTestId("menu-day");
+    expect(screen.getByTestId("menu-settings-link").getAttribute("href")).toBe("/nutrition/menu/settings");
+    expect(screen.queryByTestId("tastes-form")).toBeNull();
+    expect(screen.queryByTestId("products-card")).toBeNull();
+    expect(screen.queryByTestId("menu-kitchen-link")).toBeNull();
+    // Pestañas Menú / Compra / Batch
+    expect(screen.getAllByRole("tab").map((t) => t.getAttribute("aria-selected"))).toEqual(["true", "false", "false"]);
+    expect(screen.queryByTestId("shopping-list")).toBeNull();
+    fireEvent.click(screen.getByTestId("menu-tab-batch"));
+    expect(screen.getByTestId("batch-empty")).toBeTruthy();
+    expect(screen.queryByTestId("menu-day")).toBeNull();
+  });
+
   it("explica que la búsqueda de productos no está configurada", async () => {
     mockApi({
       "/api/proxy/coach/menu": { body: state() },
       "/api/proxy/coach/products": { body: { products: [] } },
       "/api/proxy/coach/products/search": { status: 503, body: { code: "off_not_configured", detail: "x" } },
     });
-    renderApp(<MenuPage />, locale);
+    renderApp(<MenuSettingsPage />, locale);
     const card = await screen.findByTestId("products-card");
     fireEvent.change(within(card).getByRole("textbox"), { target: { value: "revuelto" } });
     fireEvent.click(within(card).getByRole("button", { name: cat.products.search }));

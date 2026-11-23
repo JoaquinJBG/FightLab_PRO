@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { useBiometrics, useSafety, useWeighIn } from "@/lib/hooks";
+import { useBiometrics, useDisciplines, useSafety, useWeighIn } from "@/lib/hooks";
 import { type Citation } from "@/components/evidence/CitedText";
 import { ChatPanel, type ChatMsg } from "@/components/coach/ChatPanel";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
@@ -60,6 +60,7 @@ export default function CoachPage() {
   const locale = useLocale();
   const listFmt = new Intl.ListFormat(locale, { type: "conjunction" });
   const { data: logs = [] } = useBiometrics();
+  const { combat } = useDisciplines();
   const { data: safety } = useSafety();
   const [metrics, setMetrics] = useState<LoadMetrics | null>(null);
   const { value: dismissed, setValue: setDismissed } = useUserState<string[]>(bareDismissKey(), []);
@@ -250,7 +251,7 @@ export default function CoachPage() {
           {briefing.rules.map((r) => <span key={r.key}> <EvidenceChip ruleKey={r.key} grade={r.grade} /></span>)}
         </p>
         <div className="mt-3 flex gap-2">
-          {briefing.blocked ? (
+          {briefing.blocked && !combat ? null : briefing.blocked ? (
             <Link href="/training/mma" data-testid="briefing-head-blow" className="btn btn-tonal btn-sm">{t("briefing.headBlowAction")}</Link>
           ) : (
             <Link href="/training" className="btn btn-tonal btn-sm"><GloveIcon className="h-4 w-4" /> {t("briefing.train")}</Link>
@@ -279,7 +280,7 @@ export default function CoachPage() {
                       <p className="t-body mt-1 text-xs text-muted">{r.why}</p>
                       {r.rule !== undefined && <div className="mt-1.5"><EvidenceChip ruleKey={r.rule?.key} grade={r.rule?.grade} /></div>}
                       <div className="mt-2.5 flex items-center gap-3">
-                        {r.action && (
+                        {r.action && (combat || !r.action.href.startsWith("/training/mma")) && (
                           <Link href={r.action.href} className="btn btn-tonal btn-sm">{r.action.label} <ChevronRight className="h-3.5 w-3.5" /></Link>
                         )}
                         {r.tone !== "good" && (

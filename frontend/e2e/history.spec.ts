@@ -59,7 +59,9 @@ async function choose(page: Page) {
 test("importar el historial: revisar, conservar lo de FightLab, importar y reimportar sin duplicar", async ({ page }) => {
   await login(page, READY_USERS.history);
   await page.goto("/profile");
-  await page.getByRole("link", { name: es.historyImport.profileLink }).click();
+  await page.getByTestId("import-hub-link").click();
+  await page.waitForURL("**/profile/import-hub");
+  await page.getByTestId("history-import-link").click();
   await page.waitForURL("**/profile/import");
 
   await choose(page);

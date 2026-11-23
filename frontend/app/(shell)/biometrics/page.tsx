@@ -126,6 +126,7 @@ function TrendChart({ pts, trend }: { pts: Pt[]; trend: number[] }) {
 
 export default function BiometricsPage() {
   const t = useTranslations("biometrics");
+  const tBack = useTranslations("dashboard");
   const tTrend = useTranslations("weightTrend");
   const locale = intlLocale(useLocale());
   const { data: logs = [], isLoading } = useBiometrics();
@@ -206,7 +207,7 @@ export default function BiometricsPage() {
 
   return (
     <div className="pt-4">
-      <Link href="/today" className="t-label text-muted">{t("back")}</Link>
+      <Link href="/dashboard" className="t-label text-muted">{tBack("back")}</Link>
       <div className="mt-2 flex items-center justify-between">
         <h1 className="t-display text-2xl text-ink">{t("title")}</h1>
         <Link href="/biometrics/new" className="btn btn-tonal btn-sm">{t("addMeasurement")}</Link>

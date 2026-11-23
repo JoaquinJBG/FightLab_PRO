@@ -37,9 +37,7 @@ async function choose(page: Page, name: string, content: string) {
 
 test("importar Hevy: revisar, importar y reimportar sin duplicar", async ({ page }) => {
   await login(page, READY_USERS.gymImport);
-  await page.goto("/training/gym");
-  await page.getByRole("link", { name: es.training.gym.importLink }).click();
-  await page.waitForURL("**/training/gym/import");
+  await page.goto("/training/gym/import"); // se entra desde Perfil → Importar datos, no desde Gimnasio
 
   await choose(page, "hevy.csv", HEVY);
   await page.getByRole("button", { name: es.gymImport.check }).click();

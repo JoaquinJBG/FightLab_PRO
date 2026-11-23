@@ -71,7 +71,8 @@ describe("R4-3: la página sin conexión sale en el idioma de la app", () => {
 const URL = "/api/proxy/coach/today";
 const DAY: TodayState = {
   date: "2026-10-29", today: "2026-10-29", weekday: "thu", plan: null, day_type: null, day_type_set: false,
-  trained: null, mobility: null, weight_kg: null, weight_blocked: false, next_meal: null,
+  trained: null, mobility: null, weight_kg: null, weight_blocked: false,
+  next_meal: { all_done: false, meal: "breakfast", free: false, dishes: ["Avena con yogur"] },
   menu: {
     id: 7, start_date: "2026-10-26",
     meals: [{ meal: "breakfast", free: false, tupper: false, dishes: ["Avena con yogur"], prep: [], eve: [], mark: null }],
@@ -110,11 +111,11 @@ describe("R4-6: sin conexión la marca se ve al momento, con «pendiente»", () 
     });
     const { client } = renderApp(<TodayPage />);
     const toggle = await screen.findByTestId("toggle-mobility");
-    expect(toggle.textContent).toContain(es.done.notYet);
+    expect(toggle.getAttribute("aria-pressed")).toBe("false");
 
     act(() => onlineManager.setOnline(false));
     fireEvent.click(toggle);
-    await waitFor(() => expect(screen.getByTestId("toggle-mobility").textContent).toContain(`✓ ${es.done.yes}`));
+    await waitFor(() => expect(screen.getByTestId("toggle-mobility").textContent).toContain(`✓ ${es.done.mobility}`));
     expect(screen.getByTestId("toggle-mobility").getAttribute("aria-pressed")).toBe("true");
     expect(screen.getByTestId("toggle-mobility-pending").textContent).toBe(es.done.pending);
     expect(sent).toEqual([]);
@@ -129,7 +130,7 @@ describe("R4-6: sin conexión la marca se ve al momento, con «pendiente»", () 
     });
     await waitFor(() => expect(sent).toEqual([{ mobility: true }, { meal: "breakfast", state: "done" }]));
     await waitFor(() => expect(screen.queryByTestId("toggle-mobility-pending")).toBeNull());
-    expect(screen.getByTestId("toggle-mobility").textContent).toContain(`✓ ${es.done.yes}`);
+    expect(screen.getByTestId("toggle-mobility").textContent).toContain(`✓ ${es.done.mobility}`);
   });
 
   it("si el envío falla del todo, vuelve el estado anterior", async () => {
@@ -138,7 +139,7 @@ describe("R4-6: sin conexión la marca se ve al momento, con «pendiente»", () 
     });
     renderApp(<TodayPage />);
     fireEvent.click(await screen.findByTestId("toggle-mobility"));
-    await waitFor(() => expect(screen.getByTestId("toggle-mobility").textContent).toContain(es.done.notYet));
+    await waitFor(() => expect(screen.getByTestId("toggle-mobility").textContent).not.toContain("✓"));
     expect(screen.getByTestId("toggle-mobility").getAttribute("aria-pressed")).toBe("false");
   });
 });

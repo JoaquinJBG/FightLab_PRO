@@ -29,6 +29,7 @@ test("importar un menú, tachar, reimportarlo sin perder lo tachado y ver la ví
   await expect(storage.nth(0)).toHaveAttribute("data-where", "fridge");
   await expect(storage.nth(2)).toHaveAttribute("data-where", "freezer");
 
+  await page.getByTestId("menu-tab-shopping").click();
   const list = page.getByTestId("shopping-list");
   await expect(list.getByTestId("shopping-section")).toHaveCount(3);
   const lentils = list.locator('[data-testid="shopping-item"][data-key="lentejas, cocidas"]');
@@ -41,7 +42,9 @@ test("importar un menú, tachar, reimportarlo sin perder lo tachado y ver la ví
   (changed.shopping as { items: { grams: number }[] }).items[0].grams = 1500;
   await page.getByTestId("menu-import-input").setInputFiles(file("menu.json", JSON.stringify(changed)));
   await expect(page.getByTestId("menu-import-done")).toHaveAttribute("data-replaced", "true");
+  await page.getByTestId("menu-tab-menu").click();
   await expect(page.getByTestId("menu-header")).toContainText("Menú E2E corregido");
+  await page.getByTestId("menu-tab-shopping").click();
   await expect(page.locator('[data-testid="shopping-item"][data-key="lentejas, cocidas"]')).toHaveAttribute("data-checked", "true");
 
   // Hoy: esta noche, lo de la sesión de batch de hoy no; lo de mañana (remojar) sí.
@@ -54,7 +57,9 @@ test("importar un menú, tachar, reimportarlo sin perder lo tachado y ver la ví
   await page.getByTestId("menu-import-input").setInputFiles({ name: `${madridDay(10)}.yaml`, mimeType: "application/x-yaml", buffer: Buffer.from(coachYaml(), "utf-8") });
   await expect(page.getByTestId("menu-import-done")).toBeVisible();
   await expect(page.getByTestId("menu-header")).toHaveAttribute("data-source", "yaml");
+  await page.getByTestId("menu-tab-shopping").click();
   await expect(page.getByTestId("shopping-list")).toHaveAttribute("data-source", "engine");
+  await page.getByTestId("menu-tab-menu").click();
   await expect(page.getByTestId("menu-picker")).toBeVisible();
 
   // Un archivo que no es un menú se rechaza con su explicación.
