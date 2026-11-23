@@ -1,187 +1,284 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { capitalizeFirst, formatDate } from "@/lib/locale";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
 import { SafetyBanner } from "@/components/safety/SafetyBanner";
 import { useBlockedWhy } from "@/components/safety/SafetyStateCard";
-import { useTodaySafety } from "@/lib/safety-state";
-import { ChevronRight } from "@/components/icons";
+import { BottomSheet } from "@/components/today/BottomSheet";
+import { canSayReady, useTodaySafety } from "@/lib/safety-state";
+import { useBiometrics, useCheckin, useMe } from "@/lib/hooks";
+import { computeRecovery } from "@/lib/recovery";
 import { HEAD_BLOW_RULES } from "@/lib/coach-rules";
 import { SAFETY_RULES } from "@/lib/safety-rules";
 import { parseNum } from "@/lib/checkin";
 import {
   DAY_TYPES,
   INTENSITIES,
-  MEAL_STATES,
   useAddCardio,
   useDeleteCardio,
   useMarkMeal,
   useSaveDay,
   weekProgress,
   type Intensity,
-  type MealState,
-  type TodayMeal,
   type TodayState,
 } from "@/lib/today";
 
-const section = "glass rise mt-4 p-4";
+const card = "glass rise mt-3 p-3";
 
-function SectionTitle({ children, aside }: { children: React.ReactNode; aside?: React.ReactNode }) {
+function mealName(t: ReturnType<typeof useTranslations>, key: string) {
+  return t.has(`meals.${key}`) ? t(`meals.${key}`) : key;
+}
+
+/* ------------------------------------ estado ------------------------------------- */
+
+/** El chip de estado de hoy. El aviso completo (SafetyBanner) solo se pinta cuando hay algo que
+ * avisar: en verde no ocupa sitio. */
+function StatusChip() {
+  const t = useTranslations("today.status");
+  const td = useTranslations("dashboard");
+  const ts = useTranslations("safetyState");
+  const safety = useTodaySafety();
+  const { data: logs = [] } = useBiometrics();
+  if (!safety) return null;
+  const recovery = computeRecovery(logs);
+  let label: string;
+  let color: string;
+  if (safety.noTraining) {
+    label = t("noTraining");
+    color = "#ff5a6e";
+  } else if (safety.level === "stop") {
+    label = ts("stop");
+    color = "#ff5a6e";
+  } else if (safety.level === "caution") {
+    label = ts("caution");
+    color = "#ffd25a";
+  } else if (recovery) {
+    label = td(`recovery.${recovery.state === "listo" && !canSayReady(safety) ? "normal" : recovery.state}.label`);
+    color = recovery.color;
+  } else {
+    label = t("ok");
+    color = "#43e8a0";
+  }
   return (
-    <div className="flex items-center justify-between gap-2">
-      <h2 className="t-label text-ink">{children}</h2>
-      {aside}
-    </div>
+    <p data-testid="today-status" className="badge mt-2" style={{ color, borderColor: color }}>
+      <span aria-hidden className="h-2 w-2 rounded-full" style={{ background: color, boxShadow: `0 0 8px ${color}` }} />
+      {label}
+    </p>
   );
 }
 
-function Toggle({ id, label, value, onChange, pending = false }: { id: string; label: string; value: boolean | null; onChange: (v: boolean) => void; pending?: boolean }) {
+/* ---------------------------------- entreno de hoy ---------------------------------- */
+
+function Pill({ id, label, on, onClick, pending = false }: { id: string; label: string; on: boolean; onClick: () => void; pending?: boolean }) {
   const t = useTranslations("today.done");
-  const on = value === true;
   return (
     <button
       type="button"
       data-testid={id}
       aria-pressed={on}
-      onClick={() => onChange(!on)}
-      className={`flex flex-1 flex-col items-start gap-1 rounded-2xl border p-3 text-left transition-colors ${
-        on ? "border-[rgba(53,230,255,0.6)] bg-[rgba(53,230,255,0.08)]" : "border-white/10"
-      }`}
+      onClick={onClick}
+      className={`btn btn-sm flex-1 ${on ? "btn-primary" : "btn-outline"}`}
     >
-      <span className="t-label text-ink">{label}</span>
-      <span className={`t-body text-xs ${on ? "text-neon" : "text-muted"}`}>{on ? `✓ ${t("yes")}` : t("notYet")}</span>
-      {pending && <span data-testid={`${id}-pending`} className="t-body text-[10px] text-warn">{t("pending")}</span>}
+      {on ? `✓ ${label}` : label}
+      {pending && <span data-testid={`${id}-pending`} className="text-[10px]">{t("pending")}</span>}
     </button>
   );
 }
 
-function mealName(t: ReturnType<typeof useTranslations>, key: string) {
-  return t.has(`meals.${key}`) ? t(`meals.${key}`) : key;
+function TodayTraining({ state }: { state: TodayState }) {
+  const t = useTranslations("today");
+  const tp = useTranslations("today.plan");
+  const save = useSaveDay();
+  // R4-6: lo marcado sin red se ve al momento, con «pendiente de enviar» hasta que sale
+  const pending = save.isPaused && save.variables ? Object.keys(save.variables) : [];
+  const plan = state.plan;
+  return (
+    <section data-testid="day-plan" className={card}>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="t-label text-ink">{t("training.title")}</h2>
+        <div role="radiogroup" aria-label={t("dayType.title")} className="flex gap-1">
+          {DAY_TYPES.map((type) => (
+            <button
+              key={type}
+              type="button"
+              role="radio"
+              data-testid={`day-type-${type}`}
+              aria-checked={state.day_type === type}
+              onClick={() => save.mutate({ day_type: type })}
+              className={`rounded-full border px-2.5 py-1 text-[11px] ${
+                state.day_type === type ? "border-[rgba(53,230,255,0.6)] bg-[rgba(53,230,255,0.1)] text-neon" : "border-white/10 text-muted"
+              }`}
+            >
+              {t(`dayType.${type}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {!plan ? (
+        <div className="mt-1.5 flex items-center justify-between gap-2">
+          <p className="t-body text-sm text-muted">{state.day_type === null ? t("dayType.unknown") : tp("none")}</p>
+          <Link href="/training/plan" className="btn btn-tonal btn-sm shrink-0">{tp("makePlan")}</Link>
+        </div>
+      ) : (
+        <>
+          {plan.no_contact && (
+            <p data-testid="plan-head-blow" className="t-body mt-1.5 text-sm" style={{ color: "#ff5a6e" }}>
+              {tp("headBlow")}
+              {HEAD_BLOW_RULES.map((r) => <span key={r.key}> <EvidenceChip ruleKey={r.key} grade={r.grade} /></span>)}
+            </p>
+          )}
+          {plan.entries.length === 0 && <p className="t-body mt-1.5 text-sm text-muted">{tp("rest")}</p>}
+          <ul className="mt-1.5 space-y-1.5">
+            {plan.entries.map((e, i) => (
+              <li key={i} className="t-body flex items-center justify-between gap-2 text-sm text-ink">
+                <span className="min-w-0">
+                  <span className="block truncate">
+                    {e.kind === "gym" ? tp("gym", { session: e.session ?? "?" }) : e.kind === "cardio" ? tp("cardio", { minutes: e.minutes ?? 0 }) : tp("mma")}
+                    {e.time ? ` · ${tp("at", { time: e.time })}` : ""}
+                  </span>
+                  {e.kind === "gym" && e.exercises && e.exercises.length > 0 && (
+                    <span className="block truncate text-xs text-muted">{e.exercises.join(" · ")}</span>
+                  )}
+                  {e.kind === "gym" && e.paused && e.paused.length > 0 && (
+                    <span data-testid="plan-paused" className="block text-xs text-ink">
+                      {tp("paused", { exercises: e.paused.join(" · ") })}{" "}
+                      <EvidenceChip ruleKey={SAFETY_RULES.newPain.key} grade={SAFETY_RULES.newPain.grade} />
+                    </span>
+                  )}
+                  {e.kind === "mma" && e.contact_blocked && (
+                    <span data-testid="plan-contact-blocked" className="block text-xs text-ink">{tp("contactBlocked")}</span>
+                  )}
+                </span>
+                {e.kind === "gym" && e.session && (
+                  <Link href={`/training/gym?plan=${encodeURIComponent(e.session)}`} className="btn btn-primary btn-sm shrink-0">
+                    {tp("openSession", { session: e.session })}
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      <div className="mt-2.5 flex gap-2">
+        <Pill id="toggle-trained" label={t("done.trained")} on={state.trained === true} onClick={() => save.mutate({ trained: state.trained !== true })} pending={pending.includes("trained")} />
+        <Pill id="toggle-mobility" label={t("done.mobility")} on={state.mobility === true} onClick={() => save.mutate({ mobility: state.mobility !== true })} pending={pending.includes("mobility")} />
+      </div>
+      {state.day_type_set && plan && (
+        <button type="button" className="t-body mt-1.5 text-[11px] text-neon underline" onClick={() => save.mutate({ day_type: null })}>
+          {t("dayType.reset")}
+        </button>
+      )}
+      {save.isError && <p role="alert" className="t-body mt-2 text-xs text-warn">{t("saveError")}</p>}
+    </section>
+  );
 }
 
 /* --------------------------------- próxima comida --------------------------------- */
 
 function NextMeal({ state }: { state: TodayState }) {
   const t = useTranslations("today.next");
+  const tm = useTranslations("today.meals");
+  const tn = useTranslations("today.tonight");
   const tMenu = useTranslations("menu");
+  const mark = useMarkMeal();
   const next = state.next_meal;
+  const current = next && !next.all_done ? state.menu?.meals.find((m) => m.meal === next.meal) : undefined;
+  const [changing, setChanging] = useState(false);
+  const [change, setChange] = useState("");
+  const tasks = state.tonight?.tasks ?? [];
+
   return (
-    <section id="next-meal" data-testid="next-meal" className="glass neon-edge rise mt-4 scroll-mt-4 p-4">
-      <p className="t-eyebrow text-muted">{t("title")}</p>
+    <section id="next-meal" data-testid="next-meal" tabIndex={-1} className="glass neon-edge rise mt-3 scroll-mt-4 p-3 outline-none">
+      <div className="flex items-center justify-between gap-2">
+        <p className="t-eyebrow text-muted">{t("title")}</p>
+        <Link href="/nutrition" className="t-label text-xs text-neon">{t("seeDay")}</Link>
+      </div>
       {next === null ? (
         <div className="mt-1 flex items-center justify-between gap-2">
           <p className="t-body text-sm text-muted">{t("noMenu")}</p>
-          <Link href="/nutrition/menu" className="btn btn-tonal btn-sm">{t("makeMenu")}</Link>
+          <Link href="/nutrition/menu" className="btn btn-tonal btn-sm shrink-0">{t("makeMenu")}</Link>
         </div>
       ) : next.all_done ? (
         <p className="t-title mt-1 text-good">{t("allDone")}</p>
       ) : (
-        <p className="t-title mt-1 text-ink">
-          {mealName(tMenu, next.meal)}: {next.free ? t("free") : next.dishes.join(", ")}
-        </p>
+        <>
+          <p className="t-title mt-1 truncate text-ink" title={`${mealName(tMenu, next.meal)}: ${next.free ? t("free") : next.dishes.join(", ")}`}>
+            {mealName(tMenu, next.meal)}: {next.free ? t("free") : next.dishes.join(", ")}
+          </p>
+          {current?.previous_mark && (
+            <p data-testid={`meal-${next.meal}-previous`} className="t-body mt-1 text-[11px] text-muted">
+              {tm("previousMark", { state: tm(`states.${current.previous_mark.state}`), dish: current.previous_mark.dish })}
+            </p>
+          )}
+          <div className="mt-2 flex gap-2" role="group" aria-label={mealName(tMenu, next.meal)}>
+            <button
+              type="button"
+              data-testid={`meal-${next.meal}-done`}
+              aria-pressed={current?.mark?.state === "done"}
+              onClick={() => { setChanging(false); mark.mutate({ meal: next.meal, state: "done" }); }}
+              className="btn btn-primary btn-sm flex-1"
+            >
+              {tm("states.done")}
+            </button>
+            <button
+              type="button"
+              data-testid={`meal-${next.meal}-changed`}
+              aria-pressed={changing}
+              aria-expanded={changing}
+              onClick={() => setChanging(true)}
+              className={`btn btn-sm flex-1 ${changing ? "btn-primary" : "btn-outline"}`}
+            >
+              {t("change")}
+            </button>
+          </div>
+          {changing && (
+            <form
+              className="mt-2 flex items-end gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                mark.mutate({ meal: next.meal, state: "changed", change }, { onSuccess: () => { setChanging(false); setChange(""); } });
+              }}
+            >
+              <label className="flex flex-1 flex-col gap-1">
+                <span className="t-body text-xs text-muted">{tm("changeLabel")}</span>
+                <input
+                  data-testid={`meal-${next.meal}-change`}
+                  value={change}
+                  maxLength={300}
+                  onChange={(e) => setChange(e.target.value)}
+                  placeholder={tm("changePlaceholder")}
+                  className="field px-3 py-2 text-sm"
+                />
+              </label>
+              <button type="submit" className="btn btn-primary btn-sm">{tm("changeSave")}</button>
+            </form>
+          )}
+          {changing && (
+            <Link href="/nutrition" data-testid={`meal-${next.meal}-log`} className="t-label mt-1 block text-xs text-neon underline">
+              {tm("logInstead")}
+            </Link>
+          )}
+        </>
       )}
-    </section>
-  );
-}
-
-/* ----------------------------------- plan del día ---------------------------------- */
-
-function DayPlan({ state }: { state: TodayState }) {
-  const t = useTranslations("today.plan");
-  const plan = state.plan;
-  if (!plan) {
-    return (
-      <section data-testid="day-plan" className={section}>
-        <SectionTitle>{t("title")}</SectionTitle>
-        <p className="t-body mt-1 text-sm text-muted">{t("none")}</p>
-        <Link href="/training/plan" className="btn btn-tonal btn-sm mt-2">{t("makePlan")}</Link>
-      </section>
-    );
-  }
-  return (
-    <section data-testid="day-plan" className={section}>
-      <SectionTitle>{t("title")}</SectionTitle>
-      {plan.no_contact && (
-        <p data-testid="plan-head-blow" className="t-body mt-1 text-sm" style={{ color: "#ff5a6e" }}>
-          {t("headBlow")}
-          {HEAD_BLOW_RULES.map((r) => <span key={r.key}> <EvidenceChip ruleKey={r.key} grade={r.grade} /></span>)}
-        </p>
+      {tasks.length > 0 && (
+        <div data-testid="today-tonight" className="mt-2 flex items-start gap-2 border-t border-[rgba(150,190,255,0.1)] pt-2">
+          <p className="t-label shrink-0 text-xs text-muted">{tn("title")}</p>
+          <ul className="flex min-w-0 flex-col gap-1">
+            {tasks.map((task, i) => (
+              <li key={i} data-testid="tonight-task" data-kind={task.kind} className="t-body flex flex-wrap items-center gap-2 text-xs text-ink">
+                <span>{task.kind === "defrost" ? tn("defrost", { dish: task.dish ?? "" }) : task.text}</span>
+                {task.kind === "defrost" && <EvidenceChip ruleKey={task.rule_key ?? null} />}
+                {task.kind === "batch" && <span className="badge">{tn("batch")}</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
-      {plan.entries.length === 0 && <p className="t-body mt-1 text-sm text-muted">{t("rest")}</p>}
-      <ul className="mt-1 space-y-2">
-        {plan.entries.map((e, i) => (
-          <li key={i} className="t-body text-sm text-ink">
-            <span>
-              {e.kind === "gym" ? t("gym", { session: e.session ?? "?" }) : e.kind === "cardio" ? t("cardio", { minutes: e.minutes ?? 0 }) : t("mma")}
-              {e.time ? ` · ${t("at", { time: e.time })}` : ""}
-            </span>
-            {e.kind === "gym" && e.exercises && e.exercises.length > 0 && (
-              <span className="block text-xs text-muted">{e.exercises.join(" · ")}</span>
-            )}
-            {e.kind === "gym" && e.paused && e.paused.length > 0 && (
-              <span data-testid="plan-paused" className="block text-xs text-ink">
-                {t("paused", { exercises: e.paused.join(" · ") })}{" "}
-                <EvidenceChip ruleKey={SAFETY_RULES.newPain.key} grade={SAFETY_RULES.newPain.grade} />
-              </span>
-            )}
-            {e.kind === "mma" && e.contact_blocked && (
-              <span data-testid="plan-contact-blocked" className="block text-xs text-ink">{t("contactBlocked")}</span>
-            )}
-            {e.kind === "gym" && e.session && (
-              <Link href={`/training/gym?plan=${encodeURIComponent(e.session)}`} className="t-label mt-1 inline-flex items-center gap-1 text-neon">
-                {t("openSession", { session: e.session })} <ChevronRight className="h-3.5 w-3.5" />
-              </Link>
-            )}
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-/* ---------------------------- tipo de día y hecho hoy ---------------------------- */
-
-function DayStatus({ state }: { state: TodayState }) {
-  const t = useTranslations("today");
-  const save = useSaveDay();
-  // R4-6: lo marcado sin red se ve al momento, con «pendiente de enviar» hasta que sale
-  const pending = save.isPaused && save.variables ? Object.keys(save.variables) : [];
-  return (
-    <section className={section}>
-      <SectionTitle>{t("dayType.title")}</SectionTitle>
-      <div role="radiogroup" aria-label={t("dayType.title")} className="mt-2 flex gap-2">
-        {DAY_TYPES.map((type) => (
-          <button
-            key={type}
-            type="button"
-            role="radio"
-            data-testid={`day-type-${type}`}
-            aria-checked={state.day_type === type}
-            onClick={() => save.mutate({ day_type: type })}
-            className={`btn btn-sm flex-1 ${state.day_type === type ? "btn-primary" : "btn-outline"}`}
-          >
-            {t(`dayType.${type}`)}
-          </button>
-        ))}
-      </div>
-      <p className="t-body mt-2 text-[11px] text-muted">
-        {state.day_type === null ? t("dayType.unknown") : state.day_type_set ? t("dayType.changed") : t("dayType.fromPlan")}
-        {state.day_type_set && state.plan && (
-          <button type="button" className="ml-2 text-neon underline" onClick={() => save.mutate({ day_type: null })}>
-            {t("dayType.reset")}
-          </button>
-        )}
-      </p>
-
-      <h2 className="t-label mt-4 text-ink">{t("done.title")}</h2>
-      <div className="mt-2 flex gap-2">
-        <Toggle id="toggle-trained" label={t("done.trained")} value={state.trained} onChange={(v) => save.mutate({ trained: v })} pending={pending.includes("trained")} />
-        <Toggle id="toggle-mobility" label={t("done.mobility")} value={state.mobility} onChange={(v) => save.mutate({ mobility: v })} pending={pending.includes("mobility")} />
-      </div>
-      {save.isError && <p role="alert" className="t-body mt-2 text-xs text-warn">{t("saveError")}</p>}
     </section>
   );
 }
@@ -197,10 +294,9 @@ function Weight({ state }: { state: TodayState }) {
 
   if (state.weight_blocked) {
     return (
-      <section id="weight" data-testid="weight" className={`${section} scroll-mt-4`}>
-        <SectionTitle>{t("title")}</SectionTitle>
-        <p className="t-body mt-1 text-sm text-muted">{t("blocked")}</p>
-      </section>
+      <div id="weight" data-testid="weight">
+        <p className="t-body text-sm text-muted">{t("blocked")}</p>
+      </div>
     );
   }
 
@@ -216,10 +312,9 @@ function Weight({ state }: { state: TodayState }) {
   };
 
   return (
-    <section id="weight" data-testid="weight" className={`${section} scroll-mt-4`}>
-      <SectionTitle>{t("title")}</SectionTitle>
+    <div id="weight" data-testid="weight">
       {state.weight_kg !== null && (
-        <p data-testid="weight-saved" className="t-body mt-1 text-sm text-good">
+        <p data-testid="weight-saved" className="t-body text-sm text-good">
           {t("saved", { kg: format.number(state.weight_kg, { maximumFractionDigits: 2 }) })}
         </p>
       )}
@@ -248,117 +343,7 @@ function Weight({ state }: { state: TodayState }) {
       <p className={`t-body mt-1 text-[11px] ${invalid ? "text-warn" : "text-muted"}`} role={invalid ? "alert" : undefined}>
         {invalid ? t("invalid") : t("hint")}
       </p>
-    </section>
-  );
-}
-
-/* ------------------------------------- comidas ------------------------------------- */
-
-function MealRow({ meal }: { meal: TodayMeal }) {
-  const t = useTranslations("today.meals");
-  const tMenu = useTranslations("menu");
-  const mark = useMarkMeal();
-  const [changing, setChanging] = useState(false);
-  const [change, setChange] = useState(meal.mark?.change ?? "");
-  const state = meal.mark?.state ?? null;
-
-  const choose = (s: MealState) => {
-    if (s === "changed") {
-      setChanging(true);
-      return;
-    }
-    setChanging(false);
-    mark.mutate({ meal: meal.meal, state: s });
-  };
-
-  return (
-    <li data-testid={`meal-${meal.meal}`} className="border-b border-[rgba(150,190,255,0.08)] py-3 last:border-0">
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="t-label text-ink">{mealName(tMenu, meal.meal)}</span>
-        {meal.tupper && <span className="badge">{t("tupper")}</span>}
-      </div>
-      <p className="t-body text-sm text-muted">{meal.free ? t("free") : meal.dishes.join(", ")}</p>
-      {meal.previous_mark && (
-        <p data-testid={`meal-${meal.meal}-previous`} className="t-body text-[11px] text-muted">
-          {t("previousMark", { state: t(`states.${meal.previous_mark.state}`), dish: meal.previous_mark.dish })}
-        </p>
-      )}
-      {meal.eve.length > 0 && <p className="t-body text-[11px] text-neon">{t("eve", { task: meal.eve.join("; ") })}</p>}
-      {meal.prep.length > 0 && <p className="t-body text-[11px] text-ink">{t("prep", { list: meal.prep.join("; ") })}</p>}
-      <div className="mt-2 flex gap-2" role="group" aria-label={mealName(tMenu, meal.meal)}>
-        {MEAL_STATES.map((s) => (
-          <button
-            key={s}
-            type="button"
-            data-testid={`meal-${meal.meal}-${s}`}
-            aria-pressed={state === s || (s === "changed" && changing)}
-            onClick={() => choose(s)}
-            className={`btn btn-sm flex-1 ${state === s ? "btn-primary" : "btn-outline"}`}
-          >
-            {t(`states.${s}`)}
-          </button>
-        ))}
-      </div>
-      {state === "changed" && meal.mark?.change && !changing && (
-        <p className="t-body mt-1 text-xs text-muted">{t("changedTo", { what: meal.mark.change })}</p>
-      )}
-      {state === "done" && meal.totals && (
-        <p data-testid={`meal-${meal.meal}-diary`} className="t-body mt-1 text-xs text-good">
-          {t("inDiary", { kcal: meal.totals.kcal })}
-        </p>
-      )}
-      {state === "changed" && !changing && (
-        <Link href="/nutrition" data-testid={`meal-${meal.meal}-log`} className="t-label mt-1 block text-xs text-neon underline">
-          {t("logInstead")}
-        </Link>
-      )}
-      {changing && (
-        <form
-          className="mt-2 flex items-end gap-2"
-          onSubmit={(e) => {
-            e.preventDefault();
-            mark.mutate({ meal: meal.meal, state: "changed", change }, { onSuccess: () => setChanging(false) });
-          }}
-        >
-          <label className="flex flex-1 flex-col gap-1">
-            <span className="t-body text-xs text-muted">{t("changeLabel")}</span>
-            <input
-              data-testid={`meal-${meal.meal}-change`}
-              value={change}
-              maxLength={300}
-              onChange={(e) => setChange(e.target.value)}
-              placeholder={t("changePlaceholder")}
-              className="field px-3 py-2 text-sm"
-            />
-          </label>
-          <button type="submit" className="btn btn-primary btn-sm">{t("changeSave")}</button>
-        </form>
-      )}
-      {state && !changing && (
-        <button type="button" className="t-label mt-1 text-muted underline" onClick={() => mark.mutate({ meal: meal.meal, state: null })}>
-          {t("clear")}
-        </button>
-      )}
-    </li>
-  );
-}
-
-function Meals({ state }: { state: TodayState }) {
-  const t = useTranslations("today.meals");
-  if (!state.menu) return null;
-  return (
-    <section data-testid="meals" className={section}>
-      <SectionTitle>{t("title")}</SectionTitle>
-      {state.menu.meals.length === 0 ? (
-        <p className="t-body mt-1 text-sm text-muted">{t("none")}</p>
-      ) : (
-        <ul className="mt-1">
-          {state.menu.meals.map((m) => (
-            <MealRow key={m.meal} meal={m} />
-          ))}
-        </ul>
-      )}
-    </section>
+    </div>
   );
 }
 
@@ -399,10 +384,8 @@ function Cardio({ state }: { state: TodayState }) {
   };
 
   return (
-    <section data-testid="cardio" className={section}>
-      <SectionTitle>{t("title")}</SectionTitle>
-
-      <div className="mt-2">
+    <div data-testid="cardio">
+      <div>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p data-testid="cardio-week" className="t-body text-sm text-ink">
             {t("week", { equivalent: week.equivalent, goal: week.goal })}
@@ -524,27 +507,38 @@ function Cardio({ state }: { state: TodayState }) {
           {t("save")}
         </button>
       </form>
-    </section>
+    </div>
   );
 }
 
-/** Lo que hay que dejar hecho esta noche para mañana (fase 12). */
-function Tonight({ state }: { state: TodayState }) {
-  const t = useTranslations("today.tonight");
-  const tasks = state.tonight?.tasks ?? [];
-  if (tasks.length === 0) return null;
+/* ---------------------------------- apuntar rápido ---------------------------------- */
+
+const tile = "glass flex flex-col items-start gap-0.5 rounded-2xl p-3 text-left";
+
+function QuickRow({ state, onOpen }: { state: TodayState; onOpen: (s: "weight" | "cardio") => void }) {
+  const t = useTranslations("today.quick");
+  const format = useFormatter();
+  const { data: checkin } = useCheckin();
+  const { week } = state.cardio;
   return (
-    <section data-testid="today-tonight" className="glass neon-edge mt-4 p-4">
-      <p className="t-eyebrow text-muted">{t("title")}</p>
-      <ul className="mt-2 flex flex-col gap-1.5">
-        {tasks.map((task, i) => (
-          <li key={i} data-testid="tonight-task" data-kind={task.kind} className="t-body flex flex-wrap items-center gap-2 text-sm text-ink">
-            <span>{task.kind === "defrost" ? t("defrost", { dish: task.dish ?? "" }) : task.text}</span>
-            {task.kind === "defrost" && <EvidenceChip ruleKey={task.rule_key ?? null} />}
-            {task.kind === "batch" && <span className="badge">{t("batch")}</span>}
-          </li>
-        ))}
-      </ul>
+    <section aria-labelledby="today-quick" className="rise mt-3">
+      <h2 id="today-quick" className="t-eyebrow text-muted">{t("title")}</h2>
+      <div className="mt-1.5 grid grid-cols-3 gap-2">
+        <Link href="/checkin" data-testid="quick-checkin" className={tile}>
+          <span className="t-label text-ink">{t("checkin")}</span>
+          <span className="t-body text-[11px] text-muted">{checkin?.checkin ? t("checkinDone") : t("checkinTodo")}</span>
+        </Link>
+        <button type="button" data-testid="quick-weight" onClick={() => onOpen("weight")} className={tile}>
+          <span className="t-label text-ink">{t("weight")}</span>
+          <span className="t-body text-[11px] text-muted">
+            {state.weight_kg !== null ? t("kg", { kg: format.number(state.weight_kg, { maximumFractionDigits: 2 }) }) : t("log")}
+          </span>
+        </button>
+        <button type="button" data-testid="quick-cardio" onClick={() => onOpen("cardio")} className={tile}>
+          <span className="t-label text-ink">{t("cardio")}</span>
+          <span className="t-body text-[11px] text-muted">{t("min", { equivalent: week.equivalent, goal: week.goal })}</span>
+        </button>
+      </div>
     </section>
   );
 }
@@ -555,30 +549,61 @@ export function TodayView({ state }: { state: TodayState }) {
   const t = useTranslations("today");
   // La fecha es la del perfil (la decide el servidor): se pinta tal cual, sin la zona del móvil.
   const locale = useLocale();
+  const { data: me } = useMe();
+  // Los accesos directos del manifiesto: /today#weight abre el panel del peso y /today#next-meal
+  // lleva a la próxima comida.
+  const [sheet, setSheet] = useState<"weight" | "cardio" | null>(() =>
+    typeof window !== "undefined" && window.location.hash === "#weight" ? "weight" : null,
+  );
+  useEffect(() => {
+    const focusMeal = () => {
+      const el = document.getElementById("next-meal");
+      el?.scrollIntoView({ block: "start" });
+      el?.focus({ preventScroll: true });
+    };
+    if (window.location.hash === "#next-meal") focusMeal();
+    const onHash = () => {
+      if (window.location.hash === "#weight") setSheet("weight");
+      else if (window.location.hash === "#next-meal") focusMeal();
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  const initial = me?.email ? me.email[0].toUpperCase() : "?";
   return (
     <div className="pt-4">
       <header className="flex items-center justify-between gap-3">
-        <div>
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-2">
           <h1 className="t-display text-2xl text-ink">{t("title")}</h1>
           {/* F11: «Lunes, 9 de noviembre», con mayúscula solo al empezar (no «9 De Noviembre») */}
           <p className="t-body text-sm text-muted" data-testid="today-date">{capitalizeFirst(formatDate(locale, state.date, "weekday"), locale)}</p>
         </div>
-        <Link href="/dashboard" aria-label={t("summaryAria")} className="btn btn-outline btn-sm">
-          {t("summaryLink")}
+        <Link
+          href="/profile"
+          data-testid="today-avatar"
+          aria-label={t("profileAria")}
+          className="glass flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-display text-sm text-neon"
+        >
+          {initial}
         </Link>
       </header>
-      {/* Hoy es la pantalla de inicio: los avisos de seguridad del motor van arriba, como en el resumen. */}
+      <StatusChip />
+      {/* Hoy es la pantalla de inicio: los avisos de seguridad del motor van arriba. En verde no hay nada. */}
       <SafetyBanner foldDay={state.date} />
+      <TodayTraining state={state} />
       <NextMeal state={state} />
-      <DayPlan state={state} />
-      <DayStatus state={state} />
-      <Weight state={state} />
-      <Meals state={state} />
-      <Tonight state={state} />
-      <Cardio state={state} />
-      <Link href="/checkin" className="btn btn-tonal mt-4 w-full">
-        {t("fullCheckin")}
-      </Link>
+      <QuickRow state={state} onOpen={setSheet} />
+      {sheet === "weight" && (
+        <BottomSheet title={t("weight.title")} onClose={() => setSheet(null)} testId="sheet-weight">
+          <Weight state={state} />
+        </BottomSheet>
+      )}
+      {sheet === "cardio" && (
+        <BottomSheet title={t("cardio.title")} onClose={() => setSheet(null)} testId="sheet-cardio">
+          <Cardio state={state} />
+        </BottomSheet>
+      )}
     </div>
   );
 }

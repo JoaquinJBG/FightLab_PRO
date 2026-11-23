@@ -511,67 +511,25 @@
     "menuUnmarkShort": "En Hoy"
   },
   "dashboard": {
-    "greeting": {
-      "morning": "Buenos días",
-      "afternoon": "Buenas tardes",
-      "evening": "Buenas noches",
-      "hello": "Hola"
-    },
-    "athlete": "atleta",
-    "profileAria": "Perfil",
-    "state": {
-      "eyebrowRecovery": "Estado de hoy · según tu recuperación",
-      "eyebrow": "Estado de hoy",
-      "noTraining": "Sin entrenar hasta revisión médica",
-      "noTrainingBody": "Con lo que nos has contado, hoy no toca entrenar. Puedes seguir registrando lo que hagas: no se borra nada.",
-      "activate": "Activa tu readiness",
-      "activateBody": "Registra FC en reposo y HRV durante unos días y te diré cada mañana cómo venir a entrenar.",
-      "addMeasures": "Añadir medidas"
-    },
     "recovery": {
       "cuidado": {
-        "label": "Tómatelo suave",
-        "phrase": "Tus señales de recuperación están por debajo de tu media. Hoy: técnica ligera o descanso activo."
+        "label": "Tómatelo suave"
       },
       "listo": {
-        "label": "Listo para entrenar",
-        "phrase": "Recuperación por encima de tu media. Buen día para trabajo exigente."
+        "label": "Listo para entrenar"
       },
       "normal": {
-        "label": "Día normal",
-        "phrase": "Señales en torno a tu media. Entrena según tu plan."
-      },
-      "chipRhr": "FC reposo {value} vs tu media",
-      "chipHrv": "HRV {value}% vs tu media"
-    },
-    "today": {
-      "done": "Entreno de hoy hecho ✓",
-      "sessions": "{count, plural, one {# sesión registrada} other {# sesiones registradas}} · buen trabajo",
-      "focus": "Hoy toca: <neon>{focus}</neon>",
-      "fromCalendar": "De tu calendario de gimnasio",
-      "restDay": "Hoy: descanso programado",
-      "restBody": "Movilidad suave y a recuperar",
-      "nothing": "Nada planificado para hoy",
-      "nothingBody": "Registra un entreno o planifica tu semana",
-      "logOnly": "Puedes seguir registrando tus entrenos",
-      "logOnlyBody": "Sin plan ni sugerencias de carga hasta que lo revise un médico"
-    },
-    "weightReminder": {
-      "title": "¿Apuntamos tu peso?",
-      "body": "Hace {days} días de tu último peso · recordatorio cada 2 semanas."
+        "label": "Día normal"
+      }
     },
     "weight": {
-      "label": "Peso · {when}",
       "today": "hoy",
       "yesterday": "ayer",
       "daysAgo": "hace {days} días",
       "kg": "kg",
       "toGoal": "A <neon>{kg} kg</neon> de tu objetivo ({target} kg)",
       "reached": "Objetivo de peso alcanzado ✓ ({target} kg)",
-      "history": "Ver historial y tendencia →",
-      "emptyTitle": "Aún no hay mediciones",
-      "emptyBody": "Registra tu primera medición para empezar a ver tu evolución.",
-      "emptyCta": "Registrar medición"
+      "emptyTitle": "Aún no hay mediciones"
     },
     "metrics": {
       "rhr": "FC reposo",
@@ -580,31 +538,10 @@
       "ms": "ms",
       "fat": "% Grasa",
       "vsAvg": "{delta} vs tu media",
-      "activateTitle": "Activa tus métricas de recuperación",
-      "activateBody": "Añade FC en reposo y HRV para ver tu estado diario y tendencias."
-    },
-    "week": {
-      "title": "Tu semana",
-      "sub": "medición o entreno",
-      "mon": "L",
-      "tue": "M",
-      "wed": "X",
-      "thu": "J",
-      "fri": "V",
-      "sat": "S",
-      "sun": "D"
-    },
-    "load": {
-      "title": "Carga de entreno (ACWR)",
-      "soon": "Se activará cuando registres sesiones con RPE",
-      "week": "Semana",
-      "au": "AU",
-      "acwr": "ACWR",
-      "provisional": "*ACWR provisional hasta acumular 4 semanas de historial"
+      "activateTitle": "Activa tus métricas de recuperación"
     },
     "cta": {
-      "update": "Actualizar biometría",
-      "register": "Registrar biometría"
+      "measure": "Registrar medición"
     },
     "zones": {
       "title": "Tus zonas de esfuerzo",
@@ -623,6 +560,19 @@
       "hrMaxEstimated": "FC máxima estimada: {bpm} bpm",
       "hrMaxMeasured": "FC máxima medida: {bpm} bpm",
       "hrRest": "FC en reposo: {bpm} bpm"
+    },
+    "title": "Progreso",
+    "back": "← Progreso",
+    "tiles": {
+      "weight": "Peso",
+      "measures": "Medidas",
+      "measuresEmpty": "Añade FC en reposo y HRV",
+      "review": "Revisión semanal",
+      "reviewSub": "Cómo ha ido la semana",
+      "records": "Récords",
+      "recordsSub": "Tus mejores marcas",
+      "photos": "Fotos",
+      "photosSub": "Fotos de progreso"
     }
   },
   "meta": {
@@ -635,8 +585,8 @@
     "training": "Entreno",
     "nutrition": "Nutrición",
     "coach": "Coach",
-    "profile": "Perfil",
-    "comingSoon": "Próximamente"
+    "comingSoon": "Próximamente",
+    "progress": "Progreso"
   },
   "auth": {
     "common": {
@@ -1740,7 +1690,8 @@
       "language": "Idioma",
       "saved": "Guardado ✓",
       "saving": "Guardando…"
-    }
+    },
+    "importData": "Importar datos"
   },
   "load": {
     "title": "Carga de entreno",
@@ -3038,19 +2989,17 @@
     "loading": "Cargando el parte de hoy…",
     "error": "No se ha podido cargar el parte de hoy. Prueba otra vez.",
     "retry": "Reintentar",
-    "summaryLink": "Resumen",
-    "summaryAria": "Ver el resumen: estado, peso y carga",
-    "fullCheckin": "Check-in completo (sueño, energía, molestias…)",
     "saveError": "No se ha guardado. Prueba otra vez.",
     "next": {
       "title": "Próxima comida",
       "allDone": "Menú de hoy: todo marcado ✓",
       "free": "Libre",
       "noMenu": "Hoy no hay menú.",
-      "makeMenu": "Preparar menú"
+      "makeMenu": "Preparar menú",
+      "change": "Cambiar",
+      "seeDay": "Ver el día"
     },
     "plan": {
-      "title": "Plan del día",
       "none": "Aún no tienes un plan de la semana activo.",
       "makePlan": "Crear el plan",
       "rest": "Hoy el plan no pone entreno: descanso.",
@@ -3068,17 +3017,12 @@
       "gym": "Gimnasio",
       "cardio": "Cardio",
       "rest": "Descanso",
-      "fromPlan": "Según el plan de la semana.",
-      "changed": "Cambiado a mano.",
       "reset": "Volver a lo del plan",
       "unknown": "Sin plan: marca qué toca."
     },
     "done": {
-      "title": "Hecho hoy",
       "trained": "Entreno hecho",
       "mobility": "Movilidad",
-      "yes": "Sí",
-      "notYet": "Aún no",
       "pending": "pendiente de enviar"
     },
     "weight": {
@@ -3092,11 +3036,6 @@
       "dayMean": "Hoy hay {count} pesajes: cuenta la media del día, {kg} kg."
     },
     "meals": {
-      "title": "Comidas del menú",
-      "none": "No hay menú para hoy.",
-      "tupper": "Táper",
-      "free": "Comida libre",
-      "eve": "Para la víspera: {task}",
       "states": {
         "done": "Hecha",
         "skipped": "No hecha",
@@ -3107,9 +3046,7 @@
       "changeSave": "Guardar",
       "changedTo": "En su lugar: {what}",
       "clear": "Quitar la marca",
-      "prep": "Ese día: {list}",
       "previousMark": "Antes, con otro plato: {state} ({dish}). El menú de hoy ha cambiado; marca este plato.",
-      "inDiary": "Sumada a Nutrición: {kcal} kcal previstas del plato.",
       "logInstead": "Apunta en Nutrición lo que comiste: solo cuenta lo que apuntes."
     },
     "cardio": {
@@ -3151,6 +3088,28 @@
       "title": "Para esta noche",
       "defrost": "Pasa {dish} del congelador a la nevera",
       "batch": "batch"
+    },
+    "profileAria": "Perfil",
+    "training": {
+      "title": "Entreno de hoy"
+    },
+    "status": {
+      "ok": "Todo en orden",
+      "noTraining": "Sin entrenar hasta revisión médica"
+    },
+    "sheet": {
+      "close": "Cerrar"
+    },
+    "quick": {
+      "title": "Apuntar rápido",
+      "checkin": "Check-in",
+      "checkinDone": "Hecho hoy",
+      "checkinTodo": "Pendiente",
+      "weight": "Peso",
+      "kg": "{kg} kg",
+      "log": "Apuntar",
+      "cardio": "Cardio",
+      "min": "{equivalent}/{goal} min"
     }
   },
   "reminders": {
@@ -3817,5 +3776,22 @@
     },
     "intenseOff": "«Intenso» no está disponible hoy: {why}.",
     "vigorousLogged": "Marcas «Vigorosa» con un aviso activo ({why}). Se apunta igual, porque ya está hecho; hoy lo recomendable es ligero o moderado."
+  },
+  "importHub": {
+    "title": "Importar datos",
+    "back": "← Perfil",
+    "subtitle": "Trae a FightLab lo que ya tenías en otras apps.",
+    "history": {
+      "title": "Historial",
+      "hint": "Peso, medidas y check-ins de otra app"
+    },
+    "hevy": {
+      "title": "Entrenos de Hevy",
+      "hint": "Tus sesiones de gimnasio"
+    },
+    "catalogue": {
+      "title": "Catálogo del súper",
+      "hint": "Tus productos con su valoración"
+    }
   }
 }

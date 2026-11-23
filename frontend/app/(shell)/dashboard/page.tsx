@@ -3,28 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useFormatter, useTranslations } from "next-intl";
-import { useBiometrics, useCheckin, useMe, useSafety, useTrend, useWeighIn } from "@/lib/hooks";
+import { useBiometrics, useTrend, useWeighIn } from "@/lib/hooks";
 import { TrendLine } from "@/components/trend/TrendLine";
-import { SafetyBanner } from "@/components/safety/SafetyBanner";
-import { SafetyStateCard } from "@/components/safety/SafetyStateCard";
-import { todaySafety } from "@/lib/safety-state";
 import { LoadSummary } from "@/components/load/LoadSummary";
-import { ZonesCard } from "@/components/zones/ZonesCard";
-import type { Biometrics } from "@/lib/schemas";
-import { computeRecovery } from "@/lib/recovery";
-import { dailyWeights, latestWeightKg } from "@/lib/body-inputs";
+import { ZonesTile } from "@/components/zones/ZonesCard";
+import { latestWeightKg } from "@/lib/body-inputs";
 import { loadMetrics, type LoadMetrics } from "@/lib/load";
-import { fetchServerMetrics, fetchServerActivities, serverActivityTs, mergeByClientId, type ActivityKind } from "@/lib/activities";
-import {
-  ScaleIcon,
-  HeartIcon,
-  PulseIcon,
-  ArrowUpRight,
-  ChevronRight,
-  TrainingIcon,
-  GloveIcon,
-  ClipboardIcon,
-} from "@/components/icons";
+import { fetchServerMetrics } from "@/lib/activities";
+import { ArrowUpRight, ChartIcon } from "@/components/icons";
 
 /* ----------------------------- helpers ----------------------------------- */
 
@@ -34,8 +20,6 @@ function num(v: string | number | null): number | null {
   return Number.isFinite(n) ? n : null;
 }
 const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
-const sameDay = (a: Date, b: Date) =>
-  a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 
 function daysSince(iso: string): number {
   const d = new Date(iso);
@@ -45,205 +29,75 @@ function daysSince(iso: string): number {
   return Math.round((now.getTime() - d.getTime()) / 86_400_000);
 }
 
-/* Estado de hoy: estimación con señales reales de recuperación (lib/recovery).
-   La carga (AU y la semana frente a tu media, anexo de combate) sale de las
-   sesiones registradas (lib/load). Nada de números inventados. */
+const tile = "glass rise flex flex-col gap-1 rounded-2xl p-2.5";
 
-const DAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
-type Greeting = "hello" | "morning" | "afternoon" | "evening";
-
-/* ----------------------------- subcomponentes ----------------------------- */
-
-function Sparkline({ points }: { points: number[] }) {
-  if (points.length < 2) return null;
-  const min = Math.min(...points);
-  const max = Math.max(...points);
-  const span = max - min || 1;
-  const w = 100;
-  const h = 34;
-  const step = w / (points.length - 1);
-  const path = points
-    .map((p, i) => `${i === 0 ? "M" : "L"} ${(i * step).toFixed(1)} ${(h - ((p - min) / span) * h).toFixed(1)}`)
-    .join(" ");
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="h-9 w-full" preserveAspectRatio="none">
-      <path
-        d={path}
-        fill="none"
-        stroke="#45e9ff"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        style={{ filter: "drop-shadow(0 0 4px rgba(69,233,255,0.7))" }}
-      />
-    </svg>
-  );
-}
-
-function DeltaCard({
-  icon,
-  label,
-  value,
-  unit,
-  delta,
-  goodWhenDown,
-  delay,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  unit: string;
-  delta: number | null;
-  goodWhenDown: boolean;
-  delay: number;
-}) {
+/** Una métrica de recuperación con su diferencia frente a tu media (la misma cuenta de siempre). */
+function Metric({ label, value, unit, delta, goodWhenDown }: { label: string; value: string; unit: string; delta: number | null; goodWhenDown: boolean }) {
   const t = useTranslations("dashboard.metrics");
   const format = useFormatter();
   const improving = delta != null && (goodWhenDown ? delta < 0 : delta > 0);
   return (
-    <div className="glass rise p-3.5" style={{ animationDelay: `${delay}ms` }}>
-      <div className="flex items-center gap-2 text-muted">
-        <span className="text-neon">{icon}</span>
-        <span className="t-label">{label}</span>
-      </div>
-      <div className="mt-2 flex items-end gap-1">
-        <span className="stat text-2xl text-ink">{value}</span>
-        <span className="mb-0.5 text-xs text-muted">{unit}</span>
-      </div>
-      {delta != null && delta !== 0 && (
-        <p className={`t-body mt-1 text-[11px] ${improving ? "text-good" : "text-warn"}`}>
-          {delta > 0 ? "↑" : "↓"} {t("vsAvg", { delta: format.number(Math.abs(delta)) })}
-        </p>
-      )}
-    </div>
+    <p className="flex items-baseline justify-between gap-2 text-[11px] leading-snug text-muted">
+      <span>{label}</span>
+      <span className="text-ink">
+        <span className="stat text-sm">{value}</span> {unit}
+        {delta != null && delta !== 0 && (
+          <span
+            className={improving ? "text-good" : "text-warn"}
+            title={t("vsAvg", { delta: format.number(Math.abs(delta)) })}
+            aria-label={t("vsAvg", { delta: format.number(Math.abs(delta)) })}
+          >
+            {" "}{delta > 0 ? "↑" : "↓"}
+          </span>
+        )}
+      </span>
+    </p>
+  );
+}
+
+function LinkTile({ href, title, sub, testId, delay }: { href: string; title: string; sub: string; testId?: string; delay: number }) {
+  return (
+    <Link href={href} data-testid={testId} className={tile} style={{ animationDelay: `${delay}ms` }}>
+      <span className="t-label text-ink">{title}</span>
+      <span className="text-[11px] leading-snug text-muted">{sub}</span>
+    </Link>
   );
 }
 
 /* --------------------------------- página --------------------------------- */
 
-type LocalData = {
-  gymWeek: string[] | null;
-  trainedTs: number[];
-  metrics: LoadMetrics | null;
-};
-
-type TsItem = { ts: number; client_id?: string };
-
-// Parseo por clave: una clave corrupta no debe tumbar al resto. Solo en el
-// cliente (localStorage no existe durante el render en el servidor).
-function parseLocalJSON(key: string): unknown {
-  if (typeof window === "undefined") return null;
-  try { return JSON.parse(localStorage.getItem(key) ?? "null"); } catch { return null; }
-}
-
-function tsItems(v: unknown): TsItem[] {
-  if (!Array.isArray(v)) return [];
-  const out: TsItem[] = [];
-  for (const s of v as { ts?: unknown; client_id?: unknown }[]) {
-    if (typeof s?.ts !== "number") continue;
-    out.push({ ts: s.ts, client_id: typeof s.client_id === "string" ? s.client_id : undefined });
-  }
-  return out;
-}
-
-function readLocalByKind(): Record<ActivityKind, TsItem[]> {
-  return {
-    SPORT: tsItems(parseLocalJSON("flp_activities")),
-    MMA: tsItems(parseLocalJSON("flp_mma")),
-    GYM: tsItems(parseLocalJSON("flp_gym_sessions")),
-  };
-}
-
-function readLocalData(): LocalData {
-  const week = parseLocalJSON("flp_gym_week");
-  const localByKind = readLocalByKind();
-  return {
-    gymWeek: Array.isArray(week) && week.length === 7 ? (week as string[]) : null,
-    trainedTs: Object.values(localByKind).flatMap((items) => items.map((i) => i.ts)),
-    metrics: loadMetrics(),
-  };
-}
-
-function computeGreeting(): Greeting {
-  const h = new Date().getHours();
-  return h < 12 ? "morning" : h < 20 ? "afternoon" : "evening";
-}
-
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
   const format = useFormatter();
-  const { data: me } = useMe();
   const { data: logs = [], isLoading } = useBiometrics();
-  const { data: safety } = useSafety();
   const { data: weighIn } = useWeighIn();
   // La tendencia es la del coach (`/coach/trend`), no una diferencia entre pesajes sueltos.
   const { data: trend } = useTrend(!!weighIn && !weighIn.blocked);
-  const { data: checkin } = useCheckin();
-  const tCheckin = useTranslations("checkin");
 
-  // Perezosos: ambos solo dependen del reloj/localStorage al montar, así que
-  // se calculan en la inicialización de useState (primera pintura ya real)
-  // en vez de con un setState síncrono dentro del efecto
-  // (react-hooks/set-state-in-effect).
-  const [greeting] = useState(() => computeGreeting());
-  const [local, setLocal] = useState<LocalData>(() => readLocalData());
-
+  // La carga sale de las sesiones registradas (lib/load); el servidor manda si responde.
+  const [metrics, setMetrics] = useState<LoadMetrics | null>(() => loadMetrics());
   useEffect(() => {
     let alive = true;
     fetchServerMetrics().then((m) => {
-      if (alive && m) setLocal((cur) => ({ ...cur, metrics: m })); // el servidor manda
-    });
-    // Entrenos de OTRO dispositivo: sin esto, "Entreno de hoy hecho" y los
-    // puntos de "Tu semana" solo verían lo registrado en este móvil. Se
-    // fusiona por client_id (nunca se duplica un mismo entreno) y, si el
-    // servidor no responde para algún tipo, ese tipo se queda con lo local.
-    const localByKind = readLocalByKind();
-    const kinds: ActivityKind[] = ["SPORT", "MMA", "GYM"];
-    Promise.all(kinds.map((k) => fetchServerActivities(k))).then((results) => {
-      if (!alive) return;
-      let anyServer = false;
-      const mergedTs: number[] = [];
-      results.forEach((server, i) => {
-        const kind = kinds[i];
-        if (!server) {
-          mergedTs.push(...localByKind[kind].map((it) => it.ts));
-          return;
-        }
-        anyServer = true;
-        const serverItems: TsItem[] = server.map((a) => ({ ts: serverActivityTs(a), client_id: a.client_id ?? undefined }));
-        mergedTs.push(...mergeByClientId(localByKind[kind], serverItems).map((it) => it.ts));
-      });
-      if (anyServer) setLocal((cur) => ({ ...cur, trainedTs: mergedTs }));
+      if (alive && m) setMetrics(m);
     });
     return () => { alive = false; };
   }, []);
 
-  const name = me?.email ? me.email.split("@")[0] : t("athlete");
-
-  const Header = (
-    <header className="rise flex items-center justify-between" style={{ animationDelay: "0ms" }}>
-      <div>
-        <p className="t-label text-muted">{t(`greeting.${greeting}`)},</p>
-        <h1 className="t-display text-2xl text-ink">{name}</h1>
-      </div>
-      <Link
-        href="/profile"
-        aria-label={t("profileAria")}
-        className="flex h-11 w-11 items-center justify-center rounded-full glass font-display text-sm text-neon"
-      >
-        {name[0]?.toUpperCase() ?? "?"}
-      </Link>
+  const heading = (
+    <header className="rise flex items-center gap-2">
+      <span className="text-neon"><ChartIcon className="h-6 w-6" /></span>
+      <h1 className="t-display text-2xl text-ink">{t("title")}</h1>
     </header>
   );
 
   if (isLoading) {
     return (
-      <div className="pt-3">
-        {Header}
-        <div className="glass mt-5 h-32 animate-pulse rounded-3xl" />
-        <div className="glass mt-4 h-20 animate-pulse rounded-3xl" />
-        <div className="mt-4 grid grid-cols-3 gap-3">
-          {[0, 1, 2].map((i) => (
+      <div className="pt-4">
+        {heading}
+        <div className="glass mt-4 h-16 animate-pulse rounded-3xl" />
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          {[0, 1, 2, 3].map((i) => (
             <div key={i} className="glass h-20 animate-pulse rounded-3xl" />
           ))}
         </div>
@@ -251,335 +105,92 @@ export default function DashboardPage() {
     );
   }
 
-  /* ---------- bloqueos del servidor (spec §8.3) ---------- */
-  // `no_training`: sin plan ni sugerencias de carga, pero se puede seguir registrando.
-  // R4-13: el estado de seguridad de hoy (`/coach/safety` → `state`) manda sobre la recuperación
-  const safetyToday = todaySafety(safety);
-  const noTraining = !!safetyToday?.noTraining;
-  // `no_weight_targets`: ni pesaje, ni tendencia de peso, ni recordatorios de pesarse. Si aún no
-  // se sabe (carga), se oculta: es lo seguro.
+  // `no_weight_targets`: ni pesaje, ni tendencia de peso, ni % de grasa. Si aún no se sabe (carga),
+  // se oculta: es lo seguro.
   const weightHidden = !weighIn || weighIn.blocked;
 
-  /* ---------- datos derivados (todos reales) ---------- */
-  const recovery = computeRecovery(logs);
-  const latest: Biometrics | undefined = logs[0];
-
-  // El peso y su frescura se calculan sobre el último registro CON peso
-  // (el registro más reciente puede ser solo de FC/HRV).
+  const latest = logs[0];
   const lastWeightLog = logs.find((l) => num(l.weight_kg ?? null) !== null);
   // F28: con dos pesajes el mismo día cuenta la media del día (el mismo criterio en toda la app)
   const weight = lastWeightLog ? latestWeightKg(logs) : null;
   const lastWeightDays = lastWeightLog ? daysSince(lastWeightLog.timestamp) : null;
-
-  const spark = dailyWeights(logs.slice(0, 14)).map((d) => d.kg).slice(-7);
+  const when = lastWeightDays === 0 ? t("weight.today") : lastWeightDays === 1 ? t("weight.yesterday") : t("weight.daysAgo", { days: lastWeightDays ?? 0 });
 
   const rhrs = logs.map((l) => l.resting_heart_rate).filter((v): v is number => v != null);
   const hrvs = logs.map((l) => l.hrv_ms).filter((v): v is number => v != null);
   const fats = weightHidden ? [] : logs.map((l) => num(l.body_fat_pct ?? null)).filter((v): v is number => v !== null);
-  const deltaOf = (xs: number[]) =>
-    xs.length >= 4 ? Math.round((xs[0] - mean(xs.slice(1, 31))) * 10) / 10 : null;
-
-  /* próxima acción de hoy */
-  const todayIdx = (new Date().getDay() + 6) % 7; // 0 = lunes
-  const todayFocus = local.gymWeek?.[todayIdx] ?? null;
-  const trainedToday = local.trainedTs.filter((ts) => sameDay(new Date(ts), new Date())).length;
-
-  /* consistencia semanal: medición o entreno por día */
-  const eventTs = [...logs.map((l) => new Date(l.timestamp).getTime()), ...local.trainedTs];
-  const weekDays = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (todayIdx - i));
-    d.setHours(0, 0, 0, 0);
-    return d;
-  });
-
-  const stale = !weightHidden && lastWeightDays !== null && lastWeightDays >= 14;
+  const deltaOf = (xs: number[]) => (xs.length >= 4 ? Math.round((xs[0] - mean(xs.slice(1, 31))) * 10) / 10 : null);
   // Distancia al peso objetivo: solo si el servidor la devuelve (con el déficit bloqueado, no).
   const toGo = weighIn && !weighIn.blocked && weighIn.goal_weight_kg != null && weighIn.to_go_kg != null ? weighIn : null;
-
-  const signed = (n: number) => `${n > 0 ? "+" : ""}${format.number(n)}`;
-  const recoveryChips = recovery
-    ? [
-        recovery.signals.rhrDelta !== null ? t("recovery.chipRhr", { value: signed(recovery.signals.rhrDelta) }) : null,
-        recovery.signals.hrvPct !== null ? t("recovery.chipHrv", { value: signed(recovery.signals.hrvPct) }) : null,
-      ].filter((c): c is string => c !== null)
-    : [];
-  const when = lastWeightDays === 0 ? t("weight.today") : lastWeightDays === 1 ? t("weight.yesterday") : t("weight.daysAgo", { days: lastWeightDays ?? 0 });
+  const hasMeasures = rhrs.length > 0 || hrvs.length > 0 || fats.length > 0;
 
   return (
-    <div className="pt-3">
-      {Header}
+    <div className="pt-4">
+      {heading}
 
-      {/* Avisos de seguridad del motor (flags calculados en el servidor) */}
-      <SafetyBanner />
+      {/* ---------- Carga y estado de la semana (→ /training/load) ---------- */}
+      <LoadSummary metrics={metrics} className="glass rise mt-3 flex items-center gap-3 p-3" style={{ animationDelay: "40ms" }} />
 
-      {/* ---------- Estado de hoy (readiness-first, sin datos inventados) ---------- */}
-      {noTraining ? (
-        <section data-testid="state-no-training" className="glass neon-edge rise mt-5 p-5" style={{ animationDelay: "40ms" }}>
-          <p className="t-eyebrow text-muted">{t("state.eyebrow")}</p>
-          <p className="t-display mt-2 text-2xl" style={{ color: "#ff5a6e" }}>{t("state.noTraining")}</p>
-          <p className="t-body mt-2 text-sm text-muted">{t("state.noTrainingBody")}</p>
-        </section>
-      ) : safetyToday && safetyToday.level !== "ok" ? (
-        <SafetyStateCard state={safetyToday} className="rise mt-5" />
-      ) : recovery ? (
-        <section className="glass neon-edge rise mt-5 p-5" style={{ animationDelay: "40ms" }}>
-          <p className="t-eyebrow text-muted">{t("state.eyebrowRecovery")}</p>
-          <div className="mt-2 flex items-center gap-3">
-            <span
-              className="h-3.5 w-3.5 shrink-0 rounded-full"
-              style={{ background: recovery.color, boxShadow: `0 0 12px ${recovery.color}` }}
-            />
-            <p className="t-display text-2xl" style={{ color: recovery.color }}>{t(`recovery.${recovery.state}.label`)}</p>
-          </div>
-          <p className="t-body mt-2 text-sm text-muted">{t(`recovery.${recovery.state}.phrase`)}</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {recoveryChips.map((c) => (
-              <span key={c} className="badge">{c}</span>
-            ))}
-          </div>
-        </section>
-      ) : (
-        <section className="glass neon-edge rise mt-5 p-5" style={{ animationDelay: "40ms" }}>
-          <p className="t-eyebrow text-muted">{t("state.eyebrow")}</p>
-          <p className="t-title mt-2 text-ink">{t("state.activate")}</p>
-          <p className="t-body mt-1.5 text-sm text-muted">{t("state.activateBody")}</p>
-          <Link href="/biometrics/new" className="btn btn-tonal btn-sm mt-3">
-            {t("state.addMeasures")} <ArrowUpRight className="h-3.5 w-3.5" />
+      {/* ---------- Mosaicos 2 × 3 ---------- */}
+      <section className="mt-3 grid grid-cols-2 gap-2.5" aria-label={t("title")}>
+        {!weightHidden && (
+          <Link href="/biometrics" data-testid="weight-card" className={tile} style={{ animationDelay: "80ms" }}>
+            <span className="t-label text-ink">{t("tiles.weight")}</span>
+            {weight !== null ? (
+              <>
+                <span className="flex items-baseline gap-1">
+                  <span className="stat text-2xl text-ink">{format.number(weight, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
+                  <span className="text-xs text-muted">{t("weight.kg")} · {when}</span>
+                </span>
+                {trend && (
+                  <span data-testid="weight-trend" className="block">
+                    <TrendLine trend={trend} compact chip={false} />
+                  </span>
+                )}
+                {toGo && (
+                  <span data-testid="weight-to-goal" className="block text-[11px] leading-snug text-muted">
+                    {weight - toGo.goal_weight_kg! > 0 ? (
+                      t.rich("weight.toGoal", {
+                        kg: format.number(weight - toGo.goal_weight_kg!, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+                        target: format.number(toGo.goal_weight_kg!),
+                        neon: (c) => <span className="text-neon">{c}</span>,
+                      })
+                    ) : (
+                      <span className="text-good">{t("weight.reached", { target: format.number(toGo.goal_weight_kg!) })}</span>
+                    )}
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="text-[11px] leading-snug text-muted">{t("weight.emptyTitle")}</span>
+            )}
           </Link>
-        </section>
-      )}
+        )}
 
-      {/* ---------- Hoy / próxima acción ---------- */}
-      <Link
-        href={noTraining || trainedToday > 0 ? "/training" : todayFocus && todayFocus !== "Descanso" ? "/training/gym" : "/training"}
-        className="glass rise mt-4 flex items-center gap-3 p-4"
-        style={{ animationDelay: "90ms" }}
-      >
-        <span className="text-neon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(69,233,255,0.07)]">
-          {!noTraining && trainedToday > 0 ? <GloveIcon className="h-5 w-5" /> : <TrainingIcon className="h-5 w-5" />}
-        </span>
-        <div className="min-w-0 flex-1">
-          {noTraining ? (
-            <>
-              <p className="t-label text-ink">{t("today.logOnly")}</p>
-              <p className="t-body text-xs text-muted">{t("today.logOnlyBody")}</p>
-            </>
-          ) : trainedToday > 0 ? (
-            <>
-              <p className="t-label text-ink">{t("today.done")}</p>
-              <p className="t-body text-xs text-muted">{t("today.sessions", { count: trainedToday })}</p>
-            </>
-          ) : todayFocus && todayFocus !== "Descanso" ? (
-            <>
-              <p className="t-label text-ink">
-                {t.rich("today.focus", { focus: todayFocus, neon: (c) => <span className="text-neon">{c}</span> })}
-              </p>
-              <p className="t-body text-xs text-muted">{t("today.fromCalendar")}</p>
-            </>
-          ) : todayFocus === "Descanso" ? (
-            <>
-              <p className="t-label text-ink">{t("today.restDay")}</p>
-              <p className="t-body text-xs text-muted">{t("today.restBody")}</p>
-            </>
-          ) : (
-            <>
-              <p className="t-label text-ink">{t("today.nothing")}</p>
-              <p className="t-body text-xs text-muted">{t("today.nothingBody")}</p>
-            </>
-          )}
-        </div>
-        <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
-      </Link>
-
-      {/* ---------- Check-in de hoy (un solo formulario matinal) ---------- */}
-      <Link
-        href="/checkin"
-        data-testid="checkin-card"
-        className="glass rise mt-4 flex items-center gap-3 p-4"
-        style={{ animationDelay: "105ms" }}
-      >
-        <span className="text-neon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(69,233,255,0.07)]">
-          <ClipboardIcon className="h-5 w-5" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="t-label text-ink">
-            {checkin?.checkin ? tCheckin("homeCard.done") : tCheckin("homeCard.title")}
-          </p>
-          <p className="t-body text-xs text-muted">
-            {checkin?.checkin && checkin.readiness.status !== "no_data"
-              ? tCheckin(`readiness.${checkin.readiness.status}`)
-              : tCheckin("homeCard.todo")}
-          </p>
-        </div>
-        <span className="t-label shrink-0 text-neon">
-          {checkin?.checkin ? tCheckin("homeCard.update") : tCheckin("homeCard.cta")}
-        </span>
-      </Link>
-
-      {/* ---------- Recordatorio quincenal ---------- */}
-      {stale && (
-        <Link
-          href="/biometrics/new"
-          className="glass neon-edge rise mt-4 flex items-center gap-3 p-4"
-          style={{ animationDelay: "120ms" }}
-        >
-          <span className="text-neon"><ScaleIcon className="h-5 w-5" /></span>
-          <div className="flex-1">
-            <p className="t-label text-ink">{t("weightReminder.title")}</p>
-            <p className="t-body text-xs text-muted">{t("weightReminder.body", { days: lastWeightDays ?? 0 })}</p>
-          </div>
-          <ArrowUpRight className="h-4 w-4 text-neon" />
-        </Link>
-      )}
-
-      {/* ---------- Peso (sin nada de peso con `no_weight_targets`) ---------- */}
-      {weightHidden ? null : weight !== null ? (
-        <Link href="/biometrics" data-testid="weight-card" className="glass rise mt-4 block p-5" style={{ animationDelay: "150ms" }}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-muted">
-              <span className="text-neon"><ScaleIcon className="h-[18px] w-[18px]" /></span>
-              <span className="t-label">{t("weight.label", { when })}</span>
-            </div>
-          </div>
-          <div className="mt-2 flex items-end justify-between gap-4">
-            <div className="flex items-end gap-1">
-              <span className="stat text-4xl text-ink">{format.number(weight, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
-              <span className="mb-1 text-xs text-muted">{t("weight.kg")}</span>
-            </div>
-            <div className="w-36"><Sparkline points={spark} /></div>
-          </div>
-          {trend && (
-            <div data-testid="weight-trend" className="mt-2">
-              <TrendLine trend={trend} compact chip={false} />
-            </div>
-          )}
-          {toGo && (
-            <p data-testid="weight-to-goal" className="t-body mt-2 text-xs text-muted">
-              {weight - toGo.goal_weight_kg! > 0 ? (
-                t.rich("weight.toGoal", {
-                  kg: format.number(weight - toGo.goal_weight_kg!, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
-                  target: format.number(toGo.goal_weight_kg!),
-                  neon: (c) => <span className="text-neon">{c}</span>,
-                })
-              ) : (
-                <span className="text-good">{t("weight.reached", { target: format.number(toGo.goal_weight_kg!) })}</span>
+        <Link href="/biometrics" data-testid="measures-card" className={tile} style={{ animationDelay: "120ms" }}>
+          <span className="t-label text-ink">{t("tiles.measures")}</span>
+          {hasMeasures ? (
+            <span className="flex flex-col gap-0.5">
+              {rhrs.length > 0 && <Metric label={t("metrics.rhr")} value={`${rhrs[0]}`} unit={t("metrics.bpm")} delta={deltaOf(rhrs)} goodWhenDown />}
+              {hrvs.length > 0 && <Metric label={t("metrics.hrv")} value={`${hrvs[0]}`} unit={t("metrics.ms")} delta={deltaOf(hrvs)} goodWhenDown={false} />}
+              {fats.length > 0 && (
+                <Metric label={t("metrics.fat")} value={format.number(fats[0], { minimumFractionDigits: 1, maximumFractionDigits: 1 })} unit="%" delta={deltaOf(fats)} goodWhenDown />
               )}
-            </p>
+            </span>
+          ) : (
+            <span className="text-[11px] leading-snug text-muted">{latest ? t("metrics.activateTitle") : t("tiles.measuresEmpty")}</span>
           )}
-          <p className="t-body mt-2 text-[11px] text-neon">{t("weight.history")}</p>
         </Link>
-      ) : (
-        <section
-          className="glass neon-edge rise mt-4 flex flex-col items-center gap-3 p-6 text-center"
-          style={{ animationDelay: "150ms" }}
-        >
-          <span className="text-neon glow flex h-14 w-14 items-center justify-center rounded-2xl bg-[rgba(69,233,255,0.06)]">
-            <ScaleIcon className="h-7 w-7" />
-          </span>
-          <div>
-            <p className="t-title text-ink">{t("weight.emptyTitle")}</p>
-            <p className="t-body mt-1 text-xs text-muted">{t("weight.emptyBody")}</p>
-          </div>
-          <Link href="/biometrics/new" className="btn btn-primary btn-sm">
-            {t("weight.emptyCta")} <ArrowUpRight className="h-4 w-4" />
-          </Link>
-        </section>
-      )}
 
-      {/* ---------- Métricas de recuperación con delta vs tu media ---------- */}
-      {rhrs.length > 0 || hrvs.length > 0 || fats.length > 0 ? (
-        <section className="mt-4 grid grid-cols-3 gap-3">
-          {rhrs.length > 0 && (
-            <DeltaCard
-              delay={190}
-              icon={<HeartIcon className="h-[18px] w-[18px]" />}
-              label={t("metrics.rhr")}
-              value={`${rhrs[0]}`}
-              unit={t("metrics.bpm")}
-              delta={deltaOf(rhrs)}
-              goodWhenDown
-            />
-          )}
-          {hrvs.length > 0 && (
-            <DeltaCard
-              delay={230}
-              icon={<PulseIcon className="h-[18px] w-[18px]" />}
-              label={t("metrics.hrv")}
-              value={`${hrvs[0]}`}
-              unit={t("metrics.ms")}
-              delta={deltaOf(hrvs)}
-              goodWhenDown={false}
-            />
-          )}
-          {fats.length > 0 && (
-            <DeltaCard
-              delay={270}
-              icon={<ScaleIcon className="h-[18px] w-[18px]" />}
-              label={t("metrics.fat")}
-              value={format.number(fats[0], { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
-              unit="%"
-              delta={deltaOf(fats)}
-              goodWhenDown
-            />
-          )}
-        </section>
-      ) : (
-        latest && (
-          <Link
-            href="/biometrics/new"
-            className="glass rise mt-4 flex items-center gap-3 p-4"
-            style={{ animationDelay: "190ms" }}
-          >
-            <span className="text-neon"><PulseIcon className="h-5 w-5" /></span>
-            <div className="flex-1">
-              <p className="t-label text-ink">{t("metrics.activateTitle")}</p>
-              <p className="t-body text-xs text-muted">{t("metrics.activateBody")}</p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-muted" />
-          </Link>
-        )
-      )}
-
-      {/* ---------- Consistencia semanal ---------- */}
-      <section className="glass rise mt-4 p-4" style={{ animationDelay: "310ms" }}>
-        <div className="flex items-center justify-between">
-          <span className="t-label text-ink">{t("week.title")}</span>
-          <span className="t-body text-[11px] text-muted">{t("week.sub")}</span>
-        </div>
-        <div className="mt-3 flex justify-between">
-          {weekDays.map((d, i) => {
-            const active = eventTs.some((ts) => sameDay(new Date(ts), d));
-            const isToday = i === todayIdx;
-            const future = i > todayIdx;
-            return (
-              <div key={i} className="flex flex-col items-center gap-1.5">
-                <span
-                  className="h-3 w-3 rounded-full transition-colors"
-                  style={{
-                    background: active ? "#45e9ff" : "rgba(150,190,255,0.15)",
-                    boxShadow: active ? "0 0 8px rgba(69,233,255,0.7)" : undefined,
-                    outline: isToday ? "1.5px solid rgba(69,233,255,0.6)" : undefined,
-                    outlineOffset: "2px",
-                    opacity: future ? 0.35 : 1,
-                  }}
-                />
-                <span className={`text-[10px] ${isToday ? "text-neon" : "text-muted"}`}>{t(`week.${DAY_KEYS[i]}`)}</span>
-              </div>
-            );
-          })}
-        </div>
+        <LinkTile href="/training/review" title={t("tiles.review")} sub={t("tiles.reviewSub")} delay={160} />
+        <LinkTile href="/training/gym/records" title={t("tiles.records")} sub={t("tiles.recordsSub")} delay={200} />
+        <ZonesTile className={tile} style={{ animationDelay: "240ms" }} />
+        <LinkTile href="/biometrics" title={t("tiles.photos")} sub={t("tiles.photosSub")} delay={280} />
       </section>
 
-      {/* ---------- Carga real (de tus sesiones registradas), según el anexo de combate ---------- */}
-      <LoadSummary metrics={local.metrics} style={{ animationDelay: "350ms" }} />
-
-      {/* ---------- Zonas de esfuerzo (motor del coach, calculadas en el servidor) ---------- */}
-      <ZonesCard />
-
       {/* ---------- CTA ---------- */}
-      <Link href="/biometrics/new" className="btn btn-primary rise mt-5 w-full" style={{ animationDelay: "390ms" }}>
-        {latest ? t("cta.update") : t("cta.register")} <ArrowUpRight className="h-4 w-4" />
+      <Link href="/biometrics/new" className="btn btn-primary rise mt-3 w-full" style={{ animationDelay: "320ms" }}>
+        {t("cta.measure")} <ArrowUpRight className="h-4 w-4" />
       </Link>
     </div>
   );

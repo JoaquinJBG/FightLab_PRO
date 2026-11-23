@@ -60,6 +60,15 @@ export function ProfileIcon(p: IconProps) {
   );
 }
 
+export function ChartIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M4 19.5h16" />
+      <path d="M7 16v-4M12 16V7M17 16v-6" />
+    </svg>
+  );
+}
+
 export function ScaleIcon(p: IconProps) {
   return (
     <svg {...base} {...p}>

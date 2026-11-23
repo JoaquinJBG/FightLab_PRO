@@ -41,8 +41,8 @@ test("un golpe en la cabeza con síntomas pone no_contact hasta el alta del clí
   await page.getByRole("button", { name: "Sparring" }).click();
   await expect(page.getByTestId("contact-block-note")).toBeVisible();
 
-  // La Home enseña el motivo con su regla
-  await page.goto("/dashboard");
+  // Hoy enseña el motivo con su regla
+  await page.goto("/today");
   await expect(page.locator('[data-testid="safety-reason"][data-code="head_blow_no_contact"]')).toBeVisible();
 
   // Solo el alta confirmada lo quita

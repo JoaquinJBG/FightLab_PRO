@@ -18,9 +18,7 @@ test("menaje y comensales, cronograma con mis aparatos y sesión de batch a pant
   await login(page, READY_USERS.batch);
 
   // Mi cocina: una olla, dos fuegos y horno; sin olla exprés. La pareja cena sin pescado salvo gambas.
-  await page.goto("/profile");
-  await page.getByTestId("kitchen-link").click();
-  await page.waitForURL("**/profile/kitchen");
+  await page.goto("/profile/kitchen");
   await page.getByTestId("kitchen-pots").fill("1");
   await page.getByTestId("kitchen-burners_large").fill("2");
   await page.getByTestId("kitchen-oven").check();

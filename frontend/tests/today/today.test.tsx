@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import TodayPage from "@/app/(shell)/today/page";
 import type { TodayState } from "@/lib/today";
-import { mockApi, renderApp } from "../support/app";
+import { SAFETY, mockApi, renderApp } from "../support/app";
 
 vi.mock("next/link", () => ({
   default: ({ href, children, ...r }: { href: string; children: React.ReactNode }) => <a href={href} {...r}>{children}</a>,
@@ -11,6 +11,12 @@ vi.mock("next/link", () => ({
 afterEach(() => vi.unstubAllGlobals());
 
 const URL = "/api/proxy/coach/today";
+
+const READINESS = {
+  status: "no_data", drops_today: [], days_with_drop: 0, hrv_drop: false,
+  rule_key: "recovery-habits/simple-readiness-monitoring", grade: "moderate",
+  hrv_rule_key: "recovery-habits/hrv-is-optional", hrv_grade: "emerging",
+};
 
 const WEEK = {
   start: "2026-10-26", minutes: 60, equivalent: 80, goal: 150, mma_minutes: 0, mma_convention: null,
@@ -73,8 +79,14 @@ function api(state: TodayState, after: (body: Record<string, unknown>, path: str
   return { writes: () => writes.filter((w) => w.method !== "GET"), fetchMock };
 }
 
+/** El peso y el cardio se apuntan en un panel inferior: se abre desde la fila «Apuntar rápido». */
+async function openSheet(kind: "weight" | "cardio") {
+  fireEvent.click(await screen.findByTestId(`quick-${kind}`));
+  return screen.findByRole("dialog");
+}
+
 describe("Hoy", () => {
-  it("pinta la próxima comida, el plan del día, las comidas y el cardio de la semana con su chip", async () => {
+  it("pinta el entreno de hoy, la próxima comida y el cardio de la semana (en su panel) con su chip", async () => {
     api(day());
     renderApp(<TodayPage />);
     const next = await screen.findByTestId("next-meal");
@@ -90,7 +102,13 @@ describe("Hoy", () => {
     expect(plan.textContent).toContain("a las 18:00");
     expect(plan.textContent).toContain("Sentadilla · Press banca");
     expect(within(plan).getByRole("link", { name: /Empezar la sesión A/ }).getAttribute("href")).toBe("/training/gym?plan=A");
-    expect(screen.getByTestId("meal-lunch").textContent).toContain("Para la víspera: Sacar el pollo");
+    // Se quita la lista entera de comidas del menú (está en Nutrición) y el botón Resumen
+    expect(screen.queryByTestId("meals")).toBeNull();
+    expect(screen.queryByRole("link", { name: /resumen/i })).toBeNull();
+    expect(within(next).getByRole("link", { name: "Ver el día" }).getAttribute("href")).toBe("/nutrition");
+    expect(screen.getByTestId("quick-checkin").getAttribute("href")).toBe("/checkin");
+    expect(screen.getByTestId("quick-cardio").textContent).toContain("80/150 min");
+    await openSheet("cardio");
     expect(screen.getByTestId("cardio-week").textContent).toBe("Esta semana: 80 de 150 min");
     expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("80");
     const chips = within(screen.getByTestId("cardio")).getAllByTestId("evidence-chip");
@@ -99,7 +117,15 @@ describe("Hoy", () => {
     const sessions = screen.getAllByTestId("cardio-session");
     expect(sessions[0].textContent).toContain("Paseo");
     expect(sessions[1].textContent).toContain("Desde Deportes");
-    expect(screen.getByRole("link", { name: /resumen/i }).getAttribute("href")).toBe("/dashboard");
+    expect(screen.getByTestId("today-avatar").getAttribute("href")).toBe("/profile");
+  });
+
+  it("el avatar lleva a Perfil con la inicial del correo", async () => {
+    mockApi({ [URL]: { body: day() }, "/api/proxy/me": { body: { id: 1, email: "ana@fightlab.test", role: "ATHLETE", is_email_verified: true } } });
+    renderApp(<TodayPage />);
+    const avatar = await screen.findByTestId("today-avatar");
+    await waitFor(() => expect(avatar.textContent).toBe("A"));
+    expect(avatar.getAttribute("href")).toBe("/profile");
   });
 
   it("para esta noche: tareas de la víspera, la sesión de batch de mañana y descongelar con su regla (F12)", async () => {
@@ -125,7 +151,6 @@ describe("Hoy", () => {
     renderApp(<TodayPage />);
     const previous = await screen.findByTestId("meal-breakfast-previous");
     expect(previous.textContent).toContain("No hecha (Avena con yogur)");
-    expect(screen.getByTestId("meal-breakfast-skipped").getAttribute("aria-pressed")).toBe("false");
   });
 
   it("sin tareas para esta noche no sale la tarjeta", async () => {
@@ -152,7 +177,7 @@ describe("Hoy", () => {
     expect((await screen.findByTestId("day-type-rest")).getAttribute("aria-checked")).toBe("true");
     fireEvent.click(screen.getByRole("button", { name: "Volver a lo del plan" }));
     await waitFor(() => expect(writes()[0]?.body).toEqual({ day_type: null }));
-    await waitFor(() => expect(screen.getByText("Según el plan de la semana.")).toBeTruthy());
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Volver a lo del plan" })).toBeNull());
   });
 
   it("marca una comida como cambiada con lo que se comió", async () => {
@@ -166,23 +191,22 @@ describe("Hoy", () => {
     fireEvent.change(screen.getByTestId("meal-breakfast-change"), { target: { value: "pizza" } });
     fireEvent.submit(screen.getByTestId("meal-breakfast-change").closest("form")!);
     await waitFor(() => expect(writes()[0]).toMatchObject({ path: `${URL}/meal`, method: "PUT", body: { meal: "breakfast", state: "changed", change: "pizza" } }));
-    expect(await screen.findByText("En su lugar: pizza")).toBeTruthy();
-    expect(screen.getByTestId("next-meal").textContent).toContain("Comida: Arroz con pollo");
+    await waitFor(() => expect(screen.getByTestId("next-meal").textContent).toContain("Comida: Arroz con pollo"));
   });
 
-  it("hecha y no hecha se guardan con un toque, y la marca se puede quitar", async () => {
+  it("«Hecha» guarda la próxima comida con un toque", async () => {
     const done = day({ menu: { ...day().menu!, meals: [{ ...day().menu!.meals[0], mark: { state: "done", change: null } }, day().menu!.meals[1]] } });
-    const { writes } = api(day(), (body) => (body.state === null ? day() : done));
+    const { writes } = api(day(), () => done);
     renderApp(<TodayPage />);
     fireEvent.click(await screen.findByTestId("meal-breakfast-done"));
     await waitFor(() => expect(screen.getByTestId("meal-breakfast-done").getAttribute("aria-pressed")).toBe("true"));
-    fireEvent.click(screen.getByRole("button", { name: "Quitar la marca" }));
-    await waitFor(() => expect(writes().map((w) => w.body.state)).toEqual(["done", null]));
+    await waitFor(() => expect(writes().map((w) => w.body)).toEqual([{ meal: "breakfast", state: "done" }]));
   });
 
   it("apunta una sesión de cardio con su intensidad y comprueba los minutos", async () => {
     const { writes } = api(day());
     renderApp(<TodayPage />);
+    await openSheet("cardio");
     fireEvent.click(await screen.findByTestId("cardio-type-run"));
     // El trote es vigoroso por defecto, como en ParteDiario.
     expect(screen.getByTestId("cardio-intensity-vigorous").getAttribute("aria-checked")).toBe("true");
@@ -199,6 +223,7 @@ describe("Hoy", () => {
   it("borra una sesión apuntada desde Hoy", async () => {
     const { writes } = api(day());
     renderApp(<TodayPage />);
+    await openSheet("cardio");
     fireEvent.click(await screen.findByRole("button", { name: "Borrar Paseo, 40 min" }));
     await waitFor(() => expect(writes()[0]).toMatchObject({ path: `${URL}/cardio/11`, method: "DELETE" }));
   });
@@ -206,6 +231,7 @@ describe("Hoy", () => {
   it("guarda el peso con coma decimal y rechaza lo que no es un peso", async () => {
     const { writes } = api(day(), () => day({ weight_kg: 72.4 }));
     renderApp(<TodayPage />);
+    await openSheet("weight");
     const input = await screen.findByTestId("weight-input");
     fireEvent.change(input, { target: { value: "abc" } });
     fireEvent.submit(input.closest("form")!);
@@ -219,24 +245,16 @@ describe("Hoy", () => {
   it("F28: con dos pesajes hoy dice que cuenta la media del día", async () => {
     api(day({ weight_kg: 80.1, day_weight: { kg: 80.3, count: 2 } }));
     renderApp(<TodayPage />);
+    await openSheet("weight");
     expect((await screen.findByTestId("weight-day-mean")).textContent).toBe("Hoy hay 2 pesajes: cuenta la media del día, 80,3 kg.");
   });
 
-  it("F6: «Hecha» dice que se ha sumado a Nutrición y «Cambiada» lleva a apuntar lo que se comió", async () => {
-    const meals = day().menu!.meals;
-    api(day({
-      menu: {
-        id: 7, start_date: "2026-10-26",
-        meals: [
-          { ...meals[0], mark: { state: "done", change: null }, totals: { kcal: 410, p: 18, c: 60, f: 9, partial: false } },
-          { ...meals[1], mark: { state: "changed", change: "pizza" }, totals: { kcal: 650, p: 40, c: 80, f: 15, partial: false } },
-        ],
-      },
-    }));
+  it("F6: «Cambiar» lleva a apuntar en Nutrición lo que se comió", async () => {
+    api(day());
     renderApp(<TodayPage />);
-    expect((await screen.findByTestId("meal-breakfast-diary")).textContent).toBe("Sumada a Nutrición: 410 kcal previstas del plato.");
-    expect(screen.queryByTestId("meal-lunch-diary")).toBeNull();
-    expect(screen.getByTestId("meal-lunch-log").getAttribute("href")).toBe("/nutrition");
+    expect(screen.queryByTestId("meal-breakfast-log")).toBeNull();
+    fireEvent.click(await screen.findByTestId("meal-breakfast-changed"));
+    expect(screen.getByTestId("meal-breakfast-log").getAttribute("href")).toBe("/nutrition");
   });
 
   it("F26: con un golpe en la cabeza y una lesión, el plan del día lo dice al momento con su evidencia", async () => {
@@ -264,6 +282,7 @@ describe("Hoy", () => {
   it("con no_weight_targets no pide el peso y lo explica", async () => {
     api(day({ weight_blocked: true }));
     renderApp(<TodayPage />);
+    await openSheet("weight");
     const box = await screen.findByTestId("weight");
     expect(box.textContent).toContain("El peso no se apunta por ahora");
     expect(screen.queryByTestId("weight-input")).toBeNull();
@@ -277,12 +296,14 @@ describe("Hoy", () => {
     expect(screen.getByRole("link", { name: "Crear el plan" }).getAttribute("href")).toBe("/training/plan");
     expect(screen.getByText("Sin plan: marca qué toca.")).toBeTruthy();
     expect(screen.queryByTestId("meals")).toBeNull();
+    await openSheet("cardio");
     expect(screen.getByText("Hoy no hay cardio apuntado.")).toBeTruthy();
   });
 
   it("los minutos de MMA llevan su etiqueta de convención", async () => {
     api(day({ cardio: { sessions: [], week: { ...WEEK, mma_minutes: 60, mma_convention: "fightlab" }, types: TYPES } }));
     renderApp(<TodayPage />);
+    await openSheet("cardio");
     const text = await screen.findByText(/Incluye 60 min de MMA/);
     expect(within(text).getByTestId("evidence-chip").getAttribute("data-variant")).toBe("convention");
   });
@@ -291,9 +312,91 @@ describe("Hoy", () => {
     api(day({ next_meal: { all_done: true } }));
     renderApp(<TodayPage />, "en");
     expect((await screen.findByTestId("next-meal")).textContent).toContain("Today's menu: all ticked ✓");
-    expect(screen.getByTestId("cardio-week").textContent).toBe("This week: 80 of 150 min");
-    expect(screen.getByTestId("toggle-trained").textContent).toBe("Workout doneNot yet");
-    expect(screen.getByTestId("meal-breakfast").textContent).toContain("Breakfast");
+    expect(screen.getByTestId("toggle-trained").textContent).toBe("Workout done");
+    expect(screen.getByTestId("quick-checkin").textContent).toContain("Pending");
+    expect(screen.getByText("Today's workout")).toBeTruthy();
+    fireEvent.click(screen.getByTestId("quick-cardio"));
+    expect((await screen.findByTestId("cardio-week")).textContent).toBe("This week: 80 of 150 min");
+  });
+
+  it("el panel de peso es un diálogo accesible: foco dentro, Escape lo cierra y el foco vuelve al botón", async () => {
+    api(day());
+    renderApp(<TodayPage />);
+    const opener = await screen.findByTestId("quick-weight");
+    opener.focus();
+    fireEvent.click(opener);
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog.getAttribute("aria-modal")).toBe("true");
+    const title = document.getElementById(dialog.getAttribute("aria-labelledby")!);
+    expect(title?.textContent).toBe("Peso");
+    expect(dialog.contains(document.activeElement)).toBe(true);
+    fireEvent.keyDown(document, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(document.activeElement).toBe(opener);
+  });
+
+  it("el atajo /today#weight abre el panel de peso", async () => {
+    window.location.hash = "#weight";
+    try {
+      api(day());
+      renderApp(<TodayPage />);
+      expect(await screen.findByRole("dialog")).toBeTruthy();
+      expect(screen.getByTestId("weight-input")).toBeTruthy();
+    } finally {
+      window.location.hash = "";
+    }
+  });
+
+  it("el atajo /today#next-meal baja a la próxima comida y le da el foco", async () => {
+    window.location.hash = "#next-meal";
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    try {
+      api(day());
+      renderApp(<TodayPage />);
+      const next = await screen.findByTestId("next-meal");
+      await waitFor(() => expect(document.activeElement).toBe(next));
+      expect(scroll).toHaveBeenCalled();
+    } finally {
+      window.location.hash = "";
+    }
+  });
+
+  it("el acceso de check-in dice si falta o si ya está hecho, y lleva a /checkin", async () => {
+    mockApi({ [URL]: { body: day() }, "/api/proxy/coach/checkin": { body: { date: "2026-10-29", checkin: null, weight_blocked: false, weekly_questions: [], readiness: READINESS } } });
+    const first = renderApp(<TodayPage />);
+    const todo = await screen.findByTestId("quick-checkin");
+    expect(todo.getAttribute("href")).toBe("/checkin");
+    await waitFor(() => expect(todo.textContent).toContain("Pendiente"));
+    first.unmount();
+
+    mockApi({
+      [URL]: { body: day() },
+      "/api/proxy/coach/checkin": {
+        body: {
+          date: "2026-10-29", weight_blocked: false, weekly_questions: [], readiness: READINESS,
+          checkin: { date: "2026-10-29", weight_kg: null, waist_cm: null, intake_kcal: null, resting_heart_rate: null, hrv_ms: null, sleep_hours: 7, sleep_quality: 4, energy: 4, soreness: 4, stress: 4, mood: 4, soreness_zones: [], illness: null, notes: "", period_status: null, hormonal_contraception: null, bp_systolic: null, bp_diastolic: null },
+        },
+      },
+    });
+    renderApp(<TodayPage />);
+    await waitFor(() => expect(screen.getByTestId("quick-checkin").textContent).toContain("Hecho hoy"));
+  });
+
+  it("el chip de estado va en verde sin avisos y no pinta el aviso completo", async () => {
+    mockApi({ [URL]: { body: day() }, "/api/proxy/coach/safety": { body: SAFETY } });
+    renderApp(<TodayPage />);
+    expect((await screen.findByTestId("today-status")).textContent).toBe("Todo en orden");
+    expect(screen.queryByTestId("safety-banner")).toBeNull();
+  });
+
+  it("con no_training el chip dice «Sin entrenar hasta revisión médica»", async () => {
+    mockApi({
+      [URL]: { body: day() },
+      "/api/proxy/coach/safety": { body: { ...SAFETY, flags: { no_training: true } } },
+    });
+    renderApp(<TodayPage />);
+    await waitFor(() => expect(screen.getByTestId("today-status").textContent).toContain("Sin entrenar hasta revisión médica"));
   });
 
   it("si el servidor no responde, deja reintentar", async () => {

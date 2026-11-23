@@ -52,9 +52,8 @@ test("pesaje en la BD: se guarda en el servidor, sobrevive a recargar y ya no us
 
 test("SCOFF positivo: Perder bloqueado y nada de pesaje en Nutrición, pesaje ni Home", async ({ page }) => {
   await login(page, READY_USERS.scoff);
-  await page.goto("/dashboard"); // el resumen (antes, el Inicio)
-  await expect(page.getByTestId("weight-card")).toHaveCount(0); // Home sin peso
-  await expect(page.getByText(es.dashboard.weightReminder.title)).toHaveCount(0);
+  await page.goto("/dashboard"); // Progreso (antes, el resumen)
+  await expect(page.getByTestId("weight-card")).toHaveCount(0); // sin peso
 
   await page.goto("/nutrition");
   await expect(page.getByTestId("goal-perder")).toBeDisabled();
@@ -97,8 +96,9 @@ test("sin equation_sex no hay objetivos de calorías y se puede elegir sin bloqu
 
 test("no_training: la Home dice 'Sin entrenar hasta revisión médica' y las kcal usan el PAL de desk", async ({ page }) => {
   await login(page, READY_USERS.noTraining);
+  await page.goto("/today");
+  await expect(page.getByTestId("today-status")).toContainText(es.today.status.noTraining);
   await page.goto("/dashboard");
-  await expect(page.getByTestId("state-no-training")).toContainText(es.dashboard.state.noTraining);
   await expect(page.getByTestId("zones-card")).toHaveCount(0); // sin zonas con no_training
   const targets = await page.evaluate(() => fetch("/api/proxy/coach/targets").then((r) => r.json()));
   expect(targets.equation.pal).toBe(1.45);

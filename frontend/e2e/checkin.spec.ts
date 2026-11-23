@@ -33,9 +33,9 @@ test("un síntoma cardiaco en el check-in activa no_training en la siguiente lla
   expect(after.flags.no_training).toBe(true);
   expect(after.refer_gp).toBe(true);
 
-  // y la Home deja de sugerir entrenar
-  await page.goto("/dashboard");
-  await expect(page.getByTestId("state-no-training")).toBeVisible();
+  // y Hoy deja de sugerir entrenar
+  await page.goto("/today");
+  await expect(page.getByTestId("today-status")).toContainText(es.today.status.noTraining);
 });
 
 test("dolor en el pecho en reposo: pantalla de urgencia ahora con el número de emergencias", async ({ page }) => {
@@ -72,8 +72,9 @@ test("con menos de 7 pesajes en 14 días la tendencia dice insuficiente, en el c
   await expect(page.getByTestId("trend-insufficient")).toBeVisible();
   await page.goto("/dashboard");
   await expect(page.getByTestId("weight-card").getByTestId("trend-insufficient")).toBeVisible();
-  // la Home sabe que ya hay check-in hoy
-  await expect(page.getByTestId("checkin-card")).toContainText(es.checkin.homeCard.done);
+  // Hoy sabe que ya hay check-in
+  await page.goto("/today");
+  await expect(page.getByTestId("quick-checkin")).toContainText(es.today.quick.checkinDone);
 });
 
 test("un segundo check-in el mismo día completa el primero y no duplica el pesaje", async ({ page }) => {

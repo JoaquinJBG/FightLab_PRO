@@ -14,7 +14,7 @@ async function login(page: Page, email: string) {
   await page.waitForURL("**/today");
 }
 
-test("Hoy es la pantalla de inicio: plan, comidas, parte rápido, peso y cardio se guardan", async ({ page }) => {
+test("Hoy es la pantalla de inicio: entreno, próxima comida, parte rápido, peso y cardio se guardan", async ({ page }) => {
   await login(page, READY_USERS.today);
   await expect(page.getByRole("heading", { name: es.today.title, exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: es.nav.today })).toHaveAttribute("aria-current", "page");
@@ -31,34 +31,43 @@ test("Hoy es la pantalla de inicio: plan, comidas, parte rápido, peso y cardio 
   await page.getByTestId("meal-lunch-changed").click();
   await page.getByTestId("meal-lunch-change").fill("Pizza y ensalada");
   await page.getByTestId("meal-lunch-change").press("Enter");
-  await expect(page.getByTestId("meal-lunch")).toContainText("En su lugar: Pizza y ensalada");
   await expect(page.getByTestId("next-meal")).toContainText(es.today.next.allDone);
 
   // Parte rápido: movilidad hecha y el día cambiado a descanso.
   await page.getByTestId("toggle-mobility").click();
   await expect(page.getByTestId("toggle-mobility")).toHaveAttribute("aria-pressed", "true");
   await page.getByTestId("day-type-rest").click();
-  await expect(page.getByText(es.today.dayType.changed)).toBeVisible();
+  await expect(page.getByTestId("day-type-rest")).toHaveAttribute("aria-checked", "true");
 
-  // Peso con coma decimal.
+  // Peso con coma decimal, en su panel inferior (Escape lo cierra).
+  await page.getByTestId("quick-weight").click();
+  await expect(page.getByRole("dialog", { name: es.today.weight.title })).toBeVisible();
   await page.getByTestId("weight-input").fill("80,4");
   await page.getByTestId("weight").getByRole("button", { name: es.today.weight.save }).click();
   await expect(page.getByTestId("weight-saved")).toHaveText("Guardado: 80,4 kg");
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
 
   // Cardio: 20 min de trote (vigoroso) cuentan 40 hacia los 150 de la semana.
+  await page.getByTestId("quick-cardio").click();
   await page.getByTestId("cardio-type-run").click();
   await page.getByTestId("cardio-minutes").fill("20");
   await page.getByTestId("cardio-save").click();
   await expect(page.getByTestId("cardio-session")).toHaveCount(1);
   await expect(page.getByTestId("cardio-week")).toHaveText("Esta semana: 40 de 150 min");
+  await page.keyboard.press("Escape");
 
   // Todo está en el servidor: al recargar sigue igual.
   await page.reload();
   await expect(page.getByTestId("toggle-mobility")).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByTestId("day-type-rest")).toHaveAttribute("aria-checked", "true");
-  await expect(page.getByTestId("meal-breakfast-done")).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByTestId("next-meal")).toContainText(es.today.next.allDone);
+  await page.getByTestId("quick-weight").click();
   await expect(page.getByTestId("weight-saved")).toHaveText("Guardado: 80,4 kg");
+  await page.keyboard.press("Escape");
+  await page.getByTestId("quick-cardio").click();
   await expect(page.getByTestId("cardio-week")).toHaveText("Esta semana: 40 de 150 min");
+  await page.keyboard.press("Escape");
 
   // El peso de Hoy es el del check-in de F5.
   const checkin = await (await page.request.get("/api/proxy/coach/checkin")).json();
@@ -67,15 +76,17 @@ test("Hoy es la pantalla de inicio: plan, comidas, parte rápido, peso y cardio 
   // Volver a lo del plan y borrar el cardio apuntado.
   await page.getByRole("button", { name: es.today.dayType.reset }).click();
   await expect(page.getByTestId("day-type-gym")).toHaveAttribute("aria-checked", "true");
+  await page.getByTestId("quick-cardio").click();
   await page.getByRole("button", { name: "Borrar Trote, 20 min" }).click();
   await expect(page.getByTestId("cardio-session")).toHaveCount(0);
 });
 
-test("el resumen sigue en /dashboard y los accesos directos llevan a Hoy", async ({ page }) => {
+test("Progreso sigue en /dashboard y los accesos directos llevan a Hoy", async ({ page }) => {
   await login(page, READY_USERS.today);
-  await page.getByRole("link", { name: es.today.summaryAria }).click();
+  await page.getByRole("link", { name: es.nav.progress }).click();
   await page.waitForURL("**/dashboard");
-  await expect(page.getByRole("link", { name: es.nav.today })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("link", { name: es.nav.progress })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("heading", { name: es.dashboard.title, exact: true })).toBeVisible();
 
   const manifest = await (await page.request.get("/manifest.webmanifest")).json();
   expect(manifest.start_url).toBe("/today");
@@ -89,7 +100,8 @@ test("el resumen sigue en /dashboard y los accesos directos llevan a Hoy", async
   }
 
   await page.goto("/today#weight");
-  await expect(page.getByTestId("weight")).toBeInViewport();
+  await expect(page.getByRole("dialog", { name: es.today.weight.title })).toBeVisible();
+  await expect(page.getByTestId("weight-input")).toBeFocused();
 });
 
 test("Perfil → Avisos: sin claves VAPID, apagados y explicado", async ({ page }) => {

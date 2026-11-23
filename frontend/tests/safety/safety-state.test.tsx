@@ -115,6 +115,7 @@ describe.each(["head_blow", "injury"] as const)("con %s activo, ninguna pantalla
       },
     });
     renderApp(<TodayPage />);
+    fireEvent.click(await screen.findByTestId("quick-cardio")); // el cardio se apunta en un panel inferior
     const vigorous = (await screen.findByTestId("cardio-intensity-vigorous")) as HTMLButtonElement;
     expect(vigorous.disabled).toBe(false);
     // «run» es vigoroso por defecto: se queda en «Vigorosa», con el aviso y su motivo

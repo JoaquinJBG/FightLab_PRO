@@ -511,67 +511,25 @@
     "menuUnmarkShort": "In Today"
   },
   "dashboard": {
-    "greeting": {
-      "morning": "Good morning",
-      "afternoon": "Good afternoon",
-      "evening": "Good evening",
-      "hello": "Hello"
-    },
-    "athlete": "athlete",
-    "profileAria": "Profile",
-    "state": {
-      "eyebrowRecovery": "Today's status · based on your recovery",
-      "eyebrow": "Today's status",
-      "noTraining": "No training until a medical review",
-      "noTrainingBody": "From what you have told us, today is not a training day. You can keep logging what you do: nothing is deleted.",
-      "activate": "Turn on your readiness",
-      "activateBody": "Log your resting HR and HRV for a few days and every morning I will tell you how to show up to train.",
-      "addMeasures": "Add measurements"
-    },
     "recovery": {
       "cuidado": {
-        "label": "Take it easy",
-        "phrase": "Your recovery signals are below your average. Today: light technique or active rest."
+        "label": "Take it easy"
       },
       "listo": {
-        "label": "Ready to train",
-        "phrase": "Recovery above your average. A good day for demanding work."
+        "label": "Ready to train"
       },
       "normal": {
-        "label": "Normal day",
-        "phrase": "Signals around your average. Train according to your plan."
-      },
-      "chipRhr": "Resting HR {value} vs your average",
-      "chipHrv": "HRV {value}% vs your average"
-    },
-    "today": {
-      "done": "Today's training done ✓",
-      "sessions": "{count, plural, one {# session logged} other {# sessions logged}} · good work",
-      "focus": "Today: <neon>{focus}</neon>",
-      "fromCalendar": "From your gym calendar",
-      "restDay": "Today: scheduled rest",
-      "restBody": "Gentle mobility and recovery",
-      "nothing": "Nothing planned for today",
-      "nothingBody": "Log a workout or plan your week",
-      "logOnly": "You can keep logging your workouts",
-      "logOnlyBody": "No plan or load suggestions until a doctor reviews it"
-    },
-    "weightReminder": {
-      "title": "Want to log your weight?",
-      "body": "It's been {days} days since your last weight · we remind you every 2 weeks."
+        "label": "Normal day"
+      }
     },
     "weight": {
-      "label": "Weight · {when}",
       "today": "today",
       "yesterday": "yesterday",
       "daysAgo": "{days} days ago",
       "kg": "kg",
       "toGoal": "<neon>{kg} kg</neon> from your goal ({target} kg)",
       "reached": "Weight goal reached ✓ ({target} kg)",
-      "history": "See history and trend →",
-      "emptyTitle": "No measurements yet",
-      "emptyBody": "Log your first measurement to start seeing your progress.",
-      "emptyCta": "Log measurement"
+      "emptyTitle": "No measurements yet"
     },
     "metrics": {
       "rhr": "Resting HR",
@@ -580,31 +538,10 @@
       "ms": "ms",
       "fat": "% Fat",
       "vsAvg": "{delta} vs your average",
-      "activateTitle": "Turn on your recovery metrics",
-      "activateBody": "Add resting HR and HRV to see your daily status and trends."
-    },
-    "week": {
-      "title": "Your week",
-      "sub": "measurement or training",
-      "mon": "M",
-      "tue": "T",
-      "wed": "W",
-      "thu": "T",
-      "fri": "F",
-      "sat": "S",
-      "sun": "S"
-    },
-    "load": {
-      "title": "Training load (ACWR)",
-      "soon": "It will turn on once you log sessions with RPE",
-      "week": "Week",
-      "au": "AU",
-      "acwr": "ACWR",
-      "provisional": "*Provisional ACWR until 4 weeks of history build up"
+      "activateTitle": "Turn on your recovery metrics"
     },
     "cta": {
-      "update": "Update biometrics",
-      "register": "Log biometrics"
+      "measure": "Log a measurement"
     },
     "zones": {
       "title": "Your effort zones",
@@ -623,6 +560,19 @@
       "hrMaxEstimated": "Estimated max HR: {bpm} bpm",
       "hrMaxMeasured": "Measured max HR: {bpm} bpm",
       "hrRest": "Resting HR: {bpm} bpm"
+    },
+    "title": "Progress",
+    "back": "← Progress",
+    "tiles": {
+      "weight": "Weight",
+      "measures": "Measurements",
+      "measuresEmpty": "Add resting HR and HRV",
+      "review": "Weekly review",
+      "reviewSub": "How the week went",
+      "records": "Records",
+      "recordsSub": "Your best marks",
+      "photos": "Photos",
+      "photosSub": "Progress photos"
     }
   },
   "meta": {
@@ -635,8 +585,8 @@
     "training": "Training",
     "nutrition": "Nutrition",
     "coach": "Coach",
-    "profile": "Profile",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "progress": "Progress"
   },
   "auth": {
     "common": {
@@ -1740,7 +1690,8 @@
       "language": "Language",
       "saved": "Saved ✓",
       "saving": "Saving…"
-    }
+    },
+    "importData": "Import data"
   },
   "load": {
     "title": "Training load",
@@ -3038,19 +2989,17 @@
     "loading": "Loading today's log…",
     "error": "Couldn't load today's log. Try again.",
     "retry": "Retry",
-    "summaryLink": "Summary",
-    "summaryAria": "Open the summary: status, weight and load",
-    "fullCheckin": "Full check-in (sleep, energy, soreness…)",
     "saveError": "Not saved. Try again.",
     "next": {
       "title": "Next meal",
       "allDone": "Today's menu: all ticked ✓",
       "free": "Free",
       "noMenu": "No menu today.",
-      "makeMenu": "Make a menu"
+      "makeMenu": "Make a menu",
+      "change": "Change",
+      "seeDay": "See the day"
     },
     "plan": {
-      "title": "Today's plan",
       "none": "You don't have an active weekly plan yet.",
       "makePlan": "Create the plan",
       "rest": "No training in the plan today: rest.",
@@ -3068,17 +3017,12 @@
       "gym": "Gym",
       "cardio": "Cardio",
       "rest": "Rest",
-      "fromPlan": "From the weekly plan.",
-      "changed": "Changed by hand.",
       "reset": "Back to the plan",
       "unknown": "No plan: pick what's on."
     },
     "done": {
-      "title": "Done today",
       "trained": "Workout done",
       "mobility": "Mobility",
-      "yes": "Yes",
-      "notYet": "Not yet",
       "pending": "waiting to be sent"
     },
     "weight": {
@@ -3092,11 +3036,6 @@
       "dayMean": "There are {count} weigh-ins today: the day's average counts, {kg} kg."
     },
     "meals": {
-      "title": "Menu meals",
-      "none": "No menu for today.",
-      "tupper": "Lunchbox",
-      "free": "Free meal",
-      "eve": "The night before: {task}",
       "states": {
         "done": "Eaten",
         "skipped": "Skipped",
@@ -3107,9 +3046,7 @@
       "changeSave": "Save",
       "changedTo": "Instead: {what}",
       "clear": "Clear",
-      "prep": "On the day: {list}",
       "previousMark": "Before, with another dish: {state} ({dish}). Today's menu changed; mark this dish.",
-      "inDiary": "Added to Nutrition: {kcal} kcal planned for the dish.",
       "logInstead": "Log what you ate in Nutrition: only what you log counts."
     },
     "cardio": {
@@ -3151,6 +3088,28 @@
       "title": "For tonight",
       "defrost": "Move {dish} from the freezer to the fridge",
       "batch": "batch"
+    },
+    "profileAria": "Profile",
+    "training": {
+      "title": "Today's workout"
+    },
+    "status": {
+      "ok": "All clear",
+      "noTraining": "No training until a medical check"
+    },
+    "sheet": {
+      "close": "Close"
+    },
+    "quick": {
+      "title": "Quick log",
+      "checkin": "Check-in",
+      "checkinDone": "Done today",
+      "checkinTodo": "Pending",
+      "weight": "Weight",
+      "kg": "{kg} kg",
+      "log": "Log it",
+      "cardio": "Cardio",
+      "min": "{equivalent}/{goal} min"
     }
   },
   "reminders": {
@@ -3817,5 +3776,22 @@
     },
     "intenseOff": "“Intense” isn't available today: {why}.",
     "vigorousLogged": "You're logging “Vigorous” with an active warning ({why}). It's saved anyway, since it's done; today light or moderate work is advised."
+  },
+  "importHub": {
+    "title": "Import data",
+    "back": "← Profile",
+    "subtitle": "Bring into FightLab what you already had in other apps.",
+    "history": {
+      "title": "History",
+      "hint": "Weight, measurements and check-ins from another app"
+    },
+    "hevy": {
+      "title": "Hevy workouts",
+      "hint": "Your gym sessions"
+    },
+    "catalogue": {
+      "title": "Store catalogue",
+      "hint": "Your products with their rating"
+    }
   }
 }
