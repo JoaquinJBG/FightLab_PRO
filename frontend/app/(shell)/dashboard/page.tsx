@@ -55,9 +55,9 @@ function Metric({ label, value, unit, delta, goodWhenDown }: { label: string; va
   );
 }
 
-function LinkTile({ href, title, sub, testId, delay }: { href: string; title: string; sub: string; testId?: string; delay: number }) {
+function LinkTile({ href, title, sub, testId, delay, wide = false }: { href: string; title: string; sub: string; testId?: string; delay: number; wide?: boolean }) {
   return (
-    <Link href={href} data-testid={testId} className={tile} style={{ animationDelay: `${delay}ms` }}>
+    <Link href={href} data-testid={testId} className={wide ? `${tile} col-span-2` : tile} style={{ animationDelay: `${delay}ms` }}>
       <span className="t-label text-ink">{title}</span>
       <span className="text-[11px] leading-snug text-muted">{sub}</span>
     </Link>
@@ -186,7 +186,8 @@ export default function DashboardPage() {
         <LinkTile href="/training/review" title={t("tiles.review")} sub={t("tiles.reviewSub")} delay={160} />
         {gym && <LinkTile href="/training/gym/records" title={t("tiles.records")} sub={t("tiles.recordsSub")} delay={200} />}
         <ZonesTile className={tile} style={{ animationDelay: "240ms" }} />
-        <LinkTile href="/biometrics" title={t("tiles.photos")} sub={t("tiles.photosSub")} delay={280} />
+        {/* Sin gimnasio no hay Récords: Fotos ocupa la fila entera para no dejar un hueco. */}
+        <LinkTile href="/biometrics" title={t("tiles.photos")} sub={t("tiles.photosSub")} delay={280} wide={!gym} />
       </section>
 
       {/* ---------- CTA ---------- */}
