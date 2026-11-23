@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useFormatter, useTranslations } from "next-intl";
-import { useBiometrics, useTrend, useWeighIn } from "@/lib/hooks";
+import { useBiometrics, useDisciplines, useTrend, useWeighIn } from "@/lib/hooks";
 import { TrendLine } from "@/components/trend/TrendLine";
 import { LoadSummary } from "@/components/load/LoadSummary";
 import { ZonesTile } from "@/components/zones/ZonesCard";
@@ -71,6 +71,7 @@ export default function DashboardPage() {
   const format = useFormatter();
   const { data: logs = [], isLoading } = useBiometrics();
   const { data: weighIn } = useWeighIn();
+  const { gym } = useDisciplines();
   // La tendencia es la del coach (`/coach/trend`), no una diferencia entre pesajes sueltos.
   const { data: trend } = useTrend(!!weighIn && !weighIn.blocked);
 
@@ -183,7 +184,7 @@ export default function DashboardPage() {
         </Link>
 
         <LinkTile href="/training/review" title={t("tiles.review")} sub={t("tiles.reviewSub")} delay={160} />
-        <LinkTile href="/training/gym/records" title={t("tiles.records")} sub={t("tiles.recordsSub")} delay={200} />
+        {gym && <LinkTile href="/training/gym/records" title={t("tiles.records")} sub={t("tiles.recordsSub")} delay={200} />}
         <ZonesTile className={tile} style={{ animationDelay: "240ms" }} />
         <LinkTile href="/biometrics" title={t("tiles.photos")} sub={t("tiles.photosSub")} delay={280} />
       </section>

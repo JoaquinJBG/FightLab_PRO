@@ -11,23 +11,28 @@ import {
   ChevronRight,
 } from "@/components/icons";
 import { useToday, type PlanEntry } from "@/lib/today";
+import { useDisciplines } from "@/lib/hooks";
 
 const registrar = [
-  { href: "/training/gym", Icon: TrainingIcon, id: "gym" },
-  { href: "/training/mma", Icon: GloveIcon, id: "mma" },
-  { href: "/training/sports", Icon: RunIcon, id: "sports" },
-  { href: "/training/gym", Icon: ClipboardIcon, id: "history" },
+  { href: "/training/gym", Icon: TrainingIcon, id: "gym", needs: "gym" },
+  { href: "/training/mma", Icon: GloveIcon, id: "mma", needs: "combat" },
+  { href: "/training/sports", Icon: RunIcon, id: "sports", needs: null },
+  { href: "/training/gym", Icon: ClipboardIcon, id: "history", needs: "gym" },
 ] as const;
 
 const planificar = [
-  { href: "/training/plan", id: "week" },
-  { href: "/training/routines", id: "routines" },
+  { href: "/training/plan", id: "week", needs: null },
+  { href: "/training/routines", id: "routines", needs: "gym" },
 ] as const;
+
+/* Con una sola celda, a ancho completo; con dos o más, a dos columnas (sin huecos raros). */
+const gridFor = (n: number) => (n === 1 ? "grid-cols-1" : "grid-cols-2");
 
 /* «Hoy toca»: lo de hoy del plan activo (el mismo `coach/today` que usa Hoy). */
 function TodayCard() {
   const t = useTranslations("training.index.today");
   const { data, isLoading } = useToday();
+  const { gym: showGym } = useDisciplines();
   const plan = data?.plan ?? null;
 
   if (isLoading) return <section className="glass neon-edge mt-3 min-h-[5.5rem] p-4" aria-busy="true" />;
@@ -62,7 +67,7 @@ function TodayCard() {
       {gym?.exercises && gym.exercises.length > 0 && (
         <p className="t-body mt-0.5 truncate text-xs text-muted">{gym.exercises.join(" · ")}</p>
       )}
-      {gym && (
+      {gym && showGym && (
         <Link
           href={`/training/gym/session?plan=${encodeURIComponent(gym.session!)}`}
           data-testid="hub-today-start"
@@ -77,6 +82,11 @@ function TodayCard() {
 
 export default function TrainingHubPage() {
   const t = useTranslations("training.index");
+  const shown = useDisciplines();
+  const visible = <T extends { needs: "gym" | "combat" | null }>(items: readonly T[]) =>
+    items.filter((i) => i.needs === null || shown[i.needs]);
+  const registrarShown = visible(registrar);
+  const planificarShown = visible(planificar);
 
   return (
     <div className="pt-4">
@@ -91,8 +101,8 @@ export default function TrainingHubPage() {
       <TodayCard />
 
       <p className="t-eyebrow mt-4 text-muted">{t("register")}</p>
-      <div className="mt-2 grid grid-cols-2 gap-2">
-        {registrar.map(({ href, Icon, id }) => (
+      <div className={`mt-2 grid gap-2 ${gridFor(registrarShown.length)}`}>
+        {registrarShown.map(({ href, Icon, id }) => (
           <Link key={id} href={href} data-testid={`hub-${id}`} className="glass flex items-center gap-2.5 p-3">
             <span className="text-neon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[rgba(69,233,255,0.07)]">
               <Icon className="h-5 w-5" />
@@ -103,8 +113,8 @@ export default function TrainingHubPage() {
       </div>
 
       <p className="t-eyebrow mt-4 text-muted">{t("planify")}</p>
-      <div className="mt-2 grid grid-cols-2 gap-2">
-        {planificar.map(({ href, id }) => (
+      <div className={`mt-2 grid gap-2 ${gridFor(planificarShown.length)}`}>
+        {planificarShown.map(({ href, id }) => (
           <Link key={id} href={href} data-testid={`hub-${id}`} className="glass flex items-center justify-between gap-2 p-3">
             <span className="t-title min-w-0 text-sm leading-tight text-ink">{t(`planifyCards.${id}`)}</span>
             <ChevronRight className="h-4 w-4 shrink-0 text-muted" />

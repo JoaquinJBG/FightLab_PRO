@@ -11,7 +11,7 @@ const WEIGH_IN = {
   blocked: false, deficit_blocked: false, reasons: [], goal_weight_kg: null, goal_date: null, weigh_in_at: null,
   weight_class: null, days_left: null, current_kg: null, to_go_kg: null,
 };
-const state = vi.hoisted(() => ({ metrics: null as unknown, safety: undefined as unknown, logs: [] as unknown[] }));
+const state = vi.hoisted(() => ({ metrics: null as unknown, safety: undefined as unknown, logs: [] as unknown[], combat: true }));
 
 vi.mock("next/link", () => ({
   default: ({ href, children, ...r }: { href: string; children: React.ReactNode }) => <a href={href} {...r}>{children}</a>,
@@ -20,6 +20,7 @@ vi.mock("@/lib/hooks", () => ({
   useBiometrics: () => ({ data: state.logs }),
   useSafety: () => ({ data: state.safety }),
   useWeighIn: () => ({ data: WEIGH_IN }),
+  useDisciplines: () => ({ gym: true, combat: state.combat }),
 }));
 vi.mock("@/lib/load", () => ({ loadMetrics: () => state.metrics }));
 vi.mock("@/lib/activities", () => ({ fetchServerMetrics: () => Promise.resolve(null) }));
@@ -43,6 +44,7 @@ beforeEach(() => {
   Element.prototype.scrollIntoView = vi.fn();
   state.metrics = metrics;
   state.logs = [];
+  state.combat = true;
   state.safety = { flags: {}, reasons: [], disclaimer: "General guidance." };
   vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline"))); // sin IA: por reglas
 });
@@ -63,6 +65,15 @@ describe("Coach con un golpe en la cabeza activo (no_contact)", () => {
     // Recomendación que no se puede descartar, con la vuelta al contacto
     expect(screen.getByText("Contact blocked after a blow to the head")).toBeTruthy();
     expect(screen.queryByText(/No warnings: all good/)).toBeNull();
+  });
+
+  it("con «contacto» apagado en Perfil: el aviso y la recomendación siguen, sin enlaces a /training/mma", () => {
+    state.combat = false;
+    const { container } = renderEn(<CoachPage />);
+    expect(screen.getByText(/Contact is blocked after a blow to the head with symptoms/)).toBeTruthy();
+    expect(screen.getByText("Contact blocked after a blow to the head")).toBeTruthy();
+    expect(screen.queryByTestId("briefing-head-blow")).toBeNull();
+    expect(container.querySelector('a[href="/training/mma"]')).toBeNull();
   });
 
   it("R3-3: la cabecera sale del mismo estado de seguridad: no dice «Ready to train»", () => {

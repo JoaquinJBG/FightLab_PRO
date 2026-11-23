@@ -11,6 +11,8 @@ vi.mock("@/lib/hooks", () => ({
   useMe: () => ({ data: { id: 1, email: "ana@example.com", role: "ATHLETE" } }),
   useProfile: () => ({ data: { date_of_birth: "1995-03-07", gender: "FEMALE", height_cm: 170, dominant_stance: "SOUTHPAW" } }),
   useLogout: () => ({ mutateAsync: vi.fn() }),
+  useDisciplines: () => ({ gym: true, combat: true }),
+  useSetDiscipline: () => ({ mutate: vi.fn(), isError: false }),
 }));
 
 describe("Perfil: la lista", () => {

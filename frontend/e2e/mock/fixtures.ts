@@ -14,7 +14,7 @@ const PROFILE = {
   equation_sex: null, goal: "maintenance", experience: "intermediate", activity_level: "desk_training",
   language: "es", region: "es", emergency_number: null, medications: [], medications_other: [],
   conditions: [], conditions_other: [], disciplines: [], training_frequency: null, goal_weight_kg: null,
-  goal_date: null, weight_class: null, weigh_in_at: null,
+  goal_date: null, weight_class: null, weigh_in_at: null, show_gym: true, show_combat: true,
 };
 
 // Respuestas del coach con el cribado contestado y sin bloqueos. Sin pesos en la biometría
@@ -43,6 +43,8 @@ type Seed = Record<string, unknown>;
 /** Sesión falsa: cookie `fl_refresh` (la exige proxy.ts), localStorage sembrado
     y /api/proxy/* mockeado. `extraState` se serializa a `flp_*`. */
 export async function loginAsTestUser(page: Page, extraState: Seed = {}) {
+  // El perfil es por página: el PATCH (interruptores de Perfil) lo cambia y los GET siguientes lo ven.
+  const profile: Record<string, unknown> = { ...PROFILE };
   await page.context().addCookies([
     { name: "fl_refresh", value: "e2e", url: ORIGIN },
     { name: "fl_access", value: "e2e", url: ORIGIN },
@@ -72,7 +74,10 @@ export async function loginAsTestUser(page: Page, extraState: Seed = {}) {
       });
 
     if (path.startsWith("health")) return json({ status: "ok" });
-    if (path.startsWith("me/profile")) return json(PROFILE);
+    if (path.startsWith("me/profile")) {
+      if (route.request().method() === "PATCH") Object.assign(profile, route.request().postDataJSON());
+      return json(profile);
+    }
     if (path.startsWith("coach/screening")) return json(SCREENING);
     if (path.startsWith("coach/safety")) return json(SAFETY);
     if (path.startsWith("coach/weigh-in")) return json(WEIGH_IN);

@@ -1678,7 +1678,14 @@
       "saved": "Guardado ✓",
       "saving": "Guardando…"
     },
-    "importData": "Importar datos"
+    "importData": "Importar datos",
+    "disciplines": {
+      "title": "Qué entrenas",
+      "gym": "Gimnasio",
+      "combat": "Entrenamiento de contacto (MMA, boxeo…)",
+      "hint": "Ocultan lo que no usas. Puedes volver a activarlos cuando quieras.",
+      "saveError": "No se pudo guardar el cambio."
+    }
   },
   "load": {
     "title": "Carga de entreno",

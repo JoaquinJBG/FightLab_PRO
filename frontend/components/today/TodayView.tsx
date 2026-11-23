@@ -9,7 +9,7 @@ import { SafetyBanner } from "@/components/safety/SafetyBanner";
 import { useBlockedWhy } from "@/components/safety/SafetyStateCard";
 import { BottomSheet } from "@/components/today/BottomSheet";
 import { canSayReady, useTodaySafety } from "@/lib/safety-state";
-import { useBiometrics, useCheckin, useMe } from "@/lib/hooks";
+import { useBiometrics, useCheckin, useDisciplines, useMe } from "@/lib/hooks";
 import { computeRecovery } from "@/lib/recovery";
 import { HEAD_BLOW_RULES } from "@/lib/coach-rules";
 import { SAFETY_RULES } from "@/lib/safety-rules";
@@ -95,6 +95,7 @@ function TodayTraining({ state }: { state: TodayState }) {
   const t = useTranslations("today");
   const tp = useTranslations("today.plan");
   const save = useSaveDay();
+  const { gym: showGym } = useDisciplines();
   // R4-6: lo marcado sin red se ve al momento, con «pendiente de enviar» hasta que sale
   const pending = save.isPaused && save.variables ? Object.keys(save.variables) : [];
   const plan = state.plan;
@@ -156,7 +157,7 @@ function TodayTraining({ state }: { state: TodayState }) {
                     <span data-testid="plan-contact-blocked" className="block text-xs text-ink">{tp("contactBlocked")}</span>
                   )}
                 </span>
-                {e.kind === "gym" && e.session && (
+                {e.kind === "gym" && e.session && showGym && (
                   <Link href={`/training/gym?plan=${encodeURIComponent(e.session)}`} className="btn btn-primary btn-sm shrink-0">
                     {tp("openSession", { session: e.session })}
                   </Link>

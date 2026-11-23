@@ -59,6 +59,9 @@ export const profile = z.object({
   goal_date: z.string().nullable(),
   weight_class: z.string().nullable(),
   weigh_in_at: z.string().nullable(),
+  // Qué partes de la app se ven (solo navegación). Por defecto, ambas.
+  show_gym: z.boolean().default(true),
+  show_combat: z.boolean().default(true),
 });
 export type Profile = z.infer<typeof profile>;
 

@@ -48,6 +48,10 @@ activa Hoy (de ahí se llega). Progreso activo en `/dashboard`, `/biometrics*`,
 - **Perfil** (`/profile`): Editar perfil, Repetir el cribado, Avisos, Importar datos (agrupador nuevo
   `/profile/import-hub` o similar con Historial `/profile/import`, Entrenos de Hevy `/training/gym/import`,
   Catálogo `/profile/import/catalogue`), Créditos, Cerrar sesión. Mi cocina y Mi IA salen de aquí.
+  Sección «Qué entrenas» con dos interruptores (Gimnasio, Entrenamiento de contacto; ambos activados de primera,
+  `show_gym`/`show_combat` en el perfil): ocultan accesos (Gimnasio, Historial, Mis rutinas, Empezar de sesiones de gimnasio,
+  Récords, Hevy / MMA y sus enlaces en Coach). Solo navegación: las rutas siguen abiertas, no se borra nada y la
+  seguridad (golpe en la cabeza, avisos) nunca se oculta.
 
 ## Volver atrás
 

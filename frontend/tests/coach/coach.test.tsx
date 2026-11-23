@@ -19,6 +19,7 @@ vi.mock("@/lib/hooks", () => ({
   useBiometrics: () => ({ data: state.logs }),
   useSafety: () => ({ data: state.safety }),
   useWeighIn: () => ({ data: state.weighIn }),
+  useDisciplines: () => ({ gym: true, combat: true }),
 }));
 vi.mock("@/lib/load", () => ({ loadMetrics: () => state.metrics }));
 vi.mock("@/lib/activities", () => ({ fetchServerMetrics: () => Promise.resolve(null) }));

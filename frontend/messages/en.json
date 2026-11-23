@@ -1678,7 +1678,14 @@
       "saved": "Saved ✓",
       "saving": "Saving…"
     },
-    "importData": "Import data"
+    "importData": "Import data",
+    "disciplines": {
+      "title": "What you train",
+      "gym": "Gym",
+      "combat": "Contact training (MMA, boxing…)",
+      "hint": "They hide what you don't use. You can turn them back on any time.",
+      "saveError": "Couldn't save the change."
+    }
   },
   "load": {
     "title": "Training load",
