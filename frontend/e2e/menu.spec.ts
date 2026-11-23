@@ -24,12 +24,13 @@ async function openMenu(page: Page) {
 
 test("preparar un menú: cada día comprobado por el coach, sin la alergia y con la compra", async ({ page }) => {
   await login(page, READY_USERS.menu);
-  await openMenu(page);
 
   // Alergia al pollo: el menú no lo lleva.
+  await page.goto("/nutrition/menu/settings");
   await page.getByTestId("tastes-form").locator('input[name="allergies"]').fill("pollo");
   await page.getByRole("button", { name: es.menu.tastes.save }).click();
   await expect(page.getByText(es.menu.tastes.saved)).toBeVisible();
+  await openMenu(page);
 
   await page.locator('select[name="days"]').selectOption("3");
   await page.getByRole("button", { name: es.menu.form.generate }).click();
@@ -51,8 +52,10 @@ test("preparar un menú: cada día comprobado por el coach, sin la alergia y con
   // No se repite ningún plato.
   const dishes = await page.getByTestId("menu-dish").evaluateAll((els) => els.map((e) => e.getAttribute("data-dish")));
   expect(new Set(dishes).size).toBe(dishes.length);
-  // Lista de la compra.
+  // Lista de la compra (pestaña Compra).
+  await page.getByTestId("menu-tab-shopping").click();
   await expect(page.getByTestId("shopping-list").getByTestId("shopping-item").first()).toBeVisible();
+  await page.getByTestId("menu-tab-menu").click();
 
   // Valorar un plato: entra en el recetario.
   const first = page.getByTestId("menu-dish").first();
@@ -65,7 +68,7 @@ test("preparar un menú: cada día comprobado por el coach, sin la alergia y con
 
 test("con el proxy de Open Food Facts sin configurar, la app lo explica sin romperse", async ({ page }) => {
   await login(page, READY_USERS.menu);
-  await openMenu(page);
+  await page.goto("/nutrition/menu/settings");
   const card = page.getByTestId("products-card");
   await card.getByRole("textbox").fill("revuelto de verduras");
   await card.getByRole("button", { name: es.menu.products.search }).click();

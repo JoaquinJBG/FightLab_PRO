@@ -7,6 +7,7 @@ import { useClearWeighIn, useSafety, useSaveWeighIn, useWeighIn, WeighInError } 
 import { weighInDate } from "@/lib/weigh";
 import { SafetyPanel } from "@/components/safety/SafetyBanner";
 import { CutInfoCard } from "@/components/combat/CutInfoCard";
+import { GoalBlock } from "@/components/nutrition/GoalBlock";
 import type { CoachReason, SafetyReason } from "@/lib/schemas";
 import { ScaleIcon } from "@/components/icons";
 
@@ -35,6 +36,9 @@ export default function WeighInPage() {
     </>
   );
 
+  // El bloque «Objetivo» (antes en la portada de Nutrición) va arriba, también con el pesaje bloqueado.
+  const goalBlock = <div className="mt-4"><GoalBlock /></div>;
+
   if (isLoading) return <div className="pt-4">{header}<p className="t-body mt-4 text-xs text-muted">{t("loading")}</p></div>;
   if (isError || !data) return <div className="pt-4">{header}<p className="t-body mt-4 text-xs text-bad">{t("loadError")}</p></div>;
 
@@ -43,6 +47,7 @@ export default function WeighInPage() {
     return (
       <div className="pt-4" data-testid="weigh-blocked">
         {header}
+        {goalBlock}
         <section className="glass neon-edge mt-4 p-5">
           <p className="t-title text-ink">{t("blocked.title")}</p>
           <p className="t-body mt-1.5 text-sm text-muted">{t("blocked.body")}</p>
@@ -76,6 +81,7 @@ export default function WeighInPage() {
   return (
     <div className="pt-4">
       {header}
+      {goalBlock}
 
       {saved && (
         <section data-testid="weigh-summary" className="glass neon-edge mt-4 p-5 text-center">

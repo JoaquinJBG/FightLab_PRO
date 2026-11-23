@@ -87,6 +87,6 @@ test("escáner: catálogo de cadena por EAN, no encontrado → crear a mano, y o
   await expect(page.getByTestId("scan-name")).toContainText("Tortilla escaneada inventada");
 
   // 4. Y en la búsqueda de productos del menú sale como «Creado por ti».
-  await page.goto("/nutrition/menu");
+  await page.goto("/nutrition/menu/settings");
   await expect(page.getByTestId("catalogue-product").filter({ hasText: "Tortilla escaneada inventada" })).toContainText("Creado por ti");
 });

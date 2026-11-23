@@ -373,24 +373,31 @@ function Header({ menu }: { menu: Menu }) {
   );
 }
 
+/** Qué parte del menú se pinta: el menú (días), la compra o el batch; `all` es todo junto. */
+export type MenuPart = "menu" | "shopping" | "batch" | "all";
+
 /** El menú guardado: objetivos, días comprobados por el motor, sesiones de batch, rechazos, avisos,
- * la compra y los tickets. */
-export function MenuView({ menu }: { menu: Menu }) {
+ * la compra y los tickets. En la pantalla de Menú y compra va por pestañas (`part`). */
+export function MenuView({ menu, part = "all" }: { menu: Menu; part?: MenuPart }) {
   const t = useTranslations("menu");
+  const all = part === "all";
   return (
     <div data-testid="menu" data-provider={menu.provider} data-menu-id={menu.id}>
-      <Header menu={menu} />
-      {menu.provider === "fake" && <p data-testid="menu-simulated" className="t-body mt-3 text-[11px] text-muted">{t("simulated")}</p>}
-      <Targets menu={menu} />
-      <BatchSessions menu={menu} />
-      {menu.days.map((d) => <Day key={d.date} day={d} menu={menu} />)}
-      <p className="t-body mt-2 text-[11px] text-muted">{t("rateHint")}</p>
-      <Rejected menu={menu} />
-      <TasteFlags menu={menu} />
-      {menu.shopping_list ? <ShoppingList list={menu.shopping_list} menuId={menu.id} /> : <Shopping menu={menu} />}
-      <TicketsCard planId={menu.id} />
-      <PdfButton id={menu.id} />
-      <p className="t-label mt-3 text-muted">{t("engine", { sha: menu.engine_sha })}</p>
+      {(all || part === "menu") && <Header menu={menu} />}
+      {(all || part === "menu") && menu.provider === "fake" && <p data-testid="menu-simulated" className="t-body mt-3 text-[11px] text-muted">{t("simulated")}</p>}
+      {(all || part === "menu") && <Targets menu={menu} />}
+      {(all || part === "batch") && <BatchSessions menu={menu} />}
+      {part === "batch" && menu.batch_sessions.length === 0 && (
+        <p data-testid="batch-empty" className="t-body mt-4 text-sm text-muted">{t("batchEmpty")}</p>
+      )}
+      {(all || part === "menu") && menu.days.map((d) => <Day key={d.date} day={d} menu={menu} />)}
+      {(all || part === "menu") && <p className="t-body mt-2 text-[11px] text-muted">{t("rateHint")}</p>}
+      {(all || part === "menu") && <Rejected menu={menu} />}
+      {(all || part === "menu") && <TasteFlags menu={menu} />}
+      {(all || part === "shopping") && (menu.shopping_list ? <ShoppingList list={menu.shopping_list} menuId={menu.id} /> : <Shopping menu={menu} />)}
+      {(all || part === "shopping") && <TicketsCard planId={menu.id} />}
+      {(all || part === "menu") && <PdfButton id={menu.id} />}
+      {(all || part === "menu") && <p className="t-label mt-3 text-muted">{t("engine", { sha: menu.engine_sha })}</p>}
     </div>
   );
 }

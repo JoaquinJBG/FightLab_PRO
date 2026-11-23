@@ -91,11 +91,13 @@ describe.each(["es", "en"] as const)("menú importado (%s)", (locale) => {
     expect(eve[1].textContent).toContain("Lentejas con pollo");
     expect(screen.getByTestId("meal-free").textContent).toContain("650");
     expect(screen.getByTestId("menu-file-totals").textContent).toContain("2");
-    // La sesión de batch con su enlace a pantalla completa.
+    // La sesión de batch (pestaña Batch) con su enlace a pantalla completa.
+    fireEvent.click(screen.getByTestId("menu-tab-batch"));
     const session = screen.getByTestId("batch-session");
     expect(within(session).getByTestId("batch-open").getAttribute("href")).toBe("/nutrition/menu/batch?menu=9&session=0");
     expect(within(screen.getByTestId("batch-sessions")).getAllByTestId("evidence-chip").length).toBeGreaterThanOrEqual(4);
-    // Tickets sin R2: se explica.
+    // Tickets sin R2: se explica (pestaña Compra).
+    fireEvent.click(screen.getByTestId("menu-tab-shopping"));
     expect((await screen.findByTestId("tickets-off")).textContent).toBe(cat.tickets.off);
     expect(screen.getByTestId("menu-picker")).toBeTruthy();
   });
@@ -108,6 +110,7 @@ describe.each(["es", "en"] as const)("menú importado (%s)", (locale) => {
       "/api/proxy/coach/menu/9/shopping": { body: { ...IMPORTED_MENU.shopping_list, checked: 2 } },
     });
     renderApp(<MenuPage />, locale);
+    fireEvent.click(await screen.findByTestId("menu-tab-shopping"));
     const list = await screen.findByTestId("shopping-list");
     expect(within(list).getAllByTestId("shopping-section").map((s) => s.dataset.section)).toEqual(["Carnicería", "Legumbres", "Pescadería"]);
     const lentils = within(list).getAllByTestId("shopping-item")[1];
@@ -203,6 +206,7 @@ describe.each(["es", "en"] as const)("producto de la cadena en la lista (%s)", (
       "/api/proxy/coach/tickets": { body: { enabled: false, max_upload_mb: 2, tickets: [] } },
     });
     renderApp(<MenuPage />, locale);
+    fireEvent.click(await screen.findByTestId("menu-tab-shopping"));
     await screen.findByTestId("shopping-list");
     const products = screen.getAllByTestId("shopping-product");
     expect(products.map((p) => p.dataset.rating)).toEqual([...ratings]);
@@ -229,6 +233,7 @@ describe("ronda 3 en el móvil", () => {
     const withWeeks = { ...list, sections: [{ section: "Legumbres", items: [lentils] }] };
     mockApi({ ...base(), "/api/proxy/coach/menu": { body: importedState({ menu: { ...IMPORTED_MENU, shopping_list: withWeeks } }) } });
     renderApp(<MenuPage />, "es");
+    fireEvent.click(await screen.findByTestId("menu-tab-shopping"));
     const shopping = await screen.findByTestId("shopping-list");
     expect(within(shopping).getByTestId("shopping-item").textContent).toContain("1100 g");
     fireEvent.click(within(shopping).getAllByTestId("shopping-week-tab")[1]);
@@ -237,6 +242,7 @@ describe("ronda 3 en el móvil", () => {
     const noWeeks = { ...list, sections: [{ section: "", items: [{ ...lentils, by_week: null, when: [] }] }] };
     mockApi({ ...base(), "/api/proxy/coach/menu": { body: importedState({ menu: { ...IMPORTED_MENU, shopping_list: noWeeks } }) } });
     renderApp(<MenuPage />, "es");
+    fireEvent.click(await screen.findByTestId("menu-tab-shopping"));
     await screen.findByTestId("shopping-list");
     expect(screen.queryAllByTestId("shopping-week-tab")).toHaveLength(0);
   });

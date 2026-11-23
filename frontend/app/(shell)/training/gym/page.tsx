@@ -78,9 +78,12 @@ function GymInner() {
   return (
     <div className="pt-4">
       <Link href="/training" className="t-label text-muted">{t("back")}</Link>
-      <div className="mt-2 flex items-center gap-2">
-        <span className="text-neon"><TrainingIcon className="h-6 w-6" /></span>
-        <h1 className="t-display text-2xl text-ink">{t("title")}</h1>
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-neon"><TrainingIcon className="h-6 w-6" /></span>
+          <h1 className="t-display text-2xl text-ink">{t("title")}</h1>
+        </div>
+        <Link href="/training/gym/records" data-testid="records-link" className="btn btn-tonal btn-sm">{t("recordsLink")}</Link>
       </div>
 
       {saved && (
@@ -111,11 +114,6 @@ function GymInner() {
           {todayFocus && todayFocus !== "Descanso" ? t("startWithFocus", { focus: focusLabel(todayFocus) }) : t("start")}
         </Link>
       )}
-      <div className="mt-2 grid grid-cols-2 gap-2">
-        <Link href="/training/routines" className="btn btn-tonal btn-sm min-h-11">{t("routinesLink")}</Link>
-        <Link href="/training/gym/records" className="btn btn-tonal btn-sm min-h-11">{t("recordsLink")}</Link>
-      </div>
-      <Link href="/training/gym/import" className="btn btn-tonal btn-sm mt-2 w-full">{t("importLink")}</Link>
 
       <TrainingCalendar />
 

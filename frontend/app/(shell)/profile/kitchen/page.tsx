@@ -10,7 +10,7 @@ export default function KitchenPage() {
   const kitchen = useKitchen();
   return (
     <div className="pt-4 pb-6">
-      <Link href="/profile" className="t-label text-muted">{t("back")}</Link>
+      <Link href="/nutrition/menu/settings" className="t-label text-muted">{t("back")}</Link>
       <h1 className="t-display mt-2 text-2xl text-ink">{t("title")}</h1>
       <p className="t-body mt-1 text-xs text-muted">{t("intro")}</p>
       {kitchen.isLoading && <p className="t-body mt-4 text-muted">{t("loading")}</p>}

@@ -26,14 +26,15 @@ test("perfil completo: objetivos del motor con chips, ecuación usada y sin cál
   await expect(page.getByTestId("kcal-rule").getByTestId("evidence-chip")).toBeVisible();
   await expect(page.getByTestId("macros").getByTestId("evidence-chip")).toHaveCount(2);
 
-  // "Cómo se calculan": la ecuación y su regla
-  await page.getByTestId("targets-details").locator("summary").click();
-  await expect(page.getByTestId("targets-equation")).toHaveAttribute("data-equation", "ten_haaf");
-  await expect(page.getByTestId("targets-reason").first()).toBeVisible();
-
   // El chip abre la hoja con la regla en español y sus fuentes
   await page.getByTestId("kcal-rule").getByTestId("evidence-chip").click();
   await expect(page.getByTestId("evidence-sheet")).toBeVisible();
+
+  // "Cómo se calculan": la ecuación y su regla, en Objetivo y pesaje
+  await page.goto("/nutrition/weigh-in");
+  await page.getByTestId("targets-details").locator("summary").click();
+  await expect(page.getByTestId("targets-equation")).toHaveAttribute("data-equation", "ten_haaf");
+  await expect(page.getByTestId("targets-reason").first()).toBeVisible();
 });
 
 test("pesaje en la BD: se guarda en el servidor, sobrevive a recargar y ya no usa flp_weigh", async ({ page }) => {
@@ -56,12 +57,10 @@ test("SCOFF positivo: Perder bloqueado y nada de pesaje en Nutrición, pesaje ni
   await expect(page.getByTestId("weight-card")).toHaveCount(0); // sin peso
 
   await page.goto("/nutrition");
-  await expect(page.getByTestId("goal-perder")).toBeDisabled();
-  await expect(page.getByTestId("goal-ganar")).toBeDisabled();
   const blocked = page.getByTestId("deficit-blocked");
   await expect(blocked.locator('[data-code="eating_disorder_screen"]')).toBeVisible();
   await expect(blocked.getByTestId("safety-footer")).toHaveText(es.safety.deferralLine);
-  await expect(page.getByTestId("weigh-card")).toHaveCount(0);
+  await expect(page.getByTestId("weigh-card")).not.toContainText("kg"); // el acceso queda, sin datos de pesaje
   // aun con "perder" en el perfil, el objetivo no baja del mantenimiento
   const targets = await page.evaluate(() => fetch("/api/proxy/coach/targets").then((r) => r.json()));
   expect(targets.kcal).toBeGreaterThanOrEqual(targets.maintenance_kcal);
@@ -69,6 +68,8 @@ test("SCOFF positivo: Perder bloqueado y nada de pesaje en Nutrición, pesaje ni
 
   await page.goto("/nutrition/weigh-in");
   await expect(page.getByTestId("weigh-blocked")).toBeVisible();
+  await expect(page.getByTestId("goal-perder")).toBeDisabled(); // el selector de objetivo vive aquí
+  await expect(page.getByTestId("goal-ganar")).toBeDisabled();
   await expect(page.getByTestId("weigh-save")).toHaveCount(0);
   // el servidor no devuelve esos datos, ni siquiera en el perfil
   const profile = await page.evaluate(() => fetch("/api/proxy/me/profile").then((r) => r.json()));

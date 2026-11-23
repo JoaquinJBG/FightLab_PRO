@@ -18,7 +18,9 @@ test("menaje y comensales, cronograma con mis aparatos y sesión de batch a pant
   await login(page, READY_USERS.batch);
 
   // Mi cocina: una olla, dos fuegos y horno; sin olla exprés. La pareja cena sin pescado salvo gambas.
-  await page.goto("/profile/kitchen");
+  await page.goto("/nutrition/menu/settings");
+  await page.getByTestId("menu-settings-kitchen").click();
+  await page.waitForURL("**/profile/kitchen");
   await page.getByTestId("kitchen-pots").fill("1");
   await page.getByTestId("kitchen-burners_large").fill("2");
   await page.getByTestId("kitchen-oven").check();
@@ -37,6 +39,7 @@ test("menaje y comensales, cronograma con mis aparatos y sesión de batch a pant
     name: "menu.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(schema1("e2e-batch")), "utf-8"),
   });
   await expect(page.getByTestId("menu-import-done")).toBeVisible();
+  await page.getByTestId("menu-tab-batch").click();
   const session = page.getByTestId("batch-session");
   await expect(session.getByTestId("batch-rebuilt")).toBeVisible();
   await expect(session).not.toContainText("Olla exprés");
