@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, staging, feat/beta-cloud, feat/beta-coach, "feat/coach-f*", feat/coach-escaner]
+    branches: [main, staging, feat/beta-cloud, feat/beta-coach, "feat/coach-f*", feat/coach-escaner, "feat/app-*"]
   pull_request:
 
 concurrency:
