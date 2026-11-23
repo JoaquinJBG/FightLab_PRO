@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
 const SLOW_AFTER_MS = 3000;
-const WARMUP_PATH = "/api/proxy/health";
+const WARMUP_PATH = "/api/wake";
 
 /**
- * Ping en segundo plano al despertar el backend de Render (plan free: hasta ~50 s
+ * Una sola vez al abrir la app, lanza (sin esperar) /api/wake, que despierta el backend de Render (plan free: hasta ~50 s
  * en frío tras 15 min de inactividad). No bloquea nada: la app sigue funcionando
  * en local (localStorage) mientras tanto. Si tarda más de 3 s, muestra un aviso
  * discreto que desaparece solo en cuanto el ping responde.

@@ -2424,7 +2424,8 @@
       "sending": "{count, plural, one {Enviando # cambio pendiente…} other {Enviando # cambios pendientes…}}"
     },
     "gate": {
-      "slow": "El servidor tarda en responder.",
+      "waking": "Despertando el servidor…",
+      "wakingBody": "Tras un rato sin uso, el servidor tarda hasta un minuto en despertar. Reintentamos solos.",
       "error": "No se pudo cargar tu perfil.",
       "retry": "Reintentar"
     }
