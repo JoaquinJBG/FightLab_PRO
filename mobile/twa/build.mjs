@@ -55,9 +55,22 @@ if (/\s/.test(jdk)) {
   if (/\s/.test(jdk)) fail("la carpeta del repo tiene espacios: mueve el repo o instala el JDK en una ruta sin espacios.");
 }
 
+// El SDK tiene que traer lo que pide Bubblewrap 1.27 y las licencias aceptadas: se comprueba antes de tocar nada.
+const missing = [
+  ["build-tools", "36.1.0"],
+  ["platforms", "android-36"],
+  ["licenses", "android-sdk-license"],
+].filter((parts) => !existsSync(join(sdk, ...parts))).map((parts) => parts.join("/"));
+if (missing.length)
+  fail(`al SDK ${sdk} le falta: ${missing.join(", ")}. Usa FIGHTLAB_SDK=C:/fl/twa/sdk (ya preparado) o instálalo con sdkmanager (ver README).`);
 // Bubblewrap solo da por buena una carpeta de SDK con `tools/` o `bin/` en la raíz (diseño antiguo del SDK).
-// Un SDK normal (cmdline-tools/latest) no la tiene: se crea `tools/` vacía, sin efectos en Gradle.
-if (!existsSync(join(sdk, "tools")) && !existsSync(join(sdk, "bin"))) mkdirSync(join(sdk, "tools"));
+// Un SDK normal (cmdline-tools/latest) no la tiene: se crea `tools/` vacía, sin efectos en Gradle, pero SOLO en el SDK
+// propio de FightLab (FIGHTLAB_SDK). En otro SDK (p. ej. el de Android Studio) no se crea nada.
+if (!existsSync(join(sdk, "tools")) && !existsSync(join(sdk, "bin"))) {
+  if (!process.env.FIGHTLAB_SDK)
+    fail(`el SDK ${sdk} no tiene tools/ ni bin/ y no es el de FightLab: pon FIGHTLAB_SDK=C:/fl/twa/sdk (no se toca tu ANDROID_HOME).`);
+  mkdirSync(join(sdk, "tools"));
+}
 
 const run = (cmd, args, opts = {}) => {
   const r = spawnSync(cmd, args, { stdio: "inherit", shell: process.platform === "win32" && cmd === "npm", ...opts });

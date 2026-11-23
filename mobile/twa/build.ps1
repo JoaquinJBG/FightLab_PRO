@@ -10,6 +10,8 @@ param(
   [string]$Alias = $(if ($env:FIGHTLAB_KEY_ALIAS) { $env:FIGHTLAB_KEY_ALIAS } else { "fightlab" })
 )
 $ErrorActionPreference = "Stop"
+# El SDK de FightLab manda sobre tu ANDROID_HOME (que no se toca).
+if (-not $env:FIGHTLAB_SDK -and (Test-Path "C:\fl\twa\sdk")) { $env:FIGHTLAB_SDK = "C:\fl\twa\sdk" }
 if (-not $Host_) { throw "Falta el dominio: .\build.ps1 -Host_ mi-app.vercel.app (sin https://)" }
 $env:FIGHTLAB_HOST = $Host_
 $env:FIGHTLAB_KEYSTORE = $Keystore

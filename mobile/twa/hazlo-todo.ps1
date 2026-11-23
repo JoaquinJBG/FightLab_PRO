@@ -16,7 +16,8 @@ param(
 )
 $ErrorActionPreference = "Stop"
 
-if (-not $env:ANDROID_HOME) { $env:ANDROID_HOME = "C:\fl\twa\sdk" }
+# El SDK de FightLab (licencias aceptadas, build-tools 36.1.0) manda sobre tu ANDROID_HOME, que no se toca.
+if (-not $env:FIGHTLAB_SDK -and (Test-Path "C:\fl\twa\sdk")) { $env:FIGHTLAB_SDK = "C:\fl\twa\sdk" }
 $keytool = if ($env:JAVA_HOME) { Join-Path $env:JAVA_HOME "bin\keytool.exe" } else { "keytool" }
 $keyDir = Join-Path $env:USERPROFILE "fightlab-keys"
 $keystore = Join-Path $keyDir "fightlab.keystore"
