@@ -69,3 +69,14 @@ mercadona*.csv
 *-puntuada.csv
 catalogo-cadena*.csv
 numi*.json
+
+# ---- App Android (mobile/twa): llaves, contraseñas y binarios, nunca al repo (es público) ----
+*.keystore
+*.jks
+*.p12
+*.pfx
+*.apk
+*.aab
+mobile/twa/build/
+mobile/twa/node_modules/
+mobile/twa/*password*

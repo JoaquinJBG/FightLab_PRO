@@ -44,4 +44,18 @@ describe("manifest de la PWA", () => {
     expect(size("icon-maskable-512.png")).toEqual([512, 512]);
     expect(size("apple-touch-icon.png")).toEqual([180, 180]);
   });
+
+  // App Android (TWA, mobile/twa/): Bubblewrap lee estos campos y Chrome los exige para instalar.
+  it("cumple lo que pide una TWA: standalone, start_url dentro del scope, icono 512 y maskable", async () => {
+    const m = await manifest();
+    expect(m.display).toBe("standalone");
+    expect(m.start_url).toBe("/today");
+    expect(m.scope).toBe("/");
+    expect(m.start_url!.startsWith(m.scope!)).toBe(true);
+    const icons = m.icons ?? [];
+    expect(icons.some((x) => x.sizes === "512x512" && x.purpose === "any" && x.type === "image/png")).toBe(true);
+    expect(icons.some((x) => x.sizes === "512x512" && x.purpose === "maskable" && x.type === "image/png")).toBe(true);
+    expect(m.theme_color).toBe("#05070e");
+    expect(m.background_color).toBe("#05070e");
+  });
 });

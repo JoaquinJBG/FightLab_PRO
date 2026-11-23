@@ -107,6 +107,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith("/api/")) return; // datos y sesión: siempre a la red
+  if (url.pathname.startsWith("/.well-known/")) return; // assetlinks de la app Android: siempre a la red
   if (url.pathname.startsWith(MEDIA_PREFIX)) {
     event.respondWith(media(event));
     return;
