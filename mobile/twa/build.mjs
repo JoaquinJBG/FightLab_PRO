@@ -11,7 +11,7 @@
 //
 // Salida: mobile/twa/build/project/app-release-signed.apk (y el .aab). Nada de esto se versiona.
 
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createServer } from "node:http";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, statSync, createReadStream } from "node:fs";
 import { dirname, join, resolve, normalize, extname } from "node:path";
@@ -48,6 +48,13 @@ const run = (cmd, args, opts = {}) => {
   const r = spawnSync(cmd, args, { stdio: "inherit", shell: process.platform === "win32" && cmd === "npm", ...opts });
   if (r.status !== 0) fail(`falló: ${cmd} ${args.join(" ")}`);
 };
+// Asíncrono: el servidor local de iconos vive en este proceso y spawnSync lo bloquearía (Bubblewrap se quedaría esperando).
+const runAsync = (cmd, args, opts = {}) =>
+  new Promise((done) => {
+    spawn(cmd, args, { stdio: "inherit", ...opts }).on("exit", (code) =>
+      code === 0 ? done() : fail(`falló: ${cmd} ${args.join(" ")}`),
+    );
+  });
 
 // --- Bubblewrap (versión fijada en package.json / package-lock.json) ---
 if (!existsSync(join(here, "node_modules", "@bubblewrap", "cli"))) {
@@ -100,11 +107,11 @@ try {
     ANDROID_SDK_ROOT: sdk,
     BUBBLEWRAP_SKIP_VERSION_CHECK: "1",
   };
-  const bw = (...args) => run(process.execPath, [bubblewrap, ...args], { env, cwd: buildDir });
+  const bw = (...args) => runAsync(process.execPath, [bubblewrap, ...args], { env, cwd: buildDir });
 
   // `update` con --skipVersionUpgrade: respeta appVersionCode de la plantilla (Bubblewrap, si no, lo sube solo).
-  bw("update", `--manifest=${manifestOut}`, `--directory=${projectDir}`, "--skipVersionUpgrade");
-  bw("build", `--manifest=${manifestOut}`, `--directory=${projectDir}`);
+  await bw("update", `--manifest=${manifestOut}`, `--directory=${projectDir}`, "--skipVersionUpgrade");
+  await bw("build", `--manifest=${manifestOut}`, `--directory=${projectDir}`);
   ok = true;
 } finally {
   server.close();
