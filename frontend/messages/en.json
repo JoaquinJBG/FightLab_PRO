@@ -3042,7 +3042,14 @@
       "changedTo": "Instead: {what}",
       "clear": "Clear",
       "previousMark": "Before, with another dish: {state} ({dish}). Today's menu changed; mark this dish.",
-      "logInstead": "Log what you ate in Nutrition: only what you log counts."
+      "logInstead": "Log what you ate in Nutrition: only what you log counts.",
+      "title": "Menu meals",
+      "none": "No menu for today.",
+      "tupper": "Lunchbox",
+      "free": "Free meal",
+      "eve": "The night before: {task}",
+      "prep": "On the day: {list}",
+      "inDiary": "Added to Nutrition: {kcal} kcal planned for the dish."
     },
     "cardio": {
       "title": "Cardio",

@@ -105,7 +105,13 @@ describe("Hoy", () => {
     // Se quita la lista entera de comidas del menú (está en Nutrición) y el botón Resumen
     expect(screen.queryByTestId("meals")).toBeNull();
     expect(screen.queryByRole("link", { name: /resumen/i })).toBeNull();
-    expect(within(next).getByRole("link", { name: "Ver el día" }).getAttribute("href")).toBe("/nutrition");
+    // «Ver el día» abre todas las comidas del menú con sus marcas, también «No hecha» y quitar la marca.
+    fireEvent.click(within(next).getByRole("button", { name: "Ver el día" }));
+    const daySheet = await screen.findByRole("dialog");
+    expect(within(daySheet).getByTestId("day-meals")).toBeTruthy();
+    expect(within(daySheet).getAllByRole("button", { name: "No hecha" }).length).toBeGreaterThan(0);
+    fireEvent.keyDown(document, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(screen.getByTestId("quick-checkin").getAttribute("href")).toBe("/checkin");
     expect(screen.getByTestId("quick-cardio").textContent).toContain("80/150 min");
     await openSheet("cardio");

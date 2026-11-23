@@ -17,12 +17,15 @@ import { parseNum } from "@/lib/checkin";
 import {
   DAY_TYPES,
   INTENSITIES,
+  MEAL_STATES,
   useAddCardio,
   useDeleteCardio,
   useMarkMeal,
   useSaveDay,
   weekProgress,
   type Intensity,
+  type MealState,
+  type TodayMeal,
   type TodayState,
 } from "@/lib/today";
 
@@ -180,7 +183,115 @@ function TodayTraining({ state }: { state: TodayState }) {
 
 /* --------------------------------- próxima comida --------------------------------- */
 
-function NextMeal({ state }: { state: TodayState }) {
+/* Todas las comidas del menú con su marca (hecha / no hecha / cambiada / quitar). Se abre en un
+   panel desde «Ver el día» para que Hoy quepa en una pantalla sin perder ninguna acción. */
+function MealRow({ meal }: { meal: TodayMeal }) {
+  const t = useTranslations("today.meals");
+  const tMenu = useTranslations("menu");
+  const mark = useMarkMeal();
+  const [changing, setChanging] = useState(false);
+  const [change, setChange] = useState(meal.mark?.change ?? "");
+  const state = meal.mark?.state ?? null;
+
+  const choose = (s: MealState) => {
+    if (s === "changed") {
+      setChanging(true);
+      return;
+    }
+    setChanging(false);
+    mark.mutate({ meal: meal.meal, state: s });
+  };
+
+  return (
+    <li data-testid={`day-meal-${meal.meal}`} className="border-b border-[rgba(150,190,255,0.08)] py-3 last:border-0">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="t-label text-ink">{mealName(tMenu, meal.meal)}</span>
+        {meal.tupper && <span className="badge">{t("tupper")}</span>}
+      </div>
+      <p className="t-body text-sm text-muted">{meal.free ? t("free") : meal.dishes.join(", ")}</p>
+      {meal.previous_mark && (
+        <p className="t-body text-[11px] text-muted">
+          {t("previousMark", { state: t(`states.${meal.previous_mark.state}`), dish: meal.previous_mark.dish })}
+        </p>
+      )}
+      {meal.eve.length > 0 && <p className="t-body text-[11px] text-neon">{t("eve", { task: meal.eve.join("; ") })}</p>}
+      {meal.prep.length > 0 && <p className="t-body text-[11px] text-ink">{t("prep", { list: meal.prep.join("; ") })}</p>}
+      <div className="mt-2 flex gap-2" role="group" aria-label={mealName(tMenu, meal.meal)}>
+        {MEAL_STATES.map((s) => (
+          <button
+            key={s}
+            type="button"
+            data-testid={`day-meal-${meal.meal}-${s}`}
+            aria-pressed={state === s || (s === "changed" && changing)}
+            onClick={() => choose(s)}
+            className={`btn btn-sm flex-1 ${state === s ? "btn-primary" : "btn-outline"}`}
+          >
+            {t(`states.${s}`)}
+          </button>
+        ))}
+      </div>
+      {state === "changed" && meal.mark?.change && !changing && (
+        <p className="t-body mt-1 text-xs text-muted">{t("changedTo", { what: meal.mark.change })}</p>
+      )}
+      {state === "done" && meal.totals && (
+        <p className="t-body mt-1 text-xs text-good">{t("inDiary", { kcal: meal.totals.kcal })}</p>
+      )}
+      {state === "changed" && !changing && (
+        <Link href="/nutrition" className="t-label mt-1 block text-xs text-neon underline">
+          {t("logInstead")}
+        </Link>
+      )}
+      {changing && (
+        <form
+          className="mt-2 flex items-end gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            mark.mutate({ meal: meal.meal, state: "changed", change }, { onSuccess: () => setChanging(false) });
+          }}
+        >
+          <label className="flex flex-1 flex-col gap-1">
+            <span className="t-body text-xs text-muted">{t("changeLabel")}</span>
+            <input
+              data-testid={`day-meal-${meal.meal}-change`}
+              value={change}
+              maxLength={300}
+              onChange={(e) => setChange(e.target.value)}
+              placeholder={t("changePlaceholder")}
+              className="field px-3 py-2 text-sm"
+            />
+          </label>
+          <button type="submit" className="btn btn-primary btn-sm">{t("changeSave")}</button>
+        </form>
+      )}
+      {state && !changing && (
+        <button
+          type="button"
+          data-testid={`day-meal-${meal.meal}-clear`}
+          className="t-label mt-1 text-muted underline"
+          onClick={() => mark.mutate({ meal: meal.meal, state: null })}
+        >
+          {t("clear")}
+        </button>
+      )}
+    </li>
+  );
+}
+
+function DayMeals({ state }: { state: TodayState }) {
+  const t = useTranslations("today.meals");
+  const meals = state.menu?.meals ?? [];
+  return meals.length === 0 ? (
+    <p className="t-body text-sm text-muted">{t("none")}</p>
+  ) : (
+    <ul data-testid="day-meals">
+      {meals.map((m) => (
+        <MealRow key={m.meal} meal={m} />
+      ))}
+    </ul>
+  );
+}
+
+function NextMeal({ state, onSeeDay }: { state: TodayState; onSeeDay: () => void }) {
   const t = useTranslations("today.next");
   const tm = useTranslations("today.meals");
   const tn = useTranslations("today.tonight");
@@ -196,7 +307,13 @@ function NextMeal({ state }: { state: TodayState }) {
     <section id="next-meal" data-testid="next-meal" tabIndex={-1} className="glass neon-edge rise mt-3 scroll-mt-4 p-3 outline-none">
       <div className="flex items-center justify-between gap-2">
         <p className="t-eyebrow text-muted">{t("title")}</p>
-        <Link href="/nutrition" className="t-label text-xs text-neon">{t("seeDay")}</Link>
+        {state.menu && state.menu.meals.length > 0 ? (
+          <button type="button" data-testid="next-meal-see-day" onClick={onSeeDay} className="t-label text-xs text-neon">
+            {t("seeDay")}
+          </button>
+        ) : (
+          <Link href="/nutrition" className="t-label text-xs text-neon">{t("seeDay")}</Link>
+        )}
       </div>
       {next === null ? (
         <div className="mt-1 flex items-center justify-between gap-2">
@@ -224,6 +341,15 @@ function NextMeal({ state }: { state: TodayState }) {
               className="btn btn-primary btn-sm flex-1"
             >
               {tm("states.done")}
+            </button>
+            <button
+              type="button"
+              data-testid={`meal-${next.meal}-skipped`}
+              aria-pressed={current?.mark?.state === "skipped"}
+              onClick={() => { setChanging(false); mark.mutate({ meal: next.meal, state: "skipped" }); }}
+              className="btn btn-outline btn-sm flex-1"
+            >
+              {tm("states.skipped")}
             </button>
             <button
               type="button"
@@ -552,7 +678,7 @@ export function TodayView({ state }: { state: TodayState }) {
   const { data: me } = useMe();
   // Los accesos directos del manifiesto: /today#weight abre el panel del peso y /today#next-meal
   // lleva a la próxima comida.
-  const [sheet, setSheet] = useState<"weight" | "cardio" | null>(() =>
+  const [sheet, setSheet] = useState<"weight" | "cardio" | "meals" | null>(() =>
     typeof window !== "undefined" && window.location.hash === "#weight" ? "weight" : null,
   );
   useEffect(() => {
@@ -592,7 +718,7 @@ export function TodayView({ state }: { state: TodayState }) {
       {/* Hoy es la pantalla de inicio: los avisos de seguridad del motor van arriba. En verde no hay nada. */}
       <SafetyBanner foldDay={state.date} />
       <TodayTraining state={state} />
-      <NextMeal state={state} />
+      <NextMeal state={state} onSeeDay={() => setSheet("meals")} />
       <QuickRow state={state} onOpen={setSheet} />
       {sheet === "weight" && (
         <BottomSheet title={t("weight.title")} onClose={() => setSheet(null)} testId="sheet-weight">
@@ -602,6 +728,11 @@ export function TodayView({ state }: { state: TodayState }) {
       {sheet === "cardio" && (
         <BottomSheet title={t("cardio.title")} onClose={() => setSheet(null)} testId="sheet-cardio">
           <Cardio state={state} />
+        </BottomSheet>
+      )}
+      {sheet === "meals" && (
+        <BottomSheet title={t("meals.title")} onClose={() => setSheet(null)} testId="sheet-meals">
+          <DayMeals state={state} />
         </BottomSheet>
       )}
     </div>

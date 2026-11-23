@@ -3042,7 +3042,14 @@
       "changedTo": "En su lugar: {what}",
       "clear": "Quitar la marca",
       "previousMark": "Antes, con otro plato: {state} ({dish}). El menú de hoy ha cambiado; marca este plato.",
-      "logInstead": "Apunta en Nutrición lo que comiste: solo cuenta lo que apuntes."
+      "logInstead": "Apunta en Nutrición lo que comiste: solo cuenta lo que apuntes.",
+      "title": "Comidas del menú",
+      "none": "No hay menú para hoy.",
+      "tupper": "Táper",
+      "free": "Comida libre",
+      "eve": "Para la víspera: {task}",
+      "prep": "Ese día: {list}",
+      "inDiary": "Sumada a Nutrición: {kcal} kcal previstas del plato."
     },
     "cardio": {
       "title": "Cardio",
