@@ -19,8 +19,8 @@ const hOverflow = (page: Page) =>
 
 test("biblioteca: buscar, ficha con imagen y créditos, y CRUD de un ejercicio propio", async ({ page }) => {
   await login(page, READY_USERS.exercises);
-  await page.goto("/training");
-  await page.getByRole("link", { name: new RegExp(es.training.index.cards.exercises.title) }).click();
+  await page.goto("/training/routines");
+  await page.getByTestId("exercises-link").click();
   await expect(page.getByRole("heading", { name: es.exercises.library.title })).toBeVisible();
   const list = page.getByTestId("exercise-library");
   await expect(list.locator("li").nth(99)).toBeAttached(); // más de 100 ejercicios

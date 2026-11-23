@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ChevronRight } from "@/components/icons";
 import { FolderSection } from "@/components/routines/FolderSection";
 import { ReorderList } from "@/components/routines/ReorderList";
 import { useCreateFolder, useFolders, useReorderFolders, useRoutines } from "@/lib/routines";
@@ -39,17 +38,17 @@ export default function RoutinesPage() {
           {t("folders.new")}
         </button>
       </div>
-      <Link
-        href="/training/routines/programs"
-        data-testid="programs-link"
-        className="glass neon-edge mt-3 flex items-center justify-between gap-3 p-3"
-      >
-        <span>
-          <span className="t-title block text-sm text-ink">{t("programs.title")}</span>
-          <span className="t-body block text-xs text-muted">{t("programs.sub")}</span>
-        </span>
-        <ChevronRight className="h-4 w-4 shrink-0 text-neon" />
-      </Link>
+      <p className="t-eyebrow mt-4 text-muted">{t("addFrom")}</p>
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        <Link href="/training/routines/programs" data-testid="programs-link" className="glass flex flex-col gap-0.5 p-3">
+          <span className="t-title text-sm text-ink">{t("programs.title")}</span>
+          <span className="t-body text-[11px] leading-snug text-muted">{t("programs.sub")}</span>
+        </Link>
+        <Link href="/training/exercises" data-testid="exercises-link" className="glass flex flex-col gap-0.5 p-3">
+          <span className="t-title text-sm text-ink">{t("library.title")}</span>
+          <span className="t-body text-[11px] leading-snug text-muted">{t("library.sub")}</span>
+        </Link>
+      </div>
 
       {newFolder !== null && (
         <form

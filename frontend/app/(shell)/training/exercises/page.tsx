@@ -24,7 +24,7 @@ export default function ExercisesLibraryPage() {
 
   return (
     <div className="pt-4">
-      <Link href="/training" className="t-label text-muted">← {tc("back")}</Link>
+      <Link href="/training/routines" className="t-label text-muted">← {tc("back")}</Link>
       <h1 className="t-display mt-2 text-2xl text-ink">{t("library.title")}</h1>
       <p className="t-body mt-1 text-sm text-muted">{t("library.sub")}</p>
 

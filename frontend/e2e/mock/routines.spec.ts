@@ -16,10 +16,12 @@ test("rutinas: cargar un programa, editarla y empezar el entreno", async ({ page
   const state = await fakeGym(page);
 
   await page.goto("/training");
-  await page.getByRole("link", { name: /Rutinas/ }).first().click();
+  await page.getByTestId("hub-routines").click();
   await page.waitForURL("**/training/routines");
   await expect(page.getByTestId("routines-empty")).toBeVisible();
   await noHorizontalScroll(page);
+  await expect(page.getByRole("heading", { name: "Mis rutinas" })).toBeVisible();
+  await expect(page.getByTestId("exercises-link")).toHaveAttribute("href", "/training/exercises"); // «Añadir desde»
 
   await page.getByTestId("programs-link").click();
   await page.waitForURL("**/training/routines/programs");

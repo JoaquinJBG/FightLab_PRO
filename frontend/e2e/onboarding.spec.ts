@@ -85,8 +85,9 @@ test("SCOFF positivo: ve el bloqueo del déficit y la línea de derivación (es)
   await expect(page.getByTestId("safety-banner").getByTestId("safety-footer")).toHaveText(es.safety.deferralLine);
 
   // Nutrición: "Perder" bloqueado, con el motivo y la línea de derivación
-  await page.goto("/nutrition");
+  await page.goto("/nutrition/weigh-in");
   await expect(page.getByTestId("goal-perder")).toBeDisabled();
+  await page.goto("/nutrition");
   const blocked = page.getByTestId("deficit-blocked");
   await expect(blocked.locator('[data-code="eating_disorder_screen"]')).toBeVisible();
   await expect(blocked.getByTestId("safety-footer")).toHaveText(es.safety.deferralLine);

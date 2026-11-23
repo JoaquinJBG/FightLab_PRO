@@ -355,11 +355,12 @@
     "staleWeight": "Tu último peso es de hace {days} días. Actualízalo para afinar los objetivos.",
     "staleWeightCta": "Registrar peso",
     "weigh": {
-      "title": "Pesaje",
+      "title": "Objetivo y pesaje",
       "setup": "Configura tu peso objetivo y fecha",
       "goalLine": "Objetivo {target} kg · {current} kg ahora",
       "goalOnly": "Objetivo {target} kg",
-      "countdown": "{days, plural, =0 {Pesaje hoy} one {Pesaje en # día} other {Pesaje en # días}}"
+      "countdown": "{days, plural, =0 {Pesaje hoy} one {Pesaje en # día} other {Pesaje en # días}}",
+      "goalsLine": "Tu objetivo y cómo se calcula"
     },
     "targets": {
       "loading": "Calculando tus objetivos…",
@@ -494,8 +495,8 @@
     },
     "noTargetsNote": "Sin tus datos no calculamos objetivos: lo que registres sí se suma.",
     "menuCard": {
-      "title": "Menú y lista de la compra",
-      "body": "Platos para varios días, comprobados por el coach contra tus objetivos."
+      "title": "Menú y compra",
+      "body": "Platos para varios días y la lista"
     },
     "source": {
       "menu": "Del menú: marcada «Hecha» en Hoy (kcal previstas)",
@@ -508,7 +509,8 @@
       "catalogue": "De tu catálogo"
     },
     "menuUnmark": "{name}: se quita desmarcando la comida en Hoy",
-    "menuUnmarkShort": "En Hoy"
+    "menuUnmarkShort": "En Hoy",
+    "goalTitle": "Objetivo"
   },
   "dashboard": {
     "greeting": {
@@ -1005,43 +1007,28 @@
       "week": "Semana",
       "au": "AU",
       "acwr": "ACWR",
-      "cards": {
-        "sports": {
-          "title": "Deportes",
-          "sub": "Corre, nada, pedalea… y cuenta kcal"
-        },
-        "mma": {
-          "title": "Entrenamiento MMA",
-          "sub": "Sparring, técnica e intensidad"
-        },
-        "gym": {
-          "title": "Gimnasio",
-          "sub": "Registro en sesión y calendario semanal"
-        },
-        "myRoutine": {
-          "title": "Mi rutina",
-          "sub": "Tu plan activo de la semana"
-        },
-        "tools": {
-          "title": "Herramientas",
-          "sub": "Cronómetro y timer de rounds"
-        },
-        "plan": {
-          "title": "Plan de la semana",
-          "sub": "Lo prepara el coach con reglas y evidencia"
-        },
-        "review": {
-          "title": "Revisión semanal",
-          "sub": "Adherencia, peso, calorías y descarga, con su regla"
-        },
-        "routines": {
-          "title": "Rutinas",
-          "sub": "Tus rutinas, carpetas y programas clásicos"
-        },
-        "exercises": {
-          "title": "Ejercicios",
-          "sub": "Biblioteca con imágenes, pasos y tus ejercicios propios"
-        }
+      "timer": "Temporizador",
+      "register": "Registrar",
+      "planify": "Planificar",
+      "today": {
+        "title": "Hoy toca",
+        "none": "Sin plan para esta semana.",
+        "makePlan": "Preparar el plan",
+        "start": "Empezar",
+        "rest": "Descanso: hoy no toca entrenar.",
+        "gym": "Gimnasio · sesión {session}",
+        "cardio": "Cardio · {minutes} min",
+        "mma": "MMA"
+      },
+      "registerCards": {
+        "gym": "Gimnasio",
+        "mma": "MMA",
+        "sports": "Deporte y cardio",
+        "history": "Historial"
+      },
+      "planifyCards": {
+        "week": "Mi semana",
+        "routines": "Mis rutinas"
       }
     },
     "tools": {
@@ -1185,7 +1172,7 @@
       "savedOk": "Entreno guardado en tu cuenta.",
       "savedQueued": "Entreno guardado en este dispositivo: se subirá en cuanto haya conexión.",
       "routinesLink": "Rutinas",
-      "recordsLink": "Récords y progreso"
+      "recordsLink": "Récords"
     },
     "gymSession": {
       "loading": "Cargando…",
@@ -2781,7 +2768,15 @@
       "startTakenCounts": "Ya hay un menú guardado que empieza ese día, con {old} de {oldDays} días válidos. El nuevo tiene {new} de {newDays} días válidos. ¿Lo sustituyes?",
       "rejectedTitle": "Por qué no cuadra cada día:"
     },
-    "unknownFood": "no está en la tabla, no cuenta en las kcal"
+    "unknownFood": "no está en la tabla, no cuenta en las kcal",
+    "settings": "Ajustes",
+    "tabs": {
+      "menu": "Menú",
+      "shopping": "Compra",
+      "batch": "Batch"
+    },
+    "batchEmpty": "Este menú no tiene sesiones de batch: se crean al generarlo con tupper y batch.",
+    "noMenuYet": "Aún no hay menú: créalo en la pestaña Menú."
   },
   "sessionCheck": {
     "title": "Sesión vigorosa: mejor con revisión",
@@ -3365,7 +3360,7 @@
   },
   "kitchen": {
     "link": "Mi cocina",
-    "back": "← Perfil",
+    "back": "← Ajustes del menú",
     "title": "Mi cocina",
     "intro": "Tu menaje y quién come en casa. Lo usa el cronograma de batch y lo respetan los menús.",
     "loading": "Cargando…",
@@ -3537,7 +3532,7 @@
   },
   "routines": {
     "back": "← Entreno",
-    "title": "Rutinas",
+    "title": "Mis rutinas",
     "subtitle": "Tus rutinas en carpetas, sin límite. Empieza el entreno desde cualquiera.",
     "new": "Nueva rutina",
     "create": "Crear",
@@ -3662,6 +3657,11 @@
       "blocked": "Hoy el coach no recomienda entrenar: las rutinas del plan no se regeneran hasta que se levante el bloqueo.",
       "syncError": "No se han podido generar las rutinas del plan.",
       "syncing": "Generando las rutinas del plan…"
+    },
+    "addFrom": "Añadir desde",
+    "library": {
+      "title": "Biblioteca de ejercicios",
+      "sub": "Imágenes, pasos y los tuyos"
     }
   },
   "scanner": {
@@ -3760,7 +3760,7 @@
   },
   "myAi": {
     "link": "Mi IA (menús)",
-    "back": "← Perfil",
+    "back": "← Ajustes del menú",
     "title": "Mi IA",
     "intro": "Prepara tus menús con tu propia IA (tu suscripción de Claude u otra). FightLab no usa ninguna IA de pago: solo le pasa tus datos y comprueba el menú con su motor.",
     "loading": "Cargando…",
@@ -3817,5 +3817,22 @@
     },
     "intenseOff": "«Intenso» no está disponible hoy: {why}.",
     "vigorousLogged": "Marcas «Vigorosa» con un aviso activo ({why}). Se apunta igual, porque ya está hecho; hoy lo recomendable es ligero o moderado."
+  },
+  "menuSettings": {
+    "back": "← Menú y compra",
+    "title": "Ajustes del menú",
+    "intro": "Lo que cambia cómo se hacen tus menús.",
+    "rows": {
+      "kitchen": {
+        "title": "Mi cocina",
+        "sub": "Menaje y comensales"
+      },
+      "myAi": {
+        "title": "Mi IA",
+        "sub": "Conecta tu propia IA para los menús"
+      }
+    },
+    "loading": "Cargando…",
+    "error": "No se pudieron cargar los gustos."
   }
 }

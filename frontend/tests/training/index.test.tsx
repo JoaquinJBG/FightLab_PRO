@@ -1,42 +1,57 @@
 import { describe, expect, it, vi } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { renderEn, expectClean } from "./i18nB-helpers";
 import TrainingHubPage from "@/app/(shell)/training/page";
 
-const metrics = vi.hoisted(() => ({ value: null as unknown }));
-vi.mock("@/lib/activities", () => ({ fetchServerMetrics: vi.fn(async () => metrics.value) }));
+const today = vi.hoisted(() => ({ value: { data: undefined, isLoading: false } as { data: unknown; isLoading: boolean } }));
+vi.mock("@/lib/today", async (orig) => ({
+  ...(await orig<typeof import("@/lib/today")>()),
+  useToday: () => today.value,
+}));
 
-const base = {
-  weekAU: 0, daily7: [0, 0, 0, 0, 0, 0, 0], acwr: null, weekVsAvgPct: null, ratioDaysLeft: 28, gaps: false,
-  monotonia: null, tension: null, sinVariacion: false, historyDays: 0,
-};
+const withPlan = (entries: unknown[]) => ({
+  data: { plan: { id: 1, week_start: "2026-11-23", type: "gym", entries } },
+  isLoading: false,
+});
 
 describe("hub de Entreno (en)", () => {
-  it("sin datos: resumen vacío y las 5 tarjetas", () => {
-    metrics.value = null;
+  it("cabecera con el temporizador, Registrar 2×2 y Planificar", () => {
+    today.value = { data: { plan: null }, isLoading: false };
     const { container } = renderEn(<TrainingHubPage />);
-    expect(screen.getByText("Training load")).toBeTruthy();
-    expect(screen.getByText("Stopwatch and round timer")).toBeTruthy();
-    expect(screen.getByText("My routine")).toBeTruthy();
+    expect(screen.getByTestId("hub-timer").getAttribute("href")).toBe("/training/tools");
+    expect(screen.getByTestId("hub-gym").getAttribute("href")).toBe("/training/gym");
+    expect(screen.getByTestId("hub-mma").getAttribute("href")).toBe("/training/mma");
+    expect(screen.getByTestId("hub-sports").getAttribute("href")).toBe("/training/sports");
+    expect(screen.getByTestId("hub-history").getAttribute("href")).toBe("/training/gym");
+    expect(screen.getByTestId("hub-week").getAttribute("href")).toBe("/training/plan");
+    expect(screen.getByTestId("hub-routines").getAttribute("href")).toBe("/training/routines");
+    // Fuera de la portada: carga, revisión, ejercicios, mi rutina y la tarjeta de herramientas
+    for (const href of ["/training/load", "/training/review", "/training/exercises", "/training/my-routine"]) {
+      expect(container.querySelector(`a[href="${href}"]`)).toBeNull();
+    }
     expectClean(container);
   });
 
-  it("con menos de 28 días: la carga sin ratio y cuántos días faltan", async () => {
-    metrics.value = { ...base, weekAU: 420, historyDays: 12, ratioDaysLeft: 16 };
+  it("sin plan: el estado vacío lleva a prepararlo", () => {
+    today.value = { data: { plan: null }, isLoading: false };
+    renderEn(<TrainingHubPage />);
+    expect(screen.getByTestId("hub-today-plan").getAttribute("href")).toBe("/training/plan");
+    expect(screen.queryByTestId("hub-today-start")).toBeNull();
+  });
+
+  it("con una sesión de gimnasio hoy: la enseña y Empezar abre la sesión del plan", () => {
+    today.value = withPlan([{ kind: "gym", session: "A", exercises: ["Squat", "Bench press"] }]);
     const { container } = renderEn(<TrainingHubPage />);
-    await waitFor(() => expect(screen.getByText("Week")).toBeTruthy());
-    expect(screen.getByTestId("load-comparison").textContent).toBe("16 d to go");
-    expect(container.textContent).not.toMatch(/ACWR|provisional|1\.\d\d/);
-    // El AU y los días que faltan llevan su regla del anexo
-    expect(container.querySelectorAll('[data-variant="evidence"]').length).toBe(2);
+    expect(screen.getByText("Gym · session A")).toBeTruthy();
+    expect(screen.getByText("Squat · Bench press")).toBeTruthy();
+    expect(screen.getByTestId("hub-today-start").getAttribute("href")).toBe("/training/gym/session?plan=A");
     expectClean(container);
   });
 
-  it("con 28 días: la semana frente a la media, sin semáforo", async () => {
-    metrics.value = { ...base, weekAU: 420, acwr: 1.1, weekVsAvgPct: 10, ratioDaysLeft: 0, historyDays: 28 };
-    const { container } = renderEn(<TrainingHubPage />);
-    await waitFor(() => expect(screen.getByTestId("load-comparison").textContent).toBe("+10% vs your average"));
-    expect(container.querySelector(".text-good, .text-warn")).toBeNull();
-    expectClean(container);
+  it("día de descanso del plan: sin botón de empezar", () => {
+    today.value = withPlan([]);
+    renderEn(<TrainingHubPage />);
+    expect(screen.getByText(/Rest day/)).toBeTruthy();
+    expect(screen.queryByTestId("hub-today-start")).toBeNull();
   });
 });

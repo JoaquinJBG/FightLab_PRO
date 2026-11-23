@@ -355,11 +355,12 @@
     "staleWeight": "Your last weight is {days} days old. Update it to refine your targets.",
     "staleWeightCta": "Log weight",
     "weigh": {
-      "title": "Weigh-in",
+      "title": "Goal and weigh-in",
       "setup": "Set your goal weight and date",
       "goalLine": "Goal {target} kg · {current} kg now",
       "goalOnly": "Goal {target} kg",
-      "countdown": "{days, plural, =0 {Weigh-in today} one {Weigh-in in # day} other {Weigh-in in # days}}"
+      "countdown": "{days, plural, =0 {Weigh-in today} one {Weigh-in in # day} other {Weigh-in in # days}}",
+      "goalsLine": "Your goal and how it is worked out"
     },
     "targets": {
       "loading": "Calculating your targets…",
@@ -494,8 +495,8 @@
     },
     "noTargetsNote": "Without your details we don't calculate targets, but everything you log still counts.",
     "menuCard": {
-      "title": "Menu and shopping list",
-      "body": "Meals for several days, checked by the coach against your targets."
+      "title": "Menu and shopping",
+      "body": "Meals for several days and the list"
     },
     "source": {
       "menu": "From the menu: marked “Done” in Today (planned kcal)",
@@ -508,7 +509,8 @@
       "catalogue": "From your catalogue"
     },
     "menuUnmark": "{name}: remove it by unmarking the meal in Today",
-    "menuUnmarkShort": "In Today"
+    "menuUnmarkShort": "In Today",
+    "goalTitle": "Goal"
   },
   "dashboard": {
     "greeting": {
@@ -1005,43 +1007,28 @@
       "week": "Week",
       "au": "AU",
       "acwr": "ACWR",
-      "cards": {
-        "sports": {
-          "title": "Sports",
-          "sub": "Run, swim, cycle… and track kcal"
-        },
-        "mma": {
-          "title": "MMA training",
-          "sub": "Sparring, technique and intensity"
-        },
-        "gym": {
-          "title": "Gym",
-          "sub": "In-session logging and weekly calendar"
-        },
-        "myRoutine": {
-          "title": "My routine",
-          "sub": "Your active plan for the week"
-        },
-        "tools": {
-          "title": "Tools",
-          "sub": "Stopwatch and round timer"
-        },
-        "plan": {
-          "title": "Weekly plan",
-          "sub": "Built by the coach from rules and evidence"
-        },
-        "review": {
-          "title": "Weekly review",
-          "sub": "Adherence, weight, calories and deload, with their rules"
-        },
-        "routines": {
-          "title": "Routines",
-          "sub": "Your routines, folders and classic programs"
-        },
-        "exercises": {
-          "title": "Exercises",
-          "sub": "Library with images, steps and your own exercises"
-        }
+      "timer": "Timer",
+      "register": "Log",
+      "planify": "Plan",
+      "today": {
+        "title": "Today's session",
+        "none": "No plan for this week.",
+        "makePlan": "Build the plan",
+        "start": "Start",
+        "rest": "Rest day: nothing to train today.",
+        "gym": "Gym · session {session}",
+        "cardio": "Cardio · {minutes} min",
+        "mma": "MMA"
+      },
+      "registerCards": {
+        "gym": "Gym",
+        "mma": "MMA",
+        "sports": "Sports and cardio",
+        "history": "History"
+      },
+      "planifyCards": {
+        "week": "My week",
+        "routines": "My routines"
       }
     },
     "tools": {
@@ -1185,7 +1172,7 @@
       "savedOk": "Workout saved to your account.",
       "savedQueued": "Workout saved on this device: it will upload as soon as there's a connection.",
       "routinesLink": "Routines",
-      "recordsLink": "Records and progress"
+      "recordsLink": "Records"
     },
     "gymSession": {
       "loading": "Loading…",
@@ -2781,7 +2768,15 @@
       "startTakenCounts": "A saved menu starts on that day, with {old} of {oldDays} valid days. The new one has {new} of {newDays} valid days. Replace it?",
       "rejectedTitle": "Why each day doesn't fit:"
     },
-    "unknownFood": "not in the food table, doesn't count towards kcal"
+    "unknownFood": "not in the food table, doesn't count towards kcal",
+    "settings": "Settings",
+    "tabs": {
+      "menu": "Menu",
+      "shopping": "Shopping",
+      "batch": "Batch"
+    },
+    "batchEmpty": "This menu has no batch sessions: they are made when you generate it with tupper and batch.",
+    "noMenuYet": "No menu yet: create one in the Menu tab."
   },
   "sessionCheck": {
     "title": "Vigorous session: best reviewed first",
@@ -3365,7 +3360,7 @@
   },
   "kitchen": {
     "link": "My kitchen",
-    "back": "← Profile",
+    "back": "← Menu settings",
     "title": "My kitchen",
     "intro": "Your equipment and who eats at home. The batch timeline uses it and menus respect it.",
     "loading": "Loading…",
@@ -3537,7 +3532,7 @@
   },
   "routines": {
     "back": "← Training",
-    "title": "Routines",
+    "title": "My routines",
     "subtitle": "Your routines in folders, no limits. Start a workout from any of them.",
     "new": "New routine",
     "create": "Create",
@@ -3662,6 +3657,11 @@
       "blocked": "The coach doesn't recommend training today: plan routines won't be regenerated until the block is lifted.",
       "syncError": "Couldn't build the plan routines.",
       "syncing": "Building the plan routines…"
+    },
+    "addFrom": "Add from",
+    "library": {
+      "title": "Exercise library",
+      "sub": "Images, steps and your own"
     }
   },
   "scanner": {
@@ -3760,7 +3760,7 @@
   },
   "myAi": {
     "link": "My AI (menus)",
-    "back": "← Profile",
+    "back": "← Menu settings",
     "title": "My AI",
     "intro": "Prepare your menus with your own AI (your Claude subscription or another one). FightLab uses no paid AI: it only hands over your data and checks the menu with its engine.",
     "loading": "Loading…",
@@ -3817,5 +3817,22 @@
     },
     "intenseOff": "“Intense” isn't available today: {why}.",
     "vigorousLogged": "You're logging “Vigorous” with an active warning ({why}). It's saved anyway, since it's done; today light or moderate work is advised."
+  },
+  "menuSettings": {
+    "back": "← Menu and shopping",
+    "title": "Menu settings",
+    "intro": "What changes how your menus are made.",
+    "rows": {
+      "kitchen": {
+        "title": "My kitchen",
+        "sub": "Equipment and diners"
+      },
+      "myAi": {
+        "title": "My AI",
+        "sub": "Connect your own AI for menus"
+      }
+    },
+    "loading": "Loading…",
+    "error": "Could not load your tastes."
   }
 }
