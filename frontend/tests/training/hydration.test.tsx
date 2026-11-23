@@ -5,10 +5,9 @@ import { hydrateRoot } from "react-dom/client";
 import type { ReactElement } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import es from "@/messages/es.json";
-import TrainingHubPage from "@/app/(shell)/training/page";
 import LoadPage from "@/app/(shell)/training/load/page";
 
-// F14 de la prueba en móvil: error de hidratación #418 en /training y /training/load. El servidor
+// F14 de la prueba en móvil: error de hidratación #418 en /training y /training/load (el hub ya no lee la carga: solo queda /training/load). El servidor
 // pinta la carga vacía (no tiene localStorage) y el cliente la pintaba ya con la de localStorage.
 
 const state = vi.hoisted(() => ({ metrics: null as unknown }));
@@ -50,10 +49,6 @@ async function hydrationErrors(ui: ReactElement): Promise<unknown[]> {
 }
 
 describe("sin error de hidratación (F14)", () => {
-  it("/training", async () => {
-    expect(await hydrationErrors(<TrainingHubPage />)).toEqual([]);
-  });
-
   it("/training/load", async () => {
     expect(await hydrationErrors(<LoadPage />)).toEqual([]);
   });

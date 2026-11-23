@@ -22,8 +22,8 @@ test("nutrición sin peso pide el peso en vez de mostrar objetivos", async ({ pa
 test("Mi rutina no enseña una rutina de ejemplo", async ({ page, session }) => {
   void session;
   await page.goto("/training");
-  await expect(page.getByText("Gimnasio")).toBeVisible();
-  await expect(page.getByText("Tu plan activo de la semana")).toBeVisible();
+  await expect(page.getByTestId("hub-gym")).toBeVisible();
+  await expect(page.getByTestId("hub-today-plan")).toBeVisible(); // sin plan: lleva a prepararlo
   await page.goto("/training/my-routine");
   await expect(page.getByText("Carlos Méndez")).toHaveCount(0);
   await expect(page.getByTestId("routine-plan-cta")).toBeVisible();

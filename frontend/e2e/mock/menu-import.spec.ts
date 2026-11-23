@@ -48,13 +48,14 @@ test("importar un menú, confirmar la sustitución y tachar en la lista", async 
   expect(uploads).toEqual(["first", "replace"]);
 
   await expect(page.getByTestId("menu-header")).toHaveAttribute("data-source", "json");
+  await expect(page.getByTestId("meal-storage").first()).toHaveAttribute("data-where", "fridge");
+  await page.getByTestId("menu-tab-shopping").click();
   const list = page.getByTestId("shopping-list");
   await expect(list.getByTestId("shopping-section")).toHaveCount(2);
   const lentils = list.locator('[data-testid="shopping-item"][data-key="lentejas, cocidas"]');
   await expect(lentils).toContainText("bote de lentejas cocidas 400 g");
   await lentils.getByRole("checkbox").check();
   await expect.poll(() => checks).toEqual([{ item: "lentejas, cocidas", checked: true }]);
-  await expect(page.getByTestId("meal-storage").first()).toHaveAttribute("data-where", "fridge");
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(0);

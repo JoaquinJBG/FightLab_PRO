@@ -6,14 +6,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { NutritionIcon } from "@/components/icons";
 import { ReasonLine } from "@/components/plan/PlanView";
-import { MenuView } from "@/components/menu/MenuView";
-import { ProductsCard } from "@/components/menu/ProductsCard";
-import { TastesCard } from "@/components/menu/TastesCard";
+import { MenuView, type MenuPart } from "@/components/menu/MenuView";
 import { ImportMenuCard } from "@/components/menu/ImportMenuCard";
 import { AiMenuCard } from "@/components/menu/AiMenuCard";
 import { MEALS, useGenerateMenu, useMenu, type MealKey } from "@/lib/menu";
 
 const DEFAULT_DAYS = 3;
+const TABS = ["menu", "shopping", "batch"] as const satisfies readonly MenuPart[];
+type Tab = (typeof TABS)[number];
 
 export default function MenuPage() {
   return (
@@ -35,14 +35,19 @@ function MenuScreen() {
   const [meals, setMeals] = useState<MealKey[]>([...MEALS]);
   const [tupper, setTupper] = useState<MealKey[]>([]);
   const [batch, setBatch] = useState(false);
+  const rawTab = params.get("tab");
+  const [tab, setTab] = useState<Tab>(TABS.find((x) => x === rawTab) ?? "menu");
   const pick = (id: number | null) => router.replace(id ? `/nutrition/menu?id=${id}` : "/nutrition/menu");
 
   const header = (
     <>
       <Link href="/nutrition" className="t-label text-muted">{t("back")}</Link>
-      <div className="mt-2 flex items-center gap-2">
-        <span className="text-neon"><NutritionIcon className="h-6 w-6" /></span>
-        <h1 className="t-display text-2xl text-ink">{t("title")}</h1>
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-neon"><NutritionIcon className="h-6 w-6" /></span>
+          <h1 className="t-display text-2xl text-ink">{t("title")}</h1>
+        </div>
+        <Link href="/nutrition/menu/settings" data-testid="menu-settings-link" className="btn btn-tonal btn-sm">⚙ {t("settings")}</Link>
       </div>
     </>
   );
@@ -50,7 +55,7 @@ function MenuScreen() {
   if (state.isLoading) return <div className="pt-4">{header}<p className="t-body mt-4 text-muted">{t("loading")}</p></div>;
   if (state.isError || !state.data) return <div className="pt-4">{header}<p className="t-body mt-4 text-bad">{t("error")}</p></div>;
 
-  const { blocked, missing, menu, menus, tastes, max_days: maxDays } = state.data;
+  const { blocked, missing, menu, menus, max_days: maxDays } = state.data;
   const picker = menus.length > 1 && menu && (
     <label className="glass mt-4 flex items-center justify-between gap-3 p-4">
       <span className="t-label text-ink">{t("header.others")}</span>
@@ -101,7 +106,28 @@ function MenuScreen() {
   return (
     <div className="pt-4 pb-6">
       {header}
-      <p className="t-body mt-1 text-xs text-muted">{t("intro")}</p>
+      <div role="tablist" aria-label={t("title")} className="glass mt-3 grid grid-cols-3 gap-1 rounded-2xl p-1">
+        {TABS.map((x) => (
+          <button
+            key={x}
+            type="button"
+            role="tab"
+            id={`menu-tab-${x}`}
+            aria-selected={tab === x}
+            aria-controls="menu-tabpanel"
+            data-testid={`menu-tab-${x}`}
+            onClick={() => setTab(x)}
+            className="rounded-xl py-2.5 text-sm font-medium transition-colors"
+            style={tab === x ? { background: "linear-gradient(180deg,#45e9ff,#3b74ff)", color: "#03101c" } : { background: "transparent", color: "var(--color-muted)" }}
+          >
+            {t(`tabs.${x}`)}
+          </button>
+        ))}
+      </div>
+
+      <div role="tabpanel" id="menu-tabpanel" aria-labelledby={`menu-tab-${tab}`}>
+      {tab === "menu" && <>
+      <p className="t-body mt-3 text-xs text-muted">{t("intro")}</p>
 
       <form
         data-testid="menu-form"
@@ -161,13 +187,15 @@ function MenuScreen() {
       <AiMenuCard days={days} meals={meals} tupper={tupper} onSaved={pick} />
       <ImportMenuCard onImported={pick} />
       {picker}
-      {menu && <MenuView menu={menu} />}
-      <Link href="/profile/kitchen" data-testid="menu-kitchen-link" className="glass mt-4 block p-4">
-        <span className="t-label text-ink">{t("kitchenLink")}</span>
-        <span className="t-body mt-1 block text-xs text-muted">{t("kitchenLinkHint")}</span>
-      </Link>
-      <TastesCard tastes={tastes} />
-      <ProductsCard />
+      {menu && <MenuView menu={menu} part="menu" />}
+      </>}
+      {tab !== "menu" && (
+        <>
+          {picker}
+          {menu ? <MenuView menu={menu} part={tab} /> : <p data-testid="menu-tab-empty" className="t-body mt-4 text-sm text-muted">{t("noMenuYet")}</p>}
+        </>
+      )}
+      </div>
     </div>
   );
 }

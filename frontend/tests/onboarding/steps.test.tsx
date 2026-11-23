@@ -51,6 +51,8 @@ const PROFILE: Profile = {
   goal_date: null,
   weight_class: null,
   weigh_in_at: null,
+  show_gym: true,
+  show_combat: true,
 };
 
 const SCREENING: Screening = {

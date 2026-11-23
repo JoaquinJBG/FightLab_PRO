@@ -67,7 +67,7 @@ PROFILE_COACH_FIELDS = (
     "equation_sex", "goal", "experience", "activity_level", "language", "region",
     "emergency_number", "medications", "medications_other", "conditions", "conditions_other",
     "disciplines", "training_frequency", "goal_weight_kg", "goal_date", "weight_class",
-    "weigh_in_at",
+    "weigh_in_at", "show_gym", "show_combat",
 )
 
 
@@ -131,6 +131,9 @@ class UserProfile(models.Model):
     goal_date = models.DateField(null=True, blank=True)
     weight_class = models.CharField(max_length=60, null=True, blank=True)
     weigh_in_at = models.DateTimeField(null=True, blank=True)
+    # Qué partes de la app ve el usuario (solo navegación; no borra datos ni oculta seguridad).
+    show_gym = models.BooleanField(default=True)
+    show_combat = models.BooleanField(default=True)
 
     def __str__(self):
         return f"Profile<{self.user.email}>"

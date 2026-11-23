@@ -98,6 +98,7 @@ function Tip({ k, open }: { k: string; open: string | null }) {
 
 export default function LoadPage() {
   const t = useTranslations("training.load");
+  const tBack = useTranslations("dashboard");
   const tl = useTranslations("load");
   const { data: logs = [] } = useBiometrics();
   // loadMetrics() lee localStorage: solo después de montar, para que el primer render sea igual
@@ -124,7 +125,7 @@ export default function LoadPage() {
 
   return (
     <div className="pt-4">
-      <Link href="/training" className="t-label text-muted">{t("back")}</Link>
+      <Link href="/dashboard" className="t-label text-muted">{tBack("back")}</Link>
       <div className="mt-2 flex items-center gap-2">
         <span className="text-neon"><BoltIcon className="h-6 w-6" /></span>
         <h1 className="t-display text-2xl text-ink">{t("title")}</h1>

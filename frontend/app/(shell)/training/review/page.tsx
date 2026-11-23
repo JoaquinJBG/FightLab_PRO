@@ -38,6 +38,7 @@ function StaleCard({ stale }: { stale: StaleKnowledge }) {
 
 export default function WeeklyReviewPage() {
   const t = useTranslations("weeklyReview");
+  const tBack = useTranslations("dashboard");
   const state = useWeeklyReview();
   const run = useRunReview();
   const accept = useAcceptReview();
@@ -46,7 +47,7 @@ export default function WeeklyReviewPage() {
 
   const header = (
     <>
-      <Link href="/training" className="t-label text-muted">{t("back")}</Link>
+      <Link href="/dashboard" className="t-label text-muted">{tBack("back")}</Link>
       <div className="mt-2 flex items-center gap-2">
         <span className="text-neon"><ClipboardIcon className="h-6 w-6" /></span>
         <h1 className="t-display text-2xl text-ink">{t("title")}</h1>

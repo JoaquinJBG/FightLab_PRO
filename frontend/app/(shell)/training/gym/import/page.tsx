@@ -62,6 +62,7 @@ function Summary({ result }: { result: ImportResult }) {
 
 export default function GymImportPage() {
   const t = useTranslations("gymImport");
+  const tBack = useTranslations("importHub");
   const [importer, setImporter] = useState<ImporterChoice>("auto");
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
@@ -77,7 +78,7 @@ export default function GymImportPage() {
 
   return (
     <div className="pt-4 pb-24">
-      <Link href="/training/gym" className="t-label text-muted">{t("back")}</Link>
+      <Link href="/profile/import-hub" className="t-label text-muted">{tBack("back")}</Link>
       <div className="mt-2 flex items-center gap-2">
         <span className="text-neon"><TrainingIcon className="h-6 w-6" /></span>
         <h1 className="t-display text-2xl text-ink">{t("title")}</h1>

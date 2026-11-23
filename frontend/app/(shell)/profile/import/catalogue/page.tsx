@@ -287,6 +287,7 @@ function Why({ product, thresholds }: { product: ChainProduct; thresholds: { key
 
 export default function CatalogueImportPage() {
   const t = useTranslations("chainCatalogue");
+  const tBack = useTranslations("importHub");
   const [file, setFile] = useState<File | null>(null);
   const [chain, setChain] = useState(DEFAULT_CHAIN);
   const [preview, setPreview] = useState<ImportResult | null>(null);
@@ -308,7 +309,7 @@ export default function CatalogueImportPage() {
 
   return (
     <div className="pt-4 pb-24">
-      <Link href="/profile/import" className="t-label text-muted">{t("back")}</Link>
+      <Link href="/profile/import-hub" className="t-label text-muted">{tBack("back")}</Link>
       <h1 className="t-display mt-2 text-2xl text-ink">{t("title")}</h1>
       <p className="t-body mt-1 text-sm text-muted">{t("subtitle")}</p>
 

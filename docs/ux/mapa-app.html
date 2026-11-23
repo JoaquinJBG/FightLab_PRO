@@ -1,0 +1,597 @@
+<title>Nuevo mapa de FightLab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Roboto+Flex:opsz,wght@8..144,400;8..144,600&display=swap">
+<style>
+/* Layout: documento de una columna; los wireflows van en filas con scroll horizontal propio, como el carrete de pantallas de un móvil. Tema oscuro fijo, el mismo de la app. */
+:root {
+  --bg: #05080f;
+  --surface: #0c1424;
+  --surface-2: #121d33;
+  --line: #24324f;
+  --ink: #eaf2fd;
+  --muted: #9fadca;
+  --neon: #45e9ff;
+  --neon-deep: #3b74ff;
+  --good: #43e8a0;
+  --warn: #ffd25a;
+  --bad: #ff5d80;
+  --f-display: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Roboto Flex", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 28px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 44px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(28px, 6vw, 42px); font-weight: 800; }
+h2 { font-size: 22px; font-weight: 800; }
+h3 { font-size: 16px; font-weight: 700; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-family: var(--f-display); font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--neon); }
+.lead { color: var(--muted); font-size: 17px; }
+section { display: flex; flex-direction: column; gap: 16px; }
+.muted { color: var(--muted); }
+a { color: var(--neon); }
+
+/* Reglas */
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.rule { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.rule b { font-family: var(--f-display); font-size: 15px; }
+.rule span { color: var(--muted); font-size: 14px; }
+
+/* Antes / después */
+.ba { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.ba > div { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.tabs-demo { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs-demo span { font-family: var(--f-display); font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.tabs-demo span.new { border-color: var(--neon); color: var(--neon); }
+.tabs-demo span.gone { text-decoration: line-through; opacity: .6; }
+.counts { display: grid; grid-template-columns: 1fr auto auto; gap: 4px 14px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.counts .h { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+.counts .old { color: var(--bad); text-align: right; }
+.counts .nw { color: var(--good); text-align: right; font-weight: 600; }
+
+/* Mermaid */
+.flow { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; overflow-x: auto; display: flex; flex-direction: column; gap: 8px; }
+.flow pre.mermaid { margin: 0; background: transparent; min-width: 560px; }
+.flows { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+.flows .flow pre.mermaid { min-width: 0; }
+
+/* Wireflow */
+.reel { overflow-x: auto; padding-bottom: 10px; }
+.reel-row { display: flex; align-items: flex-start; gap: 0; width: max-content; }
+.screen { display: flex; flex-direction: column; gap: 8px; width: 236px; }
+.screen-name { font-family: var(--f-display); font-weight: 700; font-size: 13px; color: var(--muted); }
+.screen-name em { font-style: normal; color: var(--neon); }
+.phone { width: 236px; height: 470px; border-radius: 26px; border: 1.5px solid var(--line); background: var(--bg); padding: 14px 11px 0; display: flex; flex-direction: column; gap: 7px; overflow: hidden; position: relative; }
+.phone.scrolls::after { content: "sigue con scroll"; position: absolute; left: 0; right: 0; bottom: 46px; text-align: center; font-size: 10px; color: var(--warn); background: linear-gradient(transparent, var(--bg) 60%); padding-top: 18px; }
+.ph-head { display: flex; justify-content: space-between; align-items: center; font-family: var(--f-display); font-weight: 800; font-size: 15px; }
+.ph-head small { font-family: var(--f-body); font-weight: 400; font-size: 11px; color: var(--muted); display: block; }
+.avatar { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--neon); display: grid; place-items: center; font-size: 10px; color: var(--neon); flex-shrink: 0; }
+.icon-btn { font-size: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 3px 6px; color: var(--muted); white-space: nowrap; }
+.blk { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px 9px; font-size: 11.5px; line-height: 1.35; display: flex; flex-direction: column; gap: 5px; }
+.blk.hero { border-color: var(--neon-deep); background: var(--surface-2); }
+.blk b { font-family: var(--f-display); font-size: 12px; }
+.blk .sub { color: var(--muted); font-size: 10.5px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); width: fit-content; }
+.chip.good { border-color: var(--good); color: var(--good); }
+.btns { display: flex; gap: 5px; flex-wrap: wrap; }
+.b { font-size: 10.5px; font-weight: 600; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--line); color: var(--ink); }
+.b.p { background: var(--neon-deep); border-color: var(--neon-deep); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 9px 8px; font-size: 11px; display: flex; flex-direction: column; gap: 3px; min-height: 52px; }
+.tile b { font-family: var(--f-display); font-size: 12px; }
+.tile .sub { color: var(--muted); font-size: 10px; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 11px; padding: 6px 2px; border-bottom: 1px solid var(--line); }
+.row:last-child { border-bottom: 0; }
+.row .sub { color: var(--muted); font-size: 10px; }
+.label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+.bar { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--neon); }
+.spacer { flex: 1; }
+.tabbar { display: flex; justify-content: space-around; border-top: 1px solid var(--line); margin: 0 -11px; padding: 8px 4px 12px; font-size: 9.5px; color: var(--muted); }
+.tabbar span.on { color: var(--neon); font-weight: 700; }
+.input { border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px; font-size: 10.5px; color: var(--muted); }
+.arrow { width: 74px; flex-shrink: 0; align-self: center; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 24px; text-align: center; font-size: 11px; color: var(--neon); }
+.arrow svg { width: 54px; height: 14px; }
+.arrow svg path { stroke: var(--neon); fill: none; stroke-width: 1.6; }
+.notes { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: var(--muted); }
+.notes b { color: var(--ink); font-weight: 600; }
+
+/* Tabla de cambios */
+.tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--f-display); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+td code { font-size: 12.5px; color: var(--neon); }
+
+.decide { border: 1.5px solid var(--warn); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 10px; background: var(--surface); }
+.decide h2 { color: var(--warn); }
+.opt { display: flex; flex-direction: column; gap: 4px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; }
+.opt b { font-family: var(--f-display); }
+ol.steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; max-width: 72ch; }
+</style>
+
+<div class="wrap">
+
+<header style="display:flex;flex-direction:column;gap:12px">
+  <div class="eyebrow">FightLab · beta · propuesta para revisar</div>
+  <h1>Nuevo mapa de FightLab</h1>
+  <p class="lead">Ahora cada pestaña tiene demasiadas puertas al mismo nivel. Esta propuesta reordena lo que ya existe y no añade ninguna función. Los números de las pantallas son de ejemplo. Primero va lo que haces hoy; las bibliotecas y los ajustes quedan un nivel más abajo; cada pestaña cabe en una pantalla sin hacer scroll.</p>
+</header>
+
+<section>
+  <h2>Las cinco reglas</h2>
+  <div class="rules">
+    <div class="rule"><b>Una pestaña, una pantalla</b><span>La portada de cada pestaña se ve entera en el móvil, sin scroll. Las pantallas de detalle sí pueden ser largas.</span></div>
+    <div class="rule"><b>Primero hacer, luego consultar</b><span>Arriba, lo que toca hoy y los botones para apuntarlo. Las gráficas y el histórico van a Progreso.</span></div>
+    <div class="rule"><b>Las bibliotecas no son destinos</b><span>A Ejercicios se llega solo al crear o cambiar una rutina. A Programas clásicos, igual.</span></div>
+    <div class="rule"><b>Un sitio para cada cosa</b><span>Las rutinas tenían 4 entradas y quedan 2: Mi semana y Mis rutinas. Los 3 importadores, repartidos por la app, se juntan en uno.</span></div>
+    <div class="rule"><b>Nada se pierde</b><span>Todas las pantallas siguen existiendo con la misma dirección web. Solo cambian los menús y las portadas.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Antes y después</h2>
+  <div class="ba">
+    <div>
+      <h3>Barra de pestañas</h3>
+      <div class="label">Ahora</div>
+      <div class="tabs-demo"><span>Hoy</span><span>Entreno</span><span>Nutrición</span><span>Coach</span><span class="gone">Perfil</span></div>
+      <div class="label">Propuesta</div>
+      <div class="tabs-demo"><span>Hoy</span><span>Entreno</span><span>Nutrición</span><span class="new">Progreso</span><span>Coach</span></div>
+      <p class="muted" style="font-size:14px">Perfil pasa al círculo con tu inicial, arriba en Hoy. Lo abres pocas veces y no merece una pestaña. Progreso es el «Resumen» de ahora, que estaba escondido detrás de un botón.</p>
+    </div>
+    <div>
+      <h3>Cuánto hay en cada portada</h3>
+      <div class="counts">
+        <span class="h">Pantalla</span><span class="h" style="text-align:right">Ahora</span><span class="h" style="text-align:right">Propuesta</span>
+        <span>Hoy</span><span class="old">9 bloques · 3-4 pantallas</span><span class="nw">4 bloques · 1</span>
+        <span>Entreno</span><span class="old">10 entradas</span><span class="nw">1 + 4 + 2</span>
+        <span>Nutrición</span><span class="old">7 bloques</span><span class="nw">4 bloques</span>
+        <span>Resumen → Progreso</span><span class="old">11 bloques</span><span class="nw">1 + 6 mosaicos</span>
+        <span>Perfil</span><span class="old">7 botones</span><span class="nw">5 botones</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Userflow: el mapa entero</h2>
+  <p class="muted">Cada caja es una pantalla que ya existe. En azul, las portadas de las pestañas. Lo que va a la derecha está un nivel más abajo.</p>
+  <div class="flow">
+<pre class="mermaid">
+%%{init: {'theme':'dark','themeVariables':{'fontSize':'13px','primaryColor':'#0c1424','primaryBorderColor':'#3b74ff','lineColor':'#45e9ff','primaryTextColor':'#eaf2fd'}}}%%
+flowchart LR
+  classDef tab fill:#13254a,stroke:#45e9ff,color:#eaf2fd,font-weight:bold
+  HOY([Hoy]):::tab
+  ENT([Entreno]):::tab
+  NUT([Nutrición]):::tab
+  PRO([Progreso]):::tab
+  COA([Coach]):::tab
+
+  HOY --> CHK[Check-in]
+  HOY --> PESO[Apuntar peso]
+  HOY --> CAR[Apuntar cardio]
+  HOY -->|Empezar| SES
+  HOY -->|avatar| PER[Perfil]
+  PER --> EDIT[Editar perfil]
+  PER --> CRIB[Repetir cribado]
+  PER --> AVI[Avisos]
+  PER --> IMP[Importar datos]
+  IMP --> IMP1[Historial]
+  IMP --> IMP2[Entrenos de Hevy]
+  IMP --> IMP3[Catálogo del súper]
+  PER --> CRE[Créditos]
+
+  ENT --> GYM[Gimnasio]
+  ENT --> MMA[MMA]
+  ENT --> DEP[Deporte y cardio]
+  ENT --> TMP[Temporizador]
+  ENT --> SEM[Mi semana]
+  ENT --> RUT[Mis rutinas]
+  GYM --> SES[Sesión en curso]
+  GYM --> HIS[Historial]
+  SEM --> MIR[Rutinas activas]
+  RUT --> EDR[Editor de rutina]
+  RUT --> PRG[Programas clásicos]
+  EDR --> LIB[Biblioteca de ejercicios]
+  LIB --> FIC[Ficha del ejercicio]
+
+  NUT --> ADD[Añadir alimento]
+  NUT --> MEN[Menú y compra]
+  NUT --> OBJ[Objetivo y pesaje]
+  MEN --> BAT[Batch cooking]
+  MEN --> AJM[Ajustes del menú]
+  AJM --> COC[Mi cocina]
+  AJM --> MIA[Mi IA]
+
+  PRO --> CAR2[Carga y estado]
+  PRO --> BIO[Peso y medidas]
+  BIO --> NBIO[Nueva medición]
+  PRO --> REV[Revisión semanal]
+  PRO --> REC[Récords]
+  REC --> EJP[Progreso del ejercicio]
+
+  COA --> CHAT[Chat]
+  COA --> MEM[Memoria del coach]
+</pre>
+  </div>
+</section>
+
+<section>
+  <h2>Userflow: lo que vienes a hacer</h2>
+  <p class="muted">Las cinco tareas más frecuentes, toque a toque. Ninguna pasa ya por una biblioteca o por un menú de ajustes.</p>
+  <div class="flows">
+    <div class="flow">
+      <h3>Por la mañana</h3>
+<pre class="mermaid">
+%%{init: {'theme':'dark','themeVariables':{'fontSize':'12px','lineColor':'#45e9ff'}}}%%
+flowchart TD
+  A([Abro la app]) --> B[Hoy]
+  B --> C[Check-in]
+  C --> D{¿Estado?}
+  D -->|verde| E[Hoy: Entreno de hoy]
+  D -->|ámbar o rojo| F[Aviso en Hoy + Coach]
+  B --> G[Peso: botón rápido]
+</pre>
+    </div>
+    <div class="flow">
+      <h3>Entrenar en el gimnasio</h3>
+<pre class="mermaid">
+%%{init: {'theme':'dark','themeVariables':{'fontSize':'12px','lineColor':'#45e9ff'}}}%%
+flowchart TD
+  A[Hoy o Entreno] -->|Empezar| S[Sesión en curso]
+  A2[Entreno → Gimnasio] -->|Elegir rutina o vacío| S
+  S --> R[Resumen y récords]
+  R --> H[Historial en Gimnasio]
+</pre>
+    </div>
+    <div class="flow">
+      <h3>Cambiar un ejercicio de mi rutina</h3>
+<pre class="mermaid">
+%%{init: {'theme':'dark','themeVariables':{'fontSize':'12px','lineColor':'#45e9ff'}}}%%
+flowchart TD
+  A[Entreno] --> B[Mis rutinas]
+  B --> C[Editor de rutina]
+  C -->|Añadir o cambiar| D[Biblioteca de ejercicios]
+  D --> E[Ficha del ejercicio]
+  D -->|Elegir| C
+  C --> F[Guardar]
+</pre>
+    </div>
+    <div class="flow">
+      <h3>Apuntar lo que como</h3>
+<pre class="mermaid">
+%%{init: {'theme':'dark','themeVariables':{'fontSize':'12px','lineColor':'#45e9ff'}}}%%
+flowchart TD
+  A[Hoy: Próxima comida] -->|Hecha| OK([Apuntada])
+  B[Nutrición] -->|+ en una comida| C[Añadir alimento]
+  C -->|Buscar o escanear| OK
+</pre>
+    </div>
+    <div class="flow">
+      <h3>Ver cómo voy</h3>
+<pre class="mermaid">
+%%{init: {'theme':'dark','themeVariables':{'fontSize':'12px','lineColor':'#45e9ff'}}}%%
+flowchart TD
+  A[Progreso] --> B[Carga y estado]
+  A --> C[Peso y medidas]
+  A --> D[Revisión semanal]
+  A --> E[Récords]
+  A2[Coach] --> F[Briefing y chat]
+</pre>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Wireflow: Hoy</h2>
+  <p class="muted">Cuatro bloques en lugar de nueve. Los formularios de peso y cardio pasan a botones que abren un panel desde abajo; la lista entera del menú va a Nutrición.</p>
+  <div class="reel"><div class="reel-row">
+    <div class="screen">
+      <div class="screen-name"><em>Hoy</em> · portada</div>
+      <div class="phone">
+        <div class="ph-head"><div>Hoy<small>lunes 23 nov</small></div><div class="avatar">A</div></div>
+        <span class="chip good">● Listo para entrenar</span>
+        <div class="blk hero"><b>Entreno de hoy</b><span>Fuerza A · 6 ejercicios · 55 min</span><div class="btns"><span class="b p">Empezar</span><span class="b">Hecho</span><span class="b">Descanso</span></div></div>
+        <div class="blk"><b>Próxima comida · 14:00</b><span>Pollo con arroz y verduras</span><span class="sub">640 kcal · 48 g proteína</span><div class="btns"><span class="b p">Hecha</span><span class="b">Cambiar</span><span class="b">Ver el día</span></div></div>
+        <div class="label">Apuntar rápido</div>
+        <div class="grid2" style="grid-template-columns:1fr 1fr 1fr"><div class="tile"><b>Check-in</b><span class="sub">pendiente</span></div><div class="tile"><b>Peso</b><span class="sub">78,4 kg</span></div><div class="tile"><b>Cardio</b><span class="sub">20/40 min</span></div></div>
+        <div class="spacer"></div>
+        <div class="tabbar"><span class="on">Hoy</span><span>Entreno</span><span>Nutrición</span><span>Progreso</span><span>Coach</span></div>
+      </div>
+      <div class="notes"><span><b>Sale de aquí:</b> el aviso de salud solo si no está en verde, «Plan del día» (va dentro de Entreno de hoy), la lista del menú, el botón Resumen.</span></div>
+    </div>
+    <div class="arrow"><span>Peso / Cardio</span><svg viewBox="0 0 54 14"><path d="M0 7h50M44 1l6 6-6 6"/></svg></div>
+    <div class="screen">
+      <div class="screen-name">Panel <em>Apuntar peso</em></div>
+      <div class="phone">
+        <div class="ph-head"><div>Hoy<small>lunes 23 nov</small></div><div class="avatar">A</div></div>
+        <div class="blk" style="opacity:.35"><b>Entreno de hoy</b><span>Fuerza A</span></div>
+        <div class="spacer"></div>
+        <div class="blk hero" style="border-radius:16px 16px 0 0;margin:0 -11px;padding:14px"><b>Peso de hoy</b><div class="input" style="border-radius:10px;font-size:14px;color:var(--ink)">78,4 kg</div><span class="sub">Último: 78,9 kg hace 3 días</span><div class="btns"><span class="b p">Guardar</span><span class="b">Cancelar</span></div></div>
+      </div>
+      <div class="notes"><span>Mismo formulario de ahora, dentro de un panel. Cardio funciona igual.</span></div>
+    </div>
+    <div class="arrow"><span>Avatar</span><svg viewBox="0 0 54 14"><path d="M0 7h50M44 1l6 6-6 6"/></svg></div>
+    <div class="screen">
+      <div class="screen-name"><em>Perfil</em> · desde el avatar</div>
+      <div class="phone">
+        <div class="ph-head"><div>← Perfil</div></div>
+        <div class="blk"><b>Atleta de ejemplo · 30 años</b><span class="sub">Ortodoxo · cuenta verificada</span></div>
+        <div class="blk" style="gap:0">
+          <div class="row"><span>Editar perfil</span><span class="sub">›</span></div>
+          <div class="row"><span>Repetir el cribado de salud</span><span class="sub">›</span></div>
+          <div class="row"><span>Avisos</span><span class="sub">›</span></div>
+          <div class="row"><span>Importar datos</span><span class="sub">historial · Hevy · súper ›</span></div>
+          <div class="row"><span>Créditos y licencias</span><span class="sub">›</span></div>
+        </div>
+        <span class="b" style="width:fit-content">Cerrar sesión</span>
+        <div class="spacer"></div>
+        <div class="tabbar"><span class="on">Hoy</span><span>Entreno</span><span>Nutrición</span><span>Progreso</span><span>Coach</span></div>
+      </div>
+      <div class="notes"><span><b>Sale de aquí:</b> Mi cocina y Mi IA (van a Ajustes del menú, en Nutrición).</span></div>
+    </div>
+  </div></div>
+</section>
+
+<section>
+  <h2>Wireflow: Entreno</h2>
+  <p class="muted">De diez entradas iguales a tres grupos: lo que toca hoy, registrar algo y planificar. Ejercicios y Programas clásicos se abren desde Mis rutinas.</p>
+  <div class="reel"><div class="reel-row">
+    <div class="screen">
+      <div class="screen-name"><em>Entreno</em> · portada</div>
+      <div class="phone">
+        <div class="ph-head"><div>Entreno</div><span class="icon-btn">⏱ Temporizador</span></div>
+        <div class="blk hero"><b>Hoy toca: Fuerza A</b><span class="sub">Según tu semana · 6 ejercicios</span><div class="btns"><span class="b p">Empezar</span></div></div>
+        <div class="label">Registrar</div>
+        <div class="grid2">
+          <div class="tile"><b>Gimnasio</b><span class="sub">sesión libre o rutina</span></div>
+          <div class="tile"><b>MMA</b><span class="sub">clase, sparring…</span></div>
+          <div class="tile"><b>Deporte y cardio</b><span class="sub">correr, bici…</span></div>
+          <div class="tile"><b>Historial</b><span class="sub">calendario</span></div>
+        </div>
+        <div class="label">Planificar</div>
+        <div class="blk" style="gap:0">
+          <div class="row"><span>Mi semana</span><span class="sub">plan y rutinas activas ›</span></div>
+          <div class="row"><span>Mis rutinas</span><span class="sub">crear y editar ›</span></div>
+        </div>
+        <div class="spacer"></div>
+        <div class="tabbar"><span>Hoy</span><span class="on">Entreno</span><span>Nutrición</span><span>Progreso</span><span>Coach</span></div>
+      </div>
+      <div class="notes"><span><b>Sale de aquí:</b> el resumen de carga (va a Progreso), Revisión semanal (Progreso), Ejercicios (dentro de Mis rutinas), Herramientas (ahora es el botón Temporizador).</span></div>
+    </div>
+    <div class="arrow"><span>Mis rutinas</span><svg viewBox="0 0 54 14"><path d="M0 7h50M44 1l6 6-6 6"/></svg></div>
+    <div class="screen">
+      <div class="screen-name"><em>Mis rutinas</em></div>
+      <div class="phone">
+        <div class="ph-head"><div>← Mis rutinas</div><span class="icon-btn">+ Nueva</span></div>
+        <div class="label">Fuerza 3 días</div>
+        <div class="blk" style="gap:0">
+          <div class="row"><span>Fuerza A</span><span class="sub">6 ejercicios ›</span></div>
+          <div class="row"><span>Fuerza B</span><span class="sub">5 ejercicios ›</span></div>
+          <div class="row"><span>Fuerza C</span><span class="sub">6 ejercicios ›</span></div>
+        </div>
+        <div class="label">Sin carpeta</div>
+        <div class="blk" style="gap:0"><div class="row"><span>Core 15 min</span><span class="sub">4 ejercicios ›</span></div></div>
+        <div class="label">Añadir desde</div>
+        <div class="btns"><span class="b">Programas clásicos</span><span class="b">Biblioteca de ejercicios</span></div>
+        <div class="spacer"></div>
+        <div class="tabbar"><span>Hoy</span><span class="on">Entreno</span><span>Nutrición</span><span>Progreso</span><span>Coach</span></div>
+      </div>
+      <div class="notes"><span>Las carpetas y el orden siguen igual. Lo nuevo es que la biblioteca y los programas se abren desde aquí.</span></div>
+    </div>
+    <div class="arrow"><span>Fuerza A</span><svg viewBox="0 0 54 14"><path d="M0 7h50M44 1l6 6-6 6"/></svg></div>
+    <div class="screen">
+      <div class="screen-name"><em>Editor de rutina</em></div>
+      <div class="phone scrolls">
+        <div class="ph-head"><div>← Fuerza A</div><span class="icon-btn">Empezar</span></div>
+        <div class="blk"><b>Sentadilla trasera</b><span class="sub">4 × 6 · descanso 3 min</span></div>
+        <div class="blk"><b>Press banca</b><span class="sub">4 × 6 · descanso 3 min</span></div>
+        <div class="blk"><b>Remo con barra</b><span class="sub">3 × 8</span></div>
+        <div class="blk"><b>Dominadas</b><span class="sub">3 × máx.</span></div>
+        <div class="btns"><span class="b p">+ Añadir ejercicio</span><span class="b">Guardar</span></div>
+        <div class="spacer"></div>
+        <div class="tabbar"><span>Hoy</span><span class="on">Entreno</span><span>Nutrición</span><span>Progreso</span><span>Coach</span></div>
+      </div>
+      <div class="notes"><span>Las pantallas de detalle pueden tener scroll. Tocar un ejercicio permite cambiarlo por otro.</span></div>
+    </div>
+    <div class="arrow"><span>+ Añadir</span><svg viewBox="0 0 54 14"><path d="M0 7h50M44 1l6 6-6 6"/></svg></div>
+    <div class="screen">
+      <div class="screen-name"><em>Biblioteca de ejercicios</em></div>
+      <div class="phone">
+        <div class="ph-head"><div>← Elegir ejercicio</div></div>
+        <div class="input">Buscar ejercicio…</div>
+        <div class="btns"><span class="b">Pecho</span><span class="b">Espalda</span><span class="b">Pierna</span><span class="b">Míos</span></div>
+        <div class="blk" style="gap:0">
+          <div class="row"><span>Press inclinado mancuernas</span><span class="sub">ⓘ</span></div>
+          <div class="row"><span>Fondos en paralelas</span><span class="sub">ⓘ</span></div>
+          <div class="row"><span>Aperturas en polea</span><span class="sub">ⓘ</span></div>
+          <div class="row"><span>Press militar</span><span class="sub">ⓘ</span></div>
+        </div>
+        <span class="b" style="width:fit-content">+ Crear ejercicio propio</span>
+        <div class="spacer"></div>
+        <div class="tabbar"><span>Hoy</span><span class="on">Entreno</span><span>Nutrición</span><span>Progreso</span><span>Coach</span></div>
+      </div>
+      <div class="notes"><span>La misma biblioteca de ahora. Al tocar ⓘ se abre la ficha; al tocar el nombre, el ejercicio se añade a la rutina.</span></div>
+    </div>
+  </div></div>
+
+  <div class="reel"><div class="reel-row">
+    <div class="screen">
+      <div class="screen-name"><em>Gimnasio</em></div>
+      <div class="phone">
+        <div class="ph-head"><div>← Gimnasio</div><span class="icon-btn">Récords</span></div>
+        <div class="blk hero"><b>Empezar entreno</b><div class="btns"><span class="b p">Fuerza A (hoy)</span><span class="b">Elegir rutina</span><span class="b">Vacío</span></div></div>
+        <div class="label">Noviembre</div>
+        <div class="blk"><span style="letter-spacing:.35em;font-size:11px">L M X J V S D<br>● · ● · ● · ·<br>● · ● · ● ● ·<br>● · ● · ○ · ·</span></div>
+        <div class="label">Últimos entrenos</div>
+        <div class="blk" style="gap:0">
+          <div class="row"><span>Fuerza C · vie 20</span><span class="sub">52 min ›</span></div>
+          <div class="row"><span>Fuerza B · mié 18</span><span class="sub">49 min ›</span></div>
+        </div>
+        <div class="spacer"></div>
+        <div class="tabbar"><span>Hoy</span><span class="on">Entreno</span><span>Nutrición</span><span>Progreso</span><span>Coach</span></div>
+      </div>
+      <div class="notes"><span><b>Sale de aquí:</b> Importar entrenos (va a Perfil → Importar datos) y el enlace a Rutinas, que ya está en la portada.</span></div>
+    </div>
+    <div class="arrow"><span>Empezar</span><svg viewBox="0 0 54 14"><path d="M0 7h50M44 1l6 6-6 6"/></svg></div>
+    <div class="screen">
+      <div class="screen-name"><em>Sesión en curso</em> · no cambia</div>
+      <div class="phone scrolls">
+        <div class="ph-head"><div>Fuerza A</div><span class="icon-btn">Terminar</span></div>
+        <div class="chip">⏱ 24:10 · descanso 1:45</div>
+        <div class="blk"><b>Sentadilla trasera</b><span class="sub">1 · 100 kg × 6 ✓<br>2 · 100 kg × 6 ✓<br>3 · 100 kg × __</span></div>
+        <div class="blk"><b>Press banca</b><span class="sub">4 series pendientes</span></div>
+        <div class="spacer"></div>
+      </div>
+      <div class="notes"><span>La sesión se queda como está; la ajustamos en las pruebas en el móvil.</span></div>
+    </div>
+  </div></div>
+</section>
+
+<section>
+  <h2>Wireflow: Nutrición</h2>
+  <p class="muted">El diario del día cabe arriba. Lo que configura el menú (Mi cocina, Mi IA, gustos, productos) pasa a una pantalla de ajustes y deja de ocupar sitio en Menú y compra.</p>
+  <div class="reel"><div class="reel-row">
+    <div class="screen">
+      <div class="screen-name"><em>Nutrición</em> · portada</div>
+      <div class="phone">
+        <div class="ph-head"><div>Nutrición<small>lunes 23 nov</small></div></div>
+        <div class="blk hero"><b>1.420 / 2.450 kcal</b><div class="bar"><i style="width:58%"></i></div><span class="sub">P 112/170 g · H 140/260 g · G 48/75 g</span></div>
+        <div class="blk" style="gap:0">
+          <div class="row"><span>Desayuno</span><span class="sub">420 kcal  +</span></div>
+          <div class="row"><span>Comida</span><span class="sub">640 kcal  +</span></div>
+          <div class="row"><span>Merienda</span><span class="sub">360 kcal  +</span></div>
+          <div class="row"><span>Cena</span><span class="sub">—  +</span></div>
+        </div>
+        <div class="blk" style="flex-direction:row;justify-content:space-between;align-items:center"><span>Agua 1,5 / 3 L</span><span class="b">+ vaso</span></div>
+        <div class="grid2"><div class="tile"><b>Menú y compra</b><span class="sub">semana · lista</span></div><div class="tile"><b>Objetivo y pesaje</b><span class="sub">déficit −450</span></div></div>
+        <div class="spacer"></div>
+        <div class="tabbar"><span>Hoy</span><span>Entreno</span><span class="on">Nutrición</span><span>Progreso</span><span>Coach</span></div>
+      </div>
+      <div class="notes"><span><b>Se junta:</b> «Objetivo» y «Pesaje» en una sola entrada. El aviso de salud solo aparece cuando aplica.</span></div>
+    </div>
+    <div class="arrow"><span>Menú y compra</span><svg viewBox="0 0 54 14"><path d="M0 7h50M44 1l6 6-6 6"/></svg></div>
+    <div class="screen">
+      <div class="screen-name"><em>Menú y compra</em></div>
+      <div class="phone scrolls">
+        <div class="ph-head"><div>← Menú y compra</div><span class="icon-btn">⚙ Ajustes</span></div>
+        <div class="btns"><span class="b p">Menú</span><span class="b">Compra</span><span class="b">Batch</span></div>
+        <div class="blk"><b>Lunes</b><span class="sub">Avena con plátano · Pollo con arroz · Yogur y nueces · Merluza con patata</span></div>
+        <div class="blk"><b>Martes</b><span class="sub">Tostadas con huevo · Lentejas · Fruta · Tortilla</span></div>
+        <div class="btns"><span class="b">Generar con mi IA</span><span class="b">Importar menú</span></div>
+        <div class="spacer"></div>
+        <div class="tabbar"><span>Hoy</span><span>Entreno</span><span class="on">Nutrición</span><span>Progreso</span><span>Coach</span></div>
+      </div>
+      <div class="notes"><span>Menú, lista de la compra y batch cooking pasan a tres pestañas dentro de la misma pantalla.</span></div>
+    </div>
+    <div class="arrow"><span>⚙</span><svg viewBox="0 0 54 14"><path d="M0 7h50M44 1l6 6-6 6"/></svg></div>
+    <div class="screen">
+      <div class="screen-name"><em>Ajustes del menú</em></div>
+      <div class="phone">
+        <div class="ph-head"><div>← Ajustes del menú</div></div>
+        <div class="blk" style="gap:0">
+          <div class="row"><span>Mi cocina</span><span class="sub">utensilios, tiempo ›</span></div>
+          <div class="row"><span>Mi IA</span><span class="sub">clave para menús ›</span></div>
+          <div class="row"><span>Gustos</span><span class="sub">›</span></div>
+          <div class="row"><span>Mis productos</span><span class="sub">›</span></div>
+        </div>
+        <div class="spacer"></div>
+        <div class="tabbar"><span>Hoy</span><span>Entreno</span><span class="on">Nutrición</span><span>Progreso</span><span>Coach</span></div>
+      </div>
+      <div class="notes"><span>Son las mismas pantallas y tarjetas de ahora, solo que agrupadas.</span></div>
+    </div>
+  </div></div>
+</section>
+
+<section>
+  <h2>Wireflow: Progreso y Coach</h2>
+  <p class="muted">Progreso reúne lo que ahora está repartido entre Resumen, Carga, Biometría, Récords y Revisión semanal. Coach sigue igual, con el chat siempre a mano.</p>
+  <div class="reel"><div class="reel-row">
+    <div class="screen">
+      <div class="screen-name"><em>Progreso</em> · portada</div>
+      <div class="phone">
+        <div class="ph-head"><div>Progreso<small>semana 48</small></div></div>
+        <div class="blk hero"><b>Carga: en zona buena</b><span class="sub">ACWR 1,08 · 5 de 7 días cumplidos</span><span style="letter-spacing:.4em;color:var(--good)">●●●●●○○</span></div>
+        <div class="grid2">
+          <div class="tile"><b>Peso</b><span>78,4 kg</span><span class="sub">−0,5 en 7 días</span></div>
+          <div class="tile"><b>Medidas</b><span>FC 52 · HRV 68</span><span class="sub">grasa 14 %</span></div>
+          <div class="tile"><b>Revisión semanal</b><span class="sub">lista el domingo</span></div>
+          <div class="tile"><b>Récords</b><span>3 nuevos</span><span class="sub">esta semana</span></div>
+          <div class="tile"><b>Zonas de esfuerzo</b><span class="sub">Z2 62 %</span></div>
+          <div class="tile"><b>Fotos</b><span class="sub">última hace 12 d</span></div>
+        </div>
+        <span class="b" style="width:fit-content">+ Registrar medición</span>
+        <div class="spacer"></div>
+        <div class="tabbar"><span>Hoy</span><span>Entreno</span><span>Nutrición</span><span class="on">Progreso</span><span>Coach</span></div>
+      </div>
+      <div class="notes"><span><b>Sale de aquí:</b> lo que repetía Hoy (Estado de hoy, Hoy toca, Check-in). Cada mosaico lleva a su pantalla de detalle, que no cambia.</span></div>
+    </div>
+    <div class="arrow" style="visibility:hidden"><svg viewBox="0 0 54 14"><path d="M0 7h50"/></svg></div>
+    <div class="screen">
+      <div class="screen-name"><em>Coach</em></div>
+      <div class="phone">
+        <div class="ph-head"><div>Coach</div><span class="icon-btn">Memoria</span></div>
+        <div class="btns"><span class="chip good">salud ok</span><span class="chip">recuperación media</span></div>
+        <div class="blk hero"><b>Briefing de hoy</b><span class="sub">Dormiste 6 h. Mantén Fuerza A pero baja una serie en sentadilla.</span></div>
+        <div class="label">Recomendaciones</div>
+        <div class="blk" style="gap:0">
+          <div class="row"><span>Haz el check-in</span><span class="sub">›</span></div>
+          <div class="row"><span>Pésate esta semana</span><span class="sub">›</span></div>
+        </div>
+        <div class="spacer"></div>
+        <div class="input">Habla con tu coach…</div>
+        <div class="tabbar"><span>Hoy</span><span>Entreno</span><span>Nutrición</span><span>Progreso</span><span class="on">Coach</span></div>
+      </div>
+      <div class="notes"><span>Memoria del coach pasa a un botón. El chat se queda fijo abajo.</span></div>
+    </div>
+  </div></div>
+</section>
+
+<section>
+  <h2>Qué se mueve</h2>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Pantalla</th><th>Dónde está ahora</th><th>Dónde queda</th></tr></thead>
+      <tbody>
+        <tr><td>Resumen <code>/dashboard</code></td><td>Botón dentro de Hoy</td><td>Pestaña Progreso, sin los bloques que repetía Hoy</td></tr>
+        <tr><td>Perfil <code>/profile</code></td><td>Pestaña</td><td>Avatar arriba en Hoy</td></tr>
+        <tr><td>Ejercicios <code>/training/exercises</code></td><td>Portada de Entreno</td><td>Mis rutinas y el editor de rutina</td></tr>
+        <tr><td>Programas clásicos</td><td>Dentro de Rutinas</td><td>Mis rutinas → Añadir desde</td></tr>
+        <tr><td>Plan de la semana + Mi rutina</td><td>Dos tarjetas en Entreno</td><td>Una entrada: Mi semana (Mi rutina se abre desde el plan, como ya hace)</td></tr>
+        <tr><td>Carga y estado <code>/training/load</code></td><td>Arriba en Entreno y en Resumen</td><td>Progreso</td></tr>
+        <tr><td>Revisión semanal</td><td>Portada de Entreno</td><td>Progreso</td></tr>
+        <tr><td>Biometría <code>/biometrics</code></td><td>Solo desde la tarjeta de peso de Resumen</td><td>Progreso → Peso y Medidas</td></tr>
+        <tr><td>Récords</td><td>Dentro de Gimnasio</td><td>Gimnasio y Progreso</td></tr>
+        <tr><td>Herramientas</td><td>Portada de Entreno</td><td>Botón Temporizador arriba en Entreno</td></tr>
+        <tr><td>Importar entrenos, Importar historial, Catálogo</td><td>Gimnasio y Perfil</td><td>Perfil → Importar datos</td></tr>
+        <tr><td>Mi cocina, Mi IA</td><td>Perfil</td><td>Nutrición → Menú y compra → Ajustes</td></tr>
+        <tr><td>Formularios de peso y cardio</td><td>Abiertos en Hoy</td><td>Botones en Hoy que abren un panel</td></tr>
+        <tr><td>Comidas del menú (lista entera)</td><td>Hoy</td><td>Hoy muestra la próxima; el día entero está en Nutrición</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="decide">
+  <h2>Lo que necesito que decidas</h2>
+  <p>Solo una cosa. Lo demás lo puedes corregir cuando lo veas en el móvil.</p>
+  <div class="opt"><b>A · Progreso como pestaña y Perfil en el avatar (recomendada)</b><span class="muted">Lo que ves arriba. Tienes a un toque cómo vas, que es lo que miras a diario, y los ajustes quedan a un toque desde Hoy.</span></div>
+  <div class="opt"><b>B · Dejar Perfil como pestaña</b><span class="muted">Progreso se abre con un botón «Cómo voy» en Hoy, como ahora el Resumen. Es menos cambio, pero el progreso sigue escondido.</span></div>
+</section>
+
+<section>
+  <h2>Cómo lo haría después de tu OK</h2>
+  <ol class="steps">
+    <li>Barra de pestañas y portadas nuevas de Hoy, Entreno, Nutrición y Progreso.</li>
+    <li>Mover cada entrada a su sitio y comprobar que ninguna pantalla se queda sin forma de llegar.</li>
+    <li>Tests: cada pantalla sigue siendo accesible y cada portada cabe en 375 × 667 sin scroll.</li>
+    <li>Rama propia, PR a staging y, con tu OK, a main. Después, una ronda de pruebas en tu móvil.</li>
+  </ol>
+</section>
+
+</div>

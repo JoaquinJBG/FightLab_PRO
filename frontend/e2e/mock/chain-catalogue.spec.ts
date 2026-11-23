@@ -60,6 +60,8 @@ test("catálogo de la cadena: revisar, importar, listar y borrar", async ({ page
   });
 
   await page.goto("/profile");
+  await page.getByTestId("import-hub-link").click();
+  await page.waitForURL("**/profile/import-hub");
   await page.getByTestId("history-import-link").click();
   await page.waitForURL("**/profile/import");
   await page.getByTestId("catalogue-import-link").click();

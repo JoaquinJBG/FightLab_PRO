@@ -234,6 +234,41 @@ export function useUpdateProfile() {
   });
 }
 
+/** Qué partes de la app ve el usuario (Ajustes → «Qué entrenas»). Solo navegación: las rutas siguen
+ *  abiertas y no se borra nada. Mientras carga o si falla, todo visible, para que nada parpadee. */
+export function useDisciplines() {
+  const { data } = useProfile();
+  return { gym: data?.show_gym ?? true, combat: data?.show_combat ?? true };
+}
+
+type DisciplinePatch = { show_gym?: boolean; show_combat?: boolean };
+
+/** Interruptor de disciplina: guarda al momento, con cambio optimista y vuelta atrás si falla. */
+export function useSetDiscipline() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationKey: ["disciplines"],
+    mutationFn: (patch: DisciplinePatch) => sendJson("/api/proxy/me/profile", "PATCH", patch),
+    onMutate: async (patch) => {
+      await qc.cancelQueries({ queryKey: ["profile"] });
+      const prev = qc.getQueryData<Profile>(["profile"]);
+      if (prev) qc.setQueryData<Profile>(["profile"], { ...prev, ...patch });
+      const before: DisciplinePatch = {};
+      if (patch.show_gym !== undefined) before.show_gym = prev?.show_gym ?? true;
+      if (patch.show_combat !== undefined) before.show_combat = prev?.show_combat ?? true;
+      return { before };
+    },
+    onError: (_err, _patch, ctx) => {
+      // Solo se devuelve el campo tocado: el otro interruptor puede haber cambiado entre medias.
+      if (ctx) qc.setQueryData<Profile>(["profile"], (old) => (old ? { ...old, ...ctx.before } : old));
+    },
+    onSuccess: (data) => {
+      // Con varios guardados a la vez, solo el último deja su respuesta en la caché.
+      if (qc.isMutating({ mutationKey: ["disciplines"] }) <= 1) applyProfileUpdate(qc, data);
+    },
+  });
+}
+
 // Extraído de useLogout para poder probarlo sin un árbol de React (no hay
 // react-testing-library en este proyecto): son las mismas funciones que usa
 // el `useMutation` de abajo, expuestas solo para el test.

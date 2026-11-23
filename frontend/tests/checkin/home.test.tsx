@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import DashboardPage from "@/app/(shell)/dashboard/page";
 import type { Biometrics } from "@/lib/schemas";
-import { CATALOGS, PROFILE, SAFETY, WEIGH_IN, mockApi, renderApp } from "../support/app";
+import { PROFILE, SAFETY, WEIGH_IN, mockApi, renderApp } from "../support/app";
 
 beforeEach(() => localStorage.clear());
 afterEach(() => vi.unstubAllGlobals());
@@ -40,7 +40,7 @@ const routes = (over: Record<string, unknown> = {}) => ({
   ...Object.fromEntries(Object.entries(over).map(([k, v]) => [k, { body: v }])),
 });
 
-describe("Home: tendencia de peso y check-in de hoy", () => {
+describe("Progreso: tendencia de peso", () => {
   it("la tarjeta de peso dice que aún no hay tendencia y cuántos pesajes llevas, sin chip anidado en el enlace", async () => {
     mockApi(routes());
     renderApp(<DashboardPage />);
@@ -61,31 +61,9 @@ describe("Home: tendencia de peso y check-in de hoy", () => {
   it("con no_weight_targets no se pide ni se muestra la tendencia", async () => {
     const calls = mockApi(routes({ "/api/proxy/coach/weigh-in": { ...WEIGH_IN, blocked: true } }));
     renderApp(<DashboardPage />);
-    await screen.findByText(CATALOGS.es.dashboard.week.title);
+    await screen.findByTestId("measures-card");
     await waitFor(() => expect(screen.queryByTestId("weight-card")).toBeNull());
     expect(screen.queryByTestId("trend-insufficient")).toBeNull();
     expect(calls.mock.calls.some(([url]) => String(url).includes("/coach/trend"))).toBe(false);
-  });
-
-  it("sin check-in hoy invita a hacerlo; con check-in dice que está hecho y la readiness", async () => {
-    mockApi(routes());
-    const first = renderApp(<DashboardPage />);
-    const card = await screen.findByTestId("checkin-card");
-    expect(card.getAttribute("href")).toBe("/checkin");
-    expect(card.textContent).toContain(CATALOGS.es.checkin.homeCard.cta);
-    first.unmount();
-
-    mockApi(
-      routes({
-        "/api/proxy/coach/checkin": {
-          ...STATE,
-          checkin: { date: "2026-10-29", weight_kg: null, waist_cm: null, intake_kcal: null, resting_heart_rate: null, hrv_ms: null, sleep_hours: 7, sleep_quality: 4, energy: 4, soreness: 4, stress: 4, mood: 4, soreness_zones: [], illness: null, notes: "", period_status: null, hormonal_contraception: null, bp_systolic: null, bp_diastolic: null },
-          readiness: { ...READINESS, status: "reduce", drops_today: ["energy", "stress"] },
-        },
-      }),
-    );
-    renderApp(<DashboardPage />);
-    await waitFor(() => expect(screen.getByTestId("checkin-card").textContent).toContain(CATALOGS.es.checkin.homeCard.done));
-    expect(screen.getByTestId("checkin-card").textContent).toContain(CATALOGS.es.checkin.readiness.reduce);
   });
 });
