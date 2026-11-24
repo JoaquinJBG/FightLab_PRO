@@ -22,7 +22,7 @@ describe("hub de Entreno (en)", () => {
     expect(screen.getByTestId("hub-gym").getAttribute("href")).toBe("/training/gym");
     expect(screen.getByTestId("hub-mma").getAttribute("href")).toBe("/training/mma");
     expect(screen.getByTestId("hub-sports").getAttribute("href")).toBe("/training/sports");
-    expect(screen.getByTestId("hub-history").getAttribute("href")).toBe("/training/gym");
+    expect(screen.getByTestId("hub-history").getAttribute("href")).toBe("/training/history");
     expect(screen.getByTestId("hub-week").getAttribute("href")).toBe("/training/plan");
     expect(screen.getByTestId("hub-routines").getAttribute("href")).toBe("/training/routines");
     // Fuera de la portada: carga, revisión, ejercicios, mi rutina y la tarjeta de herramientas

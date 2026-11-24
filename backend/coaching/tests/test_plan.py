@@ -70,14 +70,19 @@ def test_default_plan_without_logs(today_fixed, real_knowledge):
     plan = resp.json()
     gym = [e for e in plan["training_schedule"] if e["kind"] == "gym"]
     assert [(e["day"], e["session"]) for e in gym] == [("mon", "A"), ("thu", "B")]
+    # Con 2 días caben los dos verticales: 7 ejercicios por sesión.
     for session in plan["sessions"]:
-        assert [i["pattern"] for i in session["items"]] == ["legs", "push", "pull"]
+        assert {i["pattern"] for i in session["items"]} == {
+            "knee", "hinge", "push_h", "pull_h", "push_v", "pull_v", "core"}
         for item in session["items"]:
             # Sin registros no hay carga inventada: la regla de las repeticiones en reserva.
             assert item["load_kg"] is None and item["action"] == "no_data"
             assert item["rule_key"] == "strength-hypertrophy/target-reps-in-reserve"
-            assert item["rep_range"] == [8, 12] and item["sets"] == plans.SETS_WITHOUT_LOG
-    assert plan["sessions"][0]["items"][0]["exercise"] != plan["sessions"][1]["items"][0]["exercise"]
+            compound = item["pattern"] in plans.COMPOUND_PATTERNS
+            expected_sets = plans.SETS_WITHOUT_LOG if compound else plans.SETS_WITHOUT_LOG_ACCESSORY
+            assert item["rep_range"] == [8, 12] and item["sets"] == expected_sets
+    a, b = ({i["exercise"] for i in s["items"]} for s in plan["sessions"])
+    assert not a & b  # variantes distintas en A y B
     # Cardio: 150 min moderados repartidos en los 5 días libres.
     cardio = plan["cardio"]
     assert cardio["days"] == ["tue", "wed", "fri", "sat", "sun"] and cardio["minutes_per_day"] == 30
@@ -174,11 +179,81 @@ def test_logged_lifts_use_their_names_and_engine_loads(today_fixed):
     user = make_user()
     log_session(user, TODAY - timedelta(days=3), [bench(60, 10)])
     plan = generate(user, gym_days=["mon", "thu"]).json()
-    push = plan["sessions"][0]["items"][1]
+    push = next(i for i in plan["sessions"][0]["items"] if i["pattern"] == "push_h")
     assert push["exercise"] == "Press banca"
     assert push["action"] == "add_reps" and push["load_kg"] == 60 and push["sets"] == 3
     assert push["sets_basis"] == "log"
     assert push["rule_key"] == "strength-hypertrophy/double-progression"
+
+
+FULL_BODY_CORE = {"knee", "hinge", "push_h", "pull_h"}
+
+
+def test_three_gym_days_give_three_distinct_full_body_sessions(today_fixed):
+    """Lunes, miércoles y viernes: antes salían 3 ejercicios por día (pierna, empuje, tirón). Ahora
+    A, B y C de cuerpo completo con 5-7 ejercicios, variantes distintas y todos los patrones."""
+    plan = generate(make_user(), gym_days=["mon", "wed", "fri"]).json()
+    gym = [e for e in plan["training_schedule"] if e["kind"] == "gym"]
+    assert [(e["day"], e["session"]) for e in gym] == [("mon", "A"), ("wed", "B"), ("fri", "C")]
+    sessions = plan["sessions"]
+    assert [s["key"] for s in sessions] == ["A", "B", "C"]
+    for session in sessions:
+        items = session["items"]
+        patterns = {i["pattern"] for i in items}
+        assert 5 <= len(items) <= 7
+        assert patterns >= FULL_BODY_CORE
+        assert patterns & {"push_v", "pull_v"}  # un vertical
+        assert patterns & {"core", "accessory"}  # un core o accesorio
+        assert len({i["exercise"] for i in items}) == len(items)
+        for item in items:
+            low, high = plans.COMPOUND_SETS if item["pattern"] in plans.COMPOUND_PATTERNS else plans.ACCESSORY_SETS
+            assert low <= item["sets"] <= high
+    # Las tres sesiones no son la misma: cambian las variantes de cada patrón.
+    signatures = [tuple(sorted(i["exercise"] for i in s["items"])) for s in sessions]
+    assert len(set(signatures)) == 3
+    for pattern in FULL_BODY_CORE - {"pull_h"}:  # remo: solo hay 2 variantes por defecto
+        picks = [next(i["exercise"] for i in s["items"] if i["pattern"] == pattern) for s in sessions]
+        assert len(set(picks)) == 3, (pattern, picks)
+    # Todos los ejercicios existen en el catálogo.
+    from exercises.legacy import legacy_exercise_key
+    assert all(legacy_exercise_key(i["exercise"]) for s in sessions for i in s["items"])
+
+
+@pytest.mark.parametrize("days,count,sizes", [
+    (["mon", "thu"], 2, {7}),
+    (["mon", "tue", "thu", "fri"], 4, {6}),
+    (["mon", "tue", "wed", "thu", "fri"], 4, {5}),
+])
+def test_more_or_fewer_days_keep_full_body(today_fixed, days, count, sizes):
+    plan = generate(make_user(), gym_days=days).json()
+    assert len(plan["sessions"]) == count
+    assert {len(s["items"]) for s in plan["sessions"]} == sizes
+    for session in plan["sessions"]:
+        assert {i["pattern"] for i in session["items"]} >= FULL_BODY_CORE
+    gym = [e["session"] for e in plan["training_schedule"] if e["kind"] == "gym"]
+    assert gym[:count] == [s["key"] for s in plan["sessions"]]
+
+
+def test_logged_exercises_go_first_in_their_pattern(today_fixed):
+    user = make_user()
+    log_session(user, TODAY - timedelta(days=3), [("Hip thrust", [(100, 10)] * 4), ("Curl bíceps", [(12, 10)] * 3)])
+    plan = generate(user, gym_days=["mon", "wed", "fri"]).json()
+    a, b, c = plan["sessions"]
+    hinge = next(i for i in a["items"] if i["pattern"] == "hinge")
+    assert hinge["exercise"] == "Hip thrust" and hinge["load_kg"] == 100 and hinge["sets"] == 4
+    accessory = next(i for i in c["items"] if i["pattern"] == "accessory")
+    assert accessory["exercise"] == "Curl bíceps" and accessory["sets"] == 3
+
+
+def test_rotation_continues_after_session_c(today_fixed):
+    user = make_user()
+    act = log_session(user, TODAY - timedelta(days=1), [bench()])
+    act.detail = {"plan_session": "C"}
+    act.save()
+    plan = generate(user, gym_days=["mon", "wed", "fri"]).json()
+    assert [e["session"] for e in plan["training_schedule"] if e["kind"] == "gym"] == ["A", "B", "C"]
+    plan = generate(user, gym_days=["mon", "tue", "thu", "fri"]).json()
+    assert [e["session"] for e in plan["training_schedule"] if e["kind"] == "gym"] == ["D", "A", "B", "C"]
 
 
 def test_rotation_continues_from_the_last_session_done(today_fixed):

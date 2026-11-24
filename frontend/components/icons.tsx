@@ -241,3 +241,12 @@ export function ArrowUpRight(p: IconProps) {
     </svg>
   );
 }
+
+export function CameraIcon(p: IconProps) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7H8l1.2-2h5.6L16 7h2.5A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5v-9Z" />
+      <circle cx="12" cy="13" r="3.2" />
+    </svg>
+  );
+}

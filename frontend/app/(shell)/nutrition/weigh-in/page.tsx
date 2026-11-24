@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoLine } from "@/components/common/InfoLine";
 import { useState } from "react";
 import Link from "next/link";
 import { useFormatter, useTranslations } from "next-intl";
@@ -50,7 +51,7 @@ export default function WeighInPage() {
         {goalBlock}
         <section className="glass neon-edge mt-4 p-5">
           <p className="t-title text-ink">{t("blocked.title")}</p>
-          <p className="t-body mt-1.5 text-sm text-muted">{t("blocked.body")}</p>
+          <InfoLine className="t-body mt-1.5 text-sm text-muted" text={t("blocked.body")} detail={t("blocked.detail")} title={t("blocked.title")} />
         </section>
         {safety && data.reasons.length > 0 && (
           <SafetyPanel data={{ ...safety, reasons: data.reasons.filter(isSafetyReason), parq_pending: false }} />

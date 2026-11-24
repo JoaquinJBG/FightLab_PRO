@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { capitalizeFirst, formatDate } from "@/lib/locale";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
+import { InfoLine } from "@/components/common/InfoLine";
 import { SafetyBanner } from "@/components/safety/SafetyBanner";
 import { useBlockedWhy } from "@/components/safety/SafetyStateCard";
 import { BottomSheet } from "@/components/today/BottomSheet";
@@ -130,10 +131,9 @@ function TodayTraining({ state }: { state: TodayState }) {
       ) : (
         <>
           {plan.no_contact && (
-            <p data-testid="plan-head-blow" className="t-body mt-1.5 text-sm" style={{ color: "#ff5a6e" }}>
-              {tp("headBlow")}
+            <InfoLine testId="plan-head-blow" className="t-body mt-1.5 text-sm" style={{ color: "#ff5a6e" }} text={tp("headBlow")} detail={tp("headBlowDetail")} title={tp("headBlowTitle")}>
               {HEAD_BLOW_RULES.map((r) => <span key={r.key}> <EvidenceChip ruleKey={r.key} grade={r.grade} /></span>)}
-            </p>
+            </InfoLine>
           )}
           {plan.entries.length === 0 && <p className="t-body mt-1.5 text-sm text-muted">{tp("rest")}</p>}
           <ul className="mt-1.5 space-y-1.5">
@@ -148,13 +148,12 @@ function TodayTraining({ state }: { state: TodayState }) {
                     <span className="block truncate text-xs text-muted">{e.exercises.join(" · ")}</span>
                   )}
                   {e.kind === "gym" && e.paused && e.paused.length > 0 && (
-                    <span data-testid="plan-paused" className="block text-xs text-ink">
-                      {tp("paused", { exercises: e.paused.join(" · ") })}{" "}
-                      <EvidenceChip ruleKey={SAFETY_RULES.newPain.key} grade={SAFETY_RULES.newPain.grade} />
-                    </span>
+                    <InfoLine as="span" testId="plan-paused" className="block text-xs text-ink" text={tp("paused", { exercises: e.paused.join(" · ") })} detail={tp("pausedDetail")} title={tp("pausedTitle")}>
+                      {" "}<EvidenceChip ruleKey={SAFETY_RULES.newPain.key} grade={SAFETY_RULES.newPain.grade} />
+                    </InfoLine>
                   )}
                   {e.kind === "mma" && e.contact_blocked && (
-                    <span data-testid="plan-contact-blocked" className="block text-xs text-ink">{tp("contactBlocked")}</span>
+                    <InfoLine as="span" testId="plan-contact-blocked" className="block text-xs text-ink" text={tp("contactBlocked")} detail={tp("contactBlockedDetail")} title={tp("contactBlockedTitle")} />
                   )}
                 </span>
                 {e.kind === "gym" && e.session && showGym && (

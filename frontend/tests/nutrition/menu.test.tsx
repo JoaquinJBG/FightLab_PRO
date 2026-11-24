@@ -124,8 +124,12 @@ describe.each(["es", "en"] as const)("Menú y compra (%s)", (locale) => {
       "/api/proxy/coach/products": { body: { products: [] } },
     });
     renderApp(<MenuPage />, locale);
+    // Sin menú: estado vacío con una frase y «Preparar menú»; el formulario va en un panel inferior
+    expect(await screen.findByTestId("menu-empty")).toBeTruthy();
+    expect(screen.queryByTestId("menu-form")).toBeNull();
+    fireEvent.click(screen.getByTestId("menu-empty-prepare"));
     fireEvent.change(await screen.findByRole("combobox"), { target: { value: "5" } });
-    fireEvent.click(screen.getByRole("button", { name: cat.form.generate }));
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: cat.form.generate }));
     await waitFor(() => expect(fetch.mock.calls.some(([, i]) => i?.method === "POST")).toBe(true));
     const [, init] = fetch.mock.calls.find(([, i]) => i?.method === "POST")!;
     expect(JSON.parse(String(init!.body))).toEqual({
@@ -145,7 +149,7 @@ describe.each(["es", "en"] as const)("Menú y compra (%s)", (locale) => {
     mockApi({ "/api/proxy/coach/menu": { body: state() }, "/api/proxy/coach/products": { body: { products: [] } } });
     const { unmount } = renderApp(<MenuSettingsPage />, locale);
     expect(screen.getByTestId("menu-settings-kitchen").getAttribute("href")).toBe("/profile/kitchen");
-    expect(screen.getByTestId("menu-settings-myAi").getAttribute("href")).toBe("/profile/my-ai");
+    expect(screen.queryByTestId("menu-settings-myAi")).toBeNull(); // Mi IA se abre desde el Coach
     expect(await screen.findByTestId("tastes-form")).toBeTruthy();
     expect(screen.getByTestId("products-card")).toBeTruthy();
     unmount();
@@ -155,6 +159,11 @@ describe.each(["es", "en"] as const)("Menú y compra (%s)", (locale) => {
     expect(screen.queryByTestId("tastes-form")).toBeNull();
     expect(screen.queryByTestId("products-card")).toBeNull();
     expect(screen.queryByTestId("menu-kitchen-link")).toBeNull();
+    // Compacto: chips «Preparar menú» e «Importar» en la cabecera, sin la tarjeta de IA ni texto de intro
+    expect(screen.getByTestId("menu-prepare")).toBeTruthy();
+    expect(screen.getByTestId("menu-import-chip")).toBeTruthy();
+    expect(screen.queryByTestId("menu-form")).toBeNull();
+    expect(screen.queryByTestId("menu-ai-copy")).toBeNull();
     // Pestañas Menú / Compra / Batch
     expect(screen.getAllByRole("tab").map((t) => t.getAttribute("aria-selected"))).toEqual(["true", "false", "false"]);
     expect(screen.queryByTestId("shopping-list")).toBeNull();

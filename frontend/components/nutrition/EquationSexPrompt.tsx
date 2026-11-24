@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useUpdateProfile } from "@/lib/hooks";
+import { InfoLine } from "@/components/common/InfoLine";
 
 /** P7: sin `equation_sex` no hay objetivos de calorías ni de macros (las ecuaciones solo existen
  * para dos sexos). Se explica y se deja elegirlo; el resto de la app sigue funcionando. */
@@ -11,7 +12,7 @@ export function EquationSexPrompt() {
   return (
     <section data-testid="equation-sex-prompt" className="glass neon-edge mt-4 p-4">
       <p className="t-label text-ink">{t("title")}</p>
-      <p className="t-body mt-1.5 text-xs text-muted">{t("body")}</p>
+      <InfoLine className="t-body mt-1.5 text-xs text-muted" text={t("body")} detail={t("detail")} title={t("title")} />
       <div className="mt-3 grid grid-cols-2 gap-2">
         {(["female", "male"] as const).map((sex) => (
           <button

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import MenuPage from "@/app/(shell)/nutrition/menu/page";
+import CoachMenuAiPage from "@/app/(shell)/coach/menu-ai/page";
 import type { Menu } from "@/lib/menu";
 import { CATALOGS, mockApi, renderApp } from "../support/app";
 import { IMPORTED_MENU, importedState } from "../support/menu-f12";
@@ -46,7 +47,7 @@ describe.each(["es", "en"] as const)("R4-1 menú de tu IA (%s)", (locale) => {
     mockApi(routes({
       "/api/proxy/coach/menu/paste": { status: 422, body: { code: "no_valid_days", detail: "x", info: "2026-11-18", params: { days: 2 }, rejected } },
     }));
-    renderApp(<MenuPage />, locale);
+    renderApp(<CoachMenuAiPage />, locale);
     await paste();
     const error = await screen.findByTestId("menu-ai-error");
     expect(error.dataset.code).toBe("no_valid_days");
@@ -66,7 +67,7 @@ describe.each(["es", "en"] as const)("R4-1 menú de tu IA (%s)", (locale) => {
         body: { code: "start_taken", detail: "x", info: "2026-11-18", params: { old_ok: 2, old_days: 2, new_ok: 1, new_days: 2 } },
       },
     }));
-    renderApp(<MenuPage />, locale);
+    renderApp(<CoachMenuAiPage />, locale);
     await paste();
     const confirm = await screen.findByTestId("menu-ai-confirm");
     expect(confirm.textContent).toContain(
@@ -85,7 +86,7 @@ describe.each(["es", "en"] as const)("R4-1 menú de tu IA (%s)", (locale) => {
         },
       },
     }));
-    renderApp(<MenuPage />, locale);
+    renderApp(<CoachMenuAiPage />, locale);
     await paste();
     const done = await screen.findByTestId("menu-ai-done");
     expect(done.textContent).toContain(cat.ai.failing.split("{ok}")[0]);
@@ -113,7 +114,8 @@ describe("R4-2 «Preparar otro menú»", () => {
       "/api/proxy/coach/menu": (init) => (init?.method === "POST" ? { status: 201, body: created } : { body: importedState() }),
     }));
     renderApp(<MenuPage />, "es");
-    fireEvent.click(await screen.findByRole("button", { name: CATALOGS.es.menu.form.regenerate }));
+    fireEvent.click(await screen.findByTestId("menu-prepare"));
+    fireEvent.click(within(await screen.findByRole("dialog")).getByRole("button", { name: CATALOGS.es.menu.form.regenerate }));
     await waitFor(() => expect(nav.replace).toHaveBeenCalledWith("/nutrition/menu?id=42"));
   });
 });

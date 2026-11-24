@@ -92,12 +92,11 @@ export default function WeeklyPlanPage() {
   return (
     <div className="pt-4 pb-6">
       {header}
-      <p className="t-body mt-1 text-xs text-muted">{t("intro")}</p>
       <p className="t-label mt-2 text-muted">{t("weekOf", { date: fmtDate(shown?.week_start ?? state.data.week_start) })}</p>
 
       <form
         data-testid="plan-form"
-        className="glass mt-4 p-4"
+        className="glass mt-3 p-4"
         onSubmit={(e) => {
           e.preventDefault();
           generate.mutate({ gym_days: gymDays, mma_days: mmaDays });
@@ -117,8 +116,6 @@ export default function WeeklyPlanPage() {
           </p>
         )}
       </form>
-
-      <StrengthSetsCard />
 
       {shown && (
         <>
@@ -141,6 +138,8 @@ export default function WeeklyPlanPage() {
           <PlanView plan={shown} />
         </>
       )}
+
+      <StrengthSetsCard />
     </div>
   );
 }

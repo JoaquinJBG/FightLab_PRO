@@ -49,7 +49,7 @@ test("copiar el contexto para la IA y pegar su respuesta, rota y buena", async (
     });
   });
 
-  await page.goto("/nutrition/menu");
+  await page.goto("/coach/menu-ai");
   await page.getByTestId("menu-ai-copy").click();
   // Con portapapeles, «Copiado»; si el navegador no deja, el texto sale en un cuadro.
   const copied = page.getByTestId("menu-ai-copied");
@@ -72,6 +72,7 @@ test("copiar el contexto para la IA y pegar su respuesta, rota y buena", async (
   await page.getByTestId("menu-ai-save").click();
   await expect(page.getByTestId("menu-ai-done")).toContainText("Guardado: Menú de prueba");
   await expect(page.getByTestId("menu-ai-done")).toContainText("Los 2 días cuadran");
+  await page.getByTestId("coach-menu-ai-open").click();
   await expect(page.getByTestId("menu-origin")).toHaveAttribute("data-origin", "user_ai");
   await expect(page.getByTestId("menu-origin")).toHaveText("IA del usuario");
   expect(pastes).toHaveLength(2);

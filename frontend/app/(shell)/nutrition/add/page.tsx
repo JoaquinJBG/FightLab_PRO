@@ -18,6 +18,7 @@ import {
 } from "@/lib/nutrition";
 import { compressImage } from "@/lib/compress-image";
 import { ScanFood } from "@/components/scanner/ScanFood";
+import { CameraIcon } from "@/components/icons";
 import type { ScannedEntry } from "@/components/scanner/ScanResult";
 
 /* Foto → lista de alimentos detectados por la IA (visión de Claude).
@@ -227,18 +228,17 @@ function AddInner() {
   return (
     <div className="pt-4">
       <Link href="/nutrition" className="t-label text-muted">{t("back")}</Link>
-      <h1 className="t-display mt-2 text-2xl text-ink">{t.rich("title", { meal: tm(meal), neon: (c) => <span className="neon-text">{c}</span> })}</h1>
+      {/* Foto -> kcal: solo un icono de cámara en la cabecera */}
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <h1 className="t-display min-w-0 text-2xl text-ink">{t.rich("title", { meal: tm(meal), neon: (c) => <span className="neon-text">{c}</span> })}</h1>
+        <button type="button" onClick={takePhoto} disabled={analyzing} data-testid="photo-take" aria-label={t("photo.take")} title={t("photo.title")} className="btn btn-tonal btn-sm shrink-0 !px-2.5">
+          <CameraIcon className="h-5 w-5" />
+        </button>
+        <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onPhoto} />
+      </div>
 
-      {/* Foto -> kcal */}
+      {(analyzing || photoError || detected) && (
       <div className="glass neon-edge mt-4 p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="t-label text-ink">{t("photo.title")}</p>
-            <p className="t-body text-xs text-muted">{t("photo.intro")}</p>
-          </div>
-          <button onClick={takePhoto} disabled={analyzing} className="btn btn-tonal btn-sm shrink-0">{t("photo.take")}</button>
-          <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onPhoto} />
-        </div>
         {analyzing && <p className="pulse t-body mt-3 text-sm text-muted">{t("photo.analyzing")}</p>}
         {photoError && !analyzing && <p className="t-body mt-3 text-sm text-warn">{photoError}</p>}
         {detected && !analyzing && (
@@ -278,6 +278,7 @@ function AddInner() {
           </div>
         )}
       </div>
+      )}
 
       {/* código de barras: catálogo propio y luego Open Food Facts */}
       <ScanFood mode="diary" addLabel={t("addTo", { meal: tm(meal) })} onAdd={addScanned} />

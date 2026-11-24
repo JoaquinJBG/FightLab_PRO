@@ -43,18 +43,42 @@ describe("Plan de la semana (en)", () => {
     expect(within(tue).getByText("Hard sparring")).toBeTruthy();
     expect(within(tue).getByText("until a professional reviews vigorous work")).toBeTruthy();
     expect(within(tue).getByText("at 19:00")).toBeTruthy();
-    // Cada ejercicio lleva su chip; la carga sale del motor o no se inventa.
+    // Cada ejercicio es una fila (nombre · series × reps · carga) y su porqué va detrás de ⓘ.
     const items = screen.getAllByTestId("plan-item");
     expect(items).toHaveLength(6);
-    for (const item of items) expect(within(item).getAllByTestId("evidence-chip").length).toBeGreaterThan(0);
+    for (const item of items) {
+      expect(within(item).queryByTestId("evidence-chip")).toBeNull();
+      expect(within(item).getByTestId("plan-item-why-open")).toBeTruthy();
+    }
+    const why = (row: HTMLElement) => {
+      fireEvent.click(within(row).getByTestId("plan-item-why-open"));
+      return screen.getByTestId("plan-item-why");
+    };
+    const close = () => fireEvent.click(within(screen.getByRole("dialog")).getByText("Close"));
     const bench = items.find((i) => i.dataset.exercise === "Press banca")!;
+    expect(within(bench).getByText("3 × 8-12")).toBeTruthy();
     expect(within(bench).getByText(/62\.5 kg/)).toBeTruthy();
-    expect(within(bench).getByText("Same load, more reps")).toBeTruthy();
+    expect(within(bench).queryByText("Same load, more reps")).toBeNull();
+    let sheet = why(bench);
+    expect(within(sheet).getByText(/Same load, more reps/)).toBeTruthy();
+    expect(within(sheet).getAllByTestId("evidence-chip").length).toBeGreaterThan(0);
+    expect(within(sheet).getByTestId("plan-reason").dataset.code).toBe("strength_add_reps");
+    close();
     const rdl = items.find((i) => i.dataset.exercise === "Peso muerto rumano")!;
-    expect(within(rdl).getByText(/one you could lift 2-3 more times/)).toBeTruthy();
-    expect(within(rdl).getByText("Instead of Squat (paused)")).toBeTruthy();
+    // Cambiado por una lesión: se ve en la fila; el porqué, en el panel.
+    expect(within(rdl).getByTestId("plan-item-tag").textContent).toBe("Swap");
+    expect(within(rdl).getByText("Your load")).toBeTruthy();
+    sheet = why(rdl);
+    expect(within(sheet).getByText(/one you could lift 2-3 more times/)).toBeTruthy();
+    expect(within(sheet).getByText("Instead of Squat (paused)")).toBeTruthy();
+    expect(within(sheet).getByTestId("plan-reason").dataset.code).toBe("injury_unassessed");
+    close();
     const press = items.find((i) => i.dataset.exercise === "Prensa")!;
     expect(within(press).getByText(/At most 100 kg/)).toBeTruthy();
+    expect(within(press).getByTestId("plan-item-tag").textContent).toBe("Paused");
+    // Sin narrativa de la IA y sin párrafo de introducción.
+    expect(screen.queryByTestId("plan-narrative")).toBeNull();
+    expect(screen.getByTestId("plan-rotation").textContent).toContain("Rotation A, B");
     // Convenciones etiquetadas: rotación (del coach) y minutos de MMA como cardio (de FightLab).
     expect(screen.getAllByTestId("convention-coach").length).toBeGreaterThan(0);
     const cardio = screen.getByTestId("plan-cardio");
@@ -79,9 +103,19 @@ describe("Plan de la semana (en)", () => {
     renderEn(<WeeklyPlanPage />);
     const live = screen.getByTestId("plan-live");
     expect(live.textContent).toContain("Adjusted to your safety today");
+    // El aviso de seguridad se queda a la vista en una línea; el detalle, detrás de ⓘ.
     const noContact = within(live).getByTestId("plan-live-no-contact");
     expect(noContact.textContent).toContain("No contact until a clinician clears you");
-    expect(within(noContact).getByTestId("evidence-chip").getAttribute("data-grade")).toBe("strong");
+    fireEvent.click(within(live).getByTestId("plan-live-why-open"));
+    const detail = within(screen.getByTestId("plan-live-why")).getByTestId("plan-live-no-contact-detail");
+    expect(detail.textContent).toContain("step by step");
+    expect(within(detail).getByTestId("evidence-chip").getAttribute("data-grade")).toBe("strong");
+  });
+
+  it("no pinta la narrativa de la IA aunque el plan la traiga", () => {
+    state.plan = makeState({ draft: makePlan({ narrative: "A friendly AI summary of your week." }) });
+    renderEn(<WeeklyPlanPage />);
+    expect(screen.queryByText("A friendly AI summary of your week.")).toBeNull();
   });
 
   it("F9: el cardio dice la duración mínima de cada sesión, como convención de FightLab", () => {

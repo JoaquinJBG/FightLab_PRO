@@ -276,7 +276,10 @@ describe("Hoy", () => {
     renderApp(<TodayPage />);
     const plan = await screen.findByTestId("day-plan");
     const head = within(plan).getByTestId("plan-head-blow");
-    expect(head.textContent).toContain("el día del golpe no entrenes");
+    expect(head.textContent).toContain("Golpe en la cabeza");
+    expect(head.textContent).not.toContain("el día del golpe no entrenes"); // el detalle va detrás del ⓘ
+    fireEvent.click(within(plan).getByTestId("plan-head-blow-info"));
+    expect((await screen.findByRole("dialog")).textContent).toContain("El día del golpe no entrenes");
     expect(within(head).getAllByTestId("evidence-chip")).toHaveLength(2); // el bloqueo y la vuelta por fases
     const paused = within(plan).getByTestId("plan-paused");
     expect(paused.textContent).toContain("En pausa por tu lesión");

@@ -17,7 +17,7 @@ const registrar = [
   { href: "/training/gym", Icon: TrainingIcon, id: "gym", needs: "gym" },
   { href: "/training/mma", Icon: GloveIcon, id: "mma", needs: "combat" },
   { href: "/training/sports", Icon: RunIcon, id: "sports", needs: null },
-  { href: "/training/gym", Icon: ClipboardIcon, id: "history", needs: "gym" },
+  { href: "/training/history", Icon: ClipboardIcon, id: "history", needs: "any" },
 ] as const;
 
 const planificar = [
@@ -83,8 +83,8 @@ function TodayCard() {
 export default function TrainingHubPage() {
   const t = useTranslations("training.index");
   const shown = useDisciplines();
-  const visible = <T extends { needs: "gym" | "combat" | null }>(items: readonly T[]) =>
-    items.filter((i) => i.needs === null || shown[i.needs]);
+  const visible = <T extends { needs: "gym" | "combat" | "any" | null }>(items: readonly T[]) =>
+    items.filter((i) => i.needs === null || (i.needs === "any" ? shown.gym || shown.combat : shown[i.needs]));
   const registrarShown = visible(registrar);
   const planificarShown = visible(planificar);
 

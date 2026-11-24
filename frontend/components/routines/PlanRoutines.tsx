@@ -34,8 +34,20 @@ export function PlanRoutines({ planId }: { planId: number }) {
 
   return (
     <section data-testid="plan-routines" className="mt-4">
-      <p className="t-eyebrow text-muted">{t("title")}</p>
-      <p className="t-body mt-1 text-xs text-muted">{t("intro")}</p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="t-eyebrow text-muted">{t("title")}</p>
+        {data.in_sync && !asking && (
+          <button
+            type="button"
+            data-testid="plan-routines-regenerate"
+            className="btn btn-outline btn-sm !px-3 !py-1 text-xs"
+            disabled={sync.isPending}
+            onClick={() => (data.edited.length ? setAsking(true) : sync.mutate({ on_edited: "overwrite" }))}
+          >
+            {t("regenerate")}
+          </button>
+        )}
+      </div>
 
       {((stale && data.edited.length > 0) || asking) && (
         <div data-testid="plan-routines-edited" role="alert" className="glass mt-3 flex flex-col gap-2 p-3">
@@ -77,18 +89,6 @@ export function PlanRoutines({ planId }: { planId: number }) {
           <RoutineCard key={r.id} routine={r} folders={folders.data ?? []} />
         ))}
       </div>
-
-      {data.in_sync && !asking && (
-        <button
-          type="button"
-          data-testid="plan-routines-regenerate"
-          className="btn btn-outline btn-sm btn-block mt-3"
-          disabled={sync.isPending}
-          onClick={() => (data.edited.length ? setAsking(true) : sync.mutate({ on_edited: "overwrite" }))}
-        >
-          {t("regenerate")}
-        </button>
-      )}
     </section>
   );
 }
