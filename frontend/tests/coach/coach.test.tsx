@@ -63,6 +63,12 @@ describe("vista Coach en inglés", () => {
     expectClean(container);
   });
 
+  it("la IA vive aquí: la cabecera enlaza a «Menú con tu IA» y a «Mi IA»", () => {
+    renderEn(<CoachPage />);
+    expect(screen.getByTestId("coach-menu-ai-link").getAttribute("href")).toBe("/coach/menu-ai");
+    expect(screen.getByTestId("coach-my-ai-link").getAttribute("href")).toBe("/profile/my-ai");
+  });
+
   it("con datos: carga alta, recuperación baja y pesaje cercano", () => {
     state.logs = tiredLogs;
     state.metrics = { ...baseMetrics, weekAU: 600, acwr: 1.6, weekVsAvgPct: 60, ratioDaysLeft: 0, historyDays: 28, monotonia: 2.1 };

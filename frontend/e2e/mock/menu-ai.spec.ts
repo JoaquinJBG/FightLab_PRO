@@ -49,7 +49,7 @@ test("copiar el contexto para la IA y pegar su respuesta, rota y buena", async (
     });
   });
 
-  await page.goto("/nutrition/menu");
+  await page.goto("/coach/menu-ai");
   await page.getByTestId("menu-ai-copy").click();
   // Con portapapeles, «Copiado»; si el navegador no deja, el texto sale en un cuadro.
   const copied = page.getByTestId("menu-ai-copied");

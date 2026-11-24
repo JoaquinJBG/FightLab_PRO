@@ -372,10 +372,11 @@
     },
     "noSex": {
       "title": "Sin objetivos de calorías por ahora",
-      "body": "Las ecuaciones de gasto energético solo existen para dos sexos, femenino y masculino. Hasta que elijas cuáles usar no podemos darte objetivos de calorías ni de macros; el resto de la app funciona igual y puedes elegirlo cuando quieras.",
+      "body": "Sin sexo para la ecuación no hay objetivos de kcal ni macros.",
       "female": "Ecuaciones femeninas",
       "male": "Ecuaciones masculinas",
-      "error": "No se pudo guardar. Inténtalo de nuevo."
+      "error": "No se pudo guardar. Inténtalo de nuevo.",
+      "detail": "Las ecuaciones de gasto energético solo existen para dos sexos, femenino y masculino. Hasta que elijas cuáles usar no podemos darte objetivos de calorías ni de macros; el resto de la app funciona igual y puedes elegirlo cuando quieras."
     },
     "details": {
       "title": "Cómo se calculan",
@@ -406,7 +407,8 @@
       "loadError": "No se pudo cargar tu pesaje.",
       "blocked": {
         "title": "Sin pesaje por ahora",
-        "body": "Con los avisos de seguridad que tienes, FightLab no muestra pesaje, cuenta atrás ni categoría de peso. Es para cuidarte: lo importante ahora es lo que te indique tu profesional."
+        "body": "Con tus avisos de seguridad no hay pesaje ni categoría de peso.",
+        "detail": "Con los avisos de seguridad que tienes, FightLab no muestra pesaje, cuenta atrás ni categoría de peso. Es para cuidarte: lo importante ahora es lo que te indique tu profesional."
       },
       "daysLeft": "días al pesaje",
       "current": "actual (kg)",
@@ -442,7 +444,6 @@
       "copyYesterday": "Copiar {meal} de ayer",
       "photo": {
         "title": "Foto → kcal",
-        "intro": "La IA detecta los alimentos del plato. Revisa y ajusta antes de añadir.",
         "take": "📷 Hacer foto",
         "analyzing": "Analizando la foto…",
         "removeGrams": "Quitar 10 g de {name}",
@@ -1042,7 +1043,7 @@
         "sat": "Sáb",
         "sun": "Dom"
       },
-      "weekHint": "Apunta qué toca cada día. Se guarda en tu cuenta y se sincroniza entre tus dispositivos.",
+      "weekHint": "Qué toca cada día. Se sincroniza en tu cuenta.",
       "recent": "Últimos entrenos",
       "workout": "Entreno",
       "level": "Nivel",
@@ -1172,7 +1173,7 @@
       "previousAria": "Copiar serie anterior: {preview}",
       "previewKg": "{kg} kg × {reps}",
       "previewReps": "{reps} reps",
-      "breakdownLocalOnly": "Desglose solo en este dispositivo: la sesión es demasiado grande para sincronizar el detalle por ejercicio.",
+      "breakdownLocalOnly": "Desglose solo en este dispositivo (sesión muy grande).",
       "discardConfirm": "¿Descartar el entreno? Se perderán todas las series.",
       "discardConfirmBtn": "Descartar",
       "cancel": "Cancelar",
@@ -1371,7 +1372,10 @@
       "droppedSets": "«{title}» se guardó sin {n} serie(s) con valores imposibles.",
       "untitled": "Sesión",
       "noReason": "el servidor no dio el motivo.",
-      "dismiss": "Cerrar"
+      "dismiss": "Cerrar",
+      "back": "← Entreno",
+      "title": "Historial",
+      "empty": "Aún no hay sesiones."
     },
     "calendar": {
       "prev": "Mes anterior",
@@ -1623,7 +1627,9 @@
         "tone": "Tono: {value}",
         "alerts": "Avisos: {value}"
       }
-    }
+    },
+    "menuAi": "Menú con tu IA",
+    "myAi": "Mi IA"
   },
   "profile": {
     "title": "Perfil",
@@ -2378,12 +2384,11 @@
   "menu": {
     "back": "← Nutrición",
     "title": "Menú y compra",
-    "intro": "El coach propone los platos y su motor comprueba cada día contra tus objetivos de kcal, proteína, grasa y fibra. Los días que no pasan no se guardan.",
     "loading": "Cargando…",
     "error": "No se pudo cargar el menú.",
-    "simulated": "Automático, sin IA: platos de FightLab y de tus menús anteriores, con tus gustos, tus comensales y Mi cocina. Los números son del motor del coach.",
+    "simulated": "Automático, sin IA. Números del motor del coach.",
     "engine": "Motor del coach {sha}",
-    "rateHint": "Toca un plato para valorarlo: los que te gustan vuelven en próximos menús y los que no repetirías no salen más.",
+    "rateHint": "Toca un plato para valorarlo.",
     "blocked": {
       "title": "Sin menú por ahora",
       "body": "Con tus avisos de seguridad, el coach no calcula objetivos de kcal, así que no hay menú que comprobar."
@@ -2531,7 +2536,7 @@
     },
     "tastes": {
       "title": "Tus gustos",
-      "intro": "Las alergias e intolerancias dejan fuera un plato; lo demás solo avisa. Lo que tienes siempre en casa no entra en la compra.",
+      "intro": "Alergias e intolerancias dejan fuera un plato; lo demás solo avisa.",
       "allergies": "Alergias",
       "intolerances": "Intolerancias",
       "disliked_foods": "No te gusta",
@@ -2671,9 +2676,8 @@
       }
     },
     "import": {
-      "title": "Importar un menú",
-      "intro": "Un JSON de la app (schema 1) o un menu.yaml del coach. Si ya lo tenías, se sustituye y se queda lo tachado de la lista.",
-      "choose": "Elegir archivo",
+      "title": "Importar un menú (JSON de la app o menu.yaml del coach)",
+      "choose": "Importar",
       "importing": "Importando…",
       "imported": "Importado: {title}, {days} días, {sessions} sesiones de batch y {items} cosas en la lista.",
       "replaced": "Sustituido: {title}, {days} días; se mantienen {kept} cosas tachadas.",
@@ -2734,7 +2738,9 @@
       "batch": "Batch"
     },
     "batchEmpty": "Este menú no tiene sesiones de batch: se crean al generarlo con tupper y batch.",
-    "noMenuYet": "Aún no hay menú: créalo en la pestaña Menú."
+    "noMenuYet": "Aún no hay menú.",
+    "prepare": "Preparar menú",
+    "empty": "Aún no tienes menú."
   },
   "sessionCheck": {
     "title": "Sesión vigorosa: mejor con revisión",
@@ -3010,9 +3016,15 @@
       "mma": "MMA",
       "at": "a las {time}",
       "openSession": "Empezar la sesión {session}",
-      "headBlow": "Golpe en la cabeza: el día del golpe no entrenes, y hasta que un clínico te dé el alta, nada de contacto ni entrenos duros.",
-      "paused": "En pausa por tu lesión (sin progresión, y sin carga si nadie la ha valorado): {exercises}",
-      "contactBlocked": "Sin contacto: sparring, clinch, drills con compañero y grappling en vivo, fuera hasta el alta de un clínico."
+      "headBlow": "Golpe en la cabeza: sin contacto ni entrenos duros.",
+      "paused": "En pausa por tu lesión: {exercises}",
+      "contactBlocked": "Sin contacto hasta el alta.",
+      "headBlowTitle": "Golpe en la cabeza",
+      "headBlowDetail": "El día del golpe no entrenes, y hasta que un clínico te dé el alta, nada de contacto ni entrenos duros.",
+      "contactBlockedTitle": "Sin contacto",
+      "contactBlockedDetail": "Sparring, clinch, drills con compañero y grappling en vivo, fuera hasta el alta de un clínico.",
+      "pausedTitle": "Ejercicio en pausa",
+      "pausedDetail": "Sin progresión, y sin carga si nadie la ha valorado."
     },
     "dayType": {
       "title": "Qué toca hoy",
@@ -3107,7 +3119,8 @@
       "noTraining": "Sin entrenar hasta revisión médica"
     },
     "sheet": {
-      "close": "Cerrar"
+      "close": "Cerrar",
+      "more": "Más detalle"
     },
     "quick": {
       "title": "Apuntar rápido",
@@ -3610,7 +3623,7 @@
       "title": "Programas clásicos",
       "sub": "Full body, torso-pierna y empuje-tirón-pierna, listos para cargar",
       "back": "← Rutinas",
-      "intro": "Cada programa se copia como rutinas tuyas en una carpeta nueva: luego las cambias como quieras.",
+      "intro": "Cada programa se copia como rutinas tuyas, editables.",
       "days": "{n} días/sem",
       "load": "Cargar como mis rutinas",
       "loading": "Cargando…",
@@ -3733,7 +3746,7 @@
   },
   "myAi": {
     "link": "Mi IA (menús)",
-    "back": "← Ajustes del menú",
+    "back": "← Coach",
     "title": "Mi IA",
     "intro": "Prepara tus menús con tu propia IA (tu suscripción de Claude u otra). FightLab no usa ninguna IA de pago: solo le pasa tus datos y comprueba el menú con su motor.",
     "loading": "Cargando…",
@@ -3816,13 +3829,14 @@
       "kitchen": {
         "title": "Mi cocina",
         "sub": "Menaje y comensales"
-      },
-      "myAi": {
-        "title": "Mi IA",
-        "sub": "Conecta tu propia IA para los menús"
       }
     },
     "loading": "Cargando…",
     "error": "No se pudieron cargar los gustos."
+  },
+  "coachMenuAi": {
+    "back": "← Coach",
+    "title": "Menú con tu IA",
+    "days": "Días"
   }
 }

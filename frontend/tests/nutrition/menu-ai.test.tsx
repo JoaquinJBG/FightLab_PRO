@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import MenuPage from "@/app/(shell)/nutrition/menu/page";
+import CoachMenuAiPage from "@/app/(shell)/coach/menu-ai/page"; // «Con tu IA» vive en el Coach
 import MyAiPage from "@/app/(shell)/profile/my-ai/page";
 import { buildPrompt, contextUrl, copyLater, menuOrigin, type MenuContext } from "@/lib/menu-ai";
 import { CATALOGS, mockApi, renderApp } from "../support/app";
@@ -90,7 +91,7 @@ describe.each(["es", "en"] as const)("Prepararlo con mi IA (%s)", (locale) => {
   it("copia las instrucciones y los datos del menú pedido", async () => {
     const writeText = stubClipboard();
     const fetch = mockApi(routes());
-    renderApp(<MenuPage />, locale);
+    renderApp(<CoachMenuAiPage />, locale);
     fireEvent.click(await screen.findByTestId("menu-ai-copy"));
     const status = await screen.findByTestId("menu-ai-copied");
     expect(status.textContent).toContain("2026-11-02");
@@ -105,7 +106,7 @@ describe.each(["es", "en"] as const)("Prepararlo con mi IA (%s)", (locale) => {
   it("si no puede copiar, enseña el texto para copiarlo a mano", async () => {
     stubClipboard(vi.fn(async () => { throw new Error("denied"); }));
     mockApi(routes());
-    renderApp(<MenuPage />, locale);
+    renderApp(<CoachMenuAiPage />, locale);
     fireEvent.click(await screen.findByTestId("menu-ai-copy"));
     const box = (await screen.findByTestId("menu-ai-prompt")) as HTMLTextAreaElement;
     expect(box.value.startsWith(CONTEXT.instructions)).toBe(true);
@@ -114,7 +115,7 @@ describe.each(["es", "en"] as const)("Prepararlo con mi IA (%s)", (locale) => {
 
   it("pegar un JSON válido lo guarda y dice qué días no cuadran", async () => {
     const fetch = mockApi(routes({ "/api/proxy/coach/menu/paste": { status: 201, body: pasted() } }));
-    renderApp(<MenuPage />, locale);
+    renderApp(<CoachMenuAiPage />, locale);
     const area = await screen.findByTestId("menu-ai-paste");
     fireEvent.change(area, { target: { value: AI_REPLY } });
     fireEvent.click(screen.getByTestId("menu-ai-save"));
@@ -134,7 +135,7 @@ describe.each(["es", "en"] as const)("Prepararlo con mi IA (%s)", (locale) => {
         body: { code: "paste_not_json", detail: "x", info: "line 1, column 24: Expecting value", params: { line: 1, column: 24 } },
       },
     }));
-    renderApp(<MenuPage />, locale);
+    renderApp(<CoachMenuAiPage />, locale);
     fireEvent.change(await screen.findByTestId("menu-ai-paste"), { target: { value: '{"schema": 1, "days": [}' } });
     fireEvent.click(screen.getByTestId("menu-ai-save"));
     const error = await screen.findByTestId("menu-ai-error");
@@ -147,7 +148,7 @@ describe.each(["es", "en"] as const)("Prepararlo con mi IA (%s)", (locale) => {
     mockApi(routes({
       "/api/proxy/coach/menu/paste": { status: 400, body: { code: "import_invalid", detail: "x", info: "2026-11-02: dish_id D9", params: {} } },
     }));
-    renderApp(<MenuPage />, locale);
+    renderApp(<CoachMenuAiPage />, locale);
     fireEvent.change(await screen.findByTestId("menu-ai-paste"), { target: { value: '{"schema": 1}' } });
     fireEvent.click(screen.getByTestId("menu-ai-save"));
     const error = await screen.findByTestId("menu-ai-error");
@@ -162,7 +163,7 @@ describe.each(["es", "en"] as const)("Prepararlo con mi IA (%s)", (locale) => {
         ? { status: 409, body: { code: "start_taken", detail: "x", info: "2026-11-02", params: {} } }
         : { status: 201, body: pasted() }),
     }));
-    renderApp(<MenuPage />, locale);
+    renderApp(<CoachMenuAiPage />, locale);
     fireEvent.change(await screen.findByTestId("menu-ai-paste"), { target: { value: AI_REPLY } });
     fireEvent.click(screen.getByTestId("menu-ai-save"));
     const confirm = await screen.findByTestId("menu-ai-confirm");
@@ -177,7 +178,7 @@ describe.each(["es", "en"] as const)("Prepararlo con mi IA (%s)", (locale) => {
     const fetch = mockApi(routes({
       "/api/proxy/coach/menu/paste": { status: 409, body: { code: "start_taken", detail: "x", info: "2026-11-02", params: {} } },
     }));
-    renderApp(<MenuPage />, locale);
+    renderApp(<CoachMenuAiPage />, locale);
     fireEvent.change(await screen.findByTestId("menu-ai-paste"), { target: { value: AI_REPLY } });
     fireEvent.click(screen.getByTestId("menu-ai-save"));
     const confirm = await screen.findByTestId("menu-ai-confirm");

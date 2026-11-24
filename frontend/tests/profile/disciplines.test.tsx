@@ -83,17 +83,25 @@ describe("Perfil: «Qué entrenas»", () => {
 describe("Entreno: qué se oculta", () => {
   const hrefs = (c: HTMLElement) => Array.from(c.querySelectorAll("a")).map((a) => a.getAttribute("href"));
 
+  it("sin gimnasio ni contacto: el Historial también se va", async () => {
+    mockApi(profileWith({ show_gym: false, show_combat: false }));
+    renderApp(<TrainingHubPage />);
+    await waitFor(() => expect(screen.queryByTestId("hub-gym")).toBeNull());
+    expect(screen.queryByTestId("hub-history")).toBeNull();
+    expect(screen.getByTestId("hub-sports")).toBeTruthy();
+  });
+
   it("por defecto ve todo", async () => {
     mockApi({ ...profileWith({}), "/api/proxy/coach/today": { body: DAY } });
     renderApp(<TrainingHubPage />);
     for (const id of ["gym", "mma", "sports", "history", "week", "routines"]) expect(screen.getByTestId(`hub-${id}`)).toBeTruthy();
   });
 
-  it("sin gimnasio: fuera Gimnasio, Historial y Mis rutinas; Mi semana queda a ancho completo", async () => {
+  it("sin gimnasio: fuera Gimnasio y Mis rutinas; Historial sigue (hay combate); Mi semana a ancho completo", async () => {
     mockApi(profileWith({ show_gym: false }));
     renderApp(<TrainingHubPage />);
     await waitFor(() => expect(screen.queryByTestId("hub-gym")).toBeNull());
-    expect(screen.queryByTestId("hub-history")).toBeNull();
+    expect(screen.getByTestId("hub-history").getAttribute("href")).toBe("/training/history");
     expect(screen.queryByTestId("hub-routines")).toBeNull();
     expect(screen.getByTestId("hub-mma")).toBeTruthy();
     expect(screen.getByTestId("hub-sports")).toBeTruthy();

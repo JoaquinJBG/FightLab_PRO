@@ -15,7 +15,6 @@ export default function MenuSettingsPage() {
 
   const rows = [
     { href: "/profile/kitchen", id: "kitchen" },
-    { href: "/profile/my-ai", id: "myAi" },
   ] as const;
 
   return (

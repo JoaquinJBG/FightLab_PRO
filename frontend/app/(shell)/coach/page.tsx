@@ -213,9 +213,15 @@ export default function CoachPage() {
 
   return (
     <div className="pt-4">
-      <div className="flex items-center gap-2">
-        <span className="text-neon"><CoachIcon className="h-6 w-6" /></span>
-        <h1 className="t-display text-2xl text-ink">{t("title")}</h1>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="text-neon"><CoachIcon className="h-6 w-6" /></span>
+          <h1 className="t-display text-2xl text-ink">{t("title")}</h1>
+        </div>
+        <div className="flex shrink-0 gap-1.5">
+          <Link href="/coach/menu-ai" data-testid="coach-menu-ai-link" className="btn btn-tonal btn-sm">{t("menuAi")}</Link>
+          <Link href="/profile/my-ai" data-testid="coach-my-ai-link" className="btn btn-tonal btn-sm">{t("myAi")}</Link>
+        </div>
       </div>
 
       {/* Contexto real */}

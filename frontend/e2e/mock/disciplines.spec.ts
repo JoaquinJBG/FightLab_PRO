@@ -29,7 +29,7 @@ test("apagar Gimnasio en Perfil lo quita del hub de Entreno; volver a encenderlo
   await page.getByTestId("tab-bar").getByRole("link", { name: "Entreno" }).click();
   await expect(page.getByTestId("hub-mma")).toBeVisible();
   await expect(page.getByTestId("hub-sports")).toBeVisible();
-  for (const id of ["gym", "history", "routines"]) await expect(page.getByTestId(`hub-${id}`)).toHaveCount(0);
+  for (const id of ["gym", "routines"]) await expect(page.getByTestId(`hub-${id}`)).toHaveCount(0);
 
   // La ruta sigue abierta por URL
   await page.goto("/training/gym");

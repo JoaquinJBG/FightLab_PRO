@@ -56,7 +56,7 @@ describe("Gimnasio (en)", () => {
     const { container } = renderEn(<GymPage />);
     expect(screen.queryByText("Create routine")).toBeNull();
     expect(screen.queryByText("Simulated AI")).toBeNull();
-    expect(screen.getByText(/saved to your account/)).toBeTruthy();
+    expect(screen.getByText(/Synced to your account/)).toBeTruthy();
     expectClean(container);
   });
 });
