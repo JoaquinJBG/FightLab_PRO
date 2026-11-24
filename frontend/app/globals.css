@@ -326,7 +326,6 @@ select.field option {
   font-family: var(--font-display);
   font-weight: 800;
   letter-spacing: -0.04em;
-  text-transform: lowercase;
   line-height: 1.15;
   font-size: 1.25rem;
 }
