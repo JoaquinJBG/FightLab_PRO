@@ -1,11 +1,12 @@
 "use client";
 
 import { roundGrams } from "@/lib/nutrition";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { EvidenceChip } from "@/components/evidence/EvidenceChip";
-import { ChevronRight } from "@/components/icons";
+import { ChevronRight, InfoIcon } from "@/components/icons";
+import { BottomSheet } from "@/components/today/BottomSheet";
 import { EXERCISE_KEYS } from "@/lib/gym";
 import { intlLocale } from "@/lib/locale";
 import {
@@ -64,10 +65,65 @@ export function ReasonLine({ reason }: { reason: CoachReason }) {
   );
 }
 
-function Section({ title, children, testId }: { title: string; children: ReactNode; testId?: string }) {
+/** Botón ⓘ que abre el detalle en un panel inferior (docs/ux/simplificar.md: las explicaciones
+ * van detrás de un toque, nunca en un párrafo fijo). */
+export function InfoSheet({ label, title, testId, children }: {
+  label: string;
+  title: string;
+  testId: string;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        type="button"
+        data-testid={`${testId}-open`}
+        aria-label={label}
+        aria-haspopup="dialog"
+        onClick={() => setOpen(true)}
+        className="-my-1.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted hover:text-neon"
+      >
+        <InfoIcon className="h-4 w-4" />
+      </button>
+      {open && (
+        <BottomSheet title={title} onClose={() => setOpen(false)} testId={testId}>
+          {children}
+        </BottomSheet>
+      )}
+    </>
+  );
+}
+
+/** Un aviso en una línea, con su detalle detrás de ⓘ. */
+function NoticeLine({ testId, color, title, label, children, extra }: {
+  testId: string;
+  color: string;
+  title: string;
+  label: string;
+  children: ReactNode;
+  extra?: ReactNode;
+}) {
+  return (
+    <section data-testid={testId} className="glass mt-3 px-4 py-2.5" style={{ borderColor: color }}>
+      <div className="flex items-center justify-between gap-2">
+        <p className="t-title text-sm text-ink">{title}</p>
+        <InfoSheet label={label} title={title} testId={`${testId}-why`}>
+          {children}
+        </InfoSheet>
+      </div>
+      {extra}
+    </section>
+  );
+}
+
+function Section({ title, children, testId, action }: { title: string; children: ReactNode; testId?: string; action?: ReactNode }) {
   return (
     <section data-testid={testId} className="glass mt-4 p-4">
-      <p className="t-eyebrow text-muted">{title}</p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="t-eyebrow text-muted">{title}</p>
+        {action}
+      </div>
       <div className="mt-3">{children}</div>
     </section>
   );
@@ -79,31 +135,46 @@ function ItemRow({ item, grades }: { item: PlanItem; grades: Record<string, stri
   const locale = intlLocale(useLocale());
   const kg = (v: number) => v.toLocaleString(locale);
   let load: string;
-  if (item.load_kg === null) load = item.action === "paused" ? t("item.pausedNoLoad") : t("item.noLoad");
-  else if (item.action === "paused") load = t("item.ceiling", { kg: kg(item.load_kg) });
-  else load = t("item.load", { kg: kg(item.load_kg) });
+  let short: string;
+  if (item.load_kg === null) {
+    load = item.action === "paused" ? t("item.pausedNoLoad") : t("item.noLoad");
+    short = item.action === "paused" ? t("item.pausedNoLoadShort") : t("item.noLoadShort");
+  } else {
+    load = item.action === "paused" ? t("item.ceiling", { kg: kg(item.load_kg) }) : t("item.load", { kg: kg(item.load_kg) });
+    short = load;
+  }
+  // Lo de seguridad se queda a la vista en una palabra: en pausa o cambiado por una lesión.
+  const tag = item.action === "paused" ? t("item.pausedTag") : item.swapped_from ? t("item.swappedTag") : null;
+  const name = label(item.exercise);
+  const scheme = item.sets > 0 ? t("item.scheme", { sets: item.sets, low: item.rep_range[0], high: item.rep_range[1] }) : null;
   return (
-    <li data-testid="plan-item" data-exercise={item.exercise} data-action={item.action} className="flex flex-col gap-1 border-t border-[rgba(150,190,255,0.08)] pt-2 first:border-t-0 first:pt-0">
-      <div className="flex items-baseline justify-between gap-2">
-        <p className="t-title text-sm text-ink">
-          {label(item.exercise)} <span className="t-body text-[11px] text-muted">· {t(`patterns.${item.pattern}`)}</span>
-        </p>
-        {item.sets > 0 && (
-          <span className="stat shrink-0 text-sm text-neon">{t("item.scheme", { sets: item.sets, low: item.rep_range[0], high: item.rep_range[1] })}</span>
-        )}
-      </div>
-      <p className="t-body text-xs text-ink">
-        {load} · <span className="text-muted">{t(`actions.${item.action}`)}</span>
+    <li data-testid="plan-item" data-exercise={item.exercise} data-action={item.action} className="flex items-center gap-2 border-t border-[rgba(150,190,255,0.08)] py-1.5 first:border-t-0">
+      <p className="t-body min-w-0 flex-1 truncate text-sm text-ink">
+        {name}
+        {tag && <span data-testid="plan-item-tag" className="ml-1.5 text-[11px] text-warn">{tag}</span>}
       </p>
-      {item.swapped_from && <p className="t-body text-[11px] text-muted">{t("item.swapped", { name: label(item.swapped_from) })}</p>}
-      <div className="flex flex-wrap items-center gap-2">
-        <LineChip ruleKey={item.rule_key} grades={grades} />
-        <span className="t-body text-[11px] text-muted">{t(`setsBasis.${item.sets_basis}`)}</span>
-        {item.sets_basis === "coach_convention" && <LineChip ruleKey={null} grades={grades} convention="coach" />}
-        {item.sets_basis === "deload" && <LineChip ruleKey={null} grades={grades} />}
-        {item.sets_rule_key && <LineChip ruleKey={item.sets_rule_key} grades={grades} />}
-      </div>
-      {item.reasons.length > 0 && <ul className="flex flex-col gap-1">{item.reasons.map((r, i) => <ReasonLine key={`${r.code}-${i}`} reason={r} />)}</ul>}
+      {scheme && <span className="stat shrink-0 text-xs text-neon">{scheme}</span>}
+      <span className="t-body max-w-[34%] shrink-0 truncate text-right text-xs text-muted">{short}</span>
+      <InfoSheet label={t("item.why", { name })} title={name} testId="plan-item-why">
+        <div className="flex flex-col gap-2">
+          <p className="t-body text-sm text-ink">
+            {scheme && <span className="stat text-neon">{scheme} · </span>}
+            {load}
+          </p>
+          <p className="t-body text-xs text-muted">
+            {t(`patterns.${item.pattern}`)} · {t(`actions.${item.action}`)}
+          </p>
+          {item.swapped_from && <p className="t-body text-xs text-muted">{t("item.swapped", { name: label(item.swapped_from) })}</p>}
+          <div className="flex flex-wrap items-center gap-2">
+            <LineChip ruleKey={item.rule_key} grades={grades} />
+            <span className="t-body text-[11px] text-muted">{t(`setsBasis.${item.sets_basis}`)}</span>
+            {item.sets_basis === "coach_convention" && <LineChip ruleKey={null} grades={grades} convention="coach" />}
+            {item.sets_basis === "deload" && <LineChip ruleKey={null} grades={grades} />}
+            {item.sets_rule_key && <LineChip ruleKey={item.sets_rule_key} grades={grades} />}
+          </div>
+          {item.reasons.length > 0 && <ul className="flex flex-col gap-1">{item.reasons.map((r, i) => <ReasonLine key={`${r.code}-${i}`} reason={r} />)}</ul>}
+        </div>
+      </InfoSheet>
     </li>
   );
 }
@@ -115,17 +186,28 @@ export function SessionCard({ session, grades, action, deload }: {
   deload?: PlanDeload | null;
 }) {
   const t = useTranslations("weeklyPlan");
+  const title = t("session", { key: session.key });
   return (
-    <div data-testid="plan-session" data-session={session.key} className="rounded-2xl border border-[rgba(150,190,255,0.1)] p-3">
+    <div data-testid="plan-session" data-session={session.key} className="rounded-2xl border border-[rgba(150,190,255,0.1)] px-3 py-2.5">
       <div className="flex items-center justify-between gap-2">
-        <p className="t-title text-ink">{t("session", { key: session.key })}</p>
-        <LineChip ruleKey={session.rule_key} grades={grades} />
+        <p className="t-title text-ink">{title}</p>
+        <p className="t-body flex items-center gap-1 text-[11px] text-muted">
+          {deload ? t("deload.effortShort", { rir: deload.stop_rir }) : t("effortShort", { low: session.effort.rir[0], high: session.effort.rir[1] })}
+          <InfoSheet label={t("sessionWhy", { key: session.key })} title={title} testId="plan-session-why">
+            <div className="flex flex-col gap-2">
+              <p className="t-body flex flex-wrap items-center gap-2 text-sm text-ink">
+                {deload ? t("deload.effort", { rir: deload.stop_rir }) : t("effort", { low: session.effort.rir[0], high: session.effort.rir[1] })}
+                <LineChip ruleKey={session.effort.rule_key} grades={grades} />
+              </p>
+              <p className="t-body flex flex-wrap items-center gap-2 text-xs text-muted">
+                {t("fullBody")}
+                <LineChip ruleKey={session.rule_key} grades={grades} />
+              </p>
+            </div>
+          </InfoSheet>
+        </p>
       </div>
-      <p className="t-body mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
-        {deload ? t("deload.effort", { rir: deload.stop_rir }) : t("effort", { low: session.effort.rir[0], high: session.effort.rir[1] })}
-        <LineChip ruleKey={session.effort.rule_key} grades={grades} />
-      </p>
-      <ul className="mt-3 flex flex-col gap-2">
+      <ul className="mt-1.5 flex flex-col">
         {session.items.map((item) => <ItemRow key={`${item.pattern}-${item.exercise}`} item={item} grades={grades} />)}
       </ul>
       {action}
@@ -185,8 +267,9 @@ function DayRow({ day, entries, grades }: { day: string; entries: ScheduleEntry[
   );
 }
 
-/** El plan de la semana completo, con la regla de cada línea. `sessionAction` pinta el botón de
- * cada sesión (en Mi rutina, "Empezar sesión"). */
+/** El plan de la semana completo, con la regla de cada línea detrás de ⓘ. `sessionAction` pinta
+ * el botón de cada sesión (en Mi rutina, "Empezar sesión"). La narrativa de la IA no se pinta
+ * aquí (docs/ux/simplificar.md: IA solo en Coach). */
 export function PlanView({ plan, sessionAction }: { plan: WeeklyPlan; sessionAction?: (session: PlanSession) => ReactNode }) {
   const t = useTranslations("weeklyPlan");
   const ts = useTranslations("safety");
@@ -195,36 +278,33 @@ export function PlanView({ plan, sessionAction }: { plan: WeeklyPlan; sessionAct
   const byDay = (day: string) => plan.training_schedule.filter((e) => e.day === day);
   const { cardio, nutrition } = plan;
   const n = (v: number) => v.toLocaleString(locale);
+  const rotationKeys = plan.sessions.map((s) => s.key).join(", ");
 
   return (
     <div data-testid="weekly-plan" data-status={plan.status}>
-      {plan.narrative && (
-        <Section title={t("sections.narrative")} testId="plan-narrative">
-          <p className="t-body text-sm text-ink">{plan.narrative}</p>
-          <p className="t-body mt-2 text-[11px] text-muted">{t("narrativeNote")}</p>
-        </Section>
-      )}
-
       {plan.live && (plan.live.changed || plan.live.no_contact) && (
-        <section data-testid="plan-live" className="glass mt-4 p-4" style={{ borderColor: "#ff5a6e" }}>
-          <p className="t-title text-ink">{t("live.title")}</p>
-          <p className="t-body mt-1 text-sm text-ink">{t("live.body")}</p>
+        <NoticeLine
+          testId="plan-live"
+          color="#ff5a6e"
+          title={t("live.title")}
+          label={t("live.why")}
+          extra={plan.live.no_contact && (
+            <p data-testid="plan-live-no-contact" className="t-body mt-1 text-xs text-ink">{t("live.noContactShort")}</p>
+          )}
+        >
+          <p className="t-body text-sm text-ink">{t("live.body")}</p>
           {plan.live.no_contact && (
-            <p data-testid="plan-live-no-contact" className="t-body mt-2 flex flex-wrap items-center gap-2 text-sm text-ink">
+            <p data-testid="plan-live-no-contact-detail" className="t-body mt-2 flex flex-wrap items-center gap-2 text-sm text-ink">
               {t("live.noContact")}
               <LineChip ruleKey={plan.live.return_rule_key} grades={grades} />
             </p>
           )}
-        </section>
+        </NoticeLine>
       )}
 
       {plan.deload && (
-        <section data-testid="plan-deload" className="glass mt-4 p-4" style={{ borderColor: "#ffd25a" }}>
-          <p className="t-title flex flex-wrap items-center gap-2 text-ink">
-            {t("deload.title")}
-            <LineChip ruleKey={plan.deload.rule_key} grades={grades} />
-          </p>
-          <p className="t-body mt-1 text-sm text-ink">
+        <NoticeLine testId="plan-deload" color="#ffd25a" title={t("deload.title")} label={t("deload.why")}>
+          <p className="t-body text-sm text-ink">
             {t("deload.body", {
               low: Math.round(plan.deload.volume_cut[0] * 100),
               high: Math.round(plan.deload.volume_cut[1] * 100),
@@ -236,20 +316,31 @@ export function PlanView({ plan, sessionAction }: { plan: WeeklyPlan; sessionAct
               {t("deload.rest", { low: plan.deload.extra_rest_days[0], high: plan.deload.extra_rest_days[1] })}
             </p>
           )}
-        </section>
+          <div className="mt-2"><LineChip ruleKey={plan.deload.rule_key} grades={grades} /></div>
+        </NoticeLine>
       )}
+
+      <Section
+        title={t("sections.sessions")}
+        testId="plan-sessions"
+        action={
+          <span data-testid="plan-rotation" className="t-body flex items-center gap-1 text-[11px] text-muted">
+            {t("rotationLine", { keys: rotationKeys })}
+            <InfoSheet label={t("rotationWhy")} title={t("rotationLine", { keys: rotationKeys })} testId="plan-rotation-why">
+              <p className="t-body text-sm text-ink">{t("rotation")}</p>
+            </InfoSheet>
+          </span>
+        }
+      >
+        <div className="flex flex-col gap-3">
+          {plan.sessions.map((s) => <SessionCard key={s.key} session={s} grades={grades} action={sessionAction?.(s)} deload={plan.deload} />)}
+        </div>
+      </Section>
 
       <Section title={t("sections.week")} testId="plan-week">
         <ul className="flex flex-col gap-2">
           {DAYS.map((d) => <DayRow key={d} day={d} entries={byDay(d)} grades={grades} />)}
         </ul>
-        <p className="t-body mt-3 text-[11px] text-muted">{t("rotation")}</p>
-      </Section>
-
-      <Section title={t("sections.sessions")} testId="plan-sessions">
-        <div className="flex flex-col gap-3">
-          {plan.sessions.map((s) => <SessionCard key={s.key} session={s} grades={grades} action={sessionAction?.(s)} deload={plan.deload} />)}
-        </div>
       </Section>
 
       <Section title={t("sections.cardio")} testId="plan-cardio">
@@ -327,19 +418,22 @@ export function PlanView({ plan, sessionAction }: { plan: WeeklyPlan; sessionAct
         <p className="t-body mt-2 text-[11px] text-muted">{ts("disclaimer")}</p>
       </Section>
 
-      <Section title={t("sections.rules")} testId="plan-rules">
-        <ul className="flex flex-col gap-1.5">
-          {plan.rules.map((r) => (
-            <li key={r.key} className="flex flex-wrap items-center gap-2">
-              <span className="t-body text-xs text-ink">{r.title}</span>
-              <EvidenceChip ruleKey={r.key} grade={r.grade} />
-            </li>
-          ))}
-        </ul>
-        <p className="t-body mt-2 text-[11px] text-muted">
-          <Link href="/profile/credits" className="underline">{plan.engine_sha}</Link>
-        </p>
-      </Section>
+      <section data-testid="plan-rules" className="glass mt-4 flex items-center justify-between gap-2 px-4 py-2.5">
+        <p className="t-eyebrow text-muted">{t("rulesCount", { count: plan.rules.length })}</p>
+        <InfoSheet label={t("rulesWhy")} title={t("sections.rules")} testId="plan-rules-why">
+          <ul className="flex flex-col gap-1.5">
+            {plan.rules.map((r) => (
+              <li key={r.key} className="flex flex-wrap items-center gap-2">
+                <span className="t-body text-xs text-ink">{r.title}</span>
+                <EvidenceChip ruleKey={r.key} grade={r.grade} />
+              </li>
+            ))}
+          </ul>
+          <p className="t-body mt-2 text-[11px] text-muted">
+            <Link href="/profile/credits" className="underline">{plan.engine_sha}</Link>
+          </p>
+        </InfoSheet>
+      </section>
     </div>
   );
 }

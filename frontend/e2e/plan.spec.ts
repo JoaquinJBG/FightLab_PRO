@@ -35,11 +35,15 @@ test("preparar el plan, cada línea con su regla, y aplicarlo a Mi rutina", asyn
   const bench = page.locator('[data-testid="plan-item"][data-exercise="Press banca"]').first();
   await expect(bench).toHaveAttribute("data-action", "add_reps");
   await expect(bench).toContainText("60 kg");
-  // Cada ejercicio lleva su chip de evidencia.
+  // Dos días: sesiones A y B de cuerpo completo con 7 ejercicios cada una, y el porqué de cada
+  // ejercicio (con su chip de evidencia) detrás de ⓘ.
   const items = page.getByTestId("plan-item");
   const n = await items.count();
-  expect(n).toBe(6);
-  for (let i = 0; i < n; i++) await expect(items.nth(i).getByTestId("evidence-chip").first()).toBeVisible();
+  expect(n).toBe(14);
+  for (let i = 0; i < n; i++) await expect(items.nth(i).getByTestId("plan-item-why-open")).toBeVisible();
+  await bench.getByTestId("plan-item-why-open").click();
+  await expect(page.getByTestId("plan-item-why").getByTestId("evidence-chip").first()).toBeVisible();
+  await page.getByTestId("plan-item-why").getByRole("button", { name: es.today.sheet.close }).click();
 
   // Las series duras de la semana, con el press banca contando para el pecho.
   await expect(page.getByTestId("strength-sets")).toContainText(es.weeklyPlan.muscles.chest);
