@@ -240,10 +240,19 @@ describe("Plan de la semana: semana de descarga (en)", () => {
       deload: { review_id: 3, volume_cut: [0.3, 0.5], stop_rir: 3, extra_rest_days: [1, 3], rule_key: DELOADS, sets_convention: "fightlab" },
     });
     const { container } = renderEn(<PlanView plan={plan} />);
+    // Una línea a la vista; el detalle de la descarga, detrás de ⓘ.
     const banner = screen.getByTestId("plan-deload");
-    expect(within(banner).getByText(/sets cut by 30-50 %/)).toBeTruthy();
-    expect(within(banner).getByText("Add 1-3 rest days this week.")).toBeTruthy();
-    expect(screen.getAllByText("Stop every set 3 or more reps short of failure").length).toBe(plan.sessions.length);
+    expect(within(banner).getByText("Deload week")).toBeTruthy();
+    expect(within(banner).queryByText(/sets cut by/)).toBeNull();
+    expect(screen.getAllByText("RIR 3+").length).toBe(plan.sessions.length);
     expectClean(container, ["Press banca", "Peso muerto rumano", "Prensa"]);
+    fireEvent.click(within(banner).getByTestId("plan-deload-why-open"));
+    const sheet = screen.getByTestId("plan-deload-why");
+    expect(within(sheet).getByText(/sets cut by 30-50 %/)).toBeTruthy();
+    expect(within(sheet).getByText("Add 1-3 rest days this week.")).toBeTruthy();
+    expect(within(sheet).getByTestId("evidence-chip")).toBeTruthy();
+    fireEvent.click(within(sheet).getByText("Close"));
+    fireEvent.click(screen.getAllByTestId("plan-session-why-open")[0]);
+    expect(within(screen.getByTestId("plan-session-why")).getByText("Stop every set 3 or more reps short of failure")).toBeTruthy();
   });
 });

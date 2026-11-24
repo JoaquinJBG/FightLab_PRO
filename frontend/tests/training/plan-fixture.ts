@@ -38,23 +38,23 @@ export function makePlan(over: Partial<WeeklyPlan> = {}): WeeklyPlan {
       {
         key: "A", kind: "gym", rule_key: "strength-hypertrophy/full-body-versus-split", effort,
         items: [
-          item("Peso muerto rumano", "legs", {
+          item("Peso muerto rumano", "hinge", {
             swapped_from: "Sentadilla", action: "no_data",
             reasons: [reason("injury_unassessed", "knee injury not yet assessed: a GP or physiotherapist assesses it before it is loaded", "recovery-habits/some-pain", "refer")],
           }),
-          item("Press banca", "push", {
+          item("Press banca", "push_h", {
             sets_basis: "log", load_kg: 62.5, action: "add_reps", rule_key: "strength-hypertrophy/double-progression",
             reasons: [reason("strength_add_reps", "same load, add reps until every set beats 12", "strength-hypertrophy/double-progression")],
           }),
-          item("Remo con barra", "pull"),
+          item("Remo con barra", "pull_h"),
         ],
       },
       {
         key: "B", kind: "gym", rule_key: "strength-hypertrophy/full-body-versus-split", effort,
         items: [
-          item("Prensa", "legs", { action: "paused", load_kg: 100, rule_key: "recovery-habits/some-pain", sets_basis: "log" }),
-          item("Press militar", "push"),
-          item("Jalón al pecho", "pull"),
+          item("Prensa", "knee", { action: "paused", load_kg: 100, rule_key: "recovery-habits/some-pain", sets_basis: "log" }),
+          item("Press militar", "push_v"),
+          item("Jalón al pecho", "pull_v"),
         ],
       },
     ],

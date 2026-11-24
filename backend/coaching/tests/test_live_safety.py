@@ -115,7 +115,8 @@ def test_an_injury_saved_after_the_plan_pauses_only_the_lifts_it_affects(today_f
     squats = [i for s in before["sessions"] for i in s["items"] if i["exercise"] == "Sentadilla"]
     assert squats and all(i["action"] != "paused" for i in squats)
 
-    injured = ["Sentadilla", "Peso muerto rumano"]
+    # Rodilla: sentadilla y prensa, que salen en sesiones distintas (A y B), así la de hoy lleva una.
+    injured = ["Sentadilla", "Prensa"]
     injury_add(user.profile, area="rodilla", status="active", since=TODAY, exercises=injured)
     after = client.get(PLAN).json()["active"]
     items = [i for s in after["sessions"] for i in s["items"]]

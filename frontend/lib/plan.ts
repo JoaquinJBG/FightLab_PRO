@@ -24,7 +24,8 @@ export type Modality = z.infer<typeof modality>;
 
 export const planItem = z.object({
   exercise: z.string(),
-  pattern: z.enum(["legs", "push", "pull"]),
+  // legs/push/pull: planes guardados antes de las sesiones full body de 5-7 ejercicios.
+  pattern: z.enum(["knee", "hinge", "push_h", "pull_h", "push_v", "pull_v", "core", "accessory", "legs", "push", "pull"]),
   sets: z.number(),
   sets_basis: z.enum(["log", "coach_convention", "weekly_sets", "deload"]),
   sets_rule_key: z.string().nullable(),

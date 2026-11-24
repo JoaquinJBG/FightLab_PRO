@@ -2030,7 +2030,6 @@
   "weeklyPlan": {
     "title": "Plan de la semana",
     "back": "← Entreno",
-    "intro": "Lo prepara el coach con reglas: cada número sale del motor y cada línea lleva su regla.",
     "weekOf": "Semana del {date}",
     "loading": "Cargando…",
     "error": "No se pudo cargar el plan.",
@@ -2042,9 +2041,9 @@
     "completeOnboarding": "Completar el cribado",
     "form": {
       "gymDays": "Días de gimnasio",
-      "gymHint": "Mínimo {min}: dos sesiones de cuerpo completo a la semana.",
+      "gymHint": "Mínimo {min} días.",
       "mmaDays": "Días de MMA",
-      "mmaHint": "Los que has registrado en las últimas 4 semanas. Cámbialos si no es así.",
+      "mmaHint": "Los de tus últimas 4 semanas.",
       "generate": "Preparar plan",
       "regenerate": "Volver a preparar",
       "generating": "Preparando…"
@@ -2072,10 +2071,8 @@
       "nutrition": "Nutrición",
       "safety": "Notas de seguridad",
       "rules": "Reglas usadas",
-      "narrative": "Resumen",
       "strength": "Series duras por músculo"
     },
-    "narrativeNote": "Lo redacta la IA a partir del plan; los números son los del plan.",
     "day": {
       "gym": "Gimnasio · Sesión {session}",
       "mma": "MMA",
@@ -2085,14 +2082,19 @@
     },
     "session": "Sesión {key}",
     "effort": "Termina cada serie a {low}-{high} repeticiones del fallo",
-    "rotation": "Rotación A, B: si se te pasa una sesión, sigue con la siguiente sin recuperarla.",
+    "rotation": "Si se te pasa una sesión, sigue con la siguiente sin recuperarla.",
     "item": {
       "scheme": "{sets} × {low}-{high}",
       "load": "{kg} kg",
       "noLoad": "Carga: una con la que podrías hacer 2-3 repeticiones más",
       "pausedNoLoad": "Sin carga hasta que lo valore un profesional",
       "ceiling": "Como mucho {kg} kg",
-      "swapped": "En lugar de {name} (en pausa)"
+      "swapped": "En lugar de {name} (en pausa)",
+      "why": "Por qué: {name}",
+      "noLoadShort": "Tu carga",
+      "pausedNoLoadShort": "Sin carga",
+      "pausedTag": "En pausa",
+      "swappedTag": "Cambio"
     },
     "actions": {
       "no_data": "Primera vez",
@@ -2108,7 +2110,7 @@
     },
     "setsBasis": {
       "log": "Series de tu registro",
-      "coach_convention": "Sin registro: 2-3 series",
+      "coach_convention": "Sin registro: 3 series en compuestos, 2 en accesorios",
       "weekly_sets": "Una serie más, hacia 10 por músculo",
       "deload": "Series recortadas para la descarga"
     },
@@ -2116,7 +2118,15 @@
     "patterns": {
       "legs": "Pierna",
       "push": "Empuje",
-      "pull": "Tirón"
+      "pull": "Tirón",
+      "knee": "Rodilla",
+      "hinge": "Bisagra de cadera",
+      "push_h": "Empuje horizontal",
+      "pull_h": "Tracción horizontal",
+      "push_v": "Empuje vertical",
+      "pull_v": "Tracción vertical",
+      "core": "Core",
+      "accessory": "Accesorio"
     },
     "mma": {
       "allowed": "Puedes hacer",
@@ -2209,13 +2219,24 @@
       "title": "Semana de descarga",
       "body": "La aceptaste en la revisión semanal: series recortadas un {low}-{high} %, las mismas cargas y cada serie a {rir} o más repeticiones del fallo.",
       "rest": "Añade {low}-{high} días de descanso esta semana.",
-      "effort": "Termina cada serie a {rir} o más repeticiones del fallo"
+      "effort": "Termina cada serie a {rir} o más repeticiones del fallo",
+      "why": "Qué cambia en la descarga",
+      "effortShort": "RIR {rir}+"
     },
     "live": {
       "title": "Ajustado a tu seguridad de hoy",
       "body": "Desde que preparaste este plan ha cambiado algo de tu seguridad (un golpe en la cabeza o una lesión), y ya está aplicado aquí: lo que no puedes hacer sale tachado o en pausa. Si quieres repartir la semana de otra forma, vuelve a prepararlo.",
-      "noContact": "Sin contacto hasta que un clínico te dé el alta. La vuelta al contacto va por fases, de al menos 24 horas cada una, y la autoriza un clínico: se quita en Entreno → MMA."
-    }
+      "noContact": "Sin contacto hasta que un clínico te dé el alta. La vuelta al contacto va por fases, de al menos 24 horas cada una, y la autoriza un clínico: se quita en Entreno → MMA.",
+      "why": "Qué ha cambiado",
+      "noContactShort": "Sin contacto hasta que un clínico te dé el alta."
+    },
+    "rotationLine": "Rotación {keys}",
+    "rotationWhy": "Cómo va la rotación",
+    "sessionWhy": "Por qué: sesión {key}",
+    "effortShort": "RIR {low}-{high}",
+    "fullBody": "Cuerpo completo: rodilla, cadera, empuje, tracción y core o accesorio.",
+    "rulesCount": "{count, plural, one {# regla usada} other {# reglas usadas}}",
+    "rulesWhy": "Ver las reglas usadas"
   },
   "weeklyReview": {
     "title": "Revisión semanal",
@@ -3635,12 +3656,11 @@
     },
     "plan": {
       "title": "Rutinas del plan",
-      "intro": "El plan del coach convertido en rutinas. Puedes editarlas: al llegar un plan nuevo no se pierden tus cambios sin avisarte.",
       "editedWarning": "Hay un plan nuevo y has cambiado {names}. ¿Qué hacemos?",
       "keep": "Mantener mi versión y añadir las nuevas",
       "overwrite": "Sustituir por las del plan nuevo",
-      "regenerate": "Regenerar desde el plan",
-      "blocked": "Hoy el coach no recomienda entrenar: las rutinas del plan no se regeneran hasta que se levante el bloqueo.",
+      "regenerate": "Regenerar",
+      "blocked": "Hoy el coach no recomienda entrenar: no se regeneran.",
       "syncError": "No se han podido generar las rutinas del plan.",
       "syncing": "Generando las rutinas del plan…"
     },
