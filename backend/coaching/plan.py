@@ -1,8 +1,11 @@
 """Generador del plan de la semana por reglas (Task 6.4), siguiendo `plan/SKILL.md` del coach.
 
-- Al menos 2 sesiones de cuerpo completo, cada una con un ejercicio de pierna, uno de empuje y
-  uno de tirón ("Weekly baseline dose"), en rotación A, B que sigue desde la última sesión hecha
-  sin recuperar las perdidas (convención del coach, `docs/conventions.md`).
+- Al menos 2 sesiones de cuerpo completo ("Weekly baseline dose") de 5-7 ejercicios: rodilla,
+  bisagra de cadera, empuje y tracción horizontales, un vertical y un core o accesorio
+  (`SESSION_TEMPLATES`, docs/ux/simplificar.md). Rotación A, B (2 días), A, B, C (3 días) o A-D
+  (4 o más), con variantes distintas en cada sesión, que sigue desde la última sesión hecha sin
+  recuperar las perdidas (convención del coach, `docs/conventions.md`). Compuestos 3-4 series,
+  core y accesorios 2-3.
 - Rango de repeticiones 8-12 por defecto ("Double progression"), o el que ya usaba el plan
   anterior para ese ejercicio. Repeticiones en reserva de "Target reps in reserve", o las más
   conservadoras de "Starting point for novices" y "Effort limits for older adults and
@@ -36,6 +39,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from activities.models import Activity
+from exercises.legacy import legacy_exercise_key
 
 from . import rules, safety_state
 from .bridge.adapters import _tz, set_records, to_coach_profile
@@ -48,8 +52,22 @@ from .targets import _key, reasons_data, rule_refs, targets_data, zones_data
 from .views import engine_info
 
 DAYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
-SESSION_KEYS = ("A", "B")
-PATTERNS = ("legs", "push", "pull")
+SESSION_KEYS = ("A", "B", "C", "D")
+# Patrones de movimiento de una sesión de cuerpo completo: dominante de rodilla, bisagra de cadera,
+# empuje y tracción horizontales, empuje y tracción verticales, core y accesorios.
+PATTERNS = ("knee", "hinge", "push_h", "pull_h", "push_v", "pull_v", "core", "accessory")
+COMPOUND_PATTERNS = ("knee", "hinge", "push_h", "pull_h", "push_v", "pull_v")
+# convention (FightLab, docs/ux/simplificar.md): cada sesión es de cuerpo completo con rodilla,
+# bisagra, empuje y tracción horizontales, un vertical (empuje o tracción, alternando) y un core o
+# accesorio: 6 ejercicios. Con 2 días caben los dos verticales (7), para llegar al volumen de la
+# semana con menos sesiones; con 5-6 días se quita el core o accesorio (5), para no pasarse.
+SESSION_TEMPLATES = (
+    ("knee", "hinge", "push_h", "pull_h", "pull_v", "core"),
+    ("knee", "hinge", "push_h", "pull_h", "push_v", "core"),
+    ("knee", "hinge", "push_h", "pull_h", "pull_v", "accessory"),
+    ("knee", "hinge", "push_h", "pull_h", "push_v", "accessory"),
+)
+OTHER_VERTICAL = {"pull_v": "push_v", "push_v": "pull_v"}
 
 # cardio-health.md: "Weekly baseline dose": at least 2 full-body strength sessions a week, and
 # 150 min of moderate cardio as the minimum.
@@ -57,10 +75,14 @@ MIN_GYM_DAYS = 2
 CARDIO_MODERATE_MIN = 150
 # convention (FightLab): hasta 6 días de gimnasio; el día que queda es de descanso.
 MAX_GYM_DAYS = 6
-# convention (del coach, plan/SKILL.md): sin registros, 2-3 series de trabajo por ejercicio.
+# convention (del coach, plan/SKILL.md): sin registros, 2-3 series de trabajo por ejercicio: 3 en
+# los compuestos y 2 en core y accesorios.
 SETS_WITHOUT_LOG = 3
-# convention (FightLab): las series por ejercicio se quedan entre 2 y 5.
-MIN_SETS, MAX_SETS = 2, 5
+SETS_WITHOUT_LOG_ACCESSORY = 2
+# convention (FightLab, docs/ux/simplificar.md): los compuestos se quedan entre 3 y 4 series, y
+# core y accesorios entre 2 y 3.
+COMPOUND_SETS = (3, 4)
+ACCESSORY_SETS = (2, 3)
 # convention (FightLab): los minutos de cardio por día se redondean hacia arriba de 5 en 5.
 CARDIO_STEP_MIN = 5
 # convention (FightLab, F9): una sesión de cardio del plan dura al menos 20 min. Lo que falta hasta
@@ -72,12 +94,22 @@ CARDIO_MIN_SESSION = 20
 # trabajo de combate como moderado o vigoroso; contarlo como moderado es lo prudente).
 MMA_LOOKBACK_DAYS = 28
 MMA_DAY_MIN_WEEKS = 2
-# convention (FightLab): ejercicios por defecto de cada patrón, de la biblioteca del gimnasio.
+# convention (FightLab): ejercicios por defecto de cada patrón, de la biblioteca del gimnasio
+# (`frontend/lib/gym.ts`, `LIBRARY`) y del catálogo («Hip thrust», `cat:hip-thrust`). Cada sesión
+# toma la variante siguiente de cada patrón, así A, B y C no repiten. Sin la plancha: va por
+# tiempo y el plan da repeticiones.
 DEFAULT_EXERCISES = {
-    "legs": ("Sentadilla", "Peso muerto rumano", "Prensa"),
-    "push": ("Press banca", "Press militar", "Press inclinado"),
-    "pull": ("Remo con barra", "Jalón al pecho", "Dominadas"),
+    "knee": ("Sentadilla", "Prensa", "Zancadas"),
+    "hinge": ("Peso muerto rumano", "Hip thrust", "Peso muerto"),
+    "push_h": ("Press banca", "Press con mancuernas", "Press inclinado"),
+    "pull_h": ("Remo con barra", "Remo en máquina"),
+    "push_v": ("Press militar", "Press Arnold"),
+    "pull_v": ("Jalón al pecho", "Dominadas"),
+    "core": ("Rueda abdominal", "Elevaciones de piernas", "Crunch en polea"),
+    "accessory": ("Face pull", "Curl femoral", "Elevaciones laterales", "Gemelos"),
 }
+# Claves del mapa de músculos del coach que son tracción vertical (el resto de tracciones, remos).
+VERTICAL_PULLS = {"lat pulldown", "pull up", "chin up"}
 # convention (FightLab): días por defecto, separados, sin pisar los de MMA.
 DEFAULT_DAY_PAIRS = (
     ("mon", "thu"), ("tue", "fri"), ("wed", "sat"), ("mon", "fri"), ("tue", "sat"), ("wed", "sun"),
@@ -190,18 +222,38 @@ def last_plan_session(user) -> str | None:
 # ---------------------------------------------------------------- ejercicios
 
 
+def _map_key(entry: dict, mapped: dict) -> str | None:
+    return next((k for k, e in mapped.items() if e is entry), None)
+
+
 def pattern_of(name: str) -> str | None:
-    entry = coach_strength.lookup(name, muscle_map())
+    """El patrón de un ejercicio según sus créditos en el mapa de músculos del coach. Lo que el
+    mapa no conoce (el core, sin mapear) no tiene patrón: no entra como registrado."""
+    mapped = muscle_map()
+    entry = coach_strength.lookup(name, mapped)
     if not entry:
         return None
     muscles = entry["muscles"]
-    if entry.get("lower_body") or any(muscles.get(m) == 1 for m in ("quads", "glutes", "hamstrings")):
-        return "legs"
-    if any(muscles.get(m) == 1 for m in ("chest", "front_delts")):
-        return "push"
+    if entry.get("lower_body"):
+        return "knee" if muscles.get("quads") == 1 else "hinge"
+    if muscles.get("chest") == 1:
+        return "push_h" if muscles.get("triceps") else "accessory"  # las aperturas, accesorio
+    if muscles.get("front_delts") == 1:
+        return "push_v"
     if muscles.get("back") == 1:
-        return "pull"
+        return "pull_v" if _map_key(entry, mapped) in VERTICAL_PULLS else "pull_h"
+    if muscles:
+        return "accessory"
     return None
+
+
+def _same_exercise(a: str, b: str, mapped: dict) -> bool:
+    """El mismo ejercicio: por su clave del catálogo si las dos la tienen (así el press con
+    mancuernas es otra variante que el de barra), y si no, por el mapa de músculos del coach."""
+    key_a, key_b = legacy_exercise_key(a), legacy_exercise_key(b)
+    if key_a and key_b:
+        return key_a == key_b
+    return coach_strength.named_in(a, [b], mapped)
 
 
 def _candidates(records, since: date) -> dict[str, list[str]]:
@@ -210,12 +262,16 @@ def _candidates(records, since: date) -> dict[str, list[str]]:
     for name, day in {(s.exercise, s.date) for s in records if s.date > since and coach_strength.is_working(s)}:
         sessions[name] += 1
     mapped = muscle_map()
+    patterns = {n: pattern_of(n) for n in sessions}
     out = {}
     for pattern in PATTERNS:
-        logged = sorted((n for n in sessions if pattern_of(n) == pattern), key=lambda n: (-sessions[n], n))
-        names = list(logged)
+        logged = sorted((n for n in sessions if patterns[n] == pattern), key=lambda n: (-sessions[n], n))
+        names: list[str] = []
+        for name in logged:
+            if not any(_same_exercise(name, n, mapped) for n in names):
+                names.append(name)
         for default in DEFAULT_EXERCISES[pattern]:
-            if not any(coach_strength.named_in(default, [n], mapped) for n in names):
+            if not any(_same_exercise(default, n, mapped) for n in names):
                 names.append(default)
         out[pattern] = names
     return out
@@ -259,9 +315,11 @@ def _item(name: str, pattern: str, ctx: _Context) -> dict:
         suggestion = coach_strength.Suggestion("no_data", None, rep_range, [])
     reasons = [parse_reason(t) for t in dict.fromkeys(suggestion.reasons)]
 
+    compound = pattern in COMPOUND_PATTERNS
+    low_sets, high_sets = COMPOUND_SETS if compound else ACCESSORY_SETS
     logged_sets = _sets_per_session(history, ctx.since)
     if logged_sets is None:
-        sets, sets_basis = SETS_WITHOUT_LOG, "coach_convention"
+        sets, sets_basis = (SETS_WITHOUT_LOG if compound else SETS_WITHOUT_LOG_ACCESSORY), "coach_convention"
     else:
         sets, sets_basis = logged_sets, "log"
     grows = (
@@ -273,7 +331,7 @@ def _item(name: str, pattern: str, ctx: _Context) -> dict:
     )
     if grows:  # plan/SKILL.md: con muscle_gain, se añaden series poco a poco hacia la referencia
         sets, sets_basis = sets + 1, "weekly_sets"
-    sets = max(MIN_SETS, min(MAX_SETS, sets))
+    sets = max(low_sets, min(high_sets, sets))
     if logged_sets is not None and (ctx.flags.hold_progression or suggestion.action == "paused"):
         sets = min(sets, logged_sets)  # nunca más que lo que ya hacía
 
@@ -300,11 +358,39 @@ def _usable(item: dict) -> bool:
     return not (item["action"] == "paused" and item["load_kg"] is None)
 
 
-def _session(index: int, candidates: dict[str, list[str]], ctx: _Context) -> dict:
+def session_count(gym_days: int) -> int:
+    """Sesiones distintas de la semana: A/B con 2 días, A/B/C con 3 y A-D con 4 o más."""
+    return max(2, min(len(SESSION_KEYS), gym_days))
+
+
+def session_patterns(index: int, gym_days: int) -> tuple[str, ...]:
+    """Los patrones de la sesión `index` (ver `SESSION_TEMPLATES`)."""
+    template = SESSION_TEMPLATES[index % len(SESSION_TEMPLATES)]
+    if gym_days <= MIN_GYM_DAYS:
+        vertical = template[4]
+        return template[:5] + (OTHER_VERTICAL[vertical],) + template[5:]
+    if gym_days >= 5:
+        return template[:5]
+    return template
+
+
+def _sessions(gym_days: int, candidates: dict[str, list[str]], ctx: _Context) -> list[dict]:
+    """Las sesiones de la semana. Cada patrón toma su variante siguiente cada vez que sale, así
+    las sesiones no repiten ejercicio mientras haya variantes."""
+    used: Counter = Counter()
+    sessions = []
+    for index in range(session_count(gym_days)):
+        patterns = session_patterns(index, gym_days)
+        sessions.append(_session(index, patterns, {p: used[p] for p in patterns}, candidates, ctx))
+        used.update(patterns)
+    return sessions
+
+
+def _session(index: int, patterns, variants: dict[str, int], candidates: dict[str, list[str]], ctx: _Context) -> dict:
     items = []
-    for pattern in PATTERNS:
+    for pattern in patterns:
         names = candidates[pattern]
-        preferred = names[index % len(names)] if len(names) > index else names[0]
+        preferred = names[variants[pattern] % len(names)]
         order = [preferred] + [n for n in names if n != preferred]
         chosen = None
         for name in order:
@@ -470,7 +556,7 @@ def deload_for(user, week_start: date) -> dict | None:
 
 def deload_sets(sets: int, volume_cut) -> int:
     """Series de la semana de descarga. convention (FightLab): `ceil(series × (1 − corte máximo))`,
-    que con 2-5 series deja un recorte dentro del 30-50 % del motor ("Deloads")."""
+    que con 2-4 series deja un recorte dentro del 30-50 % del motor ("Deloads")."""
     if sets <= 0:
         return sets
     return max(1, math.ceil(sets * (1 - volume_cut[1])))
@@ -572,7 +658,8 @@ def build(user, today: date, request: PlanRequest) -> dict:
         goal=profile.goal,
     )
     candidates = _candidates(records, since)
-    sessions = [_session(i, candidates, ctx) for i in range(len(SESSION_KEYS))]
+    sessions = _sessions(len(gym_days), candidates, ctx)
+    session_keys = [s["key"] for s in sessions]
     effort = _effort(profile, flags, today)
     for session in sessions:
         session["effort"] = effort
@@ -582,14 +669,14 @@ def build(user, today: date, request: PlanRequest) -> dict:
         _apply_deload(sessions, deload, by_name)
 
     last = last_plan_session(user)
-    start = (SESSION_KEYS.index(last) + 1) % len(SESSION_KEYS) if last else 0
+    start = (session_keys.index(last) + 1) % len(session_keys) if last in session_keys else 0
     schedule = []
     for i, day in enumerate(gym_days):
         schedule.append({
             "day": day,
             "time": times.get(day),
             "kind": "gym",
-            "session": SESSION_KEYS[(start + i) % len(SESSION_KEYS)],
+            "session": session_keys[(start + i) % len(session_keys)],
             "rule_key": _key(rules.WEEKLY_BASELINE),
             "rotation_convention": "coach",
         })
