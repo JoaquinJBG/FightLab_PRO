@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Hoy con aviso de seguridad</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./fl.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&amp;family=Geist:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;family=Roboto+Flex:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ph {{tema}}">
+<div class="fx"></div>
+<div class="scr" style="gap: 14px">
+<header style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<p class="eyebrow">Martes, 24 de noviembre</p>
+<h1 class="d t-h1">Hoy</h1>
+</div>
+<button class="avatar" type="button" aria-label="Perfil">A</button>
+</header>
+<div role="alert" class="alerta">
+<i class="ic i-face-x"></i>
+<p class="tx"><strong>Para.</strong> Golpe en la cabeza: sin contacto ni entreno duro hasta el alta.</p>
+<button class="icobtn" type="button" aria-label="Ver el detalle del aviso"><i class="ic i-info s18"></i></button>
+</div>
+<div class="alerta limit">
+<i class="ic i-alert"></i>
+<p class="tx"><strong>Límite.</strong> Press militar en pausa por tu hombro.</p>
+<button class="icobtn" type="button" aria-label="Ver el detalle del límite"><i class="ic i-info s18"></i></button>
+</div>
+<section class="glass edge" style="display: flex; flex-direction: column; gap: 14px; padding: 18px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+<p class="eyebrow">Entreno de hoy</p>
+<h2 class="d t-h2">Movilidad suave</h2>
+<p class="small muted">20 min · sin impacto</p>
+</div>
+<div class="franja not-cur" style="width: 84px; height: 56px; flex: none; border-radius: 14px; background: rgba(127,140,160,.08)"><span class="franja__banda"></span></div>
+</div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<span class="chip off"><i class="ic i-lock s16"></i>Sparring</span>
+<span class="chip off"><i class="ic i-lock s16"></i>Full body A</span>
+</div>
+<a class="btn block" href="#"><i class="ic i-play s16"></i>Empezar movilidad</a>
+</section>
+<section class="glass" style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<p class="eyebrow">Próxima comida · 14:00</p>
+<a class="link small" href="#">Ver el día</a>
+</div>
+<h3 class="d t-h3">Arroz integral con pollo y brócoli</h3>
+<div style="display: flex; gap: 8px">
+<button class="btn sm ghost" type="button"><i class="ic i-check s16"></i>Hecha</button>
+<button class="btn sm ghost" type="button">No hecha</button>
+<button class="btn sm ghost" type="button">Cambiar</button>
+</div>
+</section>
+</div>
+<nav class="tabbar" aria-label="Secciones">
+<a href="#" aria-current="page"><span class="pill"><i class="ic i-house"></i></span>Hoy</a>
+<a href="#"><span class="pill"><i class="ic i-dumbbell"></i></span>Entreno</a>
+<a href="#"><span class="pill"><i class="ic i-utensils"></i></span>Nutrición</a>
+<a href="#"><span class="pill"><i class="ic i-chart"></i></span>Progreso</a>
+<a href="#"><span class="pill"><i class="ic i-message"></i></span>Coach</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["cur","A","B","A light","B light","B light M"],"default":"cur"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { tema: this.props.tema ?? 'cur' };
+}
+}
+</script>
+</body>
+</html>

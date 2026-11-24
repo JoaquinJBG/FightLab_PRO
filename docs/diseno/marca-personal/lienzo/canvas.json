@@ -520,39 +520,21 @@
    "radius": 40,
    "page": "mezcla"
   },
-  "X-prop-Hoy.dc.html": {
-   "x": 940,
-   "y": 2448,
+  "X-oscuro-Seguridad.dc.html": {
+   "x": 5170,
+   "y": 0,
    "w": 390,
    "h": 844,
-   "title": "propuesta claro · hoy",
+   "title": "oscuro (B) · hoy con aviso",
    "radius": 40,
    "page": "mezcla"
   },
-  "X-prop-Entreno.dc.html": {
-   "x": 1410,
-   "y": 2448,
+  "X-claro-Seguridad.dc.html": {
+   "x": 5170,
+   "y": 1224,
    "w": 390,
    "h": 844,
-   "title": "propuesta claro · entreno en curso",
-   "radius": 40,
-   "page": "mezcla"
-  },
-  "X-prop-Menu.dc.html": {
-   "x": 2820,
-   "y": 2448,
-   "w": 390,
-   "h": 844,
-   "title": "propuesta claro · menú",
-   "radius": 40,
-   "page": "mezcla"
-  },
-  "X-prop-Progreso.dc.html": {
-   "x": 3290,
-   "y": 2448,
-   "w": 390,
-   "h": 844,
-   "title": "propuesta claro · progreso",
+   "title": "claro (A) · hoy con aviso",
    "radius": 40,
    "page": "mezcla"
   }
@@ -578,7 +560,6 @@
   "s5",
   "m0",
   "m1",
-  "m2",
   "n0",
   "n1",
   "n2"
@@ -669,51 +650,43 @@
    "y": -300,
    "text": "oscuro · B",
    "kind": "title1",
-   "maxW": 5090,
+   "maxW": 5560,
    "page": "mezcla"
   },
   "m1": {
    "x": 0,
    "y": 924,
-   "text": "claro · A",
+   "text": "claro · A, con botones en coral",
    "kind": "title1",
-   "maxW": 5090,
-   "page": "mezcla"
-  },
-  "m2": {
-   "x": 0,
-   "y": 2148,
-   "text": "propuesta · claro de A con el azul de FightLab para actuar",
-   "kind": "title1",
-   "maxW": 5090,
+   "maxW": 5560,
    "page": "mezcla"
   },
   "n0": {
-   "x": 5170,
+   "x": 5640,
    "y": 0,
    "w": 460,
    "size": 24,
    "fill": "green",
    "page": "mezcla",
-   "text": "Lo que casa al cambiar de modo\n\nLogo: el de B (FIGHTLAB en gris con la franja) en los dos modos; el logo no cambia con el tema.\nLetra: Bricolage en titulares y Roboto Flex en texto, igual en los dos.\nForma: esquinas, cápsulas y barra inferior de B en los dos.\nCoral: récord, semana actual y franja salen en coral en los dos modos."
+   "text": "Lo que casa al cambiar de modo\n\nLogo: el de B (FIGHTLAB en gris con la franja) en los dos modos.\nLetra: Bricolage en titulares y Roboto Flex en texto, en los dos.\nForma: esquinas, cápsulas y barra inferior de B en los dos.\nCoral: récord, semana actual y franja en coral en los dos.\nNebulosa: azul-violeta en oscuro, cobalto-coral en claro; las dos son luz por los lados."
   },
   "n1": {
-   "x": 5170,
+   "x": 5640,
    "y": 1224,
    "w": 460,
    "size": 24,
    "fill": "orange",
    "page": "mezcla",
-   "text": "Lo que choca\n\nEl color de acción salta de cian (oscuro) a coral (claro): botón principal, pestaña activa, campo activo y barras. Quien cambia de modo ve otra app.\n\nY en claro el botón coral se parece al rojo de error, en una app con avisos de seguridad.\n\nLa nebulosa pasa de azul-violeta a cobalto-coral: esto sí queda bien, las dos son luz por los lados."
+   "text": "Decidido: en claro los botones van en coral, como en A.\n\nEl color de acción cambia con el modo (cian en oscuro, coral en claro). Logo, letra, forma y coral de firma no cambian, así que la app se sigue reconociendo."
   },
   "n2": {
-   "x": 5170,
-   "y": 2448,
+   "x": 5640,
+   "y": 1900,
    "w": 460,
    "size": 24,
-   "fill": "blue",
+   "fill": "red",
    "page": "mezcla",
-   "text": "Propuesta\n\nEl claro de A tal cual (niebla, cristal, nebulosa en acuarela), pero el azul de FightLab sigue siendo el color de acción, y el coral se queda como firma, igual que en oscuro.\n\nAsí cada color hace lo mismo en los dos modos: azul = actuar, coral = lo destacado y la marca."
+   "text": "Avisos de seguridad sin confundirse con el coral\n\n1. El coral solo rellena: botón, franja, récord. Un aviso nunca va relleno.\n2. El aviso es una cápsula de cristal con borde de 2 px en granate (#9E1F35 en claro), el icono de la marca (cara con ojos x.x) y la palabra «Para.» en negrita, más ⓘ para el detalle.\n3. Lo bloqueado sale en gris con candado y tachado, nunca en coral.\n4. El botón coral pasa a la alternativa segura («Empezar movilidad»).\n5. Límite en cobalto con triángulo; consulta en ámbar."
   }
  },
  "order": [
@@ -779,10 +752,8 @@
   "X-claro-Perfil.dc.html",
   "X-oscuro-Icono.dc.html",
   "X-claro-Icono.dc.html",
-  "X-prop-Hoy.dc.html",
-  "X-prop-Entreno.dc.html",
-  "X-prop-Menu.dc.html",
-  "X-prop-Progreso.dc.html"
+  "X-oscuro-Seguridad.dc.html",
+  "X-claro-Seguridad.dc.html"
  ],
  "pages": [
   {

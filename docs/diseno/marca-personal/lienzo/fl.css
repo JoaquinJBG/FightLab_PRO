@@ -174,6 +174,30 @@
 }
 .ph.B.light.M.P .cal span.t { background: #1f6fe0; color: #fff; }
 
+/* ---------- avisos de seguridad ----------
+   Regla: el coral solo rellena (botón, franja, récord). Un aviso nunca va relleno: cápsula de cristal con borde de su
+   color, icono propio y la palabra clave en negrita. La acción bloqueada sale en gris con candado. */
+.ph { --stop: #ff5d80; --refer: #ffd25a; --limit: #7FB4DA; }
+.ph.light { --stop: #B42B37; --refer: #8A5A00; --limit: #23648F; }
+.ph.B.light.M { --stop: #9E1F35; }
+.alerta {
+  --e: var(--stop);
+  display: flex; align-items: center; gap: 10px; padding: 10px 8px 10px 14px; border-radius: 22px;
+  background: var(--ghost); box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--e) 55%, transparent);
+  font-size: 13px; line-height: 1.35;
+}
+.ph.light .alerta { box-shadow: inset 0 0 0 2px var(--e); background: rgba(255, 255, 255, .6); }
+.ph.light .alerta > .ic { filter: none; }
+.alerta.refer { --e: var(--refer); }
+.alerta.limit { --e: var(--limit); }
+.alerta > .ic { color: var(--e); width: 22px; height: 22px; filter: drop-shadow(0 0 6px color-mix(in oklab, var(--e) 70%, transparent)); }
+.alerta strong { color: var(--e); font-weight: 700; }
+.alerta .tx { flex: 1; min-width: 0; }
+.alerta .icobtn { width: 32px; height: 32px; background: none; box-shadow: none; color: var(--muted); }
+.chip.off { color: var(--muted); opacity: .7; text-decoration: line-through; text-decoration-thickness: 1px; }
+.i-face-x { --i: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><path d='m7.5 8.5 3 3m0-3-3 3'/><path d='m13.5 8.5 3 3m0-3-3 3'/><path d='M8.5 16.5c1-1 2.3-1 3.5 0s2.5 1 3.5 0'/></svg>"); }
+.i-alert { --i: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'><path d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3'/><path d='M12 9v4'/><path d='M12 17h.01'/></svg>"); }
+
 /* qué pieza sale en cada dirección */
 .ph:not(.cur) .only-cur, .ph:not(.A) .only-A, .ph:not(.B) .only-B, .ph.cur .not-cur { display: none !important; }
 

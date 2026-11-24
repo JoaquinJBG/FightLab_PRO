@@ -4,7 +4,7 @@ Nota de planificación. **No se ha tocado el código.** Aplicarlo es otra tarea,
 de que el jefe de FightLab termine `feat/app-simplificar-ui`: esa rama toca `TodayView.tsx`,
 `training/page.tsx`, `icons.tsx` y `messages/*.json`, y chocaría con las fases 3 y 4.
 
-Lo que hay que decidir antes: el color de acción en claro (ver «Choques» abajo).
+Decidido por el usuario: oscuro como B y claro como A, **con los botones en coral en claro**.
 
 ## Qué queda en cada modo
 
@@ -12,23 +12,37 @@ Lo que hay que decidir antes: el color de acción en claro (ver «Choques» abaj
 |---|---|---|
 | Fondo | `#04060c` con nebulosa azul-violeta (la de hoy) | niebla `#E7EEF2` con nebulosa cobalto-coral en acuarela |
 | Cristal | el de hoy, borde de luz cian → azul | blanco 78 → 55 %, borde coral → cobalto |
-| Color de acción | cian `#45e9ff` → azul `#3b74ff` | coral `#F97279` (A tal cual) o azul `#1f6fe0` (propuesta) |
+| Color de acción | cian `#45e9ff` → azul `#3b74ff` | coral `#F97279`, texto tinta `#161D24` |
 | Destacado (récord, semana actual) | coral `#F97279` | coral; en texto, `#B83A44` |
 | Titulares y cifras | Bricolage Grotesque 800, minúsculas | igual |
 | Texto | Roboto Flex | igual |
 | Logo | «FIGHTLAB» en gris con franja coral | igual |
 | Estados | `#43e8a0` · `#ffd25a` · `#ff5d80` | `#0B7550` · `#8A5A00` · `#B42B37` |
+| Aviso «Para» (seguridad) | `#ff5d80` | granate `#9E1F35` |
 
-## Choques al cambiar de modo
+## Al cambiar de modo
 
-- **Color de acción.** Pasa de cian a coral: cambian el botón principal, la pestaña activa, el campo activo
-  y las barras. Además, en claro el coral se parece al rojo de error, y la app tiene avisos de seguridad.
-  **Propuesta:** en claro, la base de A con el azul de FightLab para actuar y el coral solo como firma (fila
-  «propuesta» del lienzo). Así cada color hace lo mismo en los dos modos.
+- **Color de acción.** Pasa de cian a coral (botón principal, pestaña activa, campo activo y barras). Es la
+  decisión del usuario. Lo que se reconoce no cambia: logo, letra, forma y coral de firma.
 - **Logo, letra y forma.** Se fijan los de B en los dos modos. Con A claro tal cual cambiarían el logo
   («fightlab» en minúsculas), la letra (Geist) y las esquinas.
 - **Nebulosa.** Azul-violeta en oscuro y cobalto-coral en claro. Casa bien: en los dos modos es luz por los
   lados.
+
+## Avisos de seguridad frente al botón coral
+
+En claro, un botón coral y un aviso rojo podrían confundirse. Se separan así (pantalla «hoy con aviso» del
+lienzo):
+
+1. **El coral solo rellena:** botón principal, franja y récord. Un aviso nunca va relleno.
+2. **El aviso es un contorno:** cápsula de cristal con borde de 2 px en su color, el icono de estado de la
+   marca y la palabra clave en negrita, más ⓘ con el detalle:
+   - «Para»: granate `#9E1F35` en claro, más oscuro que el error `#B42B37` de la marca para alejarlo del
+     coral; cara con ojos x.x;
+   - «Límite»: cobalto `#23648F`, triángulo;
+   - «Consulta»: ámbar `#8A5A00`, triángulo.
+3. **Lo bloqueado** sale en gris, tachado y con candado; nunca en coral.
+4. **El botón coral** pasa a la alternativa segura («Empezar movilidad»), no a lo bloqueado.
 
 ## Fases
 
@@ -37,7 +51,8 @@ Lo que hay que decidir antes: el color de acción en claro (ver «Choques» abaj
   - Los colores de `@theme` (`--color-bg`, `surface`, `ink`, `muted`, `neon`, `neon-deep`, `good`, `warn`,
     `bad`) pasan a variables con valor oscuro y claro, con `@theme inline` para que `text-neon`,
     `bg-surface`… cambien solas.
-  - Se añaden `--color-sello` (coral) y `--color-hi` (destacado).
+  - Se añaden `--color-sello` (coral), `--color-hi` (destacado) y `--color-stop`, `--color-refer` y
+    `--color-limit` para los avisos.
   - `color-scheme: dark` pasa a `light dark`, con claro por `prefers-color-scheme` y `data-theme`.
 - `frontend/app/layout.tsx`: `Plus_Jakarta_Sans` → `Bricolage_Grotesque` (800) en `--ff-display`. Se queda
   `Roboto_Flex`.
@@ -59,7 +74,8 @@ Lo que hay que decidir antes: el color de acción en claro (ver «Choques» abaj
 - Los grupos más grandes:
   - gráficas: `gym/ProgressChart`, `gym/TrainingCalendar`, `zones/ZonesCard`, `checkin/ReadinessCard`;
   - series: `gym/SetRow` y `training/gym/session`;
-  - seguridad: `safety/*`;
+  - seguridad: `safety/SafetyBanner.tsx` (su `SEVERITY_COLOR` pasa a los tokens de aviso y la etiqueta a
+    la cápsula con icono), `safety/SafetyStateCard.tsx` y `safety/VigorousWarning.tsx`;
   - plan: `plan/PlanView` (que también está cambiando el jefe);
   - `tab-bar.tsx`, `today/TodayView`, `coach/ChatPanel`;
   - las páginas de `training/*`, `nutrition/*` y `profile/*`.

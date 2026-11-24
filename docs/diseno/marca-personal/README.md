@@ -20,14 +20,12 @@ sesiones de cuerpo completo con 6 ejercicios; Historial con pantalla propia y Me
 
 ## Elegida: B en oscuro + A en claro
 
-El usuario eligió B para oscuro y A para claro. Está en la página «B oscuro + A claro» del lienzo:
-- una fila en oscuro y otra en claro con las once pantallas;
-- una fila de propuesta (claro de A con el azul de FightLab para actuar) en Hoy, Entreno, Menú y Progreso.
+El usuario eligió B para oscuro y A para claro, con los botones en coral en claro. Está en la página
+«B oscuro + A claro» del lienzo: una fila en oscuro y otra en claro con las once pantallas, más «hoy con
+aviso», que muestra cómo se separan los avisos de seguridad del botón coral.
 
-Logo, letra y forma son los de B en los dos modos.
-
-El choque es el color de acción, que pasa de cian a coral al cambiar de modo. La propuesta lo evita.
-Cómo se aplicaría al código, por fases: [aplicar-al-codigo.md](aplicar-al-codigo.md).
+Logo, letra y forma son los de B en los dos modos. Cómo se aplicaría al código, por fases:
+[aplicar-al-codigo.md](aplicar-al-codigo.md).
 
 ## Las dos direcciones
 
