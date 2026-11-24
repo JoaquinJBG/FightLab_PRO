@@ -17,10 +17,13 @@ body{margin:0}
 <div class="ph {{tema}}">
 <div class="fx"></div>
 <div class="scr">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
 <h1 class="d t-h1">Progreso</h1>
+<a class="chip" href="#" style="text-decoration: none"><i class="ic i-plus s16"></i>Medición</a>
+</div>
 <section class="glass edge" style="display: flex; flex-direction: column; gap: 8px">
 <div style="display: flex; align-items: center; justify-content: space-between">
-<p class="eyebrow">Carga de la semana</p>
+<p class="eyebrow" style="display: flex; align-items: center; gap: 6px">Carga de la semana <button class="icobtn sm" type="button" aria-label="¿Qué es la carga?" style="width: 28px; height: 28px; background: none; box-shadow: none; color: var(--muted)"><i class="ic i-info s16"></i></button></p>
 <span class="chip">+12 % vs tu media</span>
 </div>
 <p style="display: flex; align-items: baseline; gap: 6px"><span class="stat neon" style="font-size: 44px">320</span><span class="muted">AU</span></p>
@@ -37,13 +40,11 @@ body{margin:0}
 <line class="g-ref" x1="0" y1="19.2" x2="318" y2="19.2"></line>
 <text class="g-txt" x="8.9" y="114">hace 7 sem</text>
 <text class="g-txt-hi" x="298" y="114" text-anchor="middle">esta</text>
-</svg>
-<p class="cap muted">Minutos × esfuerzo (RPE). La línea es tu media de 4 semanas.</p>
-</section>
+</svg></section>
 <section class="glass" style="display: flex; flex-direction: column; gap: 8px">
 <div style="display: flex; align-items: center; justify-content: space-between">
 <p class="eyebrow">Peso</p>
-<span class="chip">−0,24 kg por semana</span>
+<span class="chip">a 2,4 kg del objetivo</span>
 </div>
 <p style="display: flex; align-items: baseline; gap: 6px"><span class="stat" style="font-size: 32px">80,4</span><span class="muted">kg · hoy</span></p>
 <svg viewBox="0 0 318 104" width="100%" role="img" aria-label="Tendencia de peso en 8 semanas: de 82,1 a 80,4 kg; objetivo 78 kg">
@@ -52,9 +53,7 @@ body{margin:0}
 <path class="g-s1" d="M10 17.2 L52 20.8 L94 26.2 L136 28 L178 35.2 L220 38.8 L262 44.2 L304 47.8"></path>
 <circle class="g-dot" cx="304" cy="47.8" r="4.5"></circle>
 <text class="g-txt" x="314" y="84" text-anchor="end">objetivo 78 kg</text>
-</svg>
-<p class="cap muted">A 2,4 kg de tu objetivo.</p>
-</section>
+</svg></section>
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
 <div class="glass" style="display: flex; flex-direction: column; gap: 4px; padding: 14px">
 <span class="cap muted">FC en reposo</span>

@@ -10,9 +10,13 @@ de la app.
 
 ## Qué hay
 
-Nueve pantallas de móvil (390 × 844): arranque, entrada, Hoy, Entreno con una sesión en curso, Nutrición,
-Progreso, Coach, Perfil e icono de app. Cada una en tres versiones (actual, A y B) y, en claro, entrada, Hoy y
-Progreso de A, y Hoy y Progreso de B.
+Once pantallas de móvil (390 × 844): arranque, entrada, Hoy, Entreno con una sesión en curso, Historial,
+Nutrición, Menú, Progreso, Coach, Perfil e icono de app. Cada una en tres versiones (estilo actual, A y B) y,
+en claro, entrada, Hoy y Progreso de A, y Hoy y Progreso de B.
+
+Todas parten de la app simplificada (plan de `feat/app-simplificar`, `docs/ux/simplificar.md`): un título, un
+dato y una acción por tarjeta; detalles tras ⓘ; la IA solo en Coach (Menú con IA y Mi IA en su cabecera);
+sesiones de cuerpo completo con 6 ejercicios; Historial con pantalla propia y Menú compacto.
 
 ## Las dos direcciones
 

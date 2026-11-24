@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Menú</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./fl.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&amp;family=Geist:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;family=Roboto+Flex:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ph {{tema}}">
+<div class="fx quiet"></div>
+<div class="scr" style="gap: 14px">
+<a class="link small" href="#" style="display: inline-flex; align-items: center; gap: 4px; text-decoration: none; color: var(--muted)"><i class="ic i-left s18"></i>Nutrición</a>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<h1 class="d t-h1">Menú</h1>
+<div style="display: flex; gap: 6px">
+<a class="chip" href="#" style="text-decoration: none"><i class="ic i-sliders s16"></i>Preparar</a>
+<a class="chip" href="#" style="text-decoration: none"><i class="ic i-upload s16"></i>Importar</a>
+</div>
+</div>
+<div class="daypick">
+<span><i class="mk off"></i><b>23</b>Lun</span>
+<span class="on"><i class="mk"></i><b>24</b>Mar</span>
+<span><i class="mk"></i><b>25</b>Mié</span>
+<span><i class="mk"></i><b>26</b>Jue</span>
+<span><i class="mk"></i><b>27</b>Vie</span>
+<span><i class="mk off"></i><b>28</b>Sáb</span>
+<span><i class="mk off"></i><b>29</b>Dom</span>
+</div>
+<span class="chip" style="align-self: flex-start">1920 kcal · 128 g proteína</span>
+<section class="glass" style="display: flex; flex-direction: column; padding: 4px 16px">
+<div class="exrow"><div style="display: flex; flex-direction: column; flex: 1; min-width: 0"><span class="eyebrow">Desayuno</span><span style="font-weight: 500">Tostadas integrales con revuelto de huevo y tomate</span></div><span class="cap muted">450</span></div>
+<div class="exrow"><div style="display: flex; flex-direction: column; flex: 1; min-width: 0"><span class="eyebrow">Comida</span><span style="font-weight: 500">Arroz integral con pollo y brócoli</span></div><span class="chip">Táper</span><span class="cap muted">610</span></div>
+<div class="exrow"><div style="display: flex; flex-direction: column; flex: 1; min-width: 0"><span class="eyebrow">Merienda</span><span style="font-weight: 500">Queso cottage con kiwi, avena y almendras</span></div><span class="cap muted">320</span></div>
+<div class="exrow"><div style="display: flex; flex-direction: column; flex: 1; min-width: 0"><span class="eyebrow">Cena</span><span style="font-weight: 500">Merluza al horno con patata y ensalada</span></div><span class="cap muted">540</span></div>
+</section>
+<p class="cap muted" style="display: flex; align-items: center; gap: 6px"><i class="ic i-moon s16"></i>Esta noche: lentejas del congelador a la nevera</p>
+<a class="btn block" href="#" style="margin-top: auto"><i class="ic i-cart s18"></i>Lista de la compra</a>
+</div>
+<nav class="tabbar" aria-label="Secciones">
+<a href="#"><span class="pill"><i class="ic i-house"></i></span>Hoy</a>
+<a href="#"><span class="pill"><i class="ic i-dumbbell"></i></span>Entreno</a>
+<a href="#" aria-current="page"><span class="pill"><i class="ic i-utensils"></i></span>Nutrición</a>
+<a href="#"><span class="pill"><i class="ic i-chart"></i></span>Progreso</a>
+<a href="#"><span class="pill"><i class="ic i-message"></i></span>Coach</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["cur","A","B","A light","B light"],"default":"cur"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { tema: this.props.tema ?? 'cur' };
+}
+}
+</script>
+</body>
+</html>

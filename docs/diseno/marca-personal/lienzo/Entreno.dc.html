@@ -17,70 +17,46 @@ body{margin:0}
 <div class="ph {{tema}}">
 <div class="fx quiet"></div>
 <div class="scr" style="gap: 12px">
-<div style="display: flex; align-items: center; justify-content: space-between">
-<a class="link small" href="#" style="display: inline-flex; align-items: center; gap: 4px; text-decoration: none; color: var(--muted)"><i class="ic i-left s18"></i>Gimnasio</a>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<a class="link small" href="#" style="display: inline-flex; align-items: center; gap: 4px; text-decoration: none; color: var(--muted)"><i class="ic i-left s18"></i>Entreno</a>
+<div style="display: flex; align-items: center; gap: 8px">
+<span class="chip on"><i class="ic i-timer s16"></i>Descanso 87 s</span>
+<button class="icobtn sm" type="button" aria-label="Ajustes del entreno"><i class="ic i-sliders s18"></i></button>
+</div>
+</div>
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 8px">
+<h1 class="d t-h1">Full body A</h1>
 <span class="stat neon" style="font-size: 22px">42:10</span>
 </div>
-<h1 class="d t-h1">Entreno · Empuje</h1>
-<div class="glass" style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px">
-<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
-<span class="cap muted">Descanso entre series</span>
-<div class="seg"><span>60 s</span><span class="on">90 s</span><span>120 s</span></div>
+<div style="display: flex; align-items: center; gap: 10px">
+<span class="bar" style="flex: 1"><i style="width: 30%"></i></span>
+<span class="cap muted">2 de 6</span>
 </div>
-<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
-<span class="cap muted">Esfuerzo por serie</span>
-<div class="seg"><span>RPE</span><span class="on">RIR</span></div>
-</div>
-</div>
+<section class="glass" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px">
+<span class="check on"><i class="ic i-check s16"></i></span>
+<span style="flex: 1; font-weight: 500">Sentadilla</span>
+<span class="cap muted">4 × 6 · 100 kg</span>
+</section>
 <section class="glass edge" style="display: flex; flex-direction: column; gap: 10px">
 <div style="display: flex; align-items: center; gap: 10px">
-<span class="num not-cur">01</span>
-<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1">
-<h2 class="d t-h3" style="font-size: 20px">Press banca</h2>
-<span class="cap muted">Última vez: 80 kg × 8 · PR 90 kg</span>
-</div>
-<span class="chip">e1RM ≈ 104 kg</span>
+<span class="num not-cur">02</span>
+<h2 class="d t-h3" style="font-size: 20px; flex: 1">Press banca</h2>
+<span class="chip rec"><i class="ic i-sparkles s16"></i>Récord</span>
 </div>
 <div class="sets">
 <span class="hd">Serie</span><span class="hd">kg</span><span class="hd">reps</span><span class="hd">RIR</span><span class="hd"></span>
 <span class="setno">1</span><input class="cell" value="80" aria-label="kg, serie 1"><input class="cell" value="8" aria-label="repeticiones, serie 1"><input class="cell" value="2" aria-label="RIR, serie 1"><button class="check on" type="button" aria-label="Serie 1 hecha"><i class="ic i-check s16"></i></button>
 <span class="setno">2</span><input class="cell" value="82,5" aria-label="kg, serie 2"><input class="cell" value="8" aria-label="repeticiones, serie 2"><input class="cell" value="1" aria-label="RIR, serie 2"><button class="check on" type="button" aria-label="Serie 2 hecha"><i class="ic i-check s16"></i></button>
-</div>
-<div style="display: flex; justify-content: flex-end"><span class="chip rec"><i class="ic i-sparkles s16"></i>Récord: e1RM 104 kg</span></div>
-<div class="sets">
 <span class="setno">3</span><input class="cell focus" value="82,5" aria-label="kg, serie 3"><input class="cell" value="" placeholder="8" aria-label="repeticiones, serie 3"><input class="cell" value="" placeholder="1" aria-label="RIR, serie 3"><button class="check" type="button" aria-label="Marcar serie 3"><i class="ic i-check s16"></i></button>
 </div>
-<span class="cap muted" style="padding-left: 44px">anterior: 80 kg × 8 · toca para copiar</span>
-<div style="display: flex; gap: 8px">
-<button class="btn sm ghost" type="button"><i class="ic i-plus s16"></i>Serie</button>
-<button class="btn sm ghost" type="button">Discos</button>
-</div>
 </section>
-<section class="glass" style="display: flex; align-items: center; gap: 10px; padding: 14px 16px">
-<span class="num not-cur">02</span>
-<div style="display: flex; flex-direction: column; gap: 2px; flex: 1">
-<h2 class="d t-h3" style="font-size: 18px">Press militar</h2>
-<span class="cap muted">Última vez: 45 kg × 10 · 0 de 3 series</span>
-</div>
-<i class="ic i-right muted"></i>
+<section class="glass" style="display: flex; flex-direction: column; padding: 4px 16px">
+<div class="exrow"><span class="num not-cur">03</span><span style="flex: 1">Peso muerto rumano</span><span class="cap muted">3 × 8 · 90 kg</span></div>
+<div class="exrow"><span class="num not-cur">04</span><span style="flex: 1">Remo con barra</span><span class="cap muted">3 × 10 · 60 kg</span></div>
+<div class="exrow"><span class="num not-cur">05</span><span style="flex: 1">Press militar</span><span class="cap muted">3 × 8 · 45 kg</span></div>
+<div class="exrow"><span class="num not-cur">06</span><span style="flex: 1">Plancha</span><span class="cap muted">2 × 45 s</span></div>
 </section>
-<section class="glass" style="display: flex; align-items: center; gap: 10px; padding: 14px 16px">
-<span class="num not-cur">03</span>
-<div style="display: flex; flex-direction: column; gap: 2px; flex: 1">
-<h2 class="d t-h3" style="font-size: 18px">Remo con barra</h2>
-<span class="cap muted">Primera vez: a estrenar</span>
-</div>
-<i class="ic i-right muted"></i>
-</section>
-</div>
-<div class="glass" role="status" style="position: absolute; z-index: 6; left: 16px; right: 16px; bottom: 98px; display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 16px; border-radius: 999px">
-<i class="ic i-timer" style="color: var(--acc-txt)"></i>
-<div style="display: flex; flex-direction: column; gap: 5px; flex: 1">
-<span class="small">Descanso <strong class="stat neon" style="font-size: 16px">87 s</strong></span>
-<span class="bar" style="height: 5px"><i style="width: 70%"></i></span>
-</div>
-<button class="btn sm ghost" type="button">+30 s</button>
-<button class="btn sm" type="button">Saltar</button>
+<button class="btn block" type="button">Terminar entreno</button>
 </div>
 <nav class="tabbar" aria-label="Secciones">
 <a href="#"><span class="pill"><i class="ic i-house"></i></span>Hoy</a>

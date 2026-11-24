@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Historial</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./fl.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&amp;family=Geist:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;family=Roboto+Flex:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ph {{tema}}">
+<div class="fx quiet"></div>
+<div class="scr" style="gap: 14px">
+<a class="link small" href="#" style="display: inline-flex; align-items: center; gap: 4px; text-decoration: none; color: var(--muted)"><i class="ic i-left s18"></i>Entreno</a>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<h1 class="d t-h1">Historial</h1>
+<a class="chip" href="#" style="text-decoration: none"><i class="ic i-upload s16"></i>Importar</a>
+</div>
+<section class="glass" style="display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<p class="eyebrow">Noviembre</p>
+<div class="seg"><span class="on">Todo</span><span>Gimnasio</span><span>Contacto</span></div>
+</div>
+<div class="cal">
+<span class="h">L</span><span class="h">M</span><span class="h">X</span><span class="h">J</span><span class="h">V</span><span class="h">S</span><span class="h">D</span>
+<span></span><span></span><span></span><span></span><span></span><span></span><span>1</span>
+<span class="g">2</span><span>3</span><span class="c">4</span><span>5</span><span class="g">6</span><span>7</span><span>8</span>
+<span class="g">9</span><span>10</span><span class="c">11</span><span>12</span><span class="g">13</span><span>14</span><span>15</span>
+<span class="g">16</span><span>17</span><span class="c">18</span><span>19</span><span class="g">20</span><span>21</span><span>22</span>
+<span class="g">23</span><span class="t">24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span>
+<span>30</span><span></span><span></span><span></span><span></span><span></span><span></span>
+</div>
+<p class="cap muted" style="display: flex; gap: 14px"><span style="display: inline-flex; align-items: center; gap: 6px"><span class="sw" style="background: var(--s1-soft)"></span>Gimnasio</span><span style="display: inline-flex; align-items: center; gap: 6px"><span class="sw" style="box-shadow: inset 0 0 0 1.5px var(--s1)"></span>Contacto</span></p>
+</section>
+<section class="glass" style="display: flex; flex-direction: column; padding: 4px 16px">
+<div class="exrow"><i class="ic i-dumbbell" style="color: var(--muted)"></i><div style="display: flex; flex-direction: column; flex: 1"><span style="font-weight: 500">Full body C</span><span class="cap muted">Lun 23 · 6 ejercicios</span></div><span class="cap muted">52 min</span></div>
+<div class="exrow"><i class="ic i-dumbbell" style="color: var(--muted)"></i><div style="display: flex; flex-direction: column; flex: 1"><span style="font-weight: 500">Full body B</span><span class="cap muted">Vie 20 · 7 ejercicios</span></div><span class="cap muted">58 min</span></div>
+<div class="exrow"><i class="ic i-swords" style="color: var(--muted)"></i><div style="display: flex; flex-direction: column; flex: 1"><span style="font-weight: 500">MMA · Sparring</span><span class="cap muted">Mié 18 · RPE 8</span></div><span class="cap muted">60 min</span></div>
+<div class="exrow"><i class="ic i-dumbbell" style="color: var(--muted)"></i><div style="display: flex; flex-direction: column; flex: 1"><span style="font-weight: 500">Full body A</span><span class="cap muted">Lun 16 · 6 ejercicios</span></div><span class="cap muted">55 min</span></div>
+</section>
+</div>
+<nav class="tabbar" aria-label="Secciones">
+<a href="#"><span class="pill"><i class="ic i-house"></i></span>Hoy</a>
+<a href="#" aria-current="page"><span class="pill"><i class="ic i-dumbbell"></i></span>Entreno</a>
+<a href="#"><span class="pill"><i class="ic i-utensils"></i></span>Nutrición</a>
+<a href="#"><span class="pill"><i class="ic i-chart"></i></span>Progreso</a>
+<a href="#"><span class="pill"><i class="ic i-message"></i></span>Coach</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["cur","A","B","A light","B light"],"default":"cur"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { tema: this.props.tema ?? 'cur' };
+}
+}
+</script>
+</body>
+</html>
