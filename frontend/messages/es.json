@@ -2723,7 +2723,7 @@
       "copyManual": "No se ha podido copiar solo: toca el cuadro, selecciónalo todo y cópialo a mano.",
       "dataTitle": "Datos (JSON):",
       "pasteLabel": "Pega aquí la respuesta de tu IA",
-      "pastePlaceholder": "{\"schema\": 1, \"days\": […], \"dishes\": {…}}",
+      "pastePlaceholder": "'{\"schema\": 1, \"days\": […], \"dishes\": {…}}'",
       "save": "Comprobar y guardar",
       "saving": "Comprobando…",
       "saved": "Guardado: {title}, {days, plural, one {# día} other {# días}}.",
@@ -3857,6 +3857,7 @@
   "coachMenuAi": {
     "back": "← Coach",
     "title": "Menú con tu IA",
-    "days": "Días"
+    "days": "Días",
+    "open": "Ver el menú"
   }
 }

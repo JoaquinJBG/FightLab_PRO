@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { AiMenuCard } from "@/components/menu/AiMenuCard";
 import { MEALS, useMenu, type MealKey } from "@/lib/menu";
 
-/* «Menú con tu IA» vive en el Coach: la IA no ocupa pantallas de Nutrición. */
+/* «Menú con tu IA» vive en el Coach: la IA no ocupa pantallas de Nutrición. Al guardar se queda
+   aquí para enseñar si los días cuadran, con «Ver el menú» para ir a él. */
 export default function CoachMenuAiPage() {
   const t = useTranslations("coachMenuAi");
-  const router = useRouter();
+  const [savedId, setSavedId] = useState<number | null>(null);
   const state = useMenu(null);
   const [days, setDays] = useState(3);
   const [meals] = useState<MealKey[]>([...MEALS]);
@@ -28,7 +28,10 @@ export default function CoachMenuAiPage() {
           </select>
         </label>
       </div>
-      <AiMenuCard days={days} meals={meals} tupper={[]} onSaved={(id) => router.push(`/nutrition/menu?id=${id}`)} />
+      <AiMenuCard days={days} meals={meals} tupper={[]} onSaved={setSavedId} />
+      {savedId !== null && (
+        <Link href={`/nutrition/menu?id=${savedId}`} data-testid="coach-menu-ai-open" className="btn btn-primary mt-4 w-full">{t("open")}</Link>
+      )}
     </div>
   );
 }
