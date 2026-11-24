@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Arranque</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./fl.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&amp;family=Geist:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;family=Roboto+Flex:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ph {{tema}}">
+<div class="fx"></div>
+<div class="scr" style="padding: 52px 24px 56px; align-items: center; justify-content: space-between">
+<span></span>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center">
+<div class="only-cur" style="display: flex; flex-direction: column; align-items: center; gap: 22px">
+<div class="fl-tile" style="width: 96px; height: 96px; border-radius: 26px; font-size: 36px">FL</div>
+<h1 style="font: 700 34px/1 'Plus Jakarta Sans', sans-serif; letter-spacing: -.03em">FIGHTLAB <span class="neon">PRO</span></h1>
+</div>
+<div class="only-A logo franja" style="width: 350px; height: 140px; font-size: 62px">
+<span class="lt lg">fightlab</span>
+<span class="franja__banda"><span class="clip"><span class="lt lg">fightlab</span></span></span>
+</div>
+<div class="only-B logo franja" style="width: 350px; height: 140px; font-size: 56px">
+<span class="lt lg w">FIGHTLAB</span>
+<span class="franja__banda"><span class="clip"><span class="lt lg">FIGHTLAB</span></span></span>
+</div>
+<span class="only-B chip on" style="font-weight: 700; letter-spacing: .12em">PRO</span>
+<p class="muted" style="max-width: 260px">Carga de entrenamiento, nutrición y coach para atletas de combate.</p>
+</div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 12px; width: 220px">
+<span class="bar" style="width: 100%; height: 4px"><i style="width: 45%"></i></span>
+<span class="cap muted">Despertando el servidor…</span>
+<span class="cap muted only-A">joaquín beltrán — hecho a mano</span>
+<span class="cap muted only-B">by joaquín beltrán</span>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["cur","A","B","A light","B light"],"default":"cur"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { tema: this.props.tema ?? 'cur' };
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Hoy</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./fl.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&amp;family=Geist:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;family=Roboto+Flex:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ph {{tema}}">
+<div class="fx"></div>
+<div class="scr">
+<header style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<p class="eyebrow">Martes, 24 de noviembre</p>
+<h1 class="d t-h1">Hoy</h1>
+</div>
+<button class="avatar" type="button" aria-label="Perfil">A</button>
+</header>
+<div style="display: flex; gap: 8px">
+<span class="chip dot">Listo para entrenar</span>
+<span class="chip">Semana 320 AU</span>
+</div>
+<section class="glass edge" style="display: flex; flex-direction: column; gap: 12px; padding: 18px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<p class="eyebrow">Entreno de hoy</p>
+<div class="seg"><span class="on">Gimnasio</span><span>Cardio</span><span>Descanso</span></div>
+</div>
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+<h2 class="d t-h2">Gimnasio, sesión A</h2>
+<p class="small muted">A las 18:00 · Press banca · Remo con barra · Press militar</p>
+</div>
+<div class="franja not-cur" style="width: 84px; height: 56px; flex: none; border-radius: 14px; background: rgba(127,140,160,.08)"><span class="franja__banda"></span></div>
+</div>
+<a class="btn block" href="#"><i class="ic i-play s16"></i>Empezar la sesión A</a>
+<div style="display: flex; gap: 8px">
+<span class="chip"><i class="ic i-check s16"></i>Entreno hecho</span>
+<span class="chip">Movilidad</span>
+</div>
+</section>
+<section class="glass" style="display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<p class="eyebrow">Próxima comida</p>
+<a class="link small" href="#">Ver el día</a>
+</div>
+<h3 class="d t-h3">Comida: arroz integral con pollo y brócoli</h3>
+<div style="display: flex; gap: 8px">
+<button class="btn sm ghost" type="button"><i class="ic i-check s16"></i>Hecha</button>
+<button class="btn sm ghost" type="button">No hecha</button>
+<button class="btn sm ghost" type="button">Cambiar</button>
+</div>
+<p class="cap muted">Para esta noche: pasa las lentejas guisadas del congelador a la nevera.</p>
+</section>
+<p class="eyebrow">Apuntar rápido</p>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+<a class="tile" href="#" style="display: flex; flex-direction: column; gap: 6px; color: inherit; text-decoration: none">
+<i class="ic i-activity" style="color: var(--acc-txt)"></i>
+<span class="cap muted">Check-in</span>
+<span style="font-weight: 600">Pendiente</span>
+</a>
+<a class="tile" href="#" style="display: flex; flex-direction: column; gap: 6px; color: inherit; text-decoration: none">
+<i class="ic i-weight" style="color: var(--acc-txt)"></i>
+<span class="cap muted">Peso</span>
+<span class="stat" style="font-size: 18px">80,4 kg</span>
+</a>
+<a class="tile" href="#" style="display: flex; flex-direction: column; gap: 6px; color: inherit; text-decoration: none">
+<i class="ic i-flame" style="color: var(--acc-txt)"></i>
+<span class="cap muted">Cardio</span>
+<span class="stat" style="font-size: 18px">90/150</span>
+<span class="bar" style="height: 5px"><i style="width: 60%"></i></span>
+</a>
+</div>
+</div>
+<nav class="tabbar" aria-label="Secciones">
+<a href="#" aria-current="page"><span class="pill"><i class="ic i-house"></i></span>Hoy</a>
+<a href="#"><span class="pill"><i class="ic i-dumbbell"></i></span>Entreno</a>
+<a href="#"><span class="pill"><i class="ic i-utensils"></i></span>Nutrición</a>
+<a href="#"><span class="pill"><i class="ic i-chart"></i></span>Progreso</a>
+<a href="#"><span class="pill"><i class="ic i-message"></i></span>Coach</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["cur","A","B","A light","B light"],"default":"cur"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { tema: this.props.tema ?? 'cur' };
+}
+}
+</script>
+</body>
+</html>

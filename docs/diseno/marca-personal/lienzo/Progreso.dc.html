@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Progreso</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./fl.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&amp;family=Geist:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;family=Roboto+Flex:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ph {{tema}}">
+<div class="fx"></div>
+<div class="scr">
+<h1 class="d t-h1">Progreso</h1>
+<section class="glass edge" style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<p class="eyebrow">Carga de la semana</p>
+<span class="chip">+12 % vs tu media</span>
+</div>
+<p style="display: flex; align-items: baseline; gap: 6px"><span class="stat neon" style="font-size: 44px">320</span><span class="muted">AU</span></p>
+<svg viewBox="0 0 318 118" width="100%" role="img" aria-label="Carga de las últimas 8 semanas: de 240 a 320 AU; esta semana, 320, por encima de tu media de 286">
+<line class="g-grid" x1="0" y1="100" x2="318" y2="100"></line>
+<rect class="g-bar" x="8.9" y="26.6" width="22" height="73.4" rx="5"></rect>
+<rect class="g-bar" x="48.6" y="15.3" width="22" height="84.7" rx="5"></rect>
+<rect class="g-bar" x="88.4" y="20.9" width="22" height="79.1" rx="5"></rect>
+<rect class="g-bar" x="128.2" y="12.5" width="22" height="87.5" rx="5"></rect>
+<rect class="g-bar" x="167.9" y="32.2" width="22" height="67.8" rx="5"></rect>
+<rect class="g-bar" x="207.7" y="18.1" width="22" height="81.9" rx="5"></rect>
+<rect class="g-bar" x="247.4" y="19.2" width="22" height="80.8" rx="5"></rect>
+<rect class="g-hi" x="287.2" y="9.6" width="22" height="90.4" rx="5"></rect>
+<line class="g-ref" x1="0" y1="19.2" x2="318" y2="19.2"></line>
+<text class="g-txt" x="8.9" y="114">hace 7 sem</text>
+<text class="g-txt-hi" x="298" y="114" text-anchor="middle">esta</text>
+</svg>
+<p class="cap muted">Minutos × esfuerzo (RPE). La línea es tu media de 4 semanas.</p>
+</section>
+<section class="glass" style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<p class="eyebrow">Peso</p>
+<span class="chip">−0,24 kg por semana</span>
+</div>
+<p style="display: flex; align-items: baseline; gap: 6px"><span class="stat" style="font-size: 32px">80,4</span><span class="muted">kg · hoy</span></p>
+<svg viewBox="0 0 318 104" width="100%" role="img" aria-label="Tendencia de peso en 8 semanas: de 82,1 a 80,4 kg; objetivo 78 kg">
+<path class="g-area" d="M10 17.2 L52 20.8 L94 26.2 L136 28 L178 35.2 L220 38.8 L262 44.2 L304 47.8 L304 100 L10 100 Z"></path>
+<line class="g-ref" x1="0" y1="91" x2="318" y2="91"></line>
+<path class="g-s1" d="M10 17.2 L52 20.8 L94 26.2 L136 28 L178 35.2 L220 38.8 L262 44.2 L304 47.8"></path>
+<circle class="g-dot" cx="304" cy="47.8" r="4.5"></circle>
+<text class="g-txt" x="314" y="84" text-anchor="end">objetivo 78 kg</text>
+</svg>
+<p class="cap muted">A 2,4 kg de tu objetivo.</p>
+</section>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<div class="glass" style="display: flex; flex-direction: column; gap: 4px; padding: 14px">
+<span class="cap muted">FC en reposo</span>
+<span><span class="stat" style="font-size: 24px">52</span> <span class="cap muted">bpm</span></span>
+<span class="cap" style="color: var(--good)">−2 vs tu media</span>
+</div>
+<div class="glass" style="display: flex; flex-direction: column; gap: 4px; padding: 14px">
+<span class="cap muted">HRV</span>
+<span><span class="stat" style="font-size: 24px">68</span> <span class="cap muted">ms</span></span>
+<span class="cap" style="color: var(--good)">+4 vs tu media</span>
+</div>
+</div>
+</div>
+<nav class="tabbar" aria-label="Secciones">
+<a href="#"><span class="pill"><i class="ic i-house"></i></span>Hoy</a>
+<a href="#"><span class="pill"><i class="ic i-dumbbell"></i></span>Entreno</a>
+<a href="#"><span class="pill"><i class="ic i-utensils"></i></span>Nutrición</a>
+<a href="#" aria-current="page"><span class="pill"><i class="ic i-chart"></i></span>Progreso</a>
+<a href="#"><span class="pill"><i class="ic i-message"></i></span>Coach</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["cur","A","B","A light","B light"],"default":"cur"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { tema: this.props.tema ?? 'cur' };
+}
+}
+</script>
+</body>
+</html>

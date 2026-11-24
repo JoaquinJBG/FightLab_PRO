@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Coach</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./fl.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&amp;family=Geist:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;family=Roboto+Flex:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ph {{tema}}">
+<div class="fx"></div>
+<div class="scr" style="gap: 12px">
+<h1 class="d t-h1">Coach</h1>
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<span class="chip dot">Listo para entrenar</span>
+<span class="chip">Semana 320 AU</span>
+<span class="chip">80,4 kg</span>
+</div>
+<section class="glass edge" style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<p class="eyebrow">Briefing de hoy</p>
+<span class="chip">con tus datos</span>
+</div>
+<p class="small">Semana en marcha: 320 AU acumuladas. Mantén el ritmo y registra cada sesión.</p>
+</section>
+<section class="glass" style="display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<p class="eyebrow">Habla con tu coach</p>
+<span class="chip"><i class="ic i-sparkles s16"></i>IA</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; flex: 1">
+<p class="msg bot tile">Buenas. Pregúntame por tu entreno, tu carga, tu peso o tu recuperación.</p>
+<p class="msg me">¿Entreno fuerte hoy?</p>
+<div class="msg bot tile" style="display: flex; flex-direction: column; gap: 8px">
+<p>Tu recuperación está por encima de tu media y la carga va 1,1 veces tu media: dale duro hoy, tienes margen. Calienta bien.</p>
+<span class="chip" style="align-self: flex-start"><i class="ic i-book s16"></i>Evidencia moderada</span>
+</div>
+</div>
+<div style="display: flex; gap: 6px; flex-wrap: wrap">
+<button class="chip" type="button">¿Cómo voy?</button>
+<button class="chip" type="button">¿Cómo va mi peso?</button>
+</div>
+<div style="display: flex; gap: 8px; align-items: center">
+<input class="field" style="flex: 1; min-width: 0" placeholder="Pregunta a tu coach…" aria-label="Pregunta a tu coach">
+<button class="btn round" type="button" aria-label="Enviar" style="width: 50px; min-height: 50px"><i class="ic i-send s18"></i></button>
+</div>
+<p class="cap muted">El coach es orientativo, no es consejo médico.</p>
+</section>
+</div>
+<nav class="tabbar" aria-label="Secciones">
+<a href="#"><span class="pill"><i class="ic i-house"></i></span>Hoy</a>
+<a href="#"><span class="pill"><i class="ic i-dumbbell"></i></span>Entreno</a>
+<a href="#"><span class="pill"><i class="ic i-utensils"></i></span>Nutrición</a>
+<a href="#"><span class="pill"><i class="ic i-chart"></i></span>Progreso</a>
+<a href="#" aria-current="page"><span class="pill"><i class="ic i-message"></i></span>Coach</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["cur","A","B","A light","B light"],"default":"cur"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { tema: this.props.tema ?? 'cur' };
+}
+}
+</script>
+</body>
+</html>

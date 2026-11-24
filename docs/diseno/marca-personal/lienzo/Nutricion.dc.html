@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Nutrición</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./fl.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&amp;family=Geist:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;family=Roboto+Flex:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ph {{tema}}">
+<div class="fx"></div>
+<div class="scr">
+<h1 class="d t-h1">Nutrición</h1>
+<section class="glass edge" style="display: flex; flex-direction: column; gap: 12px; padding: 18px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<p class="eyebrow">Hoy</p>
+<span class="chip"><i class="ic i-book s16"></i>Evidencia fuerte</span>
+</div>
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 8px">
+<p style="display: flex; align-items: baseline; gap: 6px"><span class="stat neon" style="font-size: 48px">1450</span><span class="muted">/ 2300 kcal</span></p>
+<p style="text-align: right"><span class="stat" style="font-size: 20px">850</span><br><span class="cap muted">restantes</span></p>
+</div>
+<span class="bar"><i style="width: 63%"></i></span>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding-top: 4px">
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="cap muted">Proteína</span><span class="bar" style="height: 5px"><i style="width: 63%"></i></span><span class="small"><strong>95</strong><span class="muted">/150 g</span></span></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="cap muted">Carbos</span><span class="bar" style="height: 5px"><i style="width: 62%"></i></span><span class="small"><strong>160</strong><span class="muted">/260 g</span></span></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="cap muted">Grasa</span><span class="bar" style="height: 5px"><i style="width: 57%"></i></span><span class="small"><strong>40</strong><span class="muted">/70 g</span></span></div>
+</div>
+<p class="cap muted">Fibra: al menos 25 g al día.</p>
+</section>
+<section class="glass" style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0">
+<span class="eyebrow">Desayuno</span>
+<span class="small" style="font-weight: 500">Avena con yogur griego y frambuesas</span>
+<span class="cap muted">420 kcal · P 28 · C 52 · G 10 · del menú</span>
+</div>
+<button class="icobtn" type="button" aria-label="Añadir a Desayuno"><i class="ic i-plus s18"></i></button>
+</div>
+<div class="sep"></div>
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0">
+<span class="eyebrow">Comida</span>
+<span class="small" style="font-weight: 500">Arroz integral con pollo y brócoli</span>
+<span class="cap muted">610 kcal · P 45 · C 70 · G 14 · táper</span>
+</div>
+<button class="icobtn" type="button" aria-label="Añadir a Comida"><i class="ic i-plus s18"></i></button>
+</div>
+<div class="sep"></div>
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0">
+<span class="eyebrow">Snack</span>
+<span class="small" style="font-weight: 500">Tortitas de avena y claras con plátano</span>
+<span class="cap muted">420 kcal · P 22 · C 38 · G 16 · foto del plato</span>
+</div>
+<button class="icobtn" type="button" aria-label="Añadir a Snack"><i class="ic i-plus s18"></i></button>
+</div>
+<div class="sep"></div>
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px; flex: 1">
+<span class="eyebrow">Cena</span>
+<span class="small muted">Aún no hay nada. Añade la cena.</span>
+</div>
+<button class="btn sm" type="button"><i class="ic i-plus s16"></i>Añadir</button>
+</div>
+</section>
+<section class="glass" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px">
+<i class="ic i-droplet" style="color: var(--link)"></i>
+<p class="small" style="flex: 1"><strong>0,50 L</strong> <span class="muted">· objetivo ~2 L</span></p>
+<button class="icobtn" type="button" aria-label="Quitar un vaso" style="width: 40px; height: 40px">−</button>
+<button class="icobtn" type="button" aria-label="Añadir un vaso" style="width: 40px; height: 40px"><i class="ic i-plus s16"></i></button>
+</section>
+</div>
+<nav class="tabbar" aria-label="Secciones">
+<a href="#"><span class="pill"><i class="ic i-house"></i></span>Hoy</a>
+<a href="#"><span class="pill"><i class="ic i-dumbbell"></i></span>Entreno</a>
+<a href="#" aria-current="page"><span class="pill"><i class="ic i-utensils"></i></span>Nutrición</a>
+<a href="#"><span class="pill"><i class="ic i-chart"></i></span>Progreso</a>
+<a href="#"><span class="pill"><i class="ic i-message"></i></span>Coach</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["cur","A","B","A light","B light"],"default":"cur"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { tema: this.props.tema ?? 'cur' };
+}
+}
+</script>
+</body>
+</html>

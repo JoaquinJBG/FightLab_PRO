@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Perfil</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./fl.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&amp;family=Geist:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;family=Roboto+Flex:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ph {{tema}}">
+<div class="fx"></div>
+<div class="scr" style="gap: 12px">
+<div style="display: flex; align-items: center; gap: 12px">
+<a class="icobtn" href="#" aria-label="Volver a Hoy"><i class="ic i-left"></i></a>
+<h1 class="d t-h1">Perfil</h1>
+</div>
+<section class="glass edge" style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; gap: 12px">
+<span class="avatar" style="width: 52px; height: 52px; font-size: 18px">A</span>
+<div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+<span style="font-weight: 600">deportista@ejemplo.com</span>
+<span class="chip" style="align-self: flex-start">Deportista</span>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<div class="tile" style="display: flex; flex-direction: column; gap: 2px"><span class="cap muted">Fecha de nacimiento</span><span style="font-weight: 500">14/03/1996</span></div>
+<div class="tile" style="display: flex; flex-direction: column; gap: 2px"><span class="cap muted">Sexo</span><span style="font-weight: 500">Hombre</span></div>
+<div class="tile" style="display: flex; flex-direction: column; gap: 2px"><span class="cap muted">Altura</span><span style="font-weight: 500">180 cm</span></div>
+<div class="tile" style="display: flex; flex-direction: column; gap: 2px"><span class="cap muted">Guardia</span><span style="font-weight: 500">Ortodoxo</span></div>
+</div>
+</section>
+<section class="glass" style="display: flex; flex-direction: column; gap: 12px">
+<p class="eyebrow">Qué entrenas</p>
+<div style="display: flex; align-items: center; gap: 12px">
+<i class="ic i-dumbbell" style="color: var(--muted)"></i>
+<span style="flex: 1">Gimnasio</span>
+<span class="toggle on" role="switch" aria-checked="true" aria-label="Gimnasio"></span>
+</div>
+<div style="display: flex; align-items: center; gap: 12px">
+<i class="ic i-swords" style="color: var(--muted)"></i>
+<span style="flex: 1">Entrenamiento de contacto (MMA, boxeo…)</span>
+<span class="toggle on" role="switch" aria-checked="true" aria-label="Entrenamiento de contacto"></span>
+</div>
+<p class="cap muted">Ocultan lo que no usas. Puedes volver a activarlos cuando quieras.</p>
+</section>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<a class="tile" href="#" style="display: flex; align-items: center; gap: 8px; color: inherit; text-decoration: none"><i class="ic i-pen s18"></i><span class="small">Editar perfil</span></a>
+<a class="tile" href="#" style="display: flex; align-items: center; gap: 8px; color: inherit; text-decoration: none"><i class="ic i-shield s18"></i><span class="small">Rehacer el cribado</span></a>
+<a class="tile" href="#" style="display: flex; align-items: center; gap: 8px; color: inherit; text-decoration: none"><i class="ic i-bell s18"></i><span class="small">Recordatorios</span></a>
+<a class="tile" href="#" style="display: flex; align-items: center; gap: 8px; color: inherit; text-decoration: none"><i class="ic i-download s18"></i><span class="small">Importar datos</span></a>
+<a class="tile" href="#" style="display: flex; align-items: center; gap: 8px; color: inherit; text-decoration: none"><i class="ic i-cpu s18"></i><span class="small">Mi IA</span></a>
+<a class="tile" href="#" style="display: flex; align-items: center; gap: 8px; color: inherit; text-decoration: none"><i class="ic i-logout s18"></i><span class="small">Cerrar sesión</span></a>
+</div>
+<p class="cap muted only-cur" style="text-align: center; margin-top: auto">FightLab Pro · Créditos</p>
+<p class="cap muted only-A" style="text-align: center; margin-top: auto">joaquín beltrán — hecho a mano</p>
+<div class="only-B" style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: auto">
+<div class="logo franja" style="width: 120px; height: 48px; font-size: 20px">
+<span class="lt lg w">FIGHTLAB</span>
+<span class="franja__banda" style="box-shadow: none"><span class="clip"><span class="lt lg">FIGHTLAB</span></span></span>
+</div>
+<span class="cap muted">by joaquín beltrán</span>
+</div>
+</div>
+<nav class="tabbar" aria-label="Secciones">
+<a href="#" aria-current="page"><span class="pill"><i class="ic i-house"></i></span>Hoy</a>
+<a href="#"><span class="pill"><i class="ic i-dumbbell"></i></span>Entreno</a>
+<a href="#"><span class="pill"><i class="ic i-utensils"></i></span>Nutrición</a>
+<a href="#"><span class="pill"><i class="ic i-chart"></i></span>Progreso</a>
+<a href="#"><span class="pill"><i class="ic i-message"></i></span>Coach</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["cur","A","B","A light","B light"],"default":"cur"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { tema: this.props.tema ?? 'cur' };
+}
+}
+</script>
+</body>
+</html>
