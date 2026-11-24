@@ -5,7 +5,8 @@ import { useEffect, useRef } from "react";
 /**
  * Nebulosa fluida en WebGL (estilo Google Stitch): ruido fractal con
  * deformación de dominio (domain warping) que fluye continuamente, mapeado a
- * una paleta azul → violeta → magenta y concentrado en los laterales.
+ * una paleta azul → violeta → magenta (oscuro) o cobalto → coral en acuarela
+ * sobre niebla (claro), y concentrado en los laterales.
  * Render a baja resolución (la nebulosa es difusa) para ir ligero en móvil.
  * Si WebGL no está disponible, no pinta nada y queda el fallback CSS de detrás.
  */
@@ -13,6 +14,7 @@ const FRAG = `
 precision highp float;
 uniform vec2 uRes;
 uniform float uTime;
+uniform float uLight;   // 0 = oscuro, 1 = claro
 
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float noise(vec2 p){
@@ -41,20 +43,31 @@ void main(){
   float f = fbm(p * 1.6 + 3.2 * r);
   f = clamp(f * 1.25, 0.0, 1.0);
 
-  // Paleta azul -> violeta -> magenta
-  vec3 blue   = vec3(0.16, 0.40, 1.00);
-  vec3 violet = vec3(0.52, 0.26, 1.00);
-  vec3 magenta= vec3(0.78, 0.28, 1.00);
-  vec3 col = mix(blue, violet, smoothstep(0.30, 0.65, f));
-  col = mix(col, magenta, smoothstep(0.62, 0.92, f));
-
   // Intensidad: concentrar en los laterales y suavizar arriba/abajo
   float sides = pow(abs(uv.x - 0.5) * 2.0, 1.35);
   float vert  = smoothstep(0.05, 0.5, uv.y) * (1.0 - smoothstep(0.6, 1.05, uv.y));
   float intensity = pow(f, 1.6) * (0.35 + 0.95 * sides) * (0.55 + 0.55 * vert);
 
-  vec3 base = vec3(0.010, 0.013, 0.026);  // negro azulado más profundo
-  vec3 outc = base + col * intensity * 0.95;
+  vec3 outc;
+  if (uLight < 0.5) {
+    // Oscuro: azul -> violeta -> magenta sumado (screen) sobre negro azulado
+    vec3 blue   = vec3(0.16, 0.40, 1.00);
+    vec3 violet = vec3(0.52, 0.26, 1.00);
+    vec3 magenta= vec3(0.78, 0.28, 1.00);
+    vec3 col = mix(blue, violet, smoothstep(0.30, 0.65, f));
+    col = mix(col, magenta, smoothstep(0.62, 0.92, f));
+    vec3 base = vec3(0.010, 0.013, 0.026);
+    outc = base + col * intensity * 0.95;
+  } else {
+    // Claro: cobalto -> pizarra -> coral, mezclado como acuarela sobre la niebla
+    vec3 cobalt = vec3(0.165, 0.447, 0.639);  // #2A72A3
+    vec3 slate  = vec3(0.451, 0.541, 0.604);  // #738A9A
+    vec3 coral  = vec3(0.976, 0.447, 0.475);  // #F97279
+    vec3 col = mix(cobalt, slate, smoothstep(0.30, 0.60, f));
+    col = mix(col, coral, smoothstep(0.55, 0.90, f));
+    vec3 fog = vec3(0.906, 0.933, 0.949);     // #E7EEF2
+    outc = mix(fog, col, clamp(intensity * 0.55, 0.0, 0.6));
+  }
 
   gl_FragColor = vec4(outc, 1.0);
 }
@@ -77,7 +90,19 @@ function compile(gl: WebGLRenderingContext, type: number, src: string) {
   return sh;
 }
 
-export function NebulaCanvas() {
+export type NebulaTheme = "dark" | "light";
+
+/** Tema de la página: hoy solo `data-theme="light"` en <html> enciende el claro
+    (la fase 5 sumará prefers-color-scheme). */
+function pageTheme(): NebulaTheme {
+  return document.documentElement.dataset.theme === "light" ? "light" : "dark";
+}
+
+/**
+ * `theme` fija la paleta; sin él, sigue a `data-theme` de <html> y cambia en
+ * caliente si el atributo cambia.
+ */
+export function NebulaCanvas({ theme }: { theme?: NebulaTheme } = {}) {
   const ref = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -106,6 +131,8 @@ export function NebulaCanvas() {
 
     const uRes = gl.getUniformLocation(prog, "uRes");
     const uTime = gl.getUniformLocation(prog, "uTime");
+    const uLight = gl.getUniformLocation(prog, "uLight");
+    let light = (theme ?? pageTheme()) === "light";
 
     const SCALE = 0.6; // render a baja resolución (nebulosa difusa => barato)
     const resize = () => {
@@ -126,18 +153,32 @@ export function NebulaCanvas() {
       const t = reduce ? 12 : (ts - start) / 1000;
       gl.uniform2f(uRes, canvas.width, canvas.height);
       gl.uniform1f(uTime, t);
+      gl.uniform1f(uLight, light ? 1 : 0);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       if (!reduce) raf = requestAnimationFrame(render);
     };
     raf = requestAnimationFrame(render);
 
+    // Sin tema fijo, sigue a <html data-theme>. Con movimiento reducido no hay
+    // bucle: se repinta un fotograma quieto al cambiar.
+    const observer = theme
+      ? null
+      : new MutationObserver(() => {
+          const next = pageTheme() === "light";
+          if (next === light) return;
+          light = next;
+          if (reduce) raf = requestAnimationFrame(render);
+        });
+    observer?.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
     return () => {
       cancelAnimationFrame(raf);
+      observer?.disconnect();
       window.removeEventListener("resize", resize);
       const ext = gl.getExtension("WEBGL_lose_context");
       ext?.loseContext();
     };
-  }, []);
+  }, [theme]);
 
   return <canvas ref={ref} className="neb-canvas" aria-hidden="true" />;
 }

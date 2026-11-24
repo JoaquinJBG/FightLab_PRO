@@ -153,7 +153,8 @@ test("30 ejercicios × 8 series: detalle completo en local y ≤ 8 KB al servido
   expect(s.exercises[0].sets).toHaveLength(8);
 });
 
-const names = (page: Page) => page.locator(".glass .t-title").allInnerTexts();
+// textContent y no innerText: .t-title pasa a minúsculas por CSS (firma de la marca)
+const names = (page: Page) => page.locator(".glass .t-title").allTextContents();
 
 test("quitar dos ejercicios seguidos: Deshacer recupera ambos, en orden", async ({ page }) => {
   await open(page, [

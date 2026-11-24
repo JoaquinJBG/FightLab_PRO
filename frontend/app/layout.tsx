@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Roboto_Flex } from "next/font/google";
+import { Bricolage_Grotesque, Roboto_Flex } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegister } from "./sw-register";
 import { BackgroundFx } from "@/components/background-fx";
@@ -7,18 +7,18 @@ import { QueryProvider } from "@/lib/query-provider";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 
-// Títulos / banners / números — clon libre de Google Sans
-const display = Plus_Jakarta_Sans({
+// Titulares y cifras — firma de la marca: Bricolage Grotesque 800 (solo ese peso)
+const display = Bricolage_Grotesque({
   variable: "--ff-display",
   subsets: ["latin"],
-  weight: ["500", "700"],
+  weight: "800",
 });
 
-// Cuerpo / UI pequeña — clon libre de Roboto
+// Cuerpo, UI pequeña y botones (600) — clon libre de Roboto
 const body = Roboto_Flex({
   variable: "--ff-body",
   subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: ["400", "500", "600"],
 });
 
 export async function generateMetadata(): Promise<Metadata> {
