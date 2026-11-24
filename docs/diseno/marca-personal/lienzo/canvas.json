@@ -1,1 +1,802 @@
-{"v":3,"createdOnFiles":{"v":1,"at":"2026-11-24T10:00:00Z"},"title":"FightLab con mi marca","launch":{"view":"canvas"},"pages":[],"boards":{"Main.dc.html":{"x":-1000,"y":0,"w":880,"h":844,"title":"portada"},"Arranque.dc.html":{"x":0,"y":0,"w":390,"h":844,"title":"actual · arranque","radius":40},"Login.dc.html":{"x":470,"y":0,"w":390,"h":844,"title":"actual · entrada","radius":40},"Hoy.dc.html":{"x":940,"y":0,"w":390,"h":844,"title":"actual · hoy","radius":40},"Entreno.dc.html":{"x":1410,"y":0,"w":390,"h":844,"title":"actual · entreno en curso","radius":40},"Nutricion.dc.html":{"x":1880,"y":0,"w":390,"h":844,"title":"actual · nutrición","radius":40},"Progreso.dc.html":{"x":2350,"y":0,"w":390,"h":844,"title":"actual · progreso","radius":40},"Coach.dc.html":{"x":2820,"y":0,"w":390,"h":844,"title":"actual · coach","radius":40},"Perfil.dc.html":{"x":3290,"y":0,"w":390,"h":844,"title":"actual · perfil","radius":40},"Icono.dc.html":{"x":3760,"y":0,"w":390,"h":844,"title":"actual · icono","radius":40},"Historial.dc.html":{"x":4230,"y":0,"w":390,"h":844,"title":"actual · historial","radius":40},"Menu.dc.html":{"x":4700,"y":0,"w":390,"h":844,"title":"actual · menú","radius":40},"A-Historial.dc.html":{"x":4230,"y":1224,"w":390,"h":844,"title":"A · historial","radius":40},"A-Menu.dc.html":{"x":4700,"y":1224,"w":390,"h":844,"title":"A · menú","radius":40},"B-Historial.dc.html":{"x":4230,"y":2448,"w":390,"h":844,"title":"B · historial","radius":40},"B-Menu.dc.html":{"x":4700,"y":2448,"w":390,"h":844,"title":"B · menú","radius":40},"A-Arranque.dc.html":{"x":0,"y":1224,"w":390,"h":844,"title":"A · arranque","radius":40},"A-Login.dc.html":{"x":470,"y":1224,"w":390,"h":844,"title":"A · entrada","radius":40},"A-Hoy.dc.html":{"x":940,"y":1224,"w":390,"h":844,"title":"A · hoy","radius":40},"A-Entreno.dc.html":{"x":1410,"y":1224,"w":390,"h":844,"title":"A · entreno en curso","radius":40},"A-Nutricion.dc.html":{"x":1880,"y":1224,"w":390,"h":844,"title":"A · nutrición","radius":40},"A-Progreso.dc.html":{"x":2350,"y":1224,"w":390,"h":844,"title":"A · progreso","radius":40},"A-Coach.dc.html":{"x":2820,"y":1224,"w":390,"h":844,"title":"A · coach","radius":40},"A-Perfil.dc.html":{"x":3290,"y":1224,"w":390,"h":844,"title":"A · perfil","radius":40},"A-Icono.dc.html":{"x":3760,"y":1224,"w":390,"h":844,"title":"A · icono","radius":40},"B-Arranque.dc.html":{"x":0,"y":2448,"w":390,"h":844,"title":"B · arranque","radius":40},"B-Login.dc.html":{"x":470,"y":2448,"w":390,"h":844,"title":"B · entrada","radius":40},"B-Hoy.dc.html":{"x":940,"y":2448,"w":390,"h":844,"title":"B · hoy","radius":40},"B-Entreno.dc.html":{"x":1410,"y":2448,"w":390,"h":844,"title":"B · entreno en curso","radius":40},"B-Nutricion.dc.html":{"x":1880,"y":2448,"w":390,"h":844,"title":"B · nutrición","radius":40},"B-Progreso.dc.html":{"x":2350,"y":2448,"w":390,"h":844,"title":"B · progreso","radius":40},"B-Coach.dc.html":{"x":2820,"y":2448,"w":390,"h":844,"title":"B · coach","radius":40},"B-Perfil.dc.html":{"x":3290,"y":2448,"w":390,"h":844,"title":"B · perfil","radius":40},"B-Icono.dc.html":{"x":3760,"y":2448,"w":390,"h":844,"title":"B · icono","radius":40},"A-claro-Login.dc.html":{"x":470,"y":3672,"w":390,"h":844,"title":"A claro · entrada","radius":40},"A-claro-Hoy.dc.html":{"x":940,"y":3672,"w":390,"h":844,"title":"A claro · hoy","radius":40},"A-claro-Progreso.dc.html":{"x":2350,"y":3672,"w":390,"h":844,"title":"A claro · progreso","radius":40},"B-claro-Hoy.dc.html":{"x":940,"y":4896,"w":390,"h":844,"title":"B claro · hoy","radius":40},"B-claro-Progreso.dc.html":{"x":2350,"y":4896,"w":390,"h":844,"title":"B claro · progreso","radius":40}},"order":["Main.dc.html","Arranque.dc.html","Login.dc.html","Hoy.dc.html","Entreno.dc.html","Nutricion.dc.html","Progreso.dc.html","Coach.dc.html","Perfil.dc.html","Icono.dc.html","A-Arranque.dc.html","A-Login.dc.html","A-Hoy.dc.html","A-Entreno.dc.html","A-Nutricion.dc.html","A-Progreso.dc.html","A-Coach.dc.html","A-Perfil.dc.html","A-Icono.dc.html","B-Arranque.dc.html","B-Login.dc.html","B-Hoy.dc.html","B-Entreno.dc.html","B-Nutricion.dc.html","B-Progreso.dc.html","B-Coach.dc.html","B-Perfil.dc.html","B-Icono.dc.html","A-claro-Login.dc.html","A-claro-Hoy.dc.html","A-claro-Progreso.dc.html","B-claro-Hoy.dc.html","B-claro-Progreso.dc.html","Historial.dc.html","Menu.dc.html","A-Historial.dc.html","A-Menu.dc.html","B-Historial.dc.html","B-Menu.dc.html"],"notes":{"t0":{"x":0,"y":-300,"text":"estilo actual · sobre la app simplificada","kind":"title1","maxW":5090},"t1":{"x":0,"y":924,"text":"A · marca completa","kind":"title1","maxW":5090},"t2":{"x":0,"y":2148,"text":"B · fightlab con la firma de la marca","kind":"title1","maxW":5090},"t3":{"x":0,"y":3372,"text":"modo claro · A","kind":"title1","maxW":5090},"t4":{"x":0,"y":4596,"text":"modo claro · B","kind":"title1","maxW":5090},"s0":{"x":5170,"y":0,"w":440,"size":"m","fill":"gray","text":"Hoy: azul neón cian (#45e9ff → #3b74ff), nebulosa azul-violeta-magenta, Plus Jakarta Sans + Roboto Flex y solo modo oscuro.\n\nDe la marca no usa nada: ni coral, ni Bricolage, ni franja.\n\nCurioso: la nebulosa, el cristal con borde de luz y el brillo de los botones de la marca salieron de aquí."},"s1":{"x":5170,"y":1224,"w":440,"size":"m","fill":"orange","text":"A · marca completa\n\nGanas: FightLab se reconoce como tuyo al lado del portfolio; coral y cobalto, más elegante; el modo claro sale casi gratis porque ya está en los tokens; diseñar pantallas nuevas es seguir la guía.\n\nPierdes: el azul neón que le da cara de app de combate; se parece a tus otros proyectos; y el coral queda muy cerca del rojo de error, en una app con muchos avisos de seguridad (golpe en la cabeza, sin contacto)."},"s2":{"x":5170,"y":2448,"w":440,"size":"m","fill":"blue","text":"B · firma\n\nGanas: FightLab conserva su cara (azul neón, nebulosa violeta, energía de deporte) y la marca aparece donde cuenta: logo con franja, titulares en Bricolage, «by joaquín beltrán» y el récord en coral.\n\nPierdes: menos unidad con tus otros proyectos; dos neones (cian y coral) que hay que dosificar; el cian no es «frío y apagado» como pide la guía; el modo claro hay que diseñarlo aparte."},"s3":{"x":5170,"y":3672,"w":440,"size":"m","fill":"gray","text":"Modo claro: A lo trae hecho la marca (niebla con nebulosa en acuarela). B necesita paleta propia: el cian no se lee sobre fondo claro, así que aquí lleva un azul más profundo."},"s5":{"x":5170,"y":-300,"w":440,"size":"m","fill":"green","text":"Todas las filas usan la app simplificada (plan de feat/app-simplificar): un título, un dato y una acción por tarjeta; detalles tras ⓘ; la IA solo en Coach (Menú con IA y Mi IA en su cabecera); entreno de cuerpo completo con 6 ejercicios; Historial con pantalla propia; Menú compacto."}},"designSystems":[]}
+{
+ "v": 3,
+ "attachments": {},
+ "boards": {
+  "A-Arranque.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "A · arranque",
+   "w": 390,
+   "x": 0,
+   "y": 1224
+  },
+  "A-Coach.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "A · coach",
+   "w": 390,
+   "x": 2820,
+   "y": 1224
+  },
+  "A-Entreno.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "A · entreno en curso",
+   "w": 390,
+   "x": 1410,
+   "y": 1224
+  },
+  "A-Historial.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "A · historial",
+   "w": 390,
+   "x": 4230,
+   "y": 1224
+  },
+  "A-Hoy.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "A · hoy",
+   "w": 390,
+   "x": 940,
+   "y": 1224
+  },
+  "A-Icono.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "A · icono",
+   "w": 390,
+   "x": 3760,
+   "y": 1224
+  },
+  "A-Login.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "A · entrada",
+   "w": 390,
+   "x": 470,
+   "y": 1224
+  },
+  "A-Menu.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "A · menú",
+   "w": 390,
+   "x": 4700,
+   "y": 1224
+  },
+  "A-Nutricion.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "A · nutrición",
+   "w": 390,
+   "x": 1880,
+   "y": 1224
+  },
+  "A-Perfil.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "A · perfil",
+   "w": 390,
+   "x": 3290,
+   "y": 1224
+  },
+  "A-Progreso.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "A · progreso",
+   "w": 390,
+   "x": 2350,
+   "y": 1224
+  },
+  "A-claro-Hoy.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "A claro · hoy",
+   "w": 390,
+   "x": 940,
+   "y": 3672
+  },
+  "A-claro-Login.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "A claro · entrada",
+   "w": 390,
+   "x": 470,
+   "y": 3672
+  },
+  "A-claro-Progreso.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "A claro · progreso",
+   "w": 390,
+   "x": 2350,
+   "y": 3672
+  },
+  "Arranque.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "actual · arranque",
+   "w": 390,
+   "x": 0,
+   "y": 0
+  },
+  "Artboard-nkal.dc.html": {
+   "h": 600,
+   "handmade": true,
+   "page": "page-vw996w",
+   "title": "Artboard 1",
+   "w": 800,
+   "x": 0,
+   "y": 0
+  },
+  "B-Arranque.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "B · arranque",
+   "w": 390,
+   "x": 0,
+   "y": 2448
+  },
+  "B-Coach.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "B · coach",
+   "w": 390,
+   "x": 2820,
+   "y": 2448
+  },
+  "B-Entreno.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "B · entreno en curso",
+   "w": 390,
+   "x": 1410,
+   "y": 2448
+  },
+  "B-Historial.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "B · historial",
+   "w": 390,
+   "x": 4230,
+   "y": 2448
+  },
+  "B-Hoy.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "B · hoy",
+   "w": 390,
+   "x": 940,
+   "y": 2448
+  },
+  "B-Icono.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "B · icono",
+   "w": 390,
+   "x": 3760,
+   "y": 2448
+  },
+  "B-Login.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "B · entrada",
+   "w": 390,
+   "x": 470,
+   "y": 2448
+  },
+  "B-Menu.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "B · menú",
+   "w": 390,
+   "x": 4700,
+   "y": 2448
+  },
+  "B-Nutricion.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "B · nutrición",
+   "w": 390,
+   "x": 1880,
+   "y": 2448
+  },
+  "B-Perfil.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "B · perfil",
+   "w": 390,
+   "x": 3290,
+   "y": 2448
+  },
+  "B-Progreso.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "B · progreso",
+   "w": 390,
+   "x": 2350,
+   "y": 2448
+  },
+  "B-claro-Hoy.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "B claro · hoy",
+   "w": 390,
+   "x": 940,
+   "y": 4896
+  },
+  "B-claro-Progreso.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "B claro · progreso",
+   "w": 390,
+   "x": 2350,
+   "y": 4896
+  },
+  "Coach.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "actual · coach",
+   "w": 390,
+   "x": 2820,
+   "y": 0
+  },
+  "Entreno.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "actual · entreno en curso",
+   "w": 390,
+   "x": 1410,
+   "y": 0
+  },
+  "Historial.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "actual · historial",
+   "w": 390,
+   "x": 4230,
+   "y": 0
+  },
+  "Hoy.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "actual · hoy",
+   "w": 390,
+   "x": 940,
+   "y": 0
+  },
+  "Icono.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "actual · icono",
+   "w": 390,
+   "x": 3760,
+   "y": 0
+  },
+  "Login.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "actual · entrada",
+   "w": 390,
+   "x": 470,
+   "y": 0
+  },
+  "Main.dc.html": {
+   "h": 844,
+   "title": "portada",
+   "w": 880,
+   "x": -1000,
+   "y": 0
+  },
+  "Menu.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "actual · menú",
+   "w": 390,
+   "x": 4700,
+   "y": 0
+  },
+  "Nutricion.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "actual · nutrición",
+   "w": 390,
+   "x": 1880,
+   "y": 0
+  },
+  "Perfil.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "actual · perfil",
+   "w": 390,
+   "x": 3290,
+   "y": 0
+  },
+  "Progreso.dc.html": {
+   "h": 844,
+   "radius": 40,
+   "title": "actual · progreso",
+   "w": 390,
+   "x": 2350,
+   "y": 0
+  },
+  "X-oscuro-Arranque.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "oscuro (B) · arranque",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-claro-Arranque.dc.html": {
+   "x": 0,
+   "y": 1224,
+   "w": 390,
+   "h": 844,
+   "title": "claro (A) · arranque",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-oscuro-Login.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "oscuro (B) · entrada",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-claro-Login.dc.html": {
+   "x": 470,
+   "y": 1224,
+   "w": 390,
+   "h": 844,
+   "title": "claro (A) · entrada",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-oscuro-Hoy.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "oscuro (B) · hoy",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-claro-Hoy.dc.html": {
+   "x": 940,
+   "y": 1224,
+   "w": 390,
+   "h": 844,
+   "title": "claro (A) · hoy",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-oscuro-Entreno.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "oscuro (B) · entreno en curso",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-claro-Entreno.dc.html": {
+   "x": 1410,
+   "y": 1224,
+   "w": 390,
+   "h": 844,
+   "title": "claro (A) · entreno en curso",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-oscuro-Historial.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "oscuro (B) · historial",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-claro-Historial.dc.html": {
+   "x": 1880,
+   "y": 1224,
+   "w": 390,
+   "h": 844,
+   "title": "claro (A) · historial",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-oscuro-Nutricion.dc.html": {
+   "x": 2350,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "oscuro (B) · nutrición",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-claro-Nutricion.dc.html": {
+   "x": 2350,
+   "y": 1224,
+   "w": 390,
+   "h": 844,
+   "title": "claro (A) · nutrición",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-oscuro-Menu.dc.html": {
+   "x": 2820,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "oscuro (B) · menú",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-claro-Menu.dc.html": {
+   "x": 2820,
+   "y": 1224,
+   "w": 390,
+   "h": 844,
+   "title": "claro (A) · menú",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-oscuro-Progreso.dc.html": {
+   "x": 3290,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "oscuro (B) · progreso",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-claro-Progreso.dc.html": {
+   "x": 3290,
+   "y": 1224,
+   "w": 390,
+   "h": 844,
+   "title": "claro (A) · progreso",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-oscuro-Coach.dc.html": {
+   "x": 3760,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "oscuro (B) · coach",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-claro-Coach.dc.html": {
+   "x": 3760,
+   "y": 1224,
+   "w": 390,
+   "h": 844,
+   "title": "claro (A) · coach",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-oscuro-Perfil.dc.html": {
+   "x": 4230,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "oscuro (B) · perfil",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-claro-Perfil.dc.html": {
+   "x": 4230,
+   "y": 1224,
+   "w": 390,
+   "h": 844,
+   "title": "claro (A) · perfil",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-oscuro-Icono.dc.html": {
+   "x": 4700,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "oscuro (B) · icono",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-claro-Icono.dc.html": {
+   "x": 4700,
+   "y": 1224,
+   "w": 390,
+   "h": 844,
+   "title": "claro (A) · icono",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-prop-Hoy.dc.html": {
+   "x": 940,
+   "y": 2448,
+   "w": 390,
+   "h": 844,
+   "title": "propuesta claro · hoy",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-prop-Entreno.dc.html": {
+   "x": 1410,
+   "y": 2448,
+   "w": 390,
+   "h": 844,
+   "title": "propuesta claro · entreno en curso",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-prop-Menu.dc.html": {
+   "x": 2820,
+   "y": 2448,
+   "w": 390,
+   "h": 844,
+   "title": "propuesta claro · menú",
+   "radius": 40,
+   "page": "mezcla"
+  },
+  "X-prop-Progreso.dc.html": {
+   "x": 3290,
+   "y": 2448,
+   "w": 390,
+   "h": 844,
+   "title": "propuesta claro · progreso",
+   "radius": 40,
+   "page": "mezcla"
+  }
+ },
+ "createdOnFiles": {
+  "at": "2026-11-24T10:00:00Z",
+  "v": 1
+ },
+ "designSystems": [],
+ "launch": {
+  "view": "canvas"
+ },
+ "noteOrder": [
+  "t0",
+  "t1",
+  "t2",
+  "t3",
+  "t4",
+  "s0",
+  "s1",
+  "s2",
+  "s3",
+  "s5",
+  "m0",
+  "m1",
+  "m2",
+  "n0",
+  "n1",
+  "n2"
+ ],
+ "notes": {
+  "s0": {
+   "fill": "gray",
+   "size": 24,
+   "text": "Hoy: azul neón cian (#45e9ff → #3b74ff), nebulosa azul-violeta-magenta, Plus Jakarta Sans + Roboto Flex y solo modo oscuro.\n\nDe la marca no usa nada: ni coral, ni Bricolage, ni franja.\n\nCurioso: la nebulosa, el cristal con borde de luz y el brillo de los botones de la marca salieron de aquí.",
+   "w": 440,
+   "x": 5170,
+   "y": 0
+  },
+  "s1": {
+   "fill": "orange",
+   "size": 24,
+   "text": "A · marca completa\n\nGanas: FightLab se reconoce como tuyo al lado del portfolio; coral y cobalto, más elegante; el modo claro sale casi gratis porque ya está en los tokens; diseñar pantallas nuevas es seguir la guía.\n\nPierdes: el azul neón que le da cara de app de combate; se parece a tus otros proyectos; y el coral queda muy cerca del rojo de error, en una app con muchos avisos de seguridad (golpe en la cabeza, sin contacto).",
+   "w": 440,
+   "x": 5170,
+   "y": 1224
+  },
+  "s2": {
+   "fill": "blue",
+   "size": 24,
+   "text": "B · firma\n\nGanas: FightLab conserva su cara (azul neón, nebulosa violeta, energía de deporte) y la marca aparece donde cuenta: logo con franja, titulares en Bricolage, «by joaquín beltrán» y el récord en coral.\n\nPierdes: menos unidad con tus otros proyectos; dos neones (cian y coral) que hay que dosificar; el cian no es «frío y apagado» como pide la guía; el modo claro hay que diseñarlo aparte.",
+   "w": 440,
+   "x": 5170,
+   "y": 2448
+  },
+  "s3": {
+   "fill": "gray",
+   "size": 24,
+   "text": "Modo claro: A lo trae hecho la marca (niebla con nebulosa en acuarela). B necesita paleta propia: el cian no se lee sobre fondo claro, así que aquí lleva un azul más profundo.",
+   "w": 440,
+   "x": 5170,
+   "y": 3672
+  },
+  "s5": {
+   "fill": "green",
+   "size": 24,
+   "text": "Todas las filas usan la app simplificada (plan de feat/app-simplificar): un título, un dato y una acción por tarjeta; detalles tras ⓘ; la IA solo en Coach (Menú con IA y Mi IA en su cabecera); entreno de cuerpo completo con 6 ejercicios; Historial con pantalla propia; Menú compacto.",
+   "w": 440,
+   "x": 5170,
+   "y": -300
+  },
+  "t0": {
+   "kind": "title1",
+   "maxW": 5090,
+   "text": "estilo actual · sobre la app simplificada",
+   "w": 240,
+   "x": 0,
+   "y": -300
+  },
+  "t1": {
+   "kind": "title1",
+   "maxW": 5090,
+   "text": "A · marca completa",
+   "w": 240,
+   "x": 0,
+   "y": 924
+  },
+  "t2": {
+   "kind": "title1",
+   "maxW": 5090,
+   "text": "B · fightlab con la firma de la marca",
+   "w": 240,
+   "x": 0,
+   "y": 2148
+  },
+  "t3": {
+   "kind": "title1",
+   "maxW": 5090,
+   "text": "modo claro · A",
+   "w": 240,
+   "x": 0,
+   "y": 3372
+  },
+  "t4": {
+   "kind": "title1",
+   "maxW": 5090,
+   "text": "modo claro · B",
+   "w": 240,
+   "x": 0,
+   "y": 4596
+  },
+  "m0": {
+   "x": 0,
+   "y": -300,
+   "text": "oscuro · B",
+   "kind": "title1",
+   "maxW": 5090,
+   "page": "mezcla"
+  },
+  "m1": {
+   "x": 0,
+   "y": 924,
+   "text": "claro · A",
+   "kind": "title1",
+   "maxW": 5090,
+   "page": "mezcla"
+  },
+  "m2": {
+   "x": 0,
+   "y": 2148,
+   "text": "propuesta · claro de A con el azul de FightLab para actuar",
+   "kind": "title1",
+   "maxW": 5090,
+   "page": "mezcla"
+  },
+  "n0": {
+   "x": 5170,
+   "y": 0,
+   "w": 460,
+   "size": 24,
+   "fill": "green",
+   "page": "mezcla",
+   "text": "Lo que casa al cambiar de modo\n\nLogo: el de B (FIGHTLAB en gris con la franja) en los dos modos; el logo no cambia con el tema.\nLetra: Bricolage en titulares y Roboto Flex en texto, igual en los dos.\nForma: esquinas, cápsulas y barra inferior de B en los dos.\nCoral: récord, semana actual y franja salen en coral en los dos modos."
+  },
+  "n1": {
+   "x": 5170,
+   "y": 1224,
+   "w": 460,
+   "size": 24,
+   "fill": "orange",
+   "page": "mezcla",
+   "text": "Lo que choca\n\nEl color de acción salta de cian (oscuro) a coral (claro): botón principal, pestaña activa, campo activo y barras. Quien cambia de modo ve otra app.\n\nY en claro el botón coral se parece al rojo de error, en una app con avisos de seguridad.\n\nLa nebulosa pasa de azul-violeta a cobalto-coral: esto sí queda bien, las dos son luz por los lados."
+  },
+  "n2": {
+   "x": 5170,
+   "y": 2448,
+   "w": 460,
+   "size": 24,
+   "fill": "blue",
+   "page": "mezcla",
+   "text": "Propuesta\n\nEl claro de A tal cual (niebla, cristal, nebulosa en acuarela), pero el azul de FightLab sigue siendo el color de acción, y el coral se queda como firma, igual que en oscuro.\n\nAsí cada color hace lo mismo en los dos modos: azul = actuar, coral = lo destacado y la marca."
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "Arranque.dc.html",
+  "Login.dc.html",
+  "Hoy.dc.html",
+  "Entreno.dc.html",
+  "Nutricion.dc.html",
+  "Progreso.dc.html",
+  "Coach.dc.html",
+  "Perfil.dc.html",
+  "Icono.dc.html",
+  "A-Arranque.dc.html",
+  "A-Login.dc.html",
+  "A-Hoy.dc.html",
+  "A-Entreno.dc.html",
+  "A-Nutricion.dc.html",
+  "A-Progreso.dc.html",
+  "A-Coach.dc.html",
+  "A-Perfil.dc.html",
+  "A-Icono.dc.html",
+  "B-Arranque.dc.html",
+  "B-Login.dc.html",
+  "B-Hoy.dc.html",
+  "B-Entreno.dc.html",
+  "B-Nutricion.dc.html",
+  "B-Progreso.dc.html",
+  "B-Coach.dc.html",
+  "B-Perfil.dc.html",
+  "B-Icono.dc.html",
+  "A-claro-Login.dc.html",
+  "A-claro-Hoy.dc.html",
+  "A-claro-Progreso.dc.html",
+  "B-claro-Hoy.dc.html",
+  "B-claro-Progreso.dc.html",
+  "Historial.dc.html",
+  "Menu.dc.html",
+  "A-Historial.dc.html",
+  "A-Menu.dc.html",
+  "B-Historial.dc.html",
+  "B-Menu.dc.html",
+  "Artboard-nkal.dc.html",
+  "X-oscuro-Arranque.dc.html",
+  "X-claro-Arranque.dc.html",
+  "X-oscuro-Login.dc.html",
+  "X-claro-Login.dc.html",
+  "X-oscuro-Hoy.dc.html",
+  "X-claro-Hoy.dc.html",
+  "X-oscuro-Entreno.dc.html",
+  "X-claro-Entreno.dc.html",
+  "X-oscuro-Historial.dc.html",
+  "X-claro-Historial.dc.html",
+  "X-oscuro-Nutricion.dc.html",
+  "X-claro-Nutricion.dc.html",
+  "X-oscuro-Menu.dc.html",
+  "X-claro-Menu.dc.html",
+  "X-oscuro-Progreso.dc.html",
+  "X-claro-Progreso.dc.html",
+  "X-oscuro-Coach.dc.html",
+  "X-claro-Coach.dc.html",
+  "X-oscuro-Perfil.dc.html",
+  "X-claro-Perfil.dc.html",
+  "X-oscuro-Icono.dc.html",
+  "X-claro-Icono.dc.html",
+  "X-prop-Hoy.dc.html",
+  "X-prop-Entreno.dc.html",
+  "X-prop-Menu.dc.html",
+  "X-prop-Progreso.dc.html"
+ ],
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Page 1"
+  },
+  {
+   "id": "page-vw996w",
+   "name": "Page 2"
+  },
+  {
+   "id": "mezcla",
+   "name": "B oscuro + A claro"
+  }
+ ],
+ "title": "FightLab con mi marca"
+}

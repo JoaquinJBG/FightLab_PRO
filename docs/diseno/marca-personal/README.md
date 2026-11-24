@@ -18,6 +18,17 @@ Todas parten de la app simplificada (plan de `feat/app-simplificar`, `docs/ux/si
 dato y una acción por tarjeta; detalles tras ⓘ; la IA solo en Coach (Menú con IA y Mi IA en su cabecera);
 sesiones de cuerpo completo con 6 ejercicios; Historial con pantalla propia y Menú compacto.
 
+## Elegida: B en oscuro + A en claro
+
+El usuario eligió B para oscuro y A para claro. Está en la página «B oscuro + A claro» del lienzo:
+- una fila en oscuro y otra en claro con las once pantallas;
+- una fila de propuesta (claro de A con el azul de FightLab para actuar) en Hoy, Entreno, Menú y Progreso.
+
+Logo, letra y forma son los de B en los dos modos.
+
+El choque es el color de acción, que pasa de cian a coral al cambiar de modo. La propuesta lo evita.
+Cómo se aplicaría al código, por fases: [aplicar-al-codigo.md](aplicar-al-codigo.md).
+
 ## Las dos direcciones
 
 **A · marca completa.** Fondo abismo con nebulosa cobalto y coral, cristal con borde de luz coral → cobalto,

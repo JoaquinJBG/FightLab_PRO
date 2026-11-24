@@ -138,6 +138,42 @@
   --me-bg: #0b1322; --me-fg: #eaf2fd;
 }
 
+/* ---------- mezcla: B en oscuro + A en claro (.B.light.M) ----------
+   Base, cristal, nebulosa y destacado coral de A claro; forma, logo y letra de B, que no cambian con el modo. */
+.ph.B.light.M {
+  --bg: #E7EEF2; --fg: #161D24; --muted: #435565; --line: rgba(22, 29, 36, .12);
+  --acc: #F97279; --acc-txt: #B83A44; --on-acc: #161D24;
+  --btn: #F97279; --glow: 0 0 30px -6px rgba(249, 114, 121, .75); --glow-txt: 0 0 18px rgba(249, 114, 121, .35);
+  --glass: linear-gradient(180deg, rgba(255, 255, 255, .78), rgba(255, 255, 255, .55));
+  --ring: inset 0 1px 0 rgba(255, 255, 255, .8); --gshadow: 0 24px 50px -30px rgba(22, 29, 36, .35);
+  --edge: linear-gradient(140deg, #F97279, transparent 42%, transparent 60%, #2A72A3); --edge-op: .75;
+  --ghost: rgba(255, 255, 255, .5); --ghost-ring: inset 0 0 0 1px rgba(22, 29, 36, .18); --ghost-fg: #161D24;
+  --field: rgba(255, 255, 255, .5); --field-ring: inset 0 0 0 1px rgba(22, 29, 36, .18);
+  --neb:
+    radial-gradient(70% 24% at -6% 36%, rgba(42, 114, 163, .32), transparent 70%),
+    radial-gradient(42% 14% at 0% 56%, rgba(249, 114, 121, .22), transparent 70%),
+    radial-gradient(70% 24% at 106% 28%, rgba(115, 138, 154, .35), transparent 70%),
+    radial-gradient(44% 15% at 100% 50%, rgba(249, 114, 121, .2), transparent 70%);
+  --dots: rgba(22, 29, 36, .10); --vig: rgba(231, 238, 242, .6);
+  --bar: linear-gradient(90deg, #2A72A3, #F97279); --bar-glow: 0 0 14px rgba(249, 114, 121, .5);
+  --s1: #2A72A3; --s1-soft: rgba(42, 114, 163, .25); --hi: #F97279; --ref: #B83A44;
+  --good: #0B7550; --warn: #8A5A00; --bad: #B42B37; --link: #23648F;
+  --tab-on: #B83A44; --tab-glow: drop-shadow(0 0 6px rgba(249, 114, 121, .45));
+  --num-bg: #F97279; --num-fg: #161D24; --num-glow: 0 0 24px -6px rgba(249, 114, 121, .8);
+  --me-bg: #161D24; --me-fg: #E7EEF2;
+}
+.ph.B.light.M .cal span.t { background: #F97279; color: #161D24; }
+/* propuesta: la misma base clara de A, pero el azul de FightLab sigue siendo el color de acción (.P) */
+.ph.B.light.M.P {
+  --acc: #1f6fe0; --acc-txt: #1655b8; --on-acc: #ffffff;
+  --btn: linear-gradient(180deg, #2a86f0, #1f55d6); --glow: 0 0 26px -8px rgba(31, 85, 214, .6); --glow-txt: none;
+  --edge: linear-gradient(140deg, #2a86f0, transparent 42%, transparent 60%, #F97279); --edge-op: .55;
+  --bar: linear-gradient(90deg, #2a86f0, #1f55d6); --bar-glow: 0 0 12px rgba(31, 85, 214, .35);
+  --tab-on: #1655b8; --tab-glow: none; --ref: #1655b8;
+  --num-bg: rgba(31, 111, 224, .1); --num-fg: #1655b8; --num-glow: none;
+}
+.ph.B.light.M.P .cal span.t { background: #1f6fe0; color: #fff; }
+
 /* qué pieza sale en cada dirección */
 .ph:not(.cur) .only-cur, .ph:not(.A) .only-A, .ph:not(.B) .only-B, .ph.cur .not-cur { display: none !important; }
 
@@ -232,6 +268,7 @@
 .check.on { background: var(--acc); color: var(--on-acc); box-shadow: var(--glow); }
 .ph.B .check.on, .ph.cur .check.on { background: var(--good); box-shadow: 0 0 16px -4px var(--good); color: #03101c; }
 .ph.A .check.on { background: var(--good); box-shadow: 0 0 16px -4px var(--good); color: #161D24; }
+.ph.light .check.on { color: #ffffff; }
 .toggle { width: 46px; height: 28px; border-radius: 999px; background: var(--line); position: relative; flex: none; }
 .toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--muted); }
 .toggle.on { background: var(--acc); box-shadow: var(--glow); }
