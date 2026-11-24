@@ -10,7 +10,7 @@ export default function UiKitPage() {
           Sistema <span className="neon-text">visual</span>
         </h1>
         <p className="t-body mt-3 text-muted">
-          Plus Jakarta Sans para titulares, Roboto Flex para el cuerpo. Componentes
+          Bricolage Grotesque para titulares, Roboto Flex para el cuerpo. Componentes
           estilo Material 3 sobre el tema neón.
         </p>
       </header>
@@ -93,11 +93,11 @@ export default function UiKitPage() {
         <p className="t-eyebrow mb-2 text-muted">Tipografía</p>
         <div className="glass flex flex-col gap-4 p-5">
           <div>
-            <span className="t-eyebrow text-muted">Display · Jakarta 700</span>
+            <span className="t-eyebrow text-muted">Display · Bricolage 800</span>
             <p className="t-display mt-1 text-3xl text-ink">78.4 kg</p>
           </div>
           <div>
-            <span className="t-eyebrow text-muted">Title · Jakarta 700</span>
+            <span className="t-eyebrow text-muted">Title · Bricolage 800</span>
             <p className="t-title mt-1 text-ink">Plan de fuerza máxima</p>
           </div>
           <div>
