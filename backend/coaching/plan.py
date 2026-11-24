@@ -83,6 +83,7 @@ SETS_WITHOUT_LOG_ACCESSORY = 2
 # core y accesorios entre 2 y 3.
 COMPOUND_SETS = (3, 4)
 ACCESSORY_SETS = (2, 3)
+MIN_SETS, MAX_SETS = ACCESSORY_SETS[0], COMPOUND_SETS[1]  # lo que puede llevar un ejercicio
 # convention (FightLab): los minutos de cardio por día se redondean hacia arriba de 5 en 5.
 CARDIO_STEP_MIN = 5
 # convention (FightLab, F9): una sesión de cardio del plan dura al menos 20 min. Lo que falta hasta
